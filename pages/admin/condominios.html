@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Condomínios</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-body layout-desktop">
+  <header class="app-bar">
+    <div class="app-bar-inner wide">
+      <a href="dashboard.html" class="app-bar-brand">
+        <img src="../../assets/img/logo.png" alt="SmartCondo" class="logo-sm">
+        <span class="brand-name">Smart<strong>Condo</strong></span>
+      </a>
+      <div class="app-bar-right">
+        <span class="profile-link">
+          <span class="profile-avatar"><img src="../../assets/img/icons/shield-halved.svg" alt="" style="width:16px;height:16px;display:block"></span>
+          <span class="profile-name" id="hdrName">Administrador</span>
+          <span class="profile-role">Administrador</span>
+        </span>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-wrapper wide">
+
+    <a href="dashboard.html" class="dash-back">
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Administrador
+    </a>
+
+    <div class="dash-greeting">
+      <p class="greeting-sub">Administração da plataforma</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Condomínios</h1>
+      <p class="greeting-condo"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Cadastre, edite e acompanhe cada condomínio</p>
+    </div>
+
+    <div class="barra-acoes">
+      <div class="campo-busca">
+        <img src="../../assets/img/icons/building.svg" alt="">
+        <input type="search" id="buscaCondominio" placeholder="Buscar por nome, cidade ou CNPJ" aria-label="Buscar condomínio">
+      </div>
+      <button type="button" class="btn-novo" id="btnNovoCondominio">
+        <img src="../../assets/img/icons/plus.svg" alt="">Novo condomínio
+      </button>
+    </div>
+
+    <div class="data-table" id="tabela" aria-live="polite">
+      <div class="table-head cols-6">
+        <span>Condomínio</span><span>CNPJ</span><span>Cidade</span>
+        <span>Síndico</span><span>Código</span><span>Ações</span>
+      </div>
+    </div>
+    <p class="estado-lista" id="estado">Carregando…</p>
+
+  </main>
+
+  <!-- Formulário de cadastro e edição -->
+  <div class="modal-fundo" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+    <div class="modal-caixa">
+      <h2 class="modal-titulo" id="modalTitulo">
+        <img src="../../assets/img/icons/building.svg" alt="">Novo condomínio
+      </h2>
+      <p class="modal-sub">O código de acesso é gerado pelo sistema e entregue ao síndico.</p>
+
+      <form id="formCondominio" novalidate>
+        <div class="form-group">
+          <label for="cNome">Nome <span class="req">*</span></label>
+          <input type="text" id="cNome" required maxlength="160" placeholder="Ex: Residencial das Palmeiras">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cCnpj">CNPJ <span class="req">*</span></label>
+            <input type="text" id="cCnpj" class="mask-cnpj" required maxlength="18" placeholder="00.000.000/0000-00">
+          </div>
+          <div class="form-group">
+            <label for="cCep">CEP <span class="req">*</span></label>
+            <input type="text" id="cCep" class="mask-cep" required maxlength="9" placeholder="00000-000">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cLogradouro">Logradouro <span class="req">*</span></label>
+            <input type="text" id="cLogradouro" required maxlength="180" placeholder="Rua, avenida…">
+          </div>
+          <div class="form-group">
+            <label for="cNumero">Número <span class="req">*</span></label>
+            <input type="text" id="cNumero" required maxlength="20" placeholder="Ex: 100">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cComplemento">Complemento</label>
+            <input type="text" id="cComplemento" maxlength="80" placeholder="Bloco, sala…">
+          </div>
+          <div class="form-group">
+            <label for="cBairro">Bairro <span class="req">*</span></label>
+            <input type="text" id="cBairro" required maxlength="100" placeholder="Ex: Centro">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cCidade">Cidade <span class="req">*</span></label>
+            <input type="text" id="cCidade" required maxlength="100" placeholder="Ex: Campo Grande">
+          </div>
+          <div class="form-group">
+            <label for="cUf">UF <span class="req">*</span></label>
+            <select id="cUf" required>
+              <option value="" disabled selected>Selecione</option>
+              <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+              <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+              <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+              <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+              <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+              <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+              <option>SP</option><option>SE</option><option>TO</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="cTelefone">Telefone</label>
+          <input type="tel" id="cTelefone" class="mask-tel" maxlength="15" placeholder="(00) 0000-0000">
+        </div>
+
+        <p class="modal-erro" id="modalErro" role="alert"></p>
+
+        <div class="modal-acoes">
+          <button type="button" class="btn-secundario" id="btnCancelar">Cancelar</button>
+          <button type="submit" class="btn-primario" id="btnSalvar">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<script src="../../assets/js/validation.js"></script>
+<script src="../../assets/js/admin-ui.js"></script>
+<script>
+/* Gestão de condomínios — o administrador cadastra, edita, exclui e
+   renova o código de acesso que os moradores usam para se cadastrar. */
+(function() {
+  var api = SmartCondo.api;
+  var ui = SmartCondo.ui;
+
+  var tabela = document.getElementById('tabela');
+  var estado = document.getElementById('estado');
+  var busca = document.getElementById('buscaCondominio');
+  var modal = ui.modal('modal', 'formCondominio', 'modalErro');
+
+  var editandoId = null;
+
+  var CAMPOS = {
+    cNome: 'nome', cCnpj: 'cnpj', cCep: 'cep', cLogradouro: 'logradouro',
+    cNumero: 'numero', cComplemento: 'complemento', cBairro: 'bairro',
+    cCidade: 'cidade', cUf: 'uf', cTelefone: 'telefone'
+  };
+
+  function abrirNovo() {
+    editandoId = null;
+    document.getElementById('modalTitulo').lastChild.textContent = 'Novo condomínio';
+    modal.limpar();
+    modal.abrir();
+  }
+
+  function abrirEdicao(c) {
+    editandoId = c.id;
+    document.getElementById('modalTitulo').lastChild.textContent = 'Editar condomínio';
+    modal.limpar();
+    Object.keys(CAMPOS).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.value = c[CAMPOS[id]] || '';
+    });
+    modal.abrir();
+  }
+
+  function montarLinha(c) {
+    var linha = document.createElement('div');
+    linha.className = 'table-row cols-6';
+    linha.innerHTML =
+      '<span><strong></strong></span><span></span><span></span><span></span>' +
+      '<span><code class="codigo-acesso"></code></span>' +
+      '<span class="acoes-linha">' +
+        '<button type="button" class="btn-acao" data-acao="editar" title="Editar"><img src="../../assets/img/icons/pen.svg" alt="Editar"></button>' +
+        '<button type="button" class="btn-acao" data-acao="codigo" title="Gerar novo código de acesso"><img src="../../assets/img/icons/stamp.svg" alt="Novo código"></button>' +
+        '<button type="button" class="btn-acao perigo" data-acao="excluir" title="Excluir"><img src="../../assets/img/icons/xmark.svg" alt="Excluir"></button>' +
+      '</span>';
+
+    // textContent, e não innerHTML: nome e cidade vêm do banco.
+    linha.children[0].firstChild.textContent = c.nome;
+    linha.children[1].textContent = ui.formatarCnpj(c.cnpj);
+    linha.children[2].textContent = c.cidade + ' - ' + c.uf;
+    linha.children[3].textContent = c.sindico_nome || '—';
+    linha.children[4].firstChild.textContent = c.codigo_acesso;
+
+    linha.querySelector('[data-acao=editar]').addEventListener('click', function() {
+      abrirEdicao(c);
+    });
+    linha.querySelector('[data-acao=codigo]').addEventListener('click', function() {
+      if (!confirm('Gerar um novo código para ' + c.nome + '?\n\nO código atual deixa de valer para novos cadastros.')) return;
+      api.post('/admin/condominios/' + c.id + '/codigo-acesso')
+        .then(carregar)
+        .catch(function(e) { alert(e.message); });
+    });
+    linha.querySelector('[data-acao=excluir]').addEventListener('click', function() {
+      if (!confirm('Excluir ' + c.nome + '?\n\nEsta ação não pode ser desfeita.')) return;
+      api.remover('/admin/condominios/' + c.id)
+        .then(carregar)
+        .catch(function(e) { alert(e.message); });
+    });
+    return linha;
+  }
+
+  function carregar() {
+    var termo = busca.value.trim();
+    estado.textContent = 'Carregando…';
+
+    api.get('/admin/condominios' + (termo ? '?busca=' + encodeURIComponent(termo) : ''))
+      .then(function(lista) {
+        ui.limparTabela(tabela);
+        if (!lista.length) {
+          estado.textContent = termo
+            ? 'Nenhum condomínio encontrado para "' + termo + '".'
+            : 'Nenhum condomínio cadastrado ainda.';
+          return;
+        }
+        estado.textContent = '';
+        lista.forEach(function(c) { tabela.appendChild(montarLinha(c)); });
+      })
+      .catch(function(e) { estado.textContent = e.message; });
+  }
+
+  document.getElementById('btnNovoCondominio').addEventListener('click', abrirNovo);
+  busca.addEventListener('input', ui.aguardar(carregar, 300));
+
+  modal.aoEnviar(function() {
+    var corpo = {};
+    Object.keys(CAMPOS).forEach(function(id) {
+      var valor = (document.getElementById(id).value || '').trim();
+      corpo[CAMPOS[id]] = valor || null;
+    });
+
+    var faltando = ['nome', 'cnpj', 'cep', 'logradouro', 'numero', 'bairro', 'cidade', 'uf']
+      .filter(function(c) { return !corpo[c]; });
+    if (faltando.length) {
+      modal.erro('Preencha os campos obrigatórios.');
+      return null;
+    }
+
+    return editandoId
+      ? api.put('/admin/condominios/' + editandoId, corpo)
+      : api.post('/admin/condominios', corpo);
+  }, function() {
+    modal.fechar();
+    carregar();
+  });
+
+  carregar();
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

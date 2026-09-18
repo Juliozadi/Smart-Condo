@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Confirmar Cadastro</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <main class="container">
+    <header class="logo-area">
+      <img src="../../assets/img/logo.png" alt="Logo SmartCondo" class="logo">
+      <div class="logo-text">
+        <h1>Smart Condo</h1>
+        <p>Gestão de Condomínios</p>
+      </div>
+    </header>
+
+    <h2>Confirme seu cadastro</h2>
+    <p class="subtitle">
+      Enviamos um código de 6 dígitos para <strong id="destinoCodigo">o seu e-mail</strong>.
+    </p>
+
+    <form id="formConfirmar" novalidate>
+      <div class="input-box">
+        <img src="../../assets/img/icons/lock.svg" width="16" height="16" alt="">
+        <input type="text" id="codigoCadastro" inputmode="numeric" placeholder="000000"
+          required maxlength="6" autocomplete="one-time-code"
+          style="text-align:center;letter-spacing:4px;font-size:20px;font-weight:700;">
+      </div>
+
+      <p style="font-size:12px;color:var(--muted);margin-bottom:20px;text-align:center;font-weight:500;">
+        Não recebeu? &nbsp;<a href="#" id="reenviarCadastro"
+          style="color:var(--primary);font-weight:700;text-decoration:none;">Reenviar código</a>
+      </p>
+
+      <button class="login-btn" type="submit">
+        <img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Confirmar cadastro
+      </button>
+    </form>
+
+    <a href="cadastro.html" class="back-link">
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar
+    </a>
+  </main>
+
+  <script src="../../assets/js/validation.js"></script>
+  <script>
+  /* Confirmação do cadastro — doc, seção 9 ("Cadastro", passo 5:
+     "O usuário faz a validação de seu cadastro").
+
+     O e-mail e o papel vêm da tela de cadastro anterior. Depois de
+     confirmar, o síndico já entra ativo; morador e porteiro seguem para a
+     tela de espera, porque ainda dependem da aprovação do síndico. */
+  (function() {
+    var dados = null;
+    try { dados = JSON.parse(sessionStorage.getItem('smartcondo_cadastro')); } catch (_) {}
+
+    // Chegou aqui sem ter passado pelo cadastro.
+    if (!dados || !dados.email) {
+      window.location.replace('cadastro.html');
+      return;
+    }
+
+    var destino = document.getElementById('destinoCodigo');
+    if (dados.destino) destino.textContent = dados.destino;
+
+    var campo = document.getElementById('codigoCadastro');
+    campo.addEventListener('input', function() {
+      this.value = this.value.replace(/\D/g, '').slice(0, 6);
+    });
+
+    // Em desenvolvimento a API devolve o código; preenche para facilitar.
+    if (dados.codigo_debug) campo.value = dados.codigo_debug;
+
+    var ESPERA = {
+      morador: '../morador/aguardando_aprovacao.html',
+      porteiro: '../porteiro/aguardando_aprovacao.html',
+      sindico: '../sindico/aguardando_aprovacao.html'
+    };
+
+    document.getElementById('formConfirmar').addEventListener('submit', function(e) {
+      e.preventDefault();
+      document.querySelectorAll('.erro-validacao').forEach(function(el) { el.remove(); });
+
+      var codigo = campo.value.trim();
+      if (codigo.length !== 6) {
+        mostrarErro(campo, 'O código tem 6 dígitos');
+        return;
+      }
+
+      var botao = this.querySelector('button[type=submit]');
+      var textoOriginal = botao.innerHTML;
+      botao.disabled = true;
+      botao.innerHTML = 'Confirmando...';
+
+      SmartCondo.api
+        .post('/auth/confirmar', { email: dados.email, codigo: codigo }, { semToken: true })
+        .then(function(usuario) {
+          try { sessionStorage.removeItem('smartcondo_cadastro'); } catch (_) {}
+
+          // O síndico entra direto; os demais aguardam o síndico aprovar.
+          if (usuario.status === 'ativo') {
+            window.location.href = '../../index.html?cadastro=confirmado';
+          } else {
+            window.location.href = ESPERA[usuario.papel] || ESPERA.morador;
+          }
+        })
+        .catch(function(erro) {
+          botao.disabled = false;
+          botao.innerHTML = textoOriginal;
+          mostrarErro(campo, erro.message);
+        });
+    });
+
+    document.getElementById('reenviarCadastro').addEventListener('click', function(e) {
+      e.preventDefault();
+      var link = this;
+      link.textContent = 'Enviando...';
+      SmartCondo.api
+        .post('/auth/codigo/reenviar', { email: dados.email, canal: 'email' }, { semToken: true })
+        .then(function() { link.textContent = 'Código reenviado'; })
+        .catch(function() { link.textContent = 'Reenviar código'; });
+    });
+  })();
+  </script>
+  <script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

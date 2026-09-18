@@ -3,7 +3,13 @@ import enum
 
 
 class Papel(str, enum.Enum):
-    """Documentação, seção 8 — Descrição dos Usuários."""
+    """Documentação, seção 8 — Descrição dos Usuários.
+
+    O administrador não é um papel do condomínio: é quem opera a
+    plataforma. Cadastra os condomínios e os síndicos de cada um, e pode
+    administrar qualquer usuário de qualquer condomínio.
+    """
+    ADMIN = "admin"
     SINDICO = "sindico"
     PORTEIRO = "porteiro"
     MORADOR = "morador"

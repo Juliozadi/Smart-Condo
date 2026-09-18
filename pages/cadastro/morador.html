@@ -6,6 +6,7 @@
   <link rel="icon" href="../../assets/img/logo.png" type="image/png">
   <title>SmartCondo — Cadastro Morador</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
 <body>
@@ -55,7 +56,7 @@
       <div class="cad-row">
         <div class="cad-group">
           <label><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Nome completo <span class="req">*</span></label>
-          <input type="text" placeholder="Como consta no documento" required>
+          <input type="text" id="mNome" placeholder="Como consta no documento" required>
         </div>
         <div class="cad-group">
           <label>Nome social</label>
@@ -65,7 +66,7 @@
       <div class="cad-row">
         <div class="cad-group">
           <label>CPF <span class="req">*</span></label>
-          <input type="text" placeholder="000.000.000-00" required maxlength="14">
+          <input type="text" id="mCpf" class="mask-cpf" placeholder="000.000.000-00" required maxlength="14">
         </div>
         <div class="cad-group">
           <label><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">RG <span class="req">*</span></label>
@@ -75,7 +76,7 @@
       <div class="cad-row">
         <div class="cad-group">
           <label>Data de nascimento <span class="req">*</span></label>
-          <input type="date" required>
+          <input type="date" id="mNascimento" required>
         </div>
         <div class="cad-group">
           <label>Estado civil</label>
@@ -109,14 +110,14 @@
           <label>E-mail <span class="req">*</span></label>
           <div class="cad-input-icon">
             <img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">
-            <input type="email" placeholder="seu@email.com" required>
+            <input type="email" id="mEmail" placeholder="seu@email.com" required>
           </div>
         </div>
         <div class="cad-group">
           <label>Celular / WhatsApp <span class="req">*</span></label>
           <div class="cad-input-icon">
             
-            <input type="tel" placeholder="(00) 90000-0000" class="mask-tel" required>
+            <input type="tel" id="mTelefone" placeholder="(00) 90000-0000" class="mask-tel" required>
           </div>
         </div>
       </div>
@@ -208,17 +209,17 @@
         <label>Código de acesso do condomínio <span class="req">*</span></label>
         <div class="cad-input-icon">
           
-          <input type="text" placeholder="Ex: COND-2025-ABCD" required style="text-transform:uppercase;letter-spacing:1px;font-weight:600;">
+          <input type="text" id="mCodigoCondominio" placeholder="Ex: PALM-2025" required maxlength="20" style="text-transform:uppercase;letter-spacing:1px;font-weight:600;">
         </div>
       </div>
       <div class="cad-row">
         <div class="cad-group">
           <label>Nº do apartamento <span class="req">*</span></label>
-          <input type="text" placeholder="Ex: 204" required>
+          <input type="text" id="mApartamento" placeholder="Ex: 204" required>
         </div>
         <div class="cad-group">
           <label>Bloco / Torre</label>
-          <input type="text" placeholder="Ex: Bloco A">
+          <input type="text" id="mBloco" placeholder="Ex: Bloco A">
         </div>
       </div>
       <div class="cad-row">
@@ -228,9 +229,9 @@
         </div>
         <div class="cad-group">
           <label>Tipo de ocupação <span class="req">*</span></label>
-          <select required>
+          <select id="mOcupacao" required>
             <option value="" disabled selected>Selecione</option>
-            <option>Proprietário</option><option>Inquilino</option><option>Coabitante autorizado</option>
+            <option value="proprietario">Proprietário</option><option value="inquilino">Inquilino</option><option value="coabitante">Coabitante autorizado</option>
           </select>
         </div>
       </div>
@@ -393,7 +394,7 @@
         <label><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt="">Senha <span class="req">*</span></label>
         <div class="cad-input-icon">
           <img src="../../assets/img/icons/lock.svg" width="16" height="16" alt="">
-          <input type="password" placeholder="Crie uma senha forte" required>
+          <input type="password" id="mSenha" placeholder="Crie uma senha forte" required>
         </div>
         <div class="pwd-strength-row">
           <div class="pwd-strength">
@@ -415,7 +416,7 @@
         <label>Confirmar senha <span class="req">*</span></label>
         <div class="cad-input-icon">
           <img src="../../assets/img/icons/lock.svg" width="16" height="16" alt="">
-          <input type="password" placeholder="Repita a senha" required>
+          <input type="password" id="mConfirmarSenha" placeholder="Repita a senha" required>
         </div>
       </div>
       <div class="cad-divider">Autenticação em Duas Etapas (2FA)</div>
@@ -474,7 +475,7 @@
 
     <div class="step-nav-btns">
       <a href="#step2" class="step-btn-back" onclick="mostrarStep(2)"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar</a>
-      <a href="../morador/aguardando_aprovacao.html" class="step-btn-next" onclick="return validarStepMorador()">
+      <a href="#" class="step-btn-next" id="btnFinalizarMorador" onclick="enviarCadastroMorador(event)">
          Enviar cadastro
       </a>
     </div>
@@ -498,12 +499,12 @@
 
   function validarStepAtual() {
     if (stepAtual === 1) {
-      var nome = document.querySelector('#step1 input[placeholder="Como consta no documento"]');
-      var cpf = document.querySelector('#step1 input[placeholder="000.000.000-00"]');
+      var nome = document.getElementById('mNome');
+      var cpf = document.getElementById('mCpf');
       var rg = document.querySelector('#step1 input[placeholder="00.000.000-0"]');
-      var dataNasc = document.querySelector('#step1 input[type="date"]');
-      var email = document.querySelector('#step1 input[type="email"]');
-      var celular = document.querySelector('#step1 input[placeholder="(00) 90000-0000"]');
+      var dataNasc = document.getElementById('mNascimento');
+      var email = document.getElementById('mEmail');
+      var celular = document.getElementById('mTelefone');
       var valido = true;
       document.querySelectorAll('#step1 .erro-validacao').forEach(function(e) { e.remove(); });
       document.querySelectorAll('#step1 input').forEach(function(i) { i.style.borderColor = ''; });
@@ -527,9 +528,9 @@
       return valido;
     }
     if (stepAtual === 2) {
-      var codAcesso = document.querySelector('#step2 input[placeholder="Ex: COND-2025-ABCD"]');
-      var apto = document.querySelector('#step2 input[placeholder="Ex: 204"]');
-      var ocupacao = document.querySelector('#step2 select');
+      var codAcesso = document.getElementById('mCodigoCondominio');
+      var apto = document.getElementById('mApartamento');
+      var ocupacao = document.getElementById('mOcupacao');
       var dataMud = document.querySelector('#step2 input[type="date"]');
       var valido = true;
       document.querySelectorAll('#step2 .erro-validacao').forEach(function(e) { e.remove(); });
@@ -542,6 +543,76 @@
       return valido;
     }
     return true;
+  }
+
+  /* Cadastro do morador — doc, seções 9 e 11.3.
+     O morador entra pelo código de acesso que recebeu do síndico; o
+     sistema envia um código de confirmação e só depois ele segue para a
+     fila de aprovação. */
+  function enviarCadastroMorador(evento) {
+    evento.preventDefault();
+    if (!validarStepMorador()) return false;
+
+    var botao = document.getElementById('btnFinalizarMorador');
+    var textoOriginal = botao.innerHTML;
+    botao.style.pointerEvents = 'none';
+    botao.innerHTML = 'Enviando...';
+
+    function falhar(mensagem, campo) {
+      botao.style.pointerEvents = '';
+      botao.innerHTML = textoOriginal;
+      if (campo) { mostrarStep(campo.etapa); mostrarErro(campo.elemento, mensagem); }
+      else { alert(mensagem); }
+    }
+
+    var codigo = document.getElementById('mCodigoCondominio');
+    var corpo = {
+      nome: document.getElementById('mNome').value.trim(),
+      email: document.getElementById('mEmail').value.trim(),
+      cpf: document.getElementById('mCpf').value,
+      telefone: document.getElementById('mTelefone').value,
+      senha: document.getElementById('mSenha').value,
+      codigo_condominio: codigo.value.trim().toUpperCase(),
+      unidade_numero: document.getElementById('mApartamento').value.trim(),
+      unidade_bloco: document.getElementById('mBloco').value.trim() || 'unico',
+      tipo_ocupacao: document.getElementById('mOcupacao').value,
+      canal_confirmacao: 'email'
+    };
+
+    var nascimento = document.getElementById('mNascimento').value;
+    if (nascimento) corpo.data_nascimento = nascimento;
+
+    SmartCondo.api.post('/auth/cadastro/morador', corpo, { semToken: true })
+      .then(function(resposta) {
+        try {
+          sessionStorage.setItem('smartcondo_cadastro', JSON.stringify({
+            email: resposta.usuario.email,
+            papel: resposta.usuario.papel,
+            destino: resposta.codigo_enviado_para,
+            codigo_debug: resposta.codigo_debug || null
+          }));
+        } catch (_) {}
+        window.location.href = 'confirmar_codigo.html';
+      })
+      .catch(function(erro) {
+        // Erro do código do condomínio volta para a etapa da unidade.
+        if (/[Cc]ódigo de acesso/.test(erro.message)) {
+          falhar(erro.message, { etapa: 2, elemento: codigo });
+          return;
+        }
+        // Erro de CPF ou e-mail volta para a etapa pessoal.
+        if (/CPF/.test(erro.message)) {
+          falhar(erro.message, { etapa: 1, elemento: document.getElementById('mCpf') });
+          return;
+        }
+        if (/e-mail/i.test(erro.message)) {
+          falhar(erro.message, { etapa: 1, elemento: document.getElementById('mEmail') });
+          return;
+        }
+        falhar(erro.message);
+      });
+
+    return false;
   }
 
   function validarStepMorador() {
@@ -558,10 +629,14 @@
       }
     });
 
-    var senha1 = document.querySelector('#step3 input[placeholder="Crie uma senha forte"]');
-    var senha2 = document.querySelector('#step3 input[placeholder="Repita a senha"]');
+    var senha1 = document.getElementById('mSenha');
+    var senha2 = document.getElementById('mConfirmarSenha');
     if (!senha1.value.trim()) { mostrarErro(senha1, 'Crie uma senha'); valido = false; }
-    else if (!validarSenha(senha1.value)) { mostrarErro(senha1, 'Mínimo 6 caracteres'); valido = false; }
+    else if (senha1.value.length < 8) { mostrarErro(senha1, 'Mínimo 8 caracteres'); valido = false; }
+    else if (!/[a-zA-Z]/.test(senha1.value)) { mostrarErro(senha1, 'Use ao menos uma letra'); valido = false; }
+    else if (!/[0-9]/.test(senha1.value) && !/[^a-zA-Z0-9]/.test(senha1.value)) {
+      mostrarErro(senha1, 'Use ao menos um número ou símbolo'); valido = false;
+    }
     if (!senha2.value.trim()) { mostrarErro(senha2, 'Confirme a senha'); valido = false; }
     else if (senha2.value !== senha1.value) { mostrarErro(senha2, 'Senhas não conferem'); valido = false; }
 

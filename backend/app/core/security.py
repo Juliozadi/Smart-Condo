@@ -72,3 +72,19 @@ def gerar_hash_codigo(codigo: str) -> str:
 
 def conferir_codigo(codigo: str, hash_armazenado: str) -> bool:
     return hmac.compare_digest(gerar_hash_codigo(codigo), hash_armazenado)
+
+
+def gerar_codigo_condominio(nome: str) -> str:
+    """Código de acesso do condomínio, no formato COND-XXXX-YYYY.
+
+    Documentação, seção 11.3: o morador informa o condomínio ao se
+    cadastrar. Com o código, ele entra sem que o sistema precise expor
+    uma lista pública de todos os condomínios.
+
+    Sem I, O, 0 e 1, que se confundem quando alguém lê em voz alta ou
+    copia de um papel.
+    """
+    alfabeto = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+    letras = "".join(c for c in nome.upper() if c.isalpha())[:4] or "COND"
+    sufixo = "".join(secrets.choice(alfabeto) for _ in range(4))
+    return f"{letras.ljust(4, 'X')}-{sufixo}"

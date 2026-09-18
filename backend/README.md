@@ -49,7 +49,21 @@ python -c "import secrets; print(secrets.token_urlsafe(48))"
 alembic upgrade head
 ```
 
-### 5. Subir a API
+### 5. Dados de demonstração (opcional)
+
+```bash
+python -m app.seed             # cria um condomínio completo
+python -m app.seed --limpar    # apaga tudo antes de criar
+```
+
+Cria síndico, dois porteiros com permissões diferentes, quatro moradores,
+oito espaços, reservas, três competências de cobrança, comunicados e
+movimento de portaria. Todas as contas saem com a senha `smartcondo123`, e
+um cadastro fica aguardando aprovação para a tela do síndico ter o que
+mostrar. Sem os `--limpar`, o comando se recusa a rodar num banco que já
+tem dados.
+
+### 6. Subir a API
 
 ```bash
 uvicorn app.main:app --reload
@@ -58,7 +72,7 @@ uvicorn app.main:app --reload
 - Documentação interativa: <http://localhost:8000/docs>
 - Alternativa (ReDoc): <http://localhost:8000/redoc>
 
-### 6. Testes
+### 7. Testes
 
 ```bash
 pytest

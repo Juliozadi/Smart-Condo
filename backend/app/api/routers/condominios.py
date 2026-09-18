@@ -1,7 +1,9 @@
-"""Cadastro e consulta do condomínio.
+"""Consulta do condomínio pelo síndico e pelos moradores.
 
-Documentação, seção 9 — caso de uso "Cadastro do condomínio":
-usuário principal síndico, pré-requisito "existir um síndico ativo".
+Quem cadastra, edita e exclui condomínios é o administrador da plataforma
+(app/api/routers/admin.py). Aqui ficam a consulta do próprio condomínio, o
+cadastro de unidades pelo síndico e a conferência do código de acesso, que
+é aberta porque a tela de cadastro do morador precisa dela antes do login.
 """
 from __future__ import annotations
 
@@ -11,56 +13,34 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import exigir_papel, get_usuario_atual
 from app.core.database import get_db
+from app.core.security import gerar_codigo_condominio
 from app.models.condominio import Condominio, Unidade
 from app.models.enums import Papel
 from app.models.usuario import Usuario
 from app.schemas.condominio import (
-    CondominioEntrada, CondominioPublico, CondominioSaida, UnidadeEntrada, UnidadeSaida,
+    CondominioPorCodigo, CondominioSaida, UnidadeEntrada, UnidadeSaida,
 )
 
 router = APIRouter(prefix="/condominios", tags=["Condomínio"])
 
 
 @router.get(
-    "",
-    response_model=list[CondominioPublico],
-    summary="Lista os condomínios (aberto, para a tela de cadastro do morador)",
+    "/por-codigo/{codigo}",
+    response_model=CondominioPorCodigo,
+    summary="Confere um código de acesso (aberto, para a tela de cadastro)",
 )
-def listar_condominios(db: Session = Depends(get_db)) -> list[Condominio]:
-    # Rota aberta de propósito: o morador precisa escolher o condomínio
-    # antes de existir conta. Só devolve nome e cidade, nada sensível.
-    return list(db.scalars(select(Condominio).order_by(Condominio.nome)).all())
-
-
-@router.post(
-    "",
-    response_model=CondominioSaida,
-    status_code=status.HTTP_201_CREATED,
-    summary="Cadastra o condomínio",
-)
-def cadastrar_condominio(
-    dados: CondominioEntrada,
-    sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
-    db: Session = Depends(get_db),
-) -> Condominio:
-    if sindico.condominio_id is not None:
+def buscar_por_codigo(codigo: str, db: Session = Depends(get_db)) -> Condominio:
+    """Rota aberta: o morador precisa confirmar o condomínio antes de ter
+    conta. Devolve só nome e cidade, para ele ver que digitou o código
+    certo — e exige o código, em vez de listar todos os condomínios."""
+    condominio = db.scalar(
+        select(Condominio).where(Condominio.codigo_acesso == codigo.strip().upper())
+    )
+    if condominio is None:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Você já administra um condomínio.",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Código de acesso não encontrado. Confira com o síndico.",
         )
-    if db.scalar(select(Condominio).where(Condominio.cnpj == dados.cnpj)):
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Já existe um condomínio com este CNPJ.",
-        )
-
-    condominio = Condominio(**dados.model_dump(), sindico_id=sindico.id)
-    db.add(condominio)
-    db.flush()
-
-    sindico.condominio_id = condominio.id
-    db.commit()
-    db.refresh(condominio)
     return condominio
 
 
@@ -78,35 +58,6 @@ def meu_condominio(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Condomínio não encontrado."
         )
-    return condominio
-
-
-@router.put("/meu", response_model=CondominioSaida, summary="Atualiza os dados do condomínio")
-def atualizar_condominio(
-    dados: CondominioEntrada,
-    sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
-    db: Session = Depends(get_db),
-) -> Condominio:
-    if sindico.condominio_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Você não administra um condomínio."
-        )
-    condominio = db.get(Condominio, sindico.condominio_id)
-
-    outro = db.scalar(
-        select(Condominio).where(Condominio.cnpj == dados.cnpj, Condominio.id != condominio.id)
-    )
-    if outro is not None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Já existe outro condomínio com este CNPJ.",
-        )
-
-    for campo, valor in dados.model_dump().items():
-        setattr(condominio, campo, valor)
-
-    db.commit()
-    db.refresh(condominio)
     return condominio
 
 
@@ -159,3 +110,36 @@ def cadastrar_unidade(
     db.commit()
     db.refresh(unidade)
     return unidade
+
+
+@router.post(
+    "/meu/codigo-acesso",
+    response_model=CondominioSaida,
+    summary="Gera um novo código de acesso",
+)
+def renovar_codigo_acesso(
+    sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
+    db: Session = Depends(get_db),
+) -> Condominio:
+    """Útil quando o código circula fora de quem deveria ter recebido: o
+    antigo deixa de valer para novos cadastros na hora."""
+    if sindico.condominio_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Você não administra um condomínio."
+        )
+    condominio = db.get(Condominio, sindico.condominio_id)
+
+    for _ in range(10):
+        codigo = gerar_codigo_condominio(condominio.nome)
+        if not db.scalar(select(Condominio).where(Condominio.codigo_acesso == codigo)):
+            break
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Não foi possível gerar o código de acesso. Tente de novo.",
+        )
+
+    condominio.codigo_acesso = codigo
+    db.commit()
+    db.refresh(condominio)
+    return condominio

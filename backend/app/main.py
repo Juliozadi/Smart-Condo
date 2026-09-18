@@ -15,7 +15,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.routers import (
-    auth, comunicados, condominios, financeiro, portaria, reservas, usuarios,
+    admin, auth, comunicados, condominios, financeiro, portaria, reservas, usuarios,
 )
 from app.core.config import settings
 
@@ -68,6 +68,7 @@ async def erro_validacao(request: Request, exc: RequestValidationError) -> JSONR
 
 
 app.include_router(auth.router, prefix="/api/v1")
+app.include_router(admin.router, prefix="/api/v1")
 app.include_router(condominios.router, prefix="/api/v1")
 app.include_router(usuarios.router, prefix="/api/v1")
 app.include_router(reservas.router, prefix="/api/v1")

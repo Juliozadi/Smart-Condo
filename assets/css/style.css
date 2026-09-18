@@ -1529,7 +1529,8 @@ body.tema-escuro textarea::placeholder { color: var(--muted); }
 
 /* ── Ícones SVG monocromáticos: clareia para ler no escuro ────── */
 body.tema-escuro img[src*="/icons/"] { filter: invert(.88) hue-rotate(180deg) brightness(1.12); }
-body.tema-escuro .dash-greeting img[src*="/icons/"] { filter: brightness(0) invert(1); }
+body.tema-escuro .dash-greeting img[src*="/icons/"],
+body.tema-escuro .btn-novo img[src*="/icons/"] { filter: brightness(0) invert(1); }
 body.tema-escuro .action-btn img[src*="/icons/"],
 body.tema-escuro .app-bar img[src*="/icons/"] { filter: none; }
 
@@ -1578,3 +1579,14 @@ body.tema-escuro .app-bar {
 body.tema-escuro .layout-mobile .tab-bar,
 body.tema-escuro .bottom-nav,
 body.tema-escuro .tab-bar { background: rgba(21,36,39,.96); border-top-color: var(--border-soft); }
+
+/* ── Aviso na tela de escolha do cadastro ─────────────────────────── */
+.aviso-cadastro {
+  display: flex; align-items: flex-start; gap: 11px; text-align: left;
+  background: var(--surface-2); border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 22px;
+}
+.aviso-cadastro img { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; }
+.aviso-cadastro strong { display: block; font-size: 13px; color: var(--text); margin-bottom: 4px; }
+.aviso-cadastro p { font-size: 12.5px; color: var(--muted); line-height: 1.55; margin: 0; }
+.register-card p { font-size: 12px; color: var(--muted); font-weight: 500; margin: 2px 0 0; }

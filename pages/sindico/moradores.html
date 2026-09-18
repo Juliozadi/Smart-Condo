@@ -6,6 +6,7 @@
   <link rel="icon" href="../../assets/img/logo.png" type="image/png">
   <title>SmartCondo — Gestão de Moradores</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
   <link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
@@ -43,7 +44,9 @@
 
     <p class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Ações</p>
     <div class="dash-grid" style="flex-direction:row;gap:10px;flex-wrap:wrap;">
-      <a href="#" class="action-btn" style="width:auto;flex:1;min-width:180px;margin-bottom:0;">Aprovar Cadastro</a>
+      <a href="cadastrar_morador.html" class="action-btn" style="width:auto;flex:1;min-width:180px;margin-bottom:0;">
+        <img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Cadastrar Morador
+      </a>
       <a href="#" class="action-btn outline" style="width:auto;flex:1;min-width:180px;margin-bottom:0;">Exportar Lista</a>
     </div>
     <br>
@@ -89,7 +92,7 @@
   </main>
 
 <script src="../../assets/js/validation.js"></script>
-<script>try{var _d=JSON.parse(localStorage.getItem("smartcondo_perfil_sindico"));if(_d&&_d.nome)document.getElementById("hdrName").textContent=_d.nome;}catch(_e){}</script>
+<script src="../../assets/js/sessao.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>
 </body>
 </html>
