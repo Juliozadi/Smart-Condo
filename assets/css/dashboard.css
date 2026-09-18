@@ -1236,3 +1236,11 @@ body:has(.step-page:target) .step-page.default-step {
   transition: opacity .25s;
 }
 .space-card:hover::after { opacity: .5; }
+
+/* O h2 global define color:#060f18, que vinha vencendo dentro do banner
+   colorido e deixava o nome quase preto sobre o teal (baixo contraste,
+   doc 12.1). O banner tem fundo escuro: o texto dele é sempre branco. */
+.dash-greeting .greeting-name,
+.dash-greeting h1,
+.dash-greeting h2,
+.dash-greeting h3 { color: #fff; }
