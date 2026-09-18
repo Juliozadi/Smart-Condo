@@ -48,22 +48,22 @@
     </div>
 
     <!-- ══ FORMULÁRIO COMPLETO ══ -->
-    <form action="porteiros.html" onsubmit="return validarCadastroPorteiro()">
+    <form id="formPorteiro" novalidate>
 
       <!-- SEÇÃO 1: Dados Pessoais -->
       <div class="form-card" style="margin-bottom:16px;">
         <h3><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt=""> Dados Pessoais</h3>
         <div class="form-row">
-          <div class="form-group"><label><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Nome completo *</label><input type="text" placeholder="Nome completo do porteiro" required></div>
-          <div class="form-group"><label>CPF *</label><input type="text" placeholder="000.000.000-00" class="mask-cpf" required maxlength="14"></div>
+          <div class="form-group"><label><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Nome completo *</label><input type="text" id="pNome" placeholder="Nome completo do porteiro" required></div>
+          <div class="form-group"><label>CPF *</label><input type="text" id="pCpf" placeholder="000.000.000-00" class="mask-cpf" required maxlength="14"></div>
         </div>
         <div class="form-row">
           <div class="form-group"><label><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">RG *</label><input type="text" placeholder="00.000.000-0" required></div>
-          <div class="form-group"><label>Data de nascimento *</label><input type="date" required></div>
+          <div class="form-group"><label>Data de nascimento *</label><input type="date" id="pNascimento" required></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">E-mail *</label><input type="email" placeholder="email@exemplo.com" required></div>
-          <div class="form-group"><label>Celular *</label><input type="tel" placeholder="(00) 90000-0000" class="mask-tel" required></div>
+          <div class="form-group"><label><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">E-mail *</label><input type="email" id="pEmail" placeholder="email@exemplo.com" required></div>
+          <div class="form-group"><label>Celular *</label><input type="tel" id="pTelefone" placeholder="(00) 90000-0000" class="mask-tel" required></div>
         </div>
         <div class="form-group"><label>Endereço residencial</label><input type="text" placeholder="Rua, número, bairro, cidade/UF"></div>
       </div>
@@ -119,15 +119,19 @@
         <div style="background:linear-gradient(135deg,var(--primary-light),#d5f4f1);border:1px solid rgba(7,158,146,.2);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px;">
           
           <div style="font-size:13px;color:#0a7a73;font-weight:500;line-height:1.55;">
-            O sistema gerará automaticamente uma <strong>senha temporária</strong> que será enviada ao porteiro por e-mail. Ele deverá trocar no primeiro acesso.
+            Defina uma <strong>senha de acesso</strong> e entregue ao porteiro. Ele pode trocá-la depois pelo próprio perfil.
           </div>
         </div>
 
         <div class="form-row">
-          <div class="form-group"><label><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">E-mail de acesso ao sistema *</label><input type="email" placeholder="Email que o porteiro usará para logar" required></div>
-          <div class="form-group"><label>Senha temporária *</label>
-            <input type="text" placeholder="Ex: Porto@2025" required style="font-family:monospace;letter-spacing:1px;">
-            <span style="font-size:11px;color:var(--muted);margin-top:4px;display:block;font-weight:500;">Será enviada ao porteiro por e-mail e deve ser trocada no primeiro acesso</span>
+          <div class="form-group">
+            <label><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">E-mail de acesso</label>
+            <input type="text" id="pEmailEspelho" disabled placeholder="O e-mail informado acima" style="opacity:.75;">
+            <span style="font-size:11px;color:var(--muted);margin-top:4px;display:block;font-weight:500;">O porteiro entra com o mesmo e-mail dos dados pessoais</span>
+          </div>
+          <div class="form-group"><label>Senha de acesso *</label>
+            <input type="text" id="pSenha" placeholder="Mínimo 8 caracteres" required minlength="8" maxlength="72" style="font-family:monospace;letter-spacing:1px;">
+            <span style="font-size:11px;color:var(--muted);margin-top:4px;display:block;font-weight:500;">Ao menos uma letra e um número ou símbolo</span>
           </div>
         </div>
       </div>
@@ -194,7 +198,7 @@
       </div>
 
       <button type="submit" class="action-btn" style="margin-top:22px;">
-        Cadastrar Porteiro e Enviar Credenciais
+        Cadastrar Porteiro
       </button>
 
     </form>
@@ -234,51 +238,60 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+/* Cadastro do porteiro pelo síndico.
+
+   Os campos vão pelos ids, e não pelo placeholder: buscar por texto quebra
+   assim que alguém reescreve o rótulo. Os dados trabalhistas (RG, NIS,
+   turno, contrato) são conferidos na tela, mas ainda não têm lugar na API —
+   entram quando o cadastro funcional for modelado. */
+function campoP(id) { return document.getElementById(id); }
+
 function validarCadastroPorteiro() {
   limparTodosErros(document.querySelector('form'));
   var valido = true;
 
-  var nome = document.querySelector('input[placeholder="Nome completo do porteiro"]');
-  var cpf = document.querySelector('input[placeholder="000.000.000-00"]');
+  var nome = campoP('pNome');
+  var cpf = campoP('pCpf');
+  var dataNasc = campoP('pNascimento');
+  var email = campoP('pEmail');
+  var celular = campoP('pTelefone');
+  var senha = campoP('pSenha');
+
   var rg = document.querySelector('input[placeholder="00.000.000-0"]');
-  var dataNasc = document.querySelector('input[type="date"]');
-  var email = document.querySelector('input[type="email"]');
-  var celular = document.querySelector('input[placeholder="(00) 90000-0000"]');
-  var turno = document.querySelector('select');
-  var contrato = document.querySelectorAll('select')[1];
-  var dataInicio = document.querySelectorAll('input[type="date"]')[1];
-  var local = document.querySelectorAll('select')[2];
   var nis = document.querySelector('input[placeholder="000.00000.00-0"]');
+  var selects = document.querySelectorAll('.form-card select');
+  var turno = selects[0], contrato = selects[1], local = selects[2];
+  var dataInicio = document.querySelectorAll('input[type="date"]')[1];
 
   if (!nome.value.trim()) { mostrarErro(nome, 'Informe o nome completo'); valido = false; }
   if (!cpf.value.trim()) { mostrarErro(cpf, 'Informe o CPF'); valido = false; }
   else if (!validarCPF(cpf.value)) { mostrarErro(cpf, 'CPF inválido'); valido = false; }
-  if (!rg.value.trim()) { mostrarErro(rg, 'Informe o RG'); valido = false; }
-  else if (rg.value.replace(/\D/g, '').length < 7) { mostrarErro(rg, 'RG incompleto'); valido = false; }
+  if (rg && !rg.value.trim()) { mostrarErro(rg, 'Informe o RG'); valido = false; }
   if (!dataNasc.value) { mostrarErro(dataNasc, 'Informe a data de nascimento'); valido = false; }
   if (!email.value.trim()) { mostrarErro(email, 'Informe o e-mail'); valido = false; }
   else if (!validarEmail(email.value)) { mostrarErro(email, 'E-mail inválido'); valido = false; }
   if (!celular.value.trim()) { mostrarErro(celular, 'Informe o celular'); valido = false; }
   else if (!validarTelefone(celular.value)) { mostrarErro(celular, 'Telefone inválido'); valido = false; }
-  if (!turno.value) { mostrarErro(turno, 'Selecione o turno'); valido = false; }
-  if (!contrato.value) { mostrarErro(contrato, 'Selecione o contrato'); valido = false; }
-  if (!dataInicio.value) { mostrarErro(dataInicio, 'Informe a data de início'); valido = false; }
-  if (!local.value) { mostrarErro(local, 'Selecione o local'); valido = false; }
-  if (!nis.value.trim()) { mostrarErro(nis, 'Informe o NIS/PIS'); valido = false; }
 
-  var emailAcesso = document.querySelectorAll('input[type="email"]')[1];
-  var senhaTemp = document.querySelector('input[placeholder*="Porto@"]');
-  if (!emailAcesso.value.trim()) { mostrarErro(emailAcesso, 'Informe o e-mail de acesso'); valido = false; }
-  else if (!validarEmail(emailAcesso.value)) { mostrarErro(emailAcesso, 'E-mail inválido'); valido = false; }
-  if (!senhaTemp.value.trim()) { mostrarErro(senhaTemp, 'Informe a senha temporária'); valido = false; }
-  else if (senhaTemp.value.length < 6) { mostrarErro(senhaTemp, 'Mínimo 6 caracteres'); valido = false; }
+  if (turno && !turno.value) { mostrarErro(turno, 'Selecione o turno'); valido = false; }
+  if (contrato && !contrato.value) { mostrarErro(contrato, 'Selecione o contrato'); valido = false; }
+  if (dataInicio && !dataInicio.value) { mostrarErro(dataInicio, 'Informe a data de início'); valido = false; }
+  if (local && !local.value) { mostrarErro(local, 'Selecione o local'); valido = false; }
+  if (nis && !nis.value.trim()) { mostrarErro(nis, 'Informe o NIS/PIS'); valido = false; }
 
-  var docs = ['dp-rg-s', 'dp-antec-s', 'dp-nis-s'];
-  docs.forEach(function(id) {
-    var file = document.getElementById(id);
-    if (!file.files.length) {
-      var label = document.querySelector('label[for="' + id + '"]');
-      if (label) { label.style.borderColor = '#e74c3c'; valido = false; }
+  // As mesmas regras que a API cobra.
+  if (!senha.value) { mostrarErro(senha, 'Defina a senha de acesso'); valido = false; }
+  else if (senha.value.length < 8) { mostrarErro(senha, 'Mínimo 8 caracteres'); valido = false; }
+  else if (!/[a-zA-Z]/.test(senha.value)) { mostrarErro(senha, 'Use ao menos uma letra'); valido = false; }
+  else if (!/[0-9]/.test(senha.value) && !/[^a-zA-Z0-9]/.test(senha.value)) {
+    mostrarErro(senha, 'Use ao menos um número ou símbolo'); valido = false;
+  }
+
+  ['dp-rg-s', 'dp-antec-s', 'dp-nis-s'].forEach(function(id) {
+    var arquivo = document.getElementById(id);
+    if (arquivo && !arquivo.files.length) {
+      var rotulo = document.querySelector('label[for="' + id + '"]');
+      if (rotulo) { rotulo.style.borderColor = '#e74c3c'; valido = false; }
     }
   });
 
@@ -288,6 +301,61 @@ function validarCadastroPorteiro() {
   if (!valido) alert('Corrija os campos destacados antes de cadastrar.');
   return valido;
 }
+
+/* O e-mail de acesso é o mesmo dos dados pessoais; o campo espelhado
+   existe só para deixar isso explícito na tela. */
+document.addEventListener('DOMContentLoaded', function() {
+  var email = campoP('pEmail');
+  var espelho = campoP('pEmailEspelho');
+  if (email && espelho) {
+    email.addEventListener('input', function() { espelho.value = this.value; });
+  }
+});
+
+document.getElementById('formPorteiro').addEventListener('submit', function(e) {
+  e.preventDefault();
+  if (!validarCadastroPorteiro()) return;
+
+  var botao = this.querySelector('button[type=submit]');
+  var textoOriginal = botao.innerHTML;
+  botao.disabled = true;
+  botao.innerHTML = 'Cadastrando...';
+
+  function falhar(mensagem, elemento) {
+    botao.disabled = false;
+    botao.innerHTML = textoOriginal;
+    if (elemento) mostrarErro(elemento, mensagem);
+    else alert(mensagem);
+  }
+
+  var corpo = {
+    nome: campoP('pNome').value.trim(),
+    email: campoP('pEmail').value.trim(),
+    cpf: campoP('pCpf').value,
+    telefone: campoP('pTelefone').value,
+    senha: campoP('pSenha').value,
+    papel: 'porteiro'
+  };
+  if (campoP('pNascimento').value) corpo.data_nascimento = campoP('pNascimento').value;
+
+  SmartCondo.api.post('/usuarios', corpo)
+    .then(function(porteiro) {
+      // As permissões só podem ser definidas depois que o porteiro existe.
+      return SmartCondo.api.put('/usuarios/porteiros/' + porteiro.id + '/permissoes', {
+        registrar_visitantes: document.getElementById('perm-vis').checked,
+        registrar_encomendas: document.getElementById('perm-enc').checked,
+        registrar_veiculos: document.getElementById('perm-vei').checked,
+        registrar_ocorrencias: document.getElementById('perm-ocr').checked,
+        acessar_financeiro: false
+      });
+    })
+    .then(function() { window.location.href = 'porteiros.html?cadastro=ok'; })
+    .catch(function(erro) {
+      if (/CPF/.test(erro.message)) return falhar(erro.message, campoP('pCpf'));
+      if (/e-mail/i.test(erro.message)) return falhar(erro.message, campoP('pEmail'));
+      falhar(erro.message);
+    });
+});
 </script>
 <script src="../../assets/js/sessao.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>
