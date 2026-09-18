@@ -7,6 +7,9 @@ Scripts SQL do banco, prontos para rodar no **pgAdmin**.
 | `01_criar_tabelas.sql` | Cria os tipos, as 16 tabelas, as chaves e os índices |
 | `02_carga_dados.sql` | Carrega um condomínio completo de demonstração |
 
+Os dois arquivos são SQL puro, sem comentários — as explicações ficam
+neste README.
+
 Banco: **PostgreSQL 16**.
 
 ---
@@ -91,9 +94,9 @@ fora da lista.
 outra. Por isso:
 
 - em `01_criar_tabelas.sql`, as chaves estrangeiras são criadas **depois**
-  de todas as tabelas existirem (seção 4);
+  de todas as tabelas existirem;
 - em `02_carga_dados.sql`, o condomínio entra **sem** o síndico, e o vínculo
-  é fechado por um `UPDATE` no fim (seção 3).
+  é fechado por um `UPDATE` no fim do script.
 
 **Contadores.** A carga insere os `id` explicitamente, então as sequências
 são reposicionadas com `setval` no fim do script. Sem isso, o primeiro

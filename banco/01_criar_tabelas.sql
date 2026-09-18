@@ -1,26 +1,3 @@
--- ═══════════════════════════════════════════════════════════════════
--- SmartCondo — Criação das tabelas
--- Sistema de Gerenciamento de Condomínios (Projeto Integrador I)
---
--- Banco: PostgreSQL 16
---
--- Como executar no pgAdmin:
---   1. Crie o banco:  botão direito em Databases > Create > Database
---                     com o nome  smartcondo
---   2. Selecione o banco smartcondo
---   3. Abra Tools > Query Tool
---   4. Abra este arquivo (ícone de pasta) e execute (F5)
---   5. Depois, execute o arquivo 02_carga_dados.sql
---
--- O script pode ser executado mais de uma vez: ele apaga o que existir
--- antes de recriar.
--- ═══════════════════════════════════════════════════════════════════
-
-
--- ───────────────────────────────────────────────────────────────────
--- 1. LIMPEZA
--- Remove as estruturas anteriores para o script poder ser reexecutado.
--- ───────────────────────────────────────────────────────────────────
 DROP TABLE IF EXISTS
     ocorrencias,
     encomendas,
@@ -54,12 +31,6 @@ DROP TYPE IF EXISTS
     status_visitante,
     tipo_ocupacao
 CASCADE;
-
-
--- ───────────────────────────────────────────────────────────────────
--- 2. TIPOS ENUMERADOS
--- Valores fixos usados nas colunas de papel, status e categoria.
--- ───────────────────────────────────────────────────────────────────
 
 CREATE TYPE canal_verificacao AS ENUM (
     'EMAIL',
@@ -144,16 +115,6 @@ CREATE TYPE tipo_ocupacao AS ENUM (
     'COABITANTE'
 );
 
-
--- ───────────────────────────────────────────────────────────────────
--- 3. TABELAS
--- Cada tabela nasce com a chave primária, os campos obrigatórios e as
--- restrições de valor (CHECK). As chaves estrangeiras vêm na seção 4,
--- porque condominios e usuarios referenciam uma à outra.
--- ───────────────────────────────────────────────────────────────────
-
-
--- CONDOMINIOS — Condomínios cadastrados pelo administrador da plataforma.
 CREATE TABLE condominios (
     id integer NOT NULL,
     nome character varying(160) NOT NULL,
@@ -185,8 +146,6 @@ ALTER TABLE ONLY condominios ALTER COLUMN id SET DEFAULT nextval('condominios_id
 ALTER TABLE ONLY condominios
     ADD CONSTRAINT condominios_pkey PRIMARY KEY (id);
 
-
--- USUARIOS — Administradores, síndicos, porteiros e moradores.
 CREATE TABLE usuarios (
     id integer NOT NULL,
     nome character varying(160) NOT NULL,
@@ -218,8 +177,6 @@ ALTER TABLE ONLY usuarios ALTER COLUMN id SET DEFAULT nextval('usuarios_id_seq':
 ALTER TABLE ONLY usuarios
     ADD CONSTRAINT usuarios_pkey PRIMARY KEY (id);
 
-
--- UNIDADES — Apartamentos ou casas de cada condomínio.
 CREATE TABLE unidades (
     id integer NOT NULL,
     condominio_id integer NOT NULL,
@@ -246,8 +203,6 @@ ALTER TABLE ONLY unidades
 ALTER TABLE ONLY unidades
     ADD CONSTRAINT uq_unidade_no_condominio UNIQUE (condominio_id, bloco, numero);
 
-
--- PERMISSOES_PORTEIRO — O que cada porteiro pode fazer, definido pelo síndico.
 CREATE TABLE permissoes_porteiro (
     id integer NOT NULL,
     porteiro_id integer NOT NULL,
@@ -274,8 +229,6 @@ ALTER TABLE ONLY permissoes_porteiro ALTER COLUMN id SET DEFAULT nextval('permis
 ALTER TABLE ONLY permissoes_porteiro
     ADD CONSTRAINT permissoes_porteiro_pkey PRIMARY KEY (id);
 
-
--- CODIGOS_VERIFICACAO — Códigos enviados por e-mail ou SMS (guardados em hash).
 CREATE TABLE codigos_verificacao (
     id integer NOT NULL,
     usuario_id integer NOT NULL,
@@ -303,8 +256,6 @@ ALTER TABLE ONLY codigos_verificacao ALTER COLUMN id SET DEFAULT nextval('codigo
 ALTER TABLE ONLY codigos_verificacao
     ADD CONSTRAINT codigos_verificacao_pkey PRIMARY KEY (id);
 
-
--- ESPACOS_COMUNS — Salão, churrasqueira, piscina, academia e demais áreas.
 CREATE TABLE espacos_comuns (
     id integer NOT NULL,
     condominio_id integer NOT NULL,
@@ -331,8 +282,6 @@ ALTER TABLE ONLY espacos_comuns ALTER COLUMN id SET DEFAULT nextval('espacos_com
 ALTER TABLE ONLY espacos_comuns
     ADD CONSTRAINT espacos_comuns_pkey PRIMARY KEY (id);
 
-
--- RESERVAS — Pedidos de reserva dos espaços, aprovados ou recusados pelo síndico.
 CREATE TABLE reservas (
     id integer NOT NULL,
     espaco_id integer NOT NULL,
@@ -364,8 +313,6 @@ ALTER TABLE ONLY reservas ALTER COLUMN id SET DEFAULT nextval('reservas_id_seq':
 ALTER TABLE ONLY reservas
     ADD CONSTRAINT reservas_pkey PRIMARY KEY (id);
 
-
--- REGISTROS_OCUPACAO — Contagem de pessoas nas áreas de uso livre, em tempo real.
 CREATE TABLE registros_ocupacao (
     id integer NOT NULL,
     espaco_id integer NOT NULL,
@@ -390,8 +337,6 @@ ALTER TABLE ONLY registros_ocupacao ALTER COLUMN id SET DEFAULT nextval('registr
 ALTER TABLE ONLY registros_ocupacao
     ADD CONSTRAINT registros_ocupacao_pkey PRIMARY KEY (id);
 
-
--- PREFERENCIAS_COBRANCA — Dia do vencimento e forma de pagamento escolhidos pelo morador.
 CREATE TABLE preferencias_cobranca (
     id integer NOT NULL,
     morador_id integer NOT NULL,
@@ -415,8 +360,6 @@ ALTER TABLE ONLY preferencias_cobranca ALTER COLUMN id SET DEFAULT nextval('pref
 ALTER TABLE ONLY preferencias_cobranca
     ADD CONSTRAINT preferencias_cobranca_pkey PRIMARY KEY (id);
 
-
--- COBRANCAS — Taxa condominial por unidade e competência.
 CREATE TABLE cobrancas (
     id integer NOT NULL,
     unidade_id integer NOT NULL,
@@ -445,8 +388,6 @@ ALTER TABLE ONLY cobrancas
 ALTER TABLE ONLY cobrancas
     ADD CONSTRAINT uq_cobranca_competencia UNIQUE (unidade_id, competencia);
 
-
--- PAGAMENTOS — Pagamentos recebidos, com meio, valor e data.
 CREATE TABLE pagamentos (
     id integer NOT NULL,
     cobranca_id integer NOT NULL,
@@ -474,8 +415,6 @@ ALTER TABLE ONLY pagamentos ALTER COLUMN id SET DEFAULT nextval('pagamentos_id_s
 ALTER TABLE ONLY pagamentos
     ADD CONSTRAINT pagamentos_pkey PRIMARY KEY (id);
 
-
--- COMUNICADOS — Avisos publicados pelo síndico.
 CREATE TABLE comunicados (
     id integer NOT NULL,
     condominio_id integer NOT NULL,
@@ -502,8 +441,6 @@ ALTER TABLE ONLY comunicados ALTER COLUMN id SET DEFAULT nextval('comunicados_id
 ALTER TABLE ONLY comunicados
     ADD CONSTRAINT comunicados_pkey PRIMARY KEY (id);
 
-
--- LEITURAS_COMUNICADO — Marca que um morador leu determinado comunicado.
 CREATE TABLE leituras_comunicado (
     id integer NOT NULL,
     comunicado_id integer NOT NULL,
@@ -526,8 +463,6 @@ ALTER TABLE ONLY leituras_comunicado
 ALTER TABLE ONLY leituras_comunicado
     ADD CONSTRAINT uq_leitura_por_usuario UNIQUE (comunicado_id, usuario_id);
 
-
--- VISITANTES — Registro de visitantes, com a foto do vídeo porteiro.
 CREATE TABLE visitantes (
     id integer NOT NULL,
     unidade_id integer NOT NULL,
@@ -559,8 +494,6 @@ ALTER TABLE ONLY visitantes ALTER COLUMN id SET DEFAULT nextval('visitantes_id_s
 ALTER TABLE ONLY visitantes
     ADD CONSTRAINT visitantes_pkey PRIMARY KEY (id);
 
-
--- ENCOMENDAS — Encomendas recebidas na portaria.
 CREATE TABLE encomendas (
     id integer NOT NULL,
     unidade_id integer NOT NULL,
@@ -591,8 +524,6 @@ ALTER TABLE ONLY encomendas ALTER COLUMN id SET DEFAULT nextval('encomendas_id_s
 ALTER TABLE ONLY encomendas
     ADD CONSTRAINT encomendas_pkey PRIMARY KEY (id);
 
-
--- OCORRENCIAS — Chamados abertos por moradores, porteiros ou síndico.
 CREATE TABLE ocorrencias (
     id integer NOT NULL,
     condominio_id integer NOT NULL,
@@ -622,13 +553,6 @@ ALTER TABLE ONLY ocorrencias ALTER COLUMN id SET DEFAULT nextval('ocorrencias_id
 
 ALTER TABLE ONLY ocorrencias
     ADD CONSTRAINT ocorrencias_pkey PRIMARY KEY (id);
-
-
--- ───────────────────────────────────────────────────────────────────
--- 4. CHAVES ESTRANGEIRAS
--- Aplicadas depois de todas as tabelas existirem: condominios aponta
--- para o síndico em usuarios, e usuarios aponta para condominios.
--- ───────────────────────────────────────────────────────────────────
 
 ALTER TABLE ONLY cobrancas
     ADD CONSTRAINT cobrancas_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
@@ -723,12 +647,6 @@ ALTER TABLE ONLY visitantes
 ALTER TABLE ONLY visitantes
     ADD CONSTRAINT visitantes_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
 
-
--- ───────────────────────────────────────────────────────────────────
--- 5. ÍNDICES
--- Acompanham as colunas mais usadas em filtros e junções.
--- ───────────────────────────────────────────────────────────────────
-
 CREATE INDEX ix_cobrancas_competencia ON cobrancas USING btree (competencia);
 
 CREATE INDEX ix_cobrancas_status ON cobrancas USING btree (status);
@@ -810,14 +728,3 @@ CREATE UNIQUE INDEX ix_preferencias_cobranca_morador_id ON preferencias_cobranca
 CREATE UNIQUE INDEX ix_usuarios_cpf ON usuarios USING btree (cpf);
 
 CREATE UNIQUE INDEX ix_usuarios_email ON usuarios USING btree (email);
-
-
--- ═══════════════════════════════════════════════════════════════════
--- Fim. Confira as tabelas criadas com:
---
---   SELECT tablename FROM pg_tables
---    WHERE schemaname = 'public'
---    ORDER BY tablename;
---
--- Em seguida, execute 02_carga_dados.sql.
--- ═══════════════════════════════════════════════════════════════════
