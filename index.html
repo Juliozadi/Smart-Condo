@@ -6,6 +6,7 @@
   <link rel="icon" href="assets/img/logo.png" type="image/png">
   <title>SmartCondo — Login</title>
   <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/api.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
 
@@ -26,6 +27,11 @@
     .erro-login.visivel {
       display: flex;
       animation: fadeUp .3s ease;
+    }
+    .erro-login.sucesso {
+      background: rgba(7,158,146,.1);
+      border-color: rgba(7,158,146,.3);
+      color: #068a7f;
     }
 
     /* ── Indicador de perfil detectado ───────────────────── */
@@ -128,8 +134,7 @@
         <input type="password" id="senhaInput"
           placeholder="Senha"
           required autocomplete="current-password"
-          style="padding-right:48px;"
-          oninput="detectarPerfil(this.value)">
+          style="padding-right:48px;">
         <!-- Botão olhinho — usa span para não herdar o reset de <button> no form -->
         <span id="toggleSenha" onclick="toggleVerSenha()" title="Mostrar / ocultar senha">
           <svg id="toggleIcon" viewBox="0 0 576 512" width="20" height="20" fill="#888" style="cursor:pointer;"><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4 142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.4 78.1-95.4 93-131.1 3.3-7.9 3.3-16.7 0-24.6-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144 64.5-144 144-144 144 64.5 144 144zm-144-80c-44.2 0-80 35.8-80 80s35.8 80 80 80 80-35.8 80-80-35.8-80-80-80z"/></svg>
@@ -183,21 +188,6 @@
 
   <script>
 
-    // ── SENHAS DE ACESSO ─────────────────────────────────────────
-    // Para mudar uma senha, edite o valor entre aspas aqui:
-    const SENHAS = {
-      morador:  "morador",   // ex.: "joao2025"
-      porteiro: "porteiro",  // ex.: "carlos456"
-      sindico:  "sindico",   // ex.: "roberto@adm"
-    };
-
-    // ── DESTINOS (não precisa alterar) ───────────────────────────
-    const DESTINOS = {
-      morador:  "pages/morador/dashboard.html",
-      porteiro: "pages/porteiro/dashboard.html",
-      sindico:  "pages/sindico/dashboard.html",
-    };
-
     // ── MOSTRAR / OCULTAR SENHA ──────────────────────────────────
     function toggleVerSenha() {
       const input = document.getElementById("senhaInput");
@@ -214,69 +204,93 @@
     }
 
     // ── DETECTA PERFIL EM TEMPO REAL ─────────────────────────────
-    function detectarPerfil(senha) {
-      const div   = document.getElementById("perfilDetectado"); // ← FIX: declarado aqui
-      const texto = document.getElementById("perfilTexto");
-      const erro  = document.getElementById("erroLogin");
+    // ── LOGIN ────────────────────────────────────────────────────
+    // A autenticação é feita pela API. O papel do usuário só é conhecido
+    // depois que o servidor valida as credenciais — por isso não existe
+    // mais "detectar perfil ao digitar a senha".
+    var api = SmartCondo.api;
 
-      // Esconde mensagem de erro ao redigitar
+    function mostrarErroLogin(mensagem) {
+      var erro = document.getElementById("erroLogin");
+      var span = erro.querySelector("span");
+      if (span) span.textContent = mensagem;
+      erro.classList.add("visivel");
+
+      var form = document.getElementById("loginForm");
+      form.style.animation = "none";
+      form.offsetHeight; // força reflow
+      form.style.animation = "shake .4s ease";
+    }
+
+    function mostrarAvisoLogin(mensagem) {
+      var erro = document.getElementById("erroLogin");
+      var span = erro.querySelector("span");
+      var icone = erro.querySelector("img");
+      if (span) span.textContent = mensagem;
+      if (icone) icone.src = "assets/img/icons/circle-check.svg";
+      erro.classList.add("visivel", "sucesso");
+    }
+
+    function mostrarPerfil(papel) {
+      var div = document.getElementById("perfilDetectado");
+      var texto = document.getElementById("perfilTexto");
+      var icones = {
+        morador: "user.svg", porteiro: "shield-halved.svg", sindico: "star.svg"
+      };
+      var nomes = { morador: "Morador", porteiro: "Porteiro", sindico: "Síndico" };
+
+      div.className = "perfil-detectado visivel " + papel;
+      if (texto) {
+        texto.innerHTML =
+          '<img src="assets/img/icons/' + (icones[papel] || "user.svg") +
+          '" width="16" height="16" alt="">Entrando como <strong>' +
+          (nomes[papel] || papel) + '</strong>';
+      }
+    }
+
+    function fazerLogin() {
+      var email = document.getElementById("emailInput").value.trim();
+      var senha = document.getElementById("senhaInput").value;
+      var erro = document.getElementById("erroLogin");
+      var btn = document.getElementById("btnEntrar");
+
       erro.classList.remove("visivel");
 
-      // Reseta classes do indicador
-      div.className = "perfil-detectado";
-
-      if (senha === SENHAS.morador) {
-        div.classList.add("visivel", "morador");
-        texto.innerHTML = '<img src="assets/img/icons/user.svg" width="16" height="16" alt="">Perfil detectado: <strong>Morador</strong>';
-      } else if (senha === SENHAS.porteiro) {
-        div.classList.add("visivel", "porteiro");
-        texto.innerHTML = '<img src="assets/img/icons/shield-halved.svg" width="16" height="16" alt="">Perfil detectado: <strong>Porteiro</strong>';
-      } else if (senha === SENHAS.sindico) {
-        div.classList.add("visivel", "sindico");
-        texto.innerHTML = '<img src="assets/img/icons/star.svg" width="16" height="16" alt="">Perfil detectado: <strong>Síndico</strong>';
+      if (!email || !senha) {
+        mostrarErroLogin("Informe o e-mail e a senha.");
+        return;
       }
-      // Se não casar com nenhuma senha, o indicador fica oculto
-    }
 
-    // ── FAZER LOGIN ──────────────────────────────────────────────
-    function fazerLogin() {
-      const senha = document.getElementById("senhaInput").value.trim();
-      const erro  = document.getElementById("erroLogin");
-      const btn   = document.getElementById("btnEntrar");
-      const form  = document.getElementById("loginForm");
-
-      // Loading no botão
-      btn.innerHTML = 'Verificando...';
+      btn.innerHTML = "Verificando...";
       btn.disabled = true;
 
-      setTimeout(() => {
-
-        if (senha === SENHAS.morador) {
-          window.location.href = DESTINOS.morador;
-
-        } else if (senha === SENHAS.porteiro) {
-          window.location.href = DESTINOS.porteiro;
-
-        } else if (senha === SENHAS.sindico) {
-          window.location.href = DESTINOS.sindico;
-
-        } else {
-          // Senha errada
-          erro.classList.add("visivel");
+      api.entrar(email, senha)
+        .then(function(usuario) {
+          mostrarPerfil(usuario.papel);
+          window.location.href = api.painelDoPapel(usuario.papel);
+        })
+        .catch(function(e) {
+          mostrarErroLogin(e.message);
           document.getElementById("senhaInput").value = "";
           document.getElementById("perfilDetectado").className = "perfil-detectado";
-
-          btn.innerHTML = 'Entrar';
+          btn.innerHTML = "Entrar";
           btn.disabled = false;
-
-          // Efeito shake no formulário
-          form.style.animation = "none";
-          form.offsetHeight; // força reflow
-          form.style.animation = "shake .4s ease";
-        }
-
-      }, 600);
+        });
     }
+
+    // ── Mensagem ao ser mandado de volta para cá ─────────────────
+    document.addEventListener("DOMContentLoaded", function() {
+      var busca = new URLSearchParams(window.location.search);
+      var motivo = busca.get("sessao");
+
+      if (busca.get("senha") === "redefinida") {
+        mostrarAvisoLogin("Senha redefinida. Entre com a nova senha.");
+      } else if (motivo === "expirada") {
+        mostrarErroLogin("Sua sessão expirou. Entre novamente.");
+      } else if (motivo === "necessaria") {
+        mostrarErroLogin("Faça login para acessar essa página.");
+      }
+    });
 
     // ── ENTER no campo senha dispara login ───────────────────────
     document.addEventListener("DOMContentLoaded", () => {
@@ -306,7 +320,7 @@
       });
     });
   </script>
-  <script src="assets/js/validation.js"></script>
+<script src="assets/js/validation.js"></script>
   <script src="assets/js/acessibilidade.js"></script>
 
 </body>

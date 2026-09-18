@@ -6,6 +6,7 @@
   <link rel="icon" href="../../assets/img/logo.png" type="image/png">
   <title>SmartCondo — Recuperar Senha</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
 <body>
@@ -26,10 +27,10 @@
         <span>Você receberá um código de verificação no contato informado.</span>
       </div>
 
-      <form class="login-form" action="codigo_recuperacao.html">
+      <form class="login-form" id="formRecuperar" novalidate>
         <div class="input-box">
           <img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">
-          <input type="text" placeholder="E-mail ou telefone cadastrado" required autocomplete="email">
+          <input type="email" id="emailRecuperar" placeholder="E-mail cadastrado" required autocomplete="email">
         </div>
         <button class="login-btn" type="submit">
           Enviar código de recuperação
@@ -57,7 +58,39 @@
     });
   </script>
   <script src="../../assets/js/validation.js"></script>
-  <script src="../../assets/js/acessibilidade.js"></script>
+  <script>
+/* Solicita o código de recuperação — doc, seção 9 ("Esqueci minha senha").
+   A API responde igual para e-mail cadastrado ou não, para não revelar
+   quem tem conta; por isso a tela sempre segue para a etapa do código. */
+document.getElementById('formRecuperar').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var email = document.getElementById('emailRecuperar').value.trim();
+  var botao = this.querySelector('button[type=submit]');
+  var textoOriginal = botao.innerHTML;
+
+  document.querySelectorAll('.erro-validacao').forEach(function(el) { el.remove(); });
+  if (!email) {
+    mostrarErro(document.getElementById('emailRecuperar'), 'Informe seu e-mail');
+    return;
+  }
+
+  botao.disabled = true;
+  botao.innerHTML = 'Enviando...';
+
+  SmartCondo.api.post('/auth/senha/recuperar', { email: email, canal: 'email' }, { semToken: true })
+    .then(function() {
+      // O e-mail segue para a próxima etapa, que precisa dele na redefinição.
+      try { sessionStorage.setItem('smartcondo_email_recuperacao', email); } catch (_) {}
+      window.location.href = 'codigo_recuperacao.html';
+    })
+    .catch(function(erro) {
+      botao.disabled = false;
+      botao.innerHTML = textoOriginal;
+      mostrarErro(document.getElementById('emailRecuperar'), erro.message);
+    });
+});
+</script>
+<script src="../../assets/js/acessibilidade.js"></script>
 
 </body>
 </html>

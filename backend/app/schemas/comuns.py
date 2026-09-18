@@ -6,9 +6,24 @@ from typing import Annotated
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 
+def validar_forca_senha(valor: str) -> str:
+    """Regras mostradas ao usuário na tela de nova senha.
+
+    Mantidas iguais dos dois lados: a tela não pode prometer uma exigência
+    que o servidor não cobra.
+    """
+    if not any(c.isalpha() for c in valor):
+        raise ValueError("A senha precisa ter ao menos uma letra.")
+    if not any(c.isdigit() or not c.isalnum() for c in valor):
+        raise ValueError("A senha precisa ter ao menos um número ou símbolo.")
+    return valor
+
+
 # O bcrypt trabalha com no máximo 72 bytes; a senha é barrada aqui antes
 # de chegar ao hash.
-Senha = Annotated[str, Field(min_length=8, max_length=72)]
+Senha = Annotated[
+    str, Field(min_length=8, max_length=72), AfterValidator(validar_forca_senha)
+]
 
 
 def _so_digitos(valor: str) -> str:
