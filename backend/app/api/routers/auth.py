@@ -2,10 +2,17 @@
 
 Documentação, seção 9 — casos de uso "Cadastro", "Login do usuário" e
 "Esqueci minha senha".
+
+Quem se cadastra sozinho é apenas o morador, e ainda assim depende da
+aprovação do síndico. Síndico, porteiro e demais moradores são criados por
+dentro do sistema: o administrador cadastra os síndicos (app/api/routers/
+admin.py) e o síndico cadastra porteiros e moradores do seu condomínio
+(app/api/routers/usuarios.py).
 """
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_usuario_atual
@@ -17,7 +24,7 @@ from app.models.enums import CanalVerificacao, FinalidadeCodigo, Papel, StatusUs
 from app.models.usuario import Usuario
 from app.schemas.comuns import Mensagem
 from app.schemas.usuario import (
-    CadastroMorador, CadastroSaida, CadastroSindico, ConfirmacaoCodigo, LoginEntrada,
+    CadastroMorador, CadastroSaida, ConfirmacaoCodigo, LoginEntrada,
     RedefinicaoSenha, ReenvioCodigo, SolicitacaoRecuperacao, TokenSaida, TrocaSenha,
     UsuarioSaida,
 )
@@ -41,36 +48,6 @@ def _resposta_cadastro(usuario: Usuario, codigo: str, canal: CanalVerificacao) -
 
 
 @router.post(
-    "/cadastro/sindico",
-    response_model=CadastroSaida,
-    status_code=status.HTTP_201_CREATED,
-    summary="Cadastra um síndico",
-)
-def cadastrar_sindico(dados: CadastroSindico, db: Session = Depends(get_db)) -> CadastroSaida:
-    servico_auth.garantir_email_e_cpf_livres(db, dados.email, dados.cpf)
-
-    usuario = Usuario(
-        nome=dados.nome,
-        email=dados.email.lower(),
-        cpf=dados.cpf,
-        telefone=dados.telefone,
-        data_nascimento=dados.data_nascimento,
-        senha_hash=gerar_hash_senha(dados.senha),
-        papel=Papel.SINDICO,
-        status=StatusUsuario.AGUARDANDO_CODIGO,
-    )
-    db.add(usuario)
-    db.flush()
-
-    codigo = servico_auth.emitir_codigo(
-        db, usuario, FinalidadeCodigo.CONFIRMACAO_CADASTRO, dados.canal_confirmacao
-    )
-    db.commit()
-    db.refresh(usuario)
-    return _resposta_cadastro(usuario, codigo, dados.canal_confirmacao)
-
-
-@router.post(
     "/cadastro/morador",
     response_model=CadastroSaida,
     status_code=status.HTTP_201_CREATED,
@@ -79,10 +56,15 @@ def cadastrar_sindico(dados: CadastroSindico, db: Session = Depends(get_db)) -> 
 def cadastrar_morador(dados: CadastroMorador, db: Session = Depends(get_db)) -> CadastroSaida:
     servico_auth.garantir_email_e_cpf_livres(db, dados.email, dados.cpf)
 
-    condominio = db.get(Condominio, dados.condominio_id)
+    condominio = db.scalar(
+        select(Condominio).where(
+            Condominio.codigo_acesso == dados.codigo_condominio.strip().upper()
+        )
+    )
     if condominio is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Condomínio não encontrado."
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Código de acesso não encontrado. Confira com o síndico.",
         )
 
     # A unidade é criada na primeira vez que alguém se cadastra nela.

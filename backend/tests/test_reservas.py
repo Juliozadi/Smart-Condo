@@ -6,24 +6,23 @@ from datetime import date, timedelta
 import pytest
 
 from tests.fixtures import (
-    CPFS, cab, cadastrar_morador, cadastrar_porteiro, cadastrar_sindico,
-    criar_condominio, criar_espaco,
+    CPFS, cab, cadastrar_morador, cadastrar_porteiro, criar_espaco, montar_condominio,
 )
 
 AMANHA = (date.today() + timedelta(days=1)).isoformat()
 
 
 @pytest.fixture
-def cenario(cliente):
+def cenario(cliente, db):
     """Um condomínio com síndico, dois moradores, um porteiro e dois espaços."""
-    tok_sindico = cadastrar_sindico(cliente)
-    cond = criar_condominio(cliente, tok_sindico)
+    base = montar_condominio(cliente, db)
+    tok_sindico, cond = base["sindico"], base["cond"]
 
     _, tok_a = cadastrar_morador(
-        cliente, tok_sindico, cond["id"], email="ana@exemplo.com", cpf=CPFS[1], unidade="204"
+        cliente, tok_sindico, cond, email="ana@exemplo.com", cpf=CPFS[1], unidade="204"
     )
     _, tok_b = cadastrar_morador(
-        cliente, tok_sindico, cond["id"], email="bruno@exemplo.com", cpf=CPFS[3], unidade="301"
+        cliente, tok_sindico, cond, email="bruno@exemplo.com", cpf=CPFS[3], unidade="301"
     )
     _, tok_porteiro = cadastrar_porteiro(cliente, tok_sindico, cond["id"], cpf=CPFS[2])
 

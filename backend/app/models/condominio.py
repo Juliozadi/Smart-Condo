@@ -25,6 +25,13 @@ class Condominio(Base, TimestampMixin):
     nome: Mapped[str] = mapped_column(String(160), nullable=False)
     cnpj: Mapped[str] = mapped_column(String(18), unique=True, nullable=False, index=True)
 
+    # Código que o morador informa no cadastro para entrar neste condomínio.
+    # É o que evita uma lista pública de todos os condomínios do sistema:
+    # só entra quem recebeu o código do síndico.
+    codigo_acesso: Mapped[str] = mapped_column(
+        String(20), unique=True, nullable=False, index=True
+    )
+
     cep: Mapped[str] = mapped_column(String(9), nullable=False)
     logradouro: Mapped[str] = mapped_column(String(180), nullable=False)
     numero: Mapped[str] = mapped_column(String(20), nullable=False)

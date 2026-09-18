@@ -28,6 +28,8 @@ class CondominioSaida(SchemaBase):
     id: int
     nome: str
     cnpj: str
+    # Só volta para o síndico; é o que ele repassa a quem vai morar ali.
+    codigo_acesso: str
     cep: str
     logradouro: str
     numero: str
@@ -40,9 +42,9 @@ class CondominioSaida(SchemaBase):
     criado_em: datetime
 
 
-class CondominioPublico(SchemaBase):
-    """Versão reduzida, usada na tela de cadastro do morador — que precisa
-    escolher o condomínio antes de ter login."""
+class CondominioPorCodigo(SchemaBase):
+    """O que a tela de cadastro mostra ao conferir o código digitado:
+    só o suficiente para o morador confirmar que é o condomínio certo."""
     id: int
     nome: str
     cidade: str

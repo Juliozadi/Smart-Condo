@@ -138,12 +138,14 @@ def validar_codigo(
 
 
 def status_apos_confirmacao(papel: Papel) -> StatusUsuario:
-    """O síndico entra direto; morador e porteiro passam pelo síndico.
+    """Depois de confirmar o código, o cadastro ainda espera o síndico.
 
-    As telas "aguardando aprovação" do front-end existem justamente para
-    morador e porteiro.
+    Só o morador se cadastra sozinho, e a tela "aguardando aprovação" do
+    front-end existe para esse intervalo. Quem é criado por dentro do
+    sistema (pelo administrador ou pelo síndico) já nasce ativo e nem passa
+    por aqui.
     """
-    return StatusUsuario.ATIVO if papel == Papel.SINDICO else StatusUsuario.AGUARDANDO_APROVACAO
+    return StatusUsuario.AGUARDANDO_APROVACAO
 
 
 def autenticar(db: Session, email: str, senha: str) -> Usuario:

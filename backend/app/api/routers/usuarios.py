@@ -21,10 +21,14 @@ from app.core.security import gerar_hash_senha
 from app.models.enums import CanalVerificacao, FinalidadeCodigo, Papel, StatusUsuario
 from app.models.usuario import PermissaoPorteiro, Usuario
 from app.schemas.comuns import Mensagem
+from app.schemas.admin import (
+    UsuarioAdminAtualizacao, UsuarioAdminEntrada, UsuarioAdminSaida,
+)
 from app.schemas.usuario import (
     AprovacaoUsuario, CadastroPorteiro, CadastroSaida, PermissoesPorteiroEntrada,
     PermissoesPorteiroSaida, UsuarioAtualizacao, UsuarioSaida,
 )
+from app.services import usuarios as servico_usuarios
 from app.services import auth as servico_auth
 from app.services.notificacao import mascarar_destino
 
@@ -179,6 +183,80 @@ def definir_permissoes(
     db.commit()
     db.refresh(permissoes)
     return PermissoesPorteiroSaida(porteiro_id=porteiro.id, **permissoes.como_dicionario())
+
+
+# ── O síndico cadastra a equipe e os moradores ───────────────────────
+@router.post(
+    "",
+    response_model=UsuarioAdminSaida,
+    status_code=status.HTTP_201_CREATED,
+    summary="Cadastra um porteiro ou morador no condomínio",
+)
+def cadastrar_usuario(
+    dados: UsuarioAdminEntrada,
+    sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
+    db: Session = Depends(get_db),
+) -> UsuarioAdminSaida:
+    """O síndico cria porteiro e morador do seu condomínio, já ativos.
+
+    Síndico é criado pelo administrador, não por aqui: um síndico não
+    nomeia o próprio substituto.
+    """
+    if sindico.condominio_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Seu usuário ainda não está vinculado a um condomínio.",
+        )
+    if dados.papel not in (Papel.PORTEIRO, Papel.MORADOR):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Você pode cadastrar apenas porteiros e moradores.",
+        )
+
+    from app.models.condominio import Condominio
+
+    condominio = db.get(Condominio, sindico.condominio_id)
+    usuario = servico_usuarios.criar_usuario(db, condominio, dados, sindico)
+    db.commit()
+    db.refresh(usuario)
+    return _para_saida_admin(db, usuario)
+
+
+@router.put(
+    "/{usuario_id}",
+    response_model=UsuarioAdminSaida,
+    summary="Edita um porteiro ou morador do condomínio",
+)
+def editar_usuario(
+    usuario_id: int,
+    dados: UsuarioAdminAtualizacao,
+    sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
+    db: Session = Depends(get_db),
+) -> UsuarioAdminSaida:
+    usuario = _buscar_do_meu_condominio(db, sindico, usuario_id)
+    if usuario.papel not in (Papel.PORTEIRO, Papel.MORADOR):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Você pode editar apenas porteiros e moradores.",
+        )
+    servico_usuarios.atualizar_usuario(db, usuario, dados)
+    db.commit()
+    db.refresh(usuario)
+    return _para_saida_admin(db, usuario)
+
+
+def _para_saida_admin(db: Session, u: Usuario) -> UsuarioAdminSaida:
+    from app.models.condominio import Condominio, Unidade
+
+    condominio = db.get(Condominio, u.condominio_id) if u.condominio_id else None
+    unidade = db.get(Unidade, u.unidade_id) if u.unidade_id else None
+    return UsuarioAdminSaida(
+        id=u.id, nome=u.nome, email=u.email, cpf=u.cpf, telefone=u.telefone,
+        papel=u.papel, status=u.status, condominio_id=u.condominio_id,
+        condominio_nome=condominio.nome if condominio else None,
+        unidade=unidade.identificacao if unidade else None,
+        tipo_ocupacao=u.tipo_ocupacao, criado_em=u.criado_em,
+    )
 
 
 # ── Administração dos cadastros ──────────────────────────────────────

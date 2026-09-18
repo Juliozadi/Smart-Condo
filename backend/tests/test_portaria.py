@@ -6,22 +6,22 @@ from __future__ import annotations
 import pytest
 
 from tests.fixtures import (
-    CPFS, cab, cadastrar_morador, cadastrar_porteiro, cadastrar_sindico, criar_condominio,
+    CPFS, cab, cadastrar_morador, cadastrar_porteiro, criar_espaco, montar_condominio,
 )
 
 DOC_VISITANTE = CPFS[6]
 
 
 @pytest.fixture
-def cenario(cliente):
-    tok_sindico = cadastrar_sindico(cliente)
-    cond = criar_condominio(cliente, tok_sindico)
+def cenario(cliente, db):
+    base = montar_condominio(cliente, db)
+    tok_sindico, cond = base["sindico"], base["cond"]
 
     _, tok_ana = cadastrar_morador(
-        cliente, tok_sindico, cond["id"], email="ana@exemplo.com", cpf=CPFS[1], unidade="204"
+        cliente, tok_sindico, cond, email="ana@exemplo.com", cpf=CPFS[1], unidade="204"
     )
     _, tok_bruno = cadastrar_morador(
-        cliente, tok_sindico, cond["id"], email="bruno@exemplo.com", cpf=CPFS[3], unidade="301"
+        cliente, tok_sindico, cond, email="bruno@exemplo.com", cpf=CPFS[3], unidade="301"
     )
     _, tok_porteiro = cadastrar_porteiro(cliente, tok_sindico, cond["id"], cpf=CPFS[2])
 
@@ -250,17 +250,13 @@ def test_morador_so_ve_as_proprias_encomendas(cliente, cenario):
     assert [e["remetente"] for e in da_ana] == ["Amazon"]
 
 
-def test_unidade_de_outro_condominio_e_recusada(cliente, cenario):
-    outro = cadastrar_sindico(cliente, email="outro@exemplo.com", cpf=CPFS[4])
-    cliente.post(
-        "/api/v1/condominios",
-        json={
-            "nome": "Outro", "cnpj": "45.997.418/0001-53", "cep": "79000-000",
-            "logradouro": "Rua Y", "numero": "2", "bairro": "Centro",
-            "cidade": "Campo Grande", "uf": "MS",
-        },
-        headers=cab(outro),
+def test_unidade_de_outro_condominio_e_recusada(cliente, db, cenario):
+    outra = montar_condominio(
+        cliente, db, nome="Outro Condominio", cnpj="45.997.418/0001-53",
+        email_sindico="outro@exemplo.com", cpf_sindico=CPFS[4],
+        email_admin="admin2@exemplo.com", cpf_admin=CPFS[7],
     )
+    outro = outra["sindico"]
     r = registrar_visitante(cliente, outro, cenario["u204"])
     assert r.status_code == 404
 

@@ -62,6 +62,12 @@ def criar(db) -> dict:
         db.add(u)
         return u
 
+    # ── Administrador da plataforma ───────────────────────────────────
+    usuario(
+        "Administrador SmartCondo", "admin@smartcondo.com", "01740740262",
+        "67999990000", Papel.ADMIN,
+    )
+
     # ── Síndico e condomínio ──────────────────────────────────────────
     sindico = usuario(
         "Roberto Nascimento", "sindico@smartcondo.com", "01000000028",
@@ -71,6 +77,8 @@ def criar(db) -> dict:
 
     condominio = Condominio(
         nome="Residencial das Palmeiras", cnpj="11222333000181", cep="79000000",
+        # Fixo aqui de propósito: a demonstração precisa de um código estável.
+        codigo_acesso="PALM-2025",
         logradouro="Rua das Flores", numero="100", bairro="Centro",
         cidade="Campo Grande", uf="MS", telefone="6733330000", sindico_id=sindico.id,
     )
@@ -122,7 +130,7 @@ def criar(db) -> dict:
         ("João Silva", "morador@smartcondo.com", "01123456704", "67988880001", "204", TipoOcupacao.PROPRIETARIO),
         ("Ana Beatriz Rocha", "ana@smartcondo.com", "01370370156", "67988880002", "301", TipoOcupacao.PROPRIETARIO),
         ("Bruno Cardoso", "bruno@smartcondo.com", "01617283592", "67988880003", "102", TipoOcupacao.INQUILINO),
-        ("Marina Duarte", "marina@smartcondo.com", "01740740262", "67988880004", "410", TipoOcupacao.PROPRIETARIO),
+        ("Marina Duarte", "marina@smartcondo.com", "01864196947", "67988880004", "410", TipoOcupacao.PROPRIETARIO),
     ]:
         m = usuario(
             nome, email, cpf, tel, Papel.MORADOR,
@@ -133,7 +141,7 @@ def criar(db) -> dict:
 
     # Um cadastro parado na fila, para a tela de aprovação do síndico ter o que mostrar.
     usuario(
-        "Pedro Henrique Lima", "pedro@smartcondo.com", "01864196947", "67988880005",
+        "Pedro Henrique Lima", "pedro@smartcondo.com", "02000000045", "67988880005",
         Papel.MORADOR, condominio_id=condominio.id, unidade_id=unidades["502"].id,
         tipo_ocupacao=TipoOcupacao.INQUILINO, status=StatusUsuario.AGUARDANDO_APROVACAO,
     )
@@ -343,6 +351,7 @@ def main() -> int:
     print(f"""
 Pronto. Contas criadas (todas com a senha "{SENHA}"):
 
+  Admin     admin@smartcondo.com        (gerencia condomínios e síndicos)
   Síndico   sindico@smartcondo.com
   Porteiro  porteiro@smartcondo.com     (todas as permissões)
             renata@smartcondo.com       (sem veículos nem ocorrências)
@@ -353,6 +362,9 @@ Pronto. Contas criadas (todas com a senha "{SENHA}"):
 
   pedro@smartcondo.com está aguardando aprovação do síndico — use para
   demonstrar a tela de aprovação de cadastros.
+
+  Código de acesso do condomínio: PALM-2025
+  (é o que o morador informa ao se cadastrar)
 """)
     # Fecha o pool antes de sair, senão o Python avisa de conexão aberta.
     engine.dispose()

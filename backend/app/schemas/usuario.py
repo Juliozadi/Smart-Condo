@@ -35,7 +35,8 @@ class CadastroMorador(CadastroBase):
     """Seção 11.3: o morador informa o condomínio, o bloco/torre, as vagas
     de garagem e o vínculo dele com o estabelecimento."""
 
-    condominio_id: int
+    # O morador informa o código que recebeu do síndico, não o id.
+    codigo_condominio: str = Field(min_length=4, max_length=20)
     unidade_numero: str = Field(min_length=1, max_length=20)
     unidade_bloco: str = Field(default="unico", max_length=20)
     tipo_ocupacao: TipoOcupacao

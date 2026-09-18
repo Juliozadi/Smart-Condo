@@ -10,21 +10,21 @@ from datetime import date, timedelta
 import pytest
 
 from tests.fixtures import (
-    CPFS, cab, cadastrar_morador, cadastrar_porteiro, cadastrar_sindico, criar_condominio,
+    CPFS, cab, cadastrar_morador, cadastrar_porteiro, criar_espaco, montar_condominio,
 )
 
 COMPETENCIA = date.today().replace(day=1).isoformat()
 
 
 @pytest.fixture
-def cenario(cliente):
-    tok_sindico = cadastrar_sindico(cliente)
-    cond = criar_condominio(cliente, tok_sindico)
+def cenario(cliente, db):
+    base = montar_condominio(cliente, db)
+    tok_sindico, cond = base["sindico"], base["cond"]
     _, tok_ana = cadastrar_morador(
-        cliente, tok_sindico, cond["id"], email="ana@exemplo.com", cpf=CPFS[1], unidade="204"
+        cliente, tok_sindico, cond, email="ana@exemplo.com", cpf=CPFS[1], unidade="204"
     )
     _, tok_bruno = cadastrar_morador(
-        cliente, tok_sindico, cond["id"], email="bruno@exemplo.com", cpf=CPFS[3], unidade="301"
+        cliente, tok_sindico, cond, email="bruno@exemplo.com", cpf=CPFS[3], unidade="301"
     )
     _, tok_porteiro = cadastrar_porteiro(cliente, tok_sindico, cond["id"], cpf=CPFS[2])
 
