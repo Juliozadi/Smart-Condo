@@ -104,7 +104,7 @@
       <div class="p-avatar-wrap">
         <div class="p-avatar sindico" onclick="abrirModalFoto()">
           <img src="../../assets/img/icons/user.svg" width="16" height="16" alt="" id="avatarIcon">
-          <img id="avatarPreview" src="" alt="" style="display:none;">
+          <img id="avatarPreview" alt="" style="display:none;">
           <div class="avatar-overlay"><img src="../../assets/img/icons/camera.svg" width="16" height="16" alt=""></div>
           <button type="button" class="avatar-remove" id="btnRemoveAvatar" title="Remover foto" onclick="event.stopPropagation();removerAvatar()"><img src="../../assets/img/icons/xmark.svg" width="10" height="10" alt=""></button>
           <button type="button" class="avatar-edit-icon" id="btnEditAvatar" onclick="event.stopPropagation();document.getElementById('avatarInput').click()" title="Alterar foto"><img src="../../assets/img/icons/camera.svg" width="14" height="14" alt=""></button>
@@ -360,7 +360,6 @@
     function fecharModalFoto(e) {
       if (e && e.target !== e.currentTarget) return;
       document.getElementById('modalFoto').classList.remove('show');
-    }
     }
 
     function mostrarToast(msg, sub) {

@@ -92,6 +92,19 @@
             <input type="text" placeholder="Frágil, refrigerado, urgente...">
           </div>
         </div>
+        <!-- Foto da encomenda — doc, seção 6 -->
+        <div class="captura-foto"
+             data-rotulo="Foto da encomenda"
+             data-dica="A foto acompanha a notificação de chegada, para o morador conferir o volume antes de descer."
+             data-icone="../../assets/img/icons/camera.svg"
+             data-input="foto_encomenda"></div>
+
+        <p class="aviso-notificacao">
+          <img src="../../assets/img/icons/bullhorn.svg" alt="">
+          <span>Ao registrar, o morador destinatário recebe uma <strong>notificação de chegada</strong>
+          com a foto do volume e o código de rastreio.</span>
+        </p>
+
         <button class="action-btn" type="submit" style="margin-top:4px;">
           Registrar Recebimento
         </button>
@@ -184,7 +197,8 @@
   </main>
 
 
-  <script src="../../assets/js/validation.js"></script>
+  <script src="../../assets/js/foto.js"></script>
+<script src="../../assets/js/validation.js"></script>
   <script>
   document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.form-card form').forEach(function(form) {

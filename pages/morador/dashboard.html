@@ -36,6 +36,44 @@
       <div class="stat-card blue"><span class="stat-value">5</span><span class="stat-label"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt="">Comunicados</span></div>
     </div>
 
+    <!-- Portaria: confirmações e avisos em tempo real — doc, seção 6 -->
+    <p class="section-title"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt=""> Portaria</p>
+    <div class="portaria-lista" id="portariaLista" aria-live="polite">
+
+      <div class="portaria-item urgente" data-tipo="visitante">
+        <div class="portaria-foto">
+          <img src="../../assets/img/icons/user.svg" width="30" height="30" alt="Foto enviada pela portaria">
+          <span class="selo">Vídeo porteiro</span>
+        </div>
+        <div class="portaria-dados">
+          <h4>Visitante aguardando na portaria</h4>
+          <p>Diz ser seu convidado &nbsp;·&nbsp; documento 123.456.789-00</p>
+          <span class="portaria-hora"><img src="../../assets/img/icons/clock.svg" alt="">Registrado às 19h42</span>
+          <div class="portaria-acoes">
+            <button type="button" class="portaria-btn aceitar">Confirmar entrada</button>
+            <button type="button" class="portaria-btn recusar">Não reconheço</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="portaria-item" data-tipo="encomenda">
+        <div class="portaria-foto">
+          <img src="../../assets/img/icons/box.svg" width="30" height="30" alt="Foto da encomenda">
+          <span class="selo">Encomenda</span>
+        </div>
+        <div class="portaria-dados">
+          <h4>Encomenda recebida na portaria</h4>
+          <p>Caixa média &nbsp;·&nbsp; Correios &nbsp;·&nbsp; rastreio BR987654321</p>
+          <span class="portaria-hora"><img src="../../assets/img/icons/clock.svg" alt="">Recebida às 15h10</span>
+          <div class="portaria-acoes">
+            <button type="button" class="portaria-btn aceitar">Confirmar que é minha</button>
+            <button type="button" class="portaria-btn recusar">Não é minha</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
     <p class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Serviços</p>
     <div class="dash-grid">
       <a href="reservas.html" class="dash-card">
@@ -110,6 +148,42 @@
   </main>
 
 <script src="../../assets/js/validation.js"></script>
+<script>
+/* Confirmação de visitante e de encomenda pelo morador — doc, seção 6.
+   Protótipo: resolve na própria tela. Na integração, cada botão vira um
+   POST /portaria/<id>/confirmar ou /recusar. */
+(function() {
+  var lista = document.getElementById('portariaLista');
+  if (!lista) return;
+
+  var TEXTOS = {
+    visitante: { ok: 'Entrada confirmada — a portaria foi avisada.',
+                 nao: 'Entrada recusada — a portaria foi avisada.' },
+    encomenda: { ok: 'Retirada confirmada com a portaria.',
+                 nao: 'Portaria avisada de que a encomenda não é sua.' }
+  };
+
+  lista.addEventListener('click', function(e) {
+    var btn = e.target.closest('.portaria-btn');
+    if (!btn) return;
+
+    var item = btn.closest('.portaria-item');
+    var tipo = item.getAttribute('data-tipo');
+    var aceitou = btn.classList.contains('aceitar');
+    var textos = TEXTOS[tipo] || TEXTOS.visitante;
+
+    var acoes = item.querySelector('.portaria-acoes');
+    var aviso = document.createElement('p');
+    aviso.className = 'portaria-resolvido ' + (aceitou ? 'ok' : 'nao');
+    aviso.innerHTML =
+      '<img src="../../assets/img/icons/' + (aceitou ? 'circle-check' : 'circle-xmark') + '.svg" alt="">' +
+      (aceitou ? textos.ok : textos.nao);
+
+    acoes.replaceWith(aviso);
+    item.classList.remove('urgente');
+  });
+})();
+</script>
 <script>try{var _d=JSON.parse(localStorage.getItem("smartcondo_perfil_morador"));if(_d&&_d.nome)document.getElementById("hdrName").textContent=_d.nome;}catch(_e){}</script>
 <script src="../../assets/js/acessibilidade.js"></script>
 </body>

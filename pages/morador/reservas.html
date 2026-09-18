@@ -40,6 +40,47 @@
       <div class="stat-card blue"><span class="stat-value">5</span><span class="stat-label">Realizadas</span></div>
     </div>
 
+    <!-- Ocupação em tempo real das áreas comuns — doc, seção 6 -->
+    <p class="section-title"><img src="../../assets/img/icons/moradores.svg" width="16" height="16" alt=""> Ocupação Agora</p>
+    <p class="ocupacao-atualizado">
+      <span class="ocupacao-pulso" aria-hidden="true"></span>
+      Atualizado <span id="ocupacaoQuando">agora mesmo</span> &nbsp;·&nbsp; áreas de uso livre
+    </p>
+    <div class="ocupacao-grid" id="ocupacaoGrid" aria-live="polite">
+      <div class="ocupacao-card" data-area="Piscina" data-lotacao="23" data-capacidade="60">
+        <div class="ocupacao-topo">
+          <span class="ocupacao-nome"><img src="../../assets/img/icons/reservas.svg" alt="">Piscina</span>
+          <span class="ocupacao-valor">23</span>
+        </div>
+        <p class="ocupacao-legenda">pessoas no momento · capacidade 60</p>
+        <div class="ocupacao-barra"><span style="width:38%"></span></div>
+      </div>
+      <div class="ocupacao-card cheia" data-area="Academia" data-lotacao="11" data-capacidade="12">
+        <div class="ocupacao-topo">
+          <span class="ocupacao-nome"><img src="../../assets/img/icons/bolt.svg" alt="">Academia</span>
+          <span class="ocupacao-valor">11</span>
+        </div>
+        <p class="ocupacao-legenda">pessoas no momento · capacidade 12</p>
+        <div class="ocupacao-barra"><span style="width:92%"></span></div>
+      </div>
+      <div class="ocupacao-card" data-area="Salão de Jogos" data-lotacao="4" data-capacidade="25">
+        <div class="ocupacao-topo">
+          <span class="ocupacao-nome"><img src="../../assets/img/icons/star.svg" alt="">Salão de Jogos</span>
+          <span class="ocupacao-valor">4</span>
+        </div>
+        <p class="ocupacao-legenda">pessoas no momento · capacidade 25</p>
+        <div class="ocupacao-barra"><span style="width:16%"></span></div>
+      </div>
+      <div class="ocupacao-card vazia" data-area="Playground" data-lotacao="0" data-capacidade="20">
+        <div class="ocupacao-topo">
+          <span class="ocupacao-nome"><img src="../../assets/img/icons/moradores.svg" alt="">Playground</span>
+          <span class="ocupacao-valor">0</span>
+        </div>
+        <p class="ocupacao-legenda">livre no momento · capacidade 20</p>
+        <div class="ocupacao-barra"><span style="width:0%"></span></div>
+      </div>
+    </div>
+
     <p class="section-title"> Espaços Disponíveis</p>
     <div class="space-grid">
       <div class="space-card">
@@ -55,7 +96,7 @@
       <div class="space-card">
         
         <h4>Churrasqueira 2</h4><p>Área coberta · 20 pessoas</p>
-        <p style="font-size:11px;color:#f56c6c;font-weight:700;margin-top:6px;"> Reservada hoje</p>
+        <p style="font-size:11px;color:#f56c6c;font-weight:700;margin-top:6px;"> Reservada hoje · 14h–21h30</p>
       </div>
       <div class="space-card">
         
@@ -73,6 +114,12 @@
         <p class="avail"> Disponível</p>
       </div>
     </div>
+
+    <p class="nota-sigilo">
+      <img src="../../assets/img/icons/lock.svg" alt="">
+      <span>As reservas dos demais moradores são <strong>sigilosas</strong>: você vê a data e o
+      horário em que o espaço está ocupado, mas nunca quem reservou.</span>
+    </p>
 
     <p class="section-title"> Solicitar Nova Reserva</p>
     <div class="form-card">
@@ -130,6 +177,51 @@
   </main>
 
 <script src="../../assets/js/validation.js"></script>
+<script>
+/* Ocupação em tempo real das áreas comuns — doc, seção 6.
+   Protótipo: os números abaixo são simulados no navegador. Na integração
+   com o back-end, esta função passa a consumir GET /areas/ocupacao e o
+   restante da tela continua igual. */
+(function() {
+  var grid = document.getElementById('ocupacaoGrid');
+  var quando = document.getElementById('ocupacaoQuando');
+  if (!grid) return;
+
+  var segundos = 0;
+
+  function pintar(card, lotacao) {
+    var capacidade = parseInt(card.getAttribute('data-capacidade'), 10) || 1;
+    var pct = Math.round((lotacao / capacidade) * 100);
+
+    card.setAttribute('data-lotacao', lotacao);
+    card.querySelector('.ocupacao-valor').textContent = lotacao;
+    card.querySelector('.ocupacao-barra span').style.width = Math.min(pct, 100) + '%';
+    card.querySelector('.ocupacao-legenda').textContent =
+      (lotacao === 0 ? 'livre no momento' : 'pessoas no momento') + ' · capacidade ' + capacidade;
+
+    card.classList.toggle('cheia', pct >= 80 && lotacao > 0);
+    card.classList.toggle('vazia', lotacao === 0);
+  }
+
+  function atualizar() {
+    grid.querySelectorAll('.ocupacao-card').forEach(function(card) {
+      var atual = parseInt(card.getAttribute('data-lotacao'), 10) || 0;
+      var capacidade = parseInt(card.getAttribute('data-capacidade'), 10) || 1;
+      var novo = atual + (Math.floor(Math.random() * 5) - 2);
+      pintar(card, Math.max(0, Math.min(novo, capacidade)));
+    });
+    segundos = 0;
+    if (quando) quando.textContent = 'agora mesmo';
+  }
+
+  setInterval(function() {
+    segundos += 10;
+    if (quando) quando.textContent = 'há ' + segundos + 's';
+  }, 10000);
+
+  setInterval(atualizar, 30000);
+})();
+</script>
 <script>
 function validarReservas() {
   document.querySelectorAll('.erro-validacao').forEach(function(el){el.remove();});

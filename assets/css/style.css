@@ -1529,7 +1529,7 @@ body.tema-escuro textarea::placeholder { color: var(--muted); }
 
 /* ── Ícones SVG monocromáticos: clareia para ler no escuro ────── */
 body.tema-escuro img[src*="/icons/"] { filter: invert(.88) hue-rotate(180deg) brightness(1.12); }
-body.tema-escuro .dash-greeting img[src*="/icons/"],
+body.tema-escuro .dash-greeting img[src*="/icons/"] { filter: brightness(0) invert(1); }
 body.tema-escuro .action-btn img[src*="/icons/"],
 body.tema-escuro .app-bar img[src*="/icons/"] { filter: none; }
 

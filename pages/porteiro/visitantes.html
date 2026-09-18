@@ -77,6 +77,19 @@
           <div class="form-group"><label for="placa-visitante"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="" aria-hidden="true">Placa do veículo (opcional)</label><input type="text" id="placa-visitante" placeholder="ABC-1D23" class="mask-placa"></div>
           <div class="form-group"><label for="hora-visitante"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="" aria-hidden="true">Horário de entrada</label><input type="time" id="hora-visitante" required></div>
         </div>
+        <!-- Vídeo porteiro — doc, seções 6 e 8 -->
+        <div class="captura-foto"
+             data-rotulo="Foto do visitante (vídeo porteiro)"
+             data-dica="A foto é enviada ao morador para que ele confirme se reconhece o visitante antes da liberação da entrada."
+             data-icone="../../assets/img/icons/camera.svg"
+             data-input="foto_visitante"></div>
+
+        <p class="aviso-notificacao">
+          <img src="../../assets/img/icons/bullhorn.svg" alt="">
+          <span>Ao registrar, o morador do apartamento selecionado recebe uma notificação
+          com a foto e precisa <strong>confirmar ou recusar</strong> a entrada.</span>
+        </p>
+
         <button class="action-btn" type="submit" style="margin-top:8px;" aria-label="Registrar entrada do visitante">
           Registrar Entrada
         </button>
@@ -121,6 +134,7 @@
 
   </main>
 
+  <script src="../../assets/js/foto.js"></script>
   <script src="../../assets/js/validation.js"></script>
   <script>
   document.addEventListener('DOMContentLoaded', function() {

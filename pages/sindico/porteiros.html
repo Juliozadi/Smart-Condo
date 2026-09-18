@@ -39,14 +39,32 @@
       <div class="list-item">
         <div class="list-avatar">CP</div>
         <div class="list-info"><h5>Carlos Pereira</h5><p>Portaria Principal · Entrada: 07h00 · CLT</p></div>
+        <div class="contato-acoes">
+          <button type="button" class="contato-btn" data-contato="chat" data-nome="Carlos Pereira" title="Abrir chat com Carlos Pereira" aria-label="Abrir chat com Carlos Pereira">
+            <img src="../../assets/img/icons/comunicados.svg" alt="">Chat
+          </button>
+          <button type="button" class="contato-btn" data-contato="voz" data-nome="Carlos Pereira" title="Ligar para Carlos Pereira" aria-label="Ligar para Carlos Pereira">
+            <img src="../../assets/img/icons/phone.svg" alt="">Ligar
+          </button>
+        </div>
         <span class="badge badge-ok">Ativo</span>
       </div>
       <div class="list-item">
         <div class="list-avatar amber">RM</div>
         <div class="list-info"><h5>Renata Moura</h5><p>Portaria de Serviço · Entrada: 07h00 · CLT</p></div>
+        <div class="contato-acoes">
+          <button type="button" class="contato-btn" data-contato="chat" data-nome="Renata Moura" title="Abrir chat com Renata Moura" aria-label="Abrir chat com Renata Moura">
+            <img src="../../assets/img/icons/comunicados.svg" alt="">Chat
+          </button>
+          <button type="button" class="contato-btn" data-contato="voz" data-nome="Renata Moura" title="Ligar para Renata Moura" aria-label="Ligar para Renata Moura">
+            <img src="../../assets/img/icons/phone.svg" alt="">Ligar
+          </button>
+        </div>
         <span class="badge badge-ok">Ativo</span>
       </div>
     </div>
+    <p class="contato-status" id="contatoStatus" role="status"></p>
+
     <p class="section-title"> Escala da Semana</p>
     <div class="data-table">
       <div class="table-head cols-5"><span><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt="">Porteiro</span><span>Seg</span><span> Ter</span><span> Qua</span><span><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Turno</span></div>
@@ -62,6 +80,21 @@
   </main>
 
 <script src="../../assets/js/validation.js"></script>
+<script>
+/* Contato com o porteiro por chat ou voz — doc, seção 11.5.2.
+   Protótipo: confirma a ação na tela. Na integração, o chat abre a thread
+   em tempo real (Node.js) e "Ligar" inicia a chamada de voz. */
+(function() {
+  var status = document.getElementById('contatoStatus');
+  document.querySelectorAll('.contato-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var nome = this.getAttribute('data-nome');
+      var via = this.getAttribute('data-contato') === 'voz' ? 'Chamada de voz' : 'Chat';
+      if (status) status.textContent = via + ' com ' + nome + ' — iniciando…';
+    });
+  });
+})();
+</script>
 <script>try{var _d=JSON.parse(localStorage.getItem("smartcondo_perfil_sindico"));if(_d&&_d.nome)document.getElementById("hdrName").textContent=_d.nome;}catch(_e){}</script>
 <script src="../../assets/js/acessibilidade.js"></script>
 </body>

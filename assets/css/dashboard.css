@@ -1244,3 +1244,262 @@ body:has(.step-page:target) .step-page.default-step {
 .dash-greeting h1,
 .dash-greeting h2,
 .dash-greeting h3 { color: #fff; }
+
+/* ═══════════════════════════════════════════
+   OCUPAÇÃO EM TEMPO REAL DAS ÁREAS COMUNS
+   Documentação, seção 6 (História do Usuário):
+   "para espaços públicos dentro do condomínio, que mostre quantos
+    indivíduos estão ocupando a área no momento, por exemplo
+    'Piscina: 23 pessoas no momento'"
+   ═══════════════════════════════════════════ */
+.ocupacao-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px; margin-bottom: 24px;
+}
+.ocupacao-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px; padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  transition: all .22s var(--ease-smooth);
+}
+.ocupacao-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.ocupacao-topo {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  margin-bottom: 4px;
+}
+.ocupacao-nome {
+  font-size: 13.5px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 7px;
+}
+.ocupacao-nome img { width: 15px; height: 15px; flex-shrink: 0; }
+.ocupacao-valor { font-size: 20px; font-weight: 800; color: var(--primary); line-height: 1; }
+.ocupacao-legenda { font-size: 11.5px; color: var(--muted); font-weight: 600; margin-bottom: 10px; }
+.ocupacao-barra {
+  background: var(--surface-2); border: 1px solid var(--border-soft);
+  border-radius: 8px; height: 8px; overflow: hidden;
+}
+.ocupacao-barra span {
+  display: block; height: 100%; border-radius: 8px;
+  background: linear-gradient(90deg, #13bfb0, #0da099);
+  transition: width .4s var(--ease-smooth);
+}
+.ocupacao-card.cheia .ocupacao-valor { color: #e0763c; }
+.ocupacao-card.cheia .ocupacao-barra span { background: linear-gradient(90deg, #e6a23c, #e0763c); }
+.ocupacao-card.vazia .ocupacao-valor { color: var(--muted); }
+.ocupacao-card.vazia .ocupacao-barra span { background: var(--border); }
+.ocupacao-atualizado {
+  font-size: 11.5px; color: var(--muted); font-weight: 600;
+  display: flex; align-items: center; gap: 6px; margin: -12px 0 18px;
+}
+.ocupacao-atualizado img { width: 13px; height: 13px; }
+.ocupacao-pulso {
+  width: 7px; height: 7px; border-radius: 50%; background: #13bfb0;
+  box-shadow: 0 0 0 0 rgba(19,191,176,.7);
+  animation: pulsoOcupacao 2s infinite;
+}
+@keyframes pulsoOcupacao {
+  70%  { box-shadow: 0 0 0 7px rgba(19,191,176,0); }
+  100% { box-shadow: 0 0 0 0 rgba(19,191,176,0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ocupacao-pulso { animation: none; }
+}
+
+/* Aviso de sigilo das reservas — doc seção 6: o morador vê que o espaço
+   está ocupado, mas nunca quem reservou, "para evitar conflitos". */
+.nota-sigilo {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: var(--surface-2); border: 1px dashed var(--border);
+  border-radius: 12px; padding: 12px 14px; margin-bottom: 20px;
+  font-size: 12.5px; color: var(--text-2); font-weight: 500; line-height: 1.5;
+}
+.nota-sigilo img { width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; }
+
+/* ═══════════════════════════════════════════
+   CAPTURA DE FOTO — VÍDEO PORTEIRO
+   Documentação, seções 6 e 8: foto/vídeo do visitante e da encomenda
+   enviados ao morador para confirmação.
+   ═══════════════════════════════════════════ */
+.captura-foto { margin-bottom: 16px; }
+.captura-rotulo {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13px; font-weight: 700; color: var(--text-2); margin-bottom: 4px;
+}
+.captura-dica { font-size: 12px; color: var(--muted); margin: 0 0 10px; line-height: 1.5; }
+.captura-palco {
+  position: relative; width: 100%; aspect-ratio: 4 / 3; max-height: 260px;
+  background: var(--surface-2);
+  border: 1.5px dashed var(--border); border-radius: 14px;
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+}
+.captura-foto.tem-foto .captura-palco { border-style: solid; border-color: var(--primary); }
+.captura-video, .captura-imagem {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.captura-vazio {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: var(--muted); font-size: 12.5px; font-weight: 600;
+}
+.captura-vazio img { opacity: .55; }
+.captura-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.captura-btn {
+  font-family: inherit; font-size: 12.5px; font-weight: 700;
+  padding: 9px 16px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--primary); background: var(--primary); color: #fff;
+  transition: all .18s var(--ease-smooth);
+}
+.captura-btn:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+.captura-btn.secundario {
+  background: var(--surface); color: var(--text-2); border-color: var(--border);
+  display: inline-flex; align-items: center;
+}
+.captura-btn.secundario:hover { background: var(--surface-2); border-color: var(--primary); color: var(--primary); }
+.captura-btn:focus-visible,
+.captura-btn:focus-within {
+  outline: none; box-shadow: 0 0 0 3px var(--primary-glow);
+}
+.captura-status { font-size: 12px; color: var(--muted); font-weight: 600; margin: 8px 0 0; min-height: 16px; }
+.captura-status.erro { color: #e0763c; }
+
+/* ── Notificação enviada ao morador ──────────────────────────── */
+.aviso-notificacao {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: linear-gradient(135deg, var(--primary-light), rgba(19,191,176,.08));
+  border: 1px solid rgba(19,191,176,.3); border-radius: 12px;
+  padding: 12px 14px; margin-bottom: 16px;
+  font-size: 12.5px; color: var(--text-2); font-weight: 500; line-height: 1.5;
+}
+.aviso-notificacao img { width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; }
+
+/* ═══════════════════════════════════════════
+   PORTARIA — CONFIRMAÇÕES PENDENTES DO MORADOR
+   Documentação, seção 6: o morador recebe a foto do visitante e
+   "confirme se é ou não seu convidado"; e recebe a notificação de
+   entrega com a foto do volume.
+   ═══════════════════════════════════════════ */
+.portaria-lista { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.portaria-item {
+  display: flex; gap: 14px; align-items: flex-start;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 14px; box-shadow: var(--shadow-sm);
+}
+.portaria-item.urgente { border-color: rgba(230,162,60,.55); }
+.portaria-foto {
+  width: 84px; height: 84px; flex-shrink: 0; border-radius: 12px;
+  background: var(--surface-2); border: 1px solid var(--border-soft);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; position: relative;
+}
+.portaria-foto img.retrato { width: 100%; height: 100%; object-fit: cover; }
+.portaria-foto .selo {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: rgba(0,0,0,.62); color: #fff;
+  font-size: 8.5px; font-weight: 700; letter-spacing: .05em;
+  text-align: center; padding: 2px 0; text-transform: uppercase;
+}
+.portaria-dados { flex: 1; min-width: 0; }
+.portaria-dados h4 {
+  font-size: 14px; font-weight: 700; color: var(--text); margin: 0 0 3px;
+}
+.portaria-dados p { font-size: 12.5px; color: var(--muted); margin: 0 0 4px; line-height: 1.45; }
+.portaria-hora {
+  font-size: 11.5px; font-weight: 700; color: var(--muted);
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.portaria-hora img { width: 12px; height: 12px; }
+.portaria-acoes { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.portaria-btn {
+  font-family: inherit; font-size: 12px; font-weight: 700;
+  padding: 7px 14px; border-radius: 9px; cursor: pointer;
+  border: 1px solid transparent; transition: all .18s var(--ease-smooth);
+}
+.portaria-btn.aceitar { background: var(--primary); color: #fff; border-color: var(--primary); }
+.portaria-btn.aceitar:hover { background: var(--primary-dark); }
+.portaria-btn.recusar { background: var(--surface); color: #d4553f; border-color: rgba(212,85,63,.45); }
+.portaria-btn.recusar:hover { background: rgba(212,85,63,.1); }
+.portaria-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-glow); }
+.portaria-resolvido {
+  font-size: 12.5px; font-weight: 700; margin-top: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.portaria-resolvido img { width: 14px; height: 14px; }
+.portaria-resolvido.ok { color: var(--primary); }
+.portaria-resolvido.nao { color: #d4553f; }
+
+/* ═══════════════════════════════════════════
+   CONTATO COM O PORTEIRO — chat e voz
+   Documentação, seção 11.5.2: "pode contatá-los por chat ou ligação de voz"
+   ═══════════════════════════════════════════ */
+.contato-acoes { display: flex; gap: 6px; flex-shrink: 0; margin-right: 10px; }
+.contato-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: inherit; font-size: 11.5px; font-weight: 700;
+  padding: 6px 11px; border-radius: 9px; cursor: pointer;
+  background: var(--surface-2); color: var(--text-2);
+  border: 1px solid var(--border);
+  transition: all .18s var(--ease-smooth);
+}
+.contato-btn img { width: 12px; height: 12px; }
+.contato-btn:hover {
+  background: var(--primary-light); color: var(--primary); border-color: var(--primary);
+}
+.contato-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-glow); }
+.contato-status {
+  font-size: 12.5px; font-weight: 600; color: var(--primary);
+  min-height: 18px; margin: -10px 0 18px;
+}
+@media (max-width: 560px) {
+  .contato-acoes { margin-right: 0; }
+  .contato-btn span { display: none; }
+}
+
+/* ═══════════════════════════════════════════
+   PAGAMENTO — formas variadas e data de cobrança
+   Documentação, seção 6: "gostaria que o software fizesse uma cobrança
+   mensal na data em que eu escolhesse, que me desse variadas opções para
+   formas de pagamento"
+   ═══════════════════════════════════════════ */
+.pagamento-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px; margin-bottom: 14px;
+}
+.pagamento-opcao {
+  position: relative;
+  display: flex; flex-direction: column; gap: 4px;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 14px; cursor: pointer;
+  transition: all .2s var(--ease-smooth);
+}
+.pagamento-opcao:hover { border-color: var(--primary); transform: translateY(-2px); }
+.pagamento-opcao input { position: absolute; opacity: 0; pointer-events: none; }
+.pagamento-opcao:has(input:checked) {
+  border-color: var(--primary); background: var(--primary-light);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+.pagamento-opcao:has(input:focus-visible) { box-shadow: 0 0 0 3px var(--primary-glow); }
+.pagamento-nome {
+  font-size: 13.5px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 7px;
+}
+.pagamento-nome img { width: 15px; height: 15px; }
+.pagamento-desc { font-size: 11.5px; color: var(--muted); font-weight: 500; line-height: 1.45; }
+.pagamento-tag {
+  align-self: flex-start; margin-top: 2px;
+  font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  padding: 3px 7px; border-radius: 6px;
+  background: var(--primary-light); color: var(--primary-dark);
+}
+.pagamento-tag.aviso { background: rgba(230,162,60,.16); color: #a8722a; }
+
+.cobranca-data {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px;
+  background: var(--surface-2); border: 1px solid var(--border-soft);
+  border-radius: 14px; padding: 16px; margin-bottom: 14px;
+}
+.cobranca-data .form-group { margin: 0; flex: 1; min-width: 180px; }
+.cobranca-nota { font-size: 12px; color: var(--muted); line-height: 1.5; margin: 0; flex: 2; min-width: 200px; }
+
+/* Os ícones SVG são pretos; dentro do banner colorido eles ficavam quase
+   invisíveis. No banner, assim como o texto, eles são brancos. */
+.dash-greeting img[src*="/icons/"] { filter: brightness(0) invert(1); }
