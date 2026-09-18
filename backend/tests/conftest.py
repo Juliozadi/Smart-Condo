@@ -17,6 +17,8 @@ os.environ.setdefault(
 )
 os.environ.setdefault("SECRET_KEY", "chave-de-teste-suficientemente-longa")
 os.environ.setdefault("DEBUG", "true")
+# Custo minimo do bcrypt: os testes exercitam a regra, nao a forca do hash.
+os.environ.setdefault("BCRYPT_ROUNDS", "4")
 
 from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy import text  # noqa: E402

@@ -20,7 +20,7 @@ def gerar_hash_senha(senha: str) -> str:
     dados = senha.encode("utf-8")
     if len(dados) > BCRYPT_MAX_BYTES:
         raise ValueError(f"A senha não pode passar de {BCRYPT_MAX_BYTES} bytes.")
-    return bcrypt.hashpw(dados, bcrypt.gensalt()).decode("utf-8")
+    return bcrypt.hashpw(dados, bcrypt.gensalt(settings.BCRYPT_ROUNDS)).decode("utf-8")
 
 
 def conferir_senha(senha: str, hash_armazenado: str) -> bool:

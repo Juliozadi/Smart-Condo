@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.api.routers import auth
+from app.api.routers import auth, condominios, reservas, usuarios
 from app.core.config import settings
 
 logging.basicConfig(
@@ -66,6 +66,9 @@ async def erro_validacao(request: Request, exc: RequestValidationError) -> JSONR
 
 
 app.include_router(auth.router, prefix="/api/v1")
+app.include_router(condominios.router, prefix="/api/v1")
+app.include_router(usuarios.router, prefix="/api/v1")
+app.include_router(reservas.router, prefix="/api/v1")
 
 
 @app.get("/api/v1/saude", tags=["Serviço"], summary="Verificação de disponibilidade")

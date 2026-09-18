@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     ALGORITMO_JWT: str = "HS256"
     ACCESS_TOKEN_EXPIRA_MIN: int = 60 * 8
 
+    # Custo do bcrypt. 12 e o padrao seguro; os testes baixam para 4 para
+    # nao gastar segundos por hash.
+    BCRYPT_ROUNDS: int = Field(default=12, ge=4, le=16)
+
     # Validade do código de confirmação de cadastro e de recuperação de
     # senha (documentação, seção 9: "Cadastro" e "Esqueci minha senha").
     CODIGO_VERIFICACAO_EXPIRA_MIN: int = 15
