@@ -67,8 +67,16 @@ class CondominioAdminSaida(SchemaBase):
     nome: str
     cnpj: str
     codigo_acesso: str
+    # O endereço completo vai junto porque é o administrador quem edita o
+    # condomínio: sem estes campos o formulário de edição abriria vazio.
+    cep: str
+    logradouro: str
+    numero: str
+    complemento: str | None = None
+    bairro: str
     cidade: str
     uf: str
+    telefone: str | None = None
     sindico_id: int | None = None
     sindico_nome: str | None = None
     total_unidades: int

@@ -58,7 +58,9 @@ def _condominio_saida(db: Session, c: Condominio) -> CondominioAdminSaida:
     ) or 0
     return CondominioAdminSaida(
         id=c.id, nome=c.nome, cnpj=c.cnpj, codigo_acesso=c.codigo_acesso,
-        cidade=c.cidade, uf=c.uf,
+        cep=c.cep, logradouro=c.logradouro, numero=c.numero,
+        complemento=c.complemento, bairro=c.bairro, cidade=c.cidade, uf=c.uf,
+        telefone=c.telefone,
         sindico_id=sindico.id if sindico else None,
         sindico_nome=sindico.nome if sindico else None,
         total_unidades=unidades,

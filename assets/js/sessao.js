@@ -18,11 +18,14 @@
     return;
   }
 
-  var ROTULOS = { morador: 'Morador', porteiro: 'Porteiro', sindico: 'Síndico' };
+  var ROTULOS = {
+    admin: 'Administrador', morador: 'Morador',
+    porteiro: 'Porteiro', sindico: 'Síndico'
+  };
 
   // O papel exigido vem da pasta: /pages/<papel>/<arquivo>.html
   function papelDaPagina() {
-    var m = global.location.pathname.match(/\/pages\/(morador|porteiro|sindico)\//);
+    var m = global.location.pathname.match(/\/pages\/(admin|morador|porteiro|sindico)\//);
     return m ? m[1] : null;
   }
 

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Usuários</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-body layout-desktop">
+  <header class="app-bar">
+    <div class="app-bar-inner wide">
+      <a href="dashboard.html" class="app-bar-brand">
+        <img src="../../assets/img/logo.png" alt="SmartCondo" class="logo-sm">
+        <span class="brand-name">Smart<strong>Condo</strong></span>
+      </a>
+      <div class="app-bar-right">
+        <span class="profile-link">
+          <span class="profile-avatar"><img src="../../assets/img/icons/shield-halved.svg" alt="" style="width:16px;height:16px;display:block"></span>
+          <span class="profile-name" id="hdrName">Administrador</span>
+          <span class="profile-role">Administrador</span>
+        </span>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-wrapper wide">
+
+    <a href="dashboard.html" class="dash-back">
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Administrador
+    </a>
+
+    <div class="dash-greeting">
+      <p class="greeting-sub">Administração da plataforma</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/moradores.svg" width="16" height="16" alt=""> Usuários</h1>
+      <p class="greeting-condo"><img src="../../assets/img/icons/moradores.svg" width="16" height="16" alt=""> Síndicos, porteiros e moradores de todos os condomínios</p>
+    </div>
+
+    <div class="barra-acoes">
+      <div class="campo-busca">
+        <img src="../../assets/img/icons/user.svg" alt="">
+        <input type="search" id="buscaUsuario" placeholder="Buscar por nome, e-mail ou CPF" aria-label="Buscar usuário">
+      </div>
+      <select id="filtroCondominio" aria-label="Filtrar por condomínio">
+        <option value="">Todos os condomínios</option>
+      </select>
+      <select id="filtroPapel" aria-label="Filtrar por papel">
+        <option value="">Todos os papéis</option>
+        <option value="sindico">Síndico</option>
+        <option value="porteiro">Porteiro</option>
+        <option value="morador">Morador</option>
+      </select>
+      <select id="filtroStatus" aria-label="Filtrar por status">
+        <option value="">Todos os status</option>
+        <option value="ativo">Ativo</option>
+        <option value="aguardando_aprovacao">Aguardando aprovação</option>
+        <option value="aguardando_codigo">Aguardando código</option>
+        <option value="recusado">Recusado</option>
+        <option value="inativo">Inativo</option>
+      </select>
+      <button type="button" class="btn-novo" id="btnNovoUsuario">
+        <img src="../../assets/img/icons/plus.svg" alt="">Novo usuário
+      </button>
+    </div>
+
+    <div class="data-table" id="tabela" aria-live="polite">
+      <div class="table-head cols-6">
+        <span>Nome</span><span>Papel</span><span>Condomínio</span>
+        <span>Unidade</span><span>Status</span><span>Ações</span>
+      </div>
+    </div>
+    <p class="estado-lista" id="estado">Carregando…</p>
+
+  </main>
+
+  <div class="modal-fundo" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+    <div class="modal-caixa">
+      <h2 class="modal-titulo" id="modalTitulo">
+        <img src="../../assets/img/icons/user.svg" alt="">Novo usuário
+      </h2>
+      <p class="modal-sub" id="modalSub">
+        Quem é cadastrado por aqui já entra ativo, sem código de confirmação.
+      </p>
+
+      <form id="formUsuario" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="uCondominio">Condomínio <span class="req">*</span></label>
+            <select id="uCondominio" required>
+              <option value="" disabled selected>Selecione</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="uPapel">Papel <span class="req">*</span></label>
+            <select id="uPapel" required>
+              <option value="" disabled selected>Selecione</option>
+              <option value="sindico">Síndico</option>
+              <option value="porteiro">Porteiro</option>
+              <option value="morador">Morador</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="uNome">Nome completo <span class="req">*</span></label>
+          <input type="text" id="uNome" required maxlength="160" placeholder="Nome como consta no documento">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="uEmail">E-mail <span class="req">*</span></label>
+            <input type="email" id="uEmail" required placeholder="pessoa@exemplo.com">
+          </div>
+          <div class="form-group">
+            <label for="uCpf">CPF <span class="req">*</span></label>
+            <input type="text" id="uCpf" class="mask-cpf" required maxlength="14" placeholder="000.000.000-00">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="uTelefone">Telefone <span class="req">*</span></label>
+            <input type="tel" id="uTelefone" class="mask-tel" required maxlength="15" placeholder="(00) 90000-0000">
+          </div>
+          <div class="form-group">
+            <label for="uNascimento">Data de nascimento</label>
+            <input type="date" id="uNascimento">
+          </div>
+        </div>
+
+        <!-- Só faz sentido para morador -->
+        <div id="camposMorador" hidden>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="uUnidade">Unidade <span class="req">*</span></label>
+              <input type="text" id="uUnidade" maxlength="20" placeholder="Ex: 204">
+            </div>
+            <div class="form-group">
+              <label for="uBloco">Bloco / Torre</label>
+              <input type="text" id="uBloco" maxlength="20" placeholder="Deixe vazio se não houver">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="uOcupacao">Tipo de ocupação <span class="req">*</span></label>
+            <select id="uOcupacao">
+              <option value="" disabled selected>Selecione</option>
+              <option value="proprietario">Proprietário</option>
+              <option value="inquilino">Inquilino</option>
+              <option value="coabitante">Coabitante autorizado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="uSenha">Senha <span class="req" id="senhaObrigatoria">*</span></label>
+            <input type="password" id="uSenha" minlength="8" maxlength="72" placeholder="Mínimo 8 caracteres">
+            <p class="captura-dica" id="dicaSenha">Ao menos uma letra e um número ou símbolo.</p>
+          </div>
+          <div class="form-group" id="grupoStatus" hidden>
+            <label for="uStatus">Status</label>
+            <select id="uStatus">
+              <option value="ativo">Ativo</option>
+              <option value="aguardando_aprovacao">Aguardando aprovação</option>
+              <option value="recusado">Recusado</option>
+              <option value="inativo">Inativo</option>
+            </select>
+          </div>
+        </div>
+
+        <p class="modal-erro" id="modalErro" role="alert"></p>
+
+        <div class="modal-acoes">
+          <button type="button" class="btn-secundario" id="btnCancelar">Cancelar</button>
+          <button type="submit" class="btn-primario" id="btnSalvar">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<script src="../../assets/js/validation.js"></script>
+<script src="../../assets/js/admin-ui.js"></script>
+<script>
+/* Gestão de usuários — o administrador cria, edita e remove síndicos,
+   porteiros e moradores em qualquer condomínio. */
+(function() {
+  var api = SmartCondo.api;
+  var ui = SmartCondo.ui;
+
+  var tabela = document.getElementById('tabela');
+  var estado = document.getElementById('estado');
+  var modal = ui.modal('modal', 'formUsuario', 'modalErro');
+
+  var editando = null;
+  var condominios = [];
+
+  var campo = function(id) { return document.getElementById(id); };
+
+  /* Unidade e ocupação só existem para morador — o servidor recusa se
+     vierem para os outros papéis. */
+  function alternarCamposMorador() {
+    var ehMorador = campo('uPapel').value === 'morador';
+    campo('camposMorador').hidden = !ehMorador;
+    if (!ehMorador) {
+      campo('uUnidade').value = '';
+      campo('uBloco').value = '';
+      campo('uOcupacao').value = '';
+    }
+  }
+
+  function abrirNovo() {
+    editando = null;
+    campo('modalTitulo').lastChild.textContent = 'Novo usuário';
+    campo('modalSub').textContent =
+      'Quem é cadastrado por aqui já entra ativo, sem código de confirmação.';
+    modal.limpar();
+
+    campo('uCondominio').disabled = false;
+    campo('uPapel').disabled = false;
+    campo('grupoStatus').hidden = true;
+    campo('senhaObrigatoria').hidden = false;
+    campo('dicaSenha').textContent = 'Ao menos uma letra e um número ou símbolo.';
+    alternarCamposMorador();
+    modal.abrir();
+  }
+
+  function abrirEdicao(u) {
+    editando = u;
+    campo('modalTitulo').lastChild.textContent = 'Editar usuário';
+    campo('modalSub').textContent = 'Deixe a senha em branco para mantê-la.';
+    modal.limpar();
+
+    campo('uNome').value = u.nome;
+    campo('uEmail').value = u.email;
+    campo('uCpf').value = ui.formatarCpf(u.cpf);
+    campo('uTelefone').value = ui.formatarTelefone(u.telefone);
+    campo('uCondominio').value = u.condominio_id || '';
+    campo('uPapel').value = u.papel;
+    campo('uStatus').value = u.status;
+
+    // O papel e o condomínio de um usuário existente não mudam por aqui:
+    // trocar o papel mexeria em permissões, unidade e histórico.
+    campo('uCondominio').disabled = true;
+    campo('uPapel').disabled = true;
+    campo('grupoStatus').hidden = false;
+    campo('senhaObrigatoria').hidden = true;
+    campo('dicaSenha').textContent = 'Deixe em branco para manter a senha atual.';
+
+    alternarCamposMorador();
+    if (u.papel === 'morador' && u.unidade) {
+      var partes = u.unidade.split(' ');
+      if (partes.length > 1) {
+        campo('uBloco').value = partes.slice(0, -1).join(' ');
+        campo('uUnidade').value = partes[partes.length - 1];
+      } else {
+        campo('uUnidade').value = u.unidade;
+      }
+      campo('uOcupacao').value = u.tipo_ocupacao || '';
+    }
+    modal.abrir();
+  }
+
+  function montarLinha(u) {
+    var linha = document.createElement('div');
+    linha.className = 'table-row cols-6';
+    linha.innerHTML =
+      '<span><strong></strong><br><small class="lista-email"></small></span>' +
+      '<span></span><span></span><span></span>' +
+      '<span><span class="badge"></span></span>' +
+      '<span class="acoes-linha">' +
+        '<button type="button" class="btn-acao" data-acao="editar" title="Editar"><img src="../../assets/img/icons/pen.svg" alt="Editar"></button>' +
+        '<button type="button" class="btn-acao perigo" data-acao="remover" title="Remover"><img src="../../assets/img/icons/xmark.svg" alt="Remover"></button>' +
+      '</span>';
+
+    linha.children[0].firstChild.textContent = u.nome;
+    linha.children[0].querySelector('.lista-email').textContent = u.email;
+    linha.children[1].textContent = ui.ROTULO_PAPEL[u.papel] || u.papel;
+    linha.children[2].textContent = u.condominio_nome || '—';
+    linha.children[3].textContent = u.unidade || '—';
+
+    var selo = linha.children[4].firstChild;
+    selo.className = 'badge ' + (ui.CLASSE_STATUS[u.status] || 'badge-neutral');
+    selo.textContent = ui.ROTULO_STATUS[u.status] || u.status;
+
+    linha.querySelector('[data-acao=editar]').addEventListener('click', function() {
+      abrirEdicao(u);
+    });
+    linha.querySelector('[data-acao=remover]').addEventListener('click', function() {
+      if (!confirm('Remover ' + u.nome + '?\n\nO acesso é encerrado, mas o histórico dele é mantido.')) return;
+      api.remover('/admin/usuarios/' + u.id)
+        .then(carregar)
+        .catch(function(e) { alert(e.message); });
+    });
+    return linha;
+  }
+
+  function carregar() {
+    var filtros = [];
+    var busca = campo('buscaUsuario').value.trim();
+    if (busca) filtros.push('busca=' + encodeURIComponent(busca));
+    if (campo('filtroCondominio').value) filtros.push('condominio_id=' + campo('filtroCondominio').value);
+    if (campo('filtroPapel').value) filtros.push('papel=' + campo('filtroPapel').value);
+    if (campo('filtroStatus').value) filtros.push('status=' + campo('filtroStatus').value);
+
+    estado.textContent = 'Carregando…';
+    api.get('/admin/usuarios' + (filtros.length ? '?' + filtros.join('&') : ''))
+      .then(function(lista) {
+        // O próprio administrador não aparece na gestão dos condomínios.
+        lista = lista.filter(function(u) { return u.papel !== 'admin'; });
+
+        ui.limparTabela(tabela);
+        if (!lista.length) {
+          estado.textContent = 'Nenhum usuário encontrado com esses filtros.';
+          return;
+        }
+        estado.textContent = '';
+        lista.forEach(function(u) { tabela.appendChild(montarLinha(u)); });
+      })
+      .catch(function(e) { estado.textContent = e.message; });
+  }
+
+  function carregarCondominios() {
+    return api.get('/admin/condominios').then(function(lista) {
+      condominios = lista;
+      [campo('filtroCondominio'), campo('uCondominio')].forEach(function(select) {
+        lista.forEach(function(c) {
+          var op = document.createElement('option');
+          op.value = c.id;
+          op.textContent = c.nome;
+          select.appendChild(op);
+        });
+      });
+    });
+  }
+
+  campo('btnNovoUsuario').addEventListener('click', abrirNovo);
+  campo('uPapel').addEventListener('change', alternarCamposMorador);
+  campo('buscaUsuario').addEventListener('input', ui.aguardar(carregar, 300));
+  ['filtroCondominio', 'filtroPapel', 'filtroStatus'].forEach(function(id) {
+    campo(id).addEventListener('change', carregar);
+  });
+
+  modal.aoEnviar(function() {
+    var papel = campo('uPapel').value;
+    var senha = campo('uSenha').value;
+
+    if (editando) {
+      var alteracao = {
+        nome: campo('uNome').value.trim(),
+        email: campo('uEmail').value.trim(),
+        telefone: campo('uTelefone').value,
+        status: campo('uStatus').value
+      };
+      if (campo('uNascimento').value) alteracao.data_nascimento = campo('uNascimento').value;
+      if (senha) alteracao.senha = senha;
+      if (papel === 'morador') {
+        alteracao.unidade_numero = campo('uUnidade').value.trim();
+        alteracao.unidade_bloco = campo('uBloco').value.trim() || 'unico';
+        alteracao.tipo_ocupacao = campo('uOcupacao').value;
+      }
+      return api.put('/admin/usuarios/' + editando.id, alteracao);
+    }
+
+    var condominioId = campo('uCondominio').value;
+    if (!condominioId || !papel) {
+      modal.erro('Escolha o condomínio e o papel.');
+      return null;
+    }
+    if (!senha) {
+      modal.erro('Defina uma senha para o novo usuário.');
+      return null;
+    }
+
+    var corpo = {
+      nome: campo('uNome').value.trim(),
+      email: campo('uEmail').value.trim(),
+      cpf: campo('uCpf').value,
+      telefone: campo('uTelefone').value,
+      senha: senha,
+      papel: papel
+    };
+    if (campo('uNascimento').value) corpo.data_nascimento = campo('uNascimento').value;
+    if (papel === 'morador') {
+      corpo.unidade_numero = campo('uUnidade').value.trim();
+      corpo.unidade_bloco = campo('uBloco').value.trim() || 'unico';
+      corpo.tipo_ocupacao = campo('uOcupacao').value;
+    }
+    return api.post('/admin/condominios/' + condominioId + '/usuarios', corpo);
+  }, function() {
+    modal.fechar();
+    carregar();
+  });
+
+  carregarCondominios().then(carregar).catch(function(e) {
+    estado.textContent = e.message;
+  });
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

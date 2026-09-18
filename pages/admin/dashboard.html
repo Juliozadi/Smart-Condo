@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Painel do Administrador</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-body layout-desktop">
+  <header class="app-bar">
+    <div class="app-bar-inner wide">
+      <a href="dashboard.html" class="app-bar-brand">
+        <img src="../../assets/img/logo.png" alt="SmartCondo" class="logo-sm">
+        <span class="brand-name">Smart<strong>Condo</strong></span>
+      </a>
+      <div class="app-bar-right">
+        <span class="profile-link">
+          <span class="profile-avatar"><img src="../../assets/img/icons/shield-halved.svg" alt="" style="width:16px;height:16px;display:block"></span>
+          <span class="profile-name" id="hdrName">Administrador</span>
+          <span class="profile-role">Administrador</span>
+        </span>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-wrapper wide">
+
+    <div class="dash-greeting">
+      <p class="greeting-sub">Administração da plataforma</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt=""> <span id="saudacaoNome">Administrador</span></h1>
+      <p class="greeting-condo"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Condomínios, síndicos, porteiros e moradores</p>
+    </div>
+
+    <div class="stats-row" id="indicadores" aria-live="polite">
+      <div class="stat-card teal"><span class="stat-value" id="totCondominios">—</span><span class="stat-label"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Condomínios</span></div>
+      <div class="stat-card purple"><span class="stat-value" id="totSindicos">—</span><span class="stat-label"><img src="../../assets/img/icons/star.svg" width="16" height="16" alt="">Síndicos</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totPorteiros">—</span><span class="stat-label"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt="">Porteiros</span></div>
+      <div class="stat-card teal"><span class="stat-value" id="totMoradores">—</span><span class="stat-label"><img src="../../assets/img/icons/moradores.svg" width="16" height="16" alt="">Moradores</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totPendentes">—</span><span class="stat-label"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Aguardando</span></div>
+    </div>
+
+    <p class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Gestão</p>
+    <div class="dash-grid">
+      <a href="condominios.html" class="dash-card">
+        <div class="card-icon icon-teal"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""></div>
+        <div class="card-info"><h4>Condomínios</h4><p>Cadastrar, editar, excluir e gerar código de acesso</p></div>
+      </a>
+      <a href="usuarios.html" class="dash-card">
+        <div class="card-icon icon-purple"><img src="../../assets/img/icons/moradores.svg" width="16" height="16" alt=""></div>
+        <div class="card-info"><h4>Usuários</h4><p>Síndicos, porteiros e moradores de todos os condomínios</p></div>
+      </a>
+    </div>
+
+    <p class="section-title"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Condomínios Cadastrados</p>
+    <div class="data-table" id="tabelaCondominios" aria-live="polite">
+      <div class="table-head cols-5">
+        <span>Condomínio</span><span>Cidade</span><span>Síndico</span><span>Moradores</span><span>Código</span>
+      </div>
+      <div class="table-row cols-5"><span>Carregando…</span><span></span><span></span><span></span><span></span></div>
+    </div>
+
+  </main>
+
+<script src="../../assets/js/validation.js"></script>
+<script>
+/* Painel do administrador: números da plataforma e a lista de condomínios. */
+(function() {
+  var api = SmartCondo.api;
+
+  function texto(id, valor) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = valor;
+  }
+
+  document.addEventListener('smartcondo:sessao', function(e) {
+    texto('saudacaoNome', e.detail.nome);
+  });
+
+  api.get('/admin/resumo').then(function(r) {
+    texto('totCondominios', r.condominios);
+    texto('totSindicos', r.sindicos);
+    texto('totPorteiros', r.porteiros);
+    texto('totMoradores', r.moradores);
+    texto('totPendentes', r.aguardando_aprovacao);
+  }).catch(function() {});
+
+  api.get('/admin/condominios').then(function(lista) {
+    var tabela = document.getElementById('tabelaCondominios');
+    var cabecalho = tabela.querySelector('.table-head');
+    tabela.innerHTML = '';
+    tabela.appendChild(cabecalho);
+
+    if (!lista.length) {
+      var vazio = document.createElement('div');
+      vazio.className = 'table-row cols-5';
+      vazio.innerHTML = '<span>Nenhum condomínio cadastrado ainda.</span><span></span><span></span><span></span><span></span>';
+      tabela.appendChild(vazio);
+      return;
+    }
+
+    lista.forEach(function(c) {
+      var linha = document.createElement('a');
+      linha.className = 'table-row cols-5';
+      linha.href = 'condominios.html?id=' + c.id;
+      linha.innerHTML =
+        '<span><strong></strong></span>' +
+        '<span></span>' +
+        '<span></span>' +
+        '<span></span>' +
+        '<span><code class="codigo-acesso"></code></span>';
+      // textContent evita que nome ou cidade vindos do banco virem HTML.
+      linha.children[0].firstChild.textContent = c.nome;
+      linha.children[1].textContent = c.cidade + ' - ' + c.uf;
+      linha.children[2].textContent = c.sindico_nome || 'sem síndico';
+      linha.children[3].textContent = c.total_moradores;
+      linha.children[4].firstChild.textContent = c.codigo_acesso;
+      tabela.appendChild(linha);
+    });
+  }).catch(function() {});
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>
