@@ -14,7 +14,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.api.routers import auth, condominios, reservas, usuarios
+from app.api.routers import (
+    auth, comunicados, condominios, financeiro, portaria, reservas, usuarios,
+)
 from app.core.config import settings
 
 logging.basicConfig(
@@ -69,6 +71,9 @@ app.include_router(auth.router, prefix="/api/v1")
 app.include_router(condominios.router, prefix="/api/v1")
 app.include_router(usuarios.router, prefix="/api/v1")
 app.include_router(reservas.router, prefix="/api/v1")
+app.include_router(portaria.router, prefix="/api/v1")
+app.include_router(financeiro.router, prefix="/api/v1")
+app.include_router(comunicados.router, prefix="/api/v1")
 
 
 @app.get("/api/v1/saude", tags=["Serviço"], summary="Verificação de disponibilidade")
