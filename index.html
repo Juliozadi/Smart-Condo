@@ -102,13 +102,13 @@
 
     <!-- Indicador de perfil detectado (preenchido via JS) -->
     <div class="perfil-detectado" id="perfilDetectado">
-      <img src="/assets/img/icons/circle-check.svg" width="16" height="16" alt="">
+      <img src="assets/img/icons/circle-check.svg" width="16" height="16" alt="">
       <span id="perfilTexto"></span>
     </div>
 
     <!-- Mensagem de erro -->
     <div class="erro-login" id="erroLogin">
-      <img src="/assets/img/icons/circle-xmark.svg" width="16" height="16" alt="">
+      <img src="assets/img/icons/circle-xmark.svg" width="16" height="16" alt="">
       <span>Senha inválida. Verifique suas credenciais e tente novamente.</span>
     </div>
 
@@ -116,7 +116,7 @@
 
       <!-- Campo de e-mail -->
       <div class="input-box">
-        <img src="/assets/img/icons/envelope.svg" width="16" height="16" alt="">
+        <img src="assets/img/icons/envelope.svg" width="16" height="16" alt="">
         <input type="email" id="emailInput"
           placeholder="E-mail ou telefone"
           required autocomplete="username">
@@ -124,7 +124,7 @@
 
       <!-- Campo de senha + botão olhinho -->
       <div class="input-box">
-        <img src="/assets/img/icons/lock.svg" width="16" height="16" alt="">
+        <img src="assets/img/icons/lock.svg" width="16" height="16" alt="">
         <input type="password" id="senhaInput"
           placeholder="Senha"
           required autocomplete="current-password"
@@ -171,9 +171,9 @@
 
     <div class="contact">
       <p>
-        <img src="/assets/img/icons/envelope.svg" width="16" height="16" alt="">smartcondoip@gmail.com
+        <img src="assets/img/icons/envelope.svg" width="16" height="16" alt="">smartcondoip@gmail.com
         &nbsp;·&nbsp;
-        <img src="/assets/img/icons/phone.svg" width="16" height="16" alt="">(67) 91234-5678
+        <img src="assets/img/icons/phone.svg" width="16" height="16" alt="">(67) 91234-5678
       </p>
     </div>
 
@@ -238,13 +238,13 @@
 
       if (senha === SENHAS.morador) {
         div.classList.add("visivel", "morador");
-        texto.innerHTML = '<img src="/assets/img/icons/user.svg" width="16" height="16" alt="">Perfil detectado: <strong>Morador</strong>';
+        texto.innerHTML = '<img src="assets/img/icons/user.svg" width="16" height="16" alt="">Perfil detectado: <strong>Morador</strong>';
       } else if (senha === SENHAS.porteiro) {
         div.classList.add("visivel", "porteiro");
-        texto.innerHTML = '<img src="/assets/img/icons/shield-halved.svg" width="16" height="16" alt="">Perfil detectado: <strong>Porteiro</strong>';
+        texto.innerHTML = '<img src="assets/img/icons/shield-halved.svg" width="16" height="16" alt="">Perfil detectado: <strong>Porteiro</strong>';
       } else if (senha === SENHAS.sindico) {
         div.classList.add("visivel", "sindico");
-        texto.innerHTML = '<img src="/assets/img/icons/star.svg" width="16" height="16" alt="">Perfil detectado: <strong>Síndico</strong>';
+        texto.innerHTML = '<img src="assets/img/icons/star.svg" width="16" height="16" alt="">Perfil detectado: <strong>Síndico</strong>';
       }
       // Se não casar com nenhuma senha, o indicador fica oculto
     }

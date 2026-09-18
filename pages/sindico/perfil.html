@@ -87,39 +87,39 @@
 <body class="dashboard-body layout-mobile">
   <header class="app-bar"><div class="app-bar-inner wide">
     <div class="app-bar-left">
-      <a href="dashboard.html" class="mobile-back"><img src="/assets/img/icons/arrow-left.svg" width="16" height="16" alt=""></a>
+      <a href="dashboard.html" class="mobile-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""></a>
       <a href="../../index.html" class="app-bar-brand"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
     </div>
-    <div class="app-bar-right"><span class="profile-link"><span class="profile-avatar"><img src="/assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role">Síndico</span></span><a href="../../index.html" class="logout-btn"><img src="/assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
+    <div class="app-bar-right"><span class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role">Síndico</span></span><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
   </div></header>
   <main class="dash-wrapper wide">
 
     <div class="dash-greeting">
       <p class="greeting-sub"> Perfil do Síndico</p>
-      <h2 class="greeting-name"><img src="/assets/img/icons/user.svg" width="16" height="16" alt="">Meu Perfil</h2>
+      <h2 class="greeting-name"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Meu Perfil</h2>
       <p class="greeting-condo"> Seus dados pessoais e informações do condomínio</p>
     </div>
 
     <div class="profile-top">
       <div class="p-avatar-wrap">
         <div class="p-avatar sindico" onclick="abrirModalFoto()">
-          <img src="/assets/img/icons/user.svg" width="16" height="16" alt="" id="avatarIcon">
+          <img src="../../assets/img/icons/user.svg" width="16" height="16" alt="" id="avatarIcon">
           <img id="avatarPreview" src="" alt="" style="display:none;">
-          <div class="avatar-overlay"><img src="/assets/img/icons/camera.svg" width="16" height="16" alt=""></div>
-          <button type="button" class="avatar-remove" id="btnRemoveAvatar" title="Remover foto" onclick="event.stopPropagation();removerAvatar()"><img src="/assets/img/icons/xmark.svg" width="10" height="10" alt=""></button>
-          <button type="button" class="avatar-edit-icon" id="btnEditAvatar" onclick="event.stopPropagation();document.getElementById('avatarInput').click()" title="Alterar foto"><img src="/assets/img/icons/camera.svg" width="14" height="14" alt=""></button>
+          <div class="avatar-overlay"><img src="../../assets/img/icons/camera.svg" width="16" height="16" alt=""></div>
+          <button type="button" class="avatar-remove" id="btnRemoveAvatar" title="Remover foto" onclick="event.stopPropagation();removerAvatar()"><img src="../../assets/img/icons/xmark.svg" width="10" height="10" alt=""></button>
+          <button type="button" class="avatar-edit-icon" id="btnEditAvatar" onclick="event.stopPropagation();document.getElementById('avatarInput').click()" title="Alterar foto"><img src="../../assets/img/icons/camera.svg" width="14" height="14" alt=""></button>
         </div>
       </div>
       <div class="p-name">
         <h1 id="viewNome">Roberto Nascimento</h1>
-        <p class="p-role"><img src="/assets/img/icons/star.svg" width="16" height="16" alt=""> Síndico</p>
+        <p class="p-role"><img src="../../assets/img/icons/star.svg" width="16" height="16" alt=""> Síndico</p>
         <span class="p-tag">Residencial das Palmeiras</span>
-        <div class="p-status" id="pStatus"><img src="/assets/img/icons/circle-check.svg" width="16" height="16" alt=""> Dados salvos automaticamente</div>
+        <div class="p-status" id="pStatus"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt=""> Dados salvos automaticamente</div>
       </div>
     </div>
 
     <div id="dadosPessoais" class="p-card">
-      <h3><img src="/assets/img/icons/user.svg" width="16" height="16" alt=""> Dados Pessoais</h3>
+      <h3><img src="../../assets/img/icons/user.svg" width="16" height="16" alt=""> Dados Pessoais</h3>
       <div class="p-grid">
         <div class="p-field"><div class="p-lbl">CPF</div><div class="p-val" id="val-cpf"><span class="p-badge"><span class="b-txt">321.654.987-00</span><span class="b-dot"></span></span></div></div>
         <div class="p-field"><div class="p-lbl">RG</div><div class="p-val" id="val-rg"><span class="p-badge"><span class="b-txt">45.678.901-2</span><span class="b-dot"></span></span></div></div>
@@ -131,7 +131,7 @@
     </div>
 
     <div id="dadosCondo" class="p-card">
-      <h3><img src="/assets/img/icons/building.svg" width="16" height="16" alt=""> Dados do Condomínio</h3>
+      <h3><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Dados do Condomínio</h3>
       <div class="p-grid">
         <div class="p-field"><div class="p-lbl">Nome do Condomínio</div><div class="p-val" id="val-condNome"><span class="p-badge"><span class="b-txt">Residencial das Palmeiras</span><span class="b-dot"></span></span></div><div class="p-edit"><input type="text" id="edit-condNome" value="Residencial das Palmeiras"></div></div>
         <div class="p-field"><div class="p-lbl">CNPJ</div><div class="p-val" id="val-cnpj"><span class="p-badge"><span class="b-txt">12.345.678/0001-90</span><span class="b-dot"></span></span></div></div>
@@ -143,7 +143,7 @@
     </div>
 
     <div id="dadosMandato" class="p-card">
-      <h3><img src="/assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Mandato</h3>
+      <h3><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Mandato</h3>
       <div class="p-grid">
         <div class="p-field"><div class="p-lbl">Início do Mandato</div><div class="p-val" id="val-mandatoInicio"><span class="p-badge"><span class="b-txt">Janeiro de 2023</span><span class="b-dot"></span></span></div><div class="p-edit"><input type="text" id="edit-mandatoInicio" value="Janeiro de 2023"></div></div>
         <div class="p-field"><div class="p-lbl">Término do Mandato</div><div class="p-val" id="val-mandatoFim"><span class="p-badge"><span class="b-txt">Janeiro de 2025</span><span class="b-dot"></span></span></div><div class="p-edit"><input type="text" id="edit-mandatoFim" value="Janeiro de 2025"></div></div>
@@ -151,33 +151,33 @@
     </div>
 
     <div class="p-actions" id="viewActions">
-      <button class="action-btn" onclick="entrarEdicao()"><img src="/assets/img/icons/pen.svg" width="16" height="16" alt=""> Editar Perfil</button>
-      <a href="dashboard.html" class="action-btn outline"><img src="/assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar</a>
+      <button class="action-btn" onclick="entrarEdicao()"><img src="../../assets/img/icons/pen.svg" width="16" height="16" alt=""> Editar Perfil</button>
+      <a href="dashboard.html" class="action-btn outline"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar</a>
     </div>
 
     <div class="p-actions" id="editActions" style="display:none;">
-      <button class="action-btn" onclick="salvarDados()"><img src="/assets/img/icons/floppy-disk.svg" width="16" height="16" alt=""> Salvar Alterações</button>
-      <button class="action-btn outline" onclick="cancelarEdicao()"><img src="/assets/img/icons/xmark.svg" width="16" height="16" alt=""> Cancelar</button>
+      <button class="action-btn" onclick="salvarDados()"><img src="../../assets/img/icons/floppy-disk.svg" width="16" height="16" alt=""> Salvar Alterações</button>
+      <button class="action-btn outline" onclick="cancelarEdicao()"><img src="../../assets/img/icons/xmark.svg" width="16" height="16" alt=""> Cancelar</button>
     </div>
 
   </main>
 
   <div class="modal-overlay" id="modalFoto" onclick="fecharModalFoto(event)">
     <div class="modal-card" onclick="event.stopPropagation()">
-      <button class="modal-close" onclick="fecharModalFoto()"><img src="/assets/img/icons/xmark.svg" width="14" height="14" alt=""></button>
+      <button class="modal-close" onclick="fecharModalFoto()"><img src="../../assets/img/icons/xmark.svg" width="14" height="14" alt=""></button>
       <div class="modal-foto-wrap">
-        <img src="/assets/img/icons/user.svg" alt="" id="modalFotoImg">
+        <img src="../../assets/img/icons/user.svg" alt="" id="modalFotoImg">
       </div>
       <div class="modal-actions">
-        <button class="action-btn" id="modalAddFotoBtn" onclick="document.getElementById('avatarInput').click();fecharModalFoto()"><img src="/assets/img/icons/camera.svg" width="16" height="16" alt=""> Adicionar foto</button>
-        <button class="action-btn" id="modalTrocarBtn" style="display:none" onclick="document.getElementById('avatarInput').click();fecharModalFoto()"><img src="/assets/img/icons/camera.svg" width="16" height="16" alt=""> Trocar foto</button>
-        <button class="action-btn outline danger" id="modalRemoverBtn" style="display:none" onclick="removerAvatar();fecharModalFoto()"><img src="/assets/img/icons/circle-xmark.svg" width="16" height="16" alt=""> Remover foto</button>
+        <button class="action-btn" id="modalAddFotoBtn" onclick="document.getElementById('avatarInput').click();fecharModalFoto()"><img src="../../assets/img/icons/camera.svg" width="16" height="16" alt=""> Adicionar foto</button>
+        <button class="action-btn" id="modalTrocarBtn" style="display:none" onclick="document.getElementById('avatarInput').click();fecharModalFoto()"><img src="../../assets/img/icons/camera.svg" width="16" height="16" alt=""> Trocar foto</button>
+        <button class="action-btn outline danger" id="modalRemoverBtn" style="display:none" onclick="removerAvatar();fecharModalFoto()"><img src="../../assets/img/icons/circle-xmark.svg" width="16" height="16" alt=""> Remover foto</button>
       </div>
     </div>
   </div>
 
   <div id="toast" class="toast">
-    <div class="t-icon"><img src="/assets/img/icons/floppy-disk.svg" width="16" height="16" alt=""></div>
+    <div class="t-icon"><img src="../../assets/img/icons/floppy-disk.svg" width="16" height="16" alt=""></div>
     <div class="t-content">
       <span class="t-title" id="toastTitle">Dados salvos</span>
       <span class="t-sub" id="toastSub">Suas informações foram armazenadas com segurança</span>
