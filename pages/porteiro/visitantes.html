@@ -18,25 +18,25 @@
         <span class="brand-name">Smart<strong>Condo</strong></span>
       </a>
       <div class="app-bar-right">
-        <a href="perfil.html" class="profile-link" aria-label="Ver perfil"><span class="profile-avatar"><img src="/assets/img/icons/shield-halved.svg" alt="" aria-hidden="true" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Carlos Pereira</span><span class="profile-role">Porteiro</span></a>
-        <a href="../../index.html" class="logout-btn"><img src="/assets/img/icons/right-from-bracket.svg" width="16" height="16" alt="" aria-hidden="true"> Sair</a>
+        <a href="perfil.html" class="profile-link" aria-label="Ver perfil"><span class="profile-avatar"><img src="../../assets/img/icons/shield-halved.svg" alt="" aria-hidden="true" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Carlos Pereira</span><span class="profile-role">Porteiro</span></a>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt="" aria-hidden="true"> Sair</a>
       </div>
     </div>
   </header>
   <main class="dash-wrapper" id="conteudo-principal" role="main">
 
     <a href="dashboard.html" class="dash-back">
-      <img src="/assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Porteiro
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Porteiro
     </a>
 
     <div class="dash-greeting" role="region" aria-label="Informações do turno">
-      <p class="greeting-sub"><img src="/assets/img/icons/clock.svg" width="16" height="16" alt="" aria-hidden="true">Turno 07h – 15h &nbsp;·&nbsp; Carlos Pereira</p>
-      <h1 class="greeting-name"><img src="/assets/img/icons/person-walking-arrow-right.svg" alt="" aria-hidden="true"> Controle de Visitantes</h1>
-      <p class="greeting-condo"><img src="/assets/img/icons/person-walking-arrow-right.svg" alt="" aria-hidden="true"> Registre entradas e saídas em tempo real</p>
+      <p class="greeting-sub"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="" aria-hidden="true">Turno 07h – 15h &nbsp;·&nbsp; Carlos Pereira</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/person-walking-arrow-right.svg" alt="" aria-hidden="true"> Controle de Visitantes</h1>
+      <p class="greeting-condo"><img src="../../assets/img/icons/person-walking-arrow-right.svg" alt="" aria-hidden="true"> Registre entradas e saídas em tempo real</p>
     </div>
 
     <div class="stats-row" role="region" aria-label="Resumo de visitantes">
-      <div class="stat-card teal"><span class="stat-value" aria-label="4 no condomínio">4</span><span class="stat-label"><img src="/assets/img/icons/building.svg" width="16" height="16" alt="" aria-hidden="true">No cond.</span></div>
+      <div class="stat-card teal"><span class="stat-value" aria-label="4 no condomínio">4</span><span class="stat-label"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="" aria-hidden="true">No cond.</span></div>
       <div class="stat-card blue"><span class="stat-value" aria-label="11 total hoje">11</span><span class="stat-label">Total hoje</span></div>
       <div class="stat-card amber"><span class="stat-value" aria-label="7 saíram">7</span><span class="stat-label">Saíram</span></div>
     </div>
@@ -46,12 +46,12 @@
       <h3> Dados do Visitante</h3>
       <form action="dashboard.html" novalidate aria-label="Formulário de registro de visitante">
         <div class="form-row">
-          <div class="form-group"><label for="nome-visitante"><img src="/assets/img/icons/user.svg" width="16" height="16" alt="" aria-hidden="true">Nome completo</label><input type="text" id="nome-visitante" placeholder="Nome do visitante" required autocomplete="name"></div>
-          <div class="form-group"><label for="doc-visitante"><img src="/assets/img/icons/id-card.svg" width="16" height="16" alt="" aria-hidden="true">CPF / Documento</label><input type="text" id="doc-visitante" placeholder="000.000.000-00" class="mask-cpf" required autocomplete="off"></div>
+          <div class="form-group"><label for="nome-visitante"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="" aria-hidden="true">Nome completo</label><input type="text" id="nome-visitante" placeholder="Nome do visitante" required autocomplete="name"></div>
+          <div class="form-group"><label for="doc-visitante"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="" aria-hidden="true">CPF / Documento</label><input type="text" id="doc-visitante" placeholder="000.000.000-00" class="mask-cpf" required autocomplete="off"></div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="apto-visitante"><img src="/assets/img/icons/building.svg" width="16" height="16" alt="" aria-hidden="true">Visitando o apartamento</label>
+            <label for="apto-visitante"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="" aria-hidden="true">Visitando o apartamento</label>
             <select id="apto-visitante" required>
               <option value="" disabled selected>Selecione o apto</option>
               <option>Apto 101</option><option>Apto 102</option><option>Apto 103</option>
@@ -74,9 +74,22 @@
           </div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label for="placa-visitante"><img src="/assets/img/icons/car.svg" width="16" height="16" alt="" aria-hidden="true">Placa do veículo (opcional)</label><input type="text" id="placa-visitante" placeholder="ABC-1D23" class="mask-placa"></div>
-          <div class="form-group"><label for="hora-visitante"><img src="/assets/img/icons/clock.svg" width="16" height="16" alt="" aria-hidden="true">Horário de entrada</label><input type="time" id="hora-visitante" required></div>
+          <div class="form-group"><label for="placa-visitante"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="" aria-hidden="true">Placa do veículo (opcional)</label><input type="text" id="placa-visitante" placeholder="ABC-1D23" class="mask-placa"></div>
+          <div class="form-group"><label for="hora-visitante"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="" aria-hidden="true">Horário de entrada</label><input type="time" id="hora-visitante" required></div>
         </div>
+        <!-- Vídeo porteiro — doc, seções 6 e 8 -->
+        <div class="captura-foto"
+             data-rotulo="Foto do visitante (vídeo porteiro)"
+             data-dica="A foto é enviada ao morador para que ele confirme se reconhece o visitante antes da liberação da entrada."
+             data-icone="../../assets/img/icons/camera.svg"
+             data-input="foto_visitante"></div>
+
+        <p class="aviso-notificacao">
+          <img src="../../assets/img/icons/bullhorn.svg" alt="">
+          <span>Ao registrar, o morador do apartamento selecionado recebe uma notificação
+          com a foto e precisa <strong>confirmar ou recusar</strong> a entrada.</span>
+        </p>
+
         <button class="action-btn" type="submit" style="margin-top:8px;" aria-label="Registrar entrada do visitante">
           Registrar Entrada
         </button>
@@ -109,7 +122,7 @@
 
     <h2 class="section-title" id="titulo-historico"> Histórico de Hoje — 18/03/2025</h2>
     <div class="data-table history-table" role="region" aria-labelledby="titulo-historico">
-      <div class="table-head cols-5" role="row" aria-label="Cabeçalho da tabela"><span role="columnheader"><img src="/assets/img/icons/user.svg" width="16" height="16" alt="" aria-hidden="true">Visitante</span><span role="columnheader">Apto</span><span role="columnheader">Entrada</span><span role="columnheader">Saída</span><span role="columnheader"> Tipo</span></div>
+      <div class="table-head cols-5" role="row" aria-label="Cabeçalho da tabela"><span role="columnheader"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="" aria-hidden="true">Visitante</span><span role="columnheader">Apto</span><span role="columnheader">Entrada</span><span role="columnheader">Saída</span><span role="columnheader"> Tipo</span></div>
       <div class="table-row cols-5" role="row" aria-label="Ana Carvalho, Apto 204, entrou 07h30, saiu 08h15, Delivery"><span><strong>Ana Carvalho</strong></span><span>204</span><span>07h30</span><span>08h15</span><span><span class="badge badge-neutral">Delivery</span></span></div>
       <div class="table-row cols-5" role="row" aria-label="José Mendes, Apto 101, entrou 07h50, saiu 09h00, Visita"><span><strong>José Mendes</strong></span><span>101</span><span>07h50</span><span>09h00</span><span><span class="badge badge-neutral">Visita</span></span></div>
       <div class="table-row cols-5" role="row" aria-label="Técnico Eletro, Apto 502, entrou 08h20, saiu 10h10, Serviço"><span><strong>Técnico Eletro</strong></span><span>502</span><span>08h20</span><span>10h10</span><span><span class="badge badge-blue">Serviço</span></span></div>
@@ -121,17 +134,7 @@
 
   </main>
 
-  <div class="accessibility-widget" role="region" aria-label="Ferramentas de acessibilidade">
-    <input type="checkbox" id="access-toggle" aria-label="Abrir menu de acessibilidade">
-    <label for="access-toggle" class="access-button" title="Abrir ferramentas de acessibilidade" aria-label="Abrir ferramentas de acessibilidade">
-      <img src="../../assets/img/acessibilidade.png" class="access-icon-img" alt="" aria-hidden="true">
-    </label>
-    <div class="access-menu" role="menu" aria-label="Opções de acessibilidade">
-      <label role="menuitem" tabindex="0"><input type="checkbox" id="font-toggle"> Aumentar fonte</label>
-      <label role="menuitem" tabindex="0"><input type="checkbox" id="contrast-toggle"> Alto contraste</label>
-      <label role="menuitem" tabindex="0"><input type="checkbox" id="read-toggle"> Modo leitura</label>
-    </div>
-  </div>
+  <script src="../../assets/js/foto.js"></script>
   <script src="../../assets/js/validation.js"></script>
   <script>
   document.addEventListener('DOMContentLoaded', function() {

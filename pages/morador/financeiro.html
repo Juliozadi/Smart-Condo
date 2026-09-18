@@ -17,15 +17,15 @@
         <span class="brand-name">Smart<strong>Condo</strong></span>
       </a>
       <div class="app-bar-right">
-        <a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="/assets/img/icons/user.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">João Silva</span><span class="profile-role">Morador</span></a>
-        <a href="../../index.html" class="logout-btn"><img src="/assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
+        <a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/user.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">João Silva</span><span class="profile-role">Morador</span></a>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
       </div>
     </div>
   </header>
   <main class="dash-wrapper">
 
     <a href="dashboard.html" class="dash-back">
-      <img src="/assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Morador
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Morador
     </a>
 
     <div class="balance-card">
@@ -34,28 +34,28 @@
       <p class="balance-sub">Em aberto referente a março/2025</p>
       <div class="balance-pills">
         <span class="balance-pill"> Vence em 27/03</span>
-        <span class="balance-pill"><img src="/assets/img/icons/building.svg" width="16" height="16" alt=""> Cond. das Palmeiras</span>
+        <span class="balance-pill"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Cond. das Palmeiras</span>
       </div>
     </div>
 
     <div class="alert-box warning">
-      <img src="/assets/img/icons/circle-exclamation.svg" width="16" height="16" alt="">
+      <img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt="">
       <span>Seu boleto de <strong>março/2025</strong> vence em 9 dias. Clique em "Ver Boleto" para pagar.</span>
     </div>
 
     <div class="stats-row">
-      <div class="stat-card amber"><span class="stat-value">R$320</span><span class="stat-label"><img src="/assets/img/icons/clock.svg" width="16" height="16" alt="">A pagar</span></div>
-      <div class="stat-card teal"><span class="stat-value">12</span><span class="stat-label"><img src="/assets/img/icons/circle-check.svg" width="16" height="16" alt="">Pagamentos</span></div>
-      <div class="stat-card blue"><span class="stat-value">0</span><span class="stat-label"><img src="/assets/img/icons/xmark.svg" width="16" height="16" alt="">Em atraso</span></div>
+      <div class="stat-card amber"><span class="stat-value">R$320</span><span class="stat-label"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">A pagar</span></div>
+      <div class="stat-card teal"><span class="stat-value">12</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Pagamentos</span></div>
+      <div class="stat-card blue"><span class="stat-value">0</span><span class="stat-label"><img src="../../assets/img/icons/xmark.svg" width="16" height="16" alt="">Em atraso</span></div>
     </div>
 
-    <p class="section-title"><img src="/assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt=""> Boleto em Aberto</p>
+    <p class="section-title"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt=""> Boleto em Aberto</p>
     <div class="form-card" style="border-left:3px solid #e6a23c;">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
         <div>
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
             <div class="card-icon icon-yellow" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;">
-              <img src="/assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt="">
+              <img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt="">
             </div>
             <div>
               <p style="font-size:15px;font-weight:700;color:var(--text);">Taxa de Condomínio — Março 2025</p>
@@ -68,6 +68,60 @@
            Ver Boleto
         </a>
       </div>
+    </div>
+
+    <!-- Formas de pagamento e data da cobrança — doc, seção 6 -->
+    <p class="section-title"><img src="../../assets/img/icons/financeiro.svg" width="16" height="16" alt=""> Como Você Quer Pagar</p>
+    <div class="form-card">
+      <h3>Formas de pagamento disponíveis</h3>
+      <form onsubmit="return salvarPreferenciaPagamento(event)">
+        <div class="pagamento-grid">
+          <label class="pagamento-opcao">
+            <input type="radio" name="forma_pagamento" value="pix" checked>
+            <span class="pagamento-nome"><img src="../../assets/img/icons/bolt.svg" alt="">Pix</span>
+            <span class="pagamento-desc">Compensação imediata, 24h por dia.</span>
+            <span class="pagamento-tag">Baixa na hora</span>
+          </label>
+          <label class="pagamento-opcao">
+            <input type="radio" name="forma_pagamento" value="boleto">
+            <span class="pagamento-nome"><img src="../../assets/img/icons/file-invoice-dollar.svg" alt="">Boleto bancário</span>
+            <span class="pagamento-desc">Pague em qualquer banco ou lotérica.</span>
+            <span class="pagamento-tag aviso">Baixa em até 3 dias</span>
+          </label>
+          <label class="pagamento-opcao">
+            <input type="radio" name="forma_pagamento" value="debito_automatico">
+            <span class="pagamento-nome"><img src="../../assets/img/icons/circle-check.svg" alt="">Débito automático</span>
+            <span class="pagamento-desc">Debitado na conta na data escolhida.</span>
+            <span class="pagamento-tag">Sem esquecer</span>
+          </label>
+          <label class="pagamento-opcao">
+            <input type="radio" name="forma_pagamento" value="cartao">
+            <span class="pagamento-nome"><img src="../../assets/img/icons/id-card.svg" alt="">Cartão de crédito</span>
+            <span class="pagamento-desc">Em até 2x, com taxa da operadora.</span>
+            <span class="pagamento-tag aviso">Com acréscimo</span>
+          </label>
+        </div>
+
+        <div class="cobranca-data">
+          <div class="form-group">
+            <label for="diaCobranca"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt="">Dia da cobrança mensal</label>
+            <select id="diaCobranca" name="dia_cobranca">
+              <option value="5">Todo dia 5</option>
+              <option value="10" selected>Todo dia 10</option>
+              <option value="15">Todo dia 15</option>
+              <option value="20">Todo dia 20</option>
+              <option value="27">Todo dia 27</option>
+            </select>
+          </div>
+          <p class="cobranca-nota">
+            Você escolhe o dia em que a cobrança mensal é gerada. A alteração vale a
+            partir da próxima competência e não muda o boleto já em aberto.
+          </p>
+        </div>
+
+        <button class="action-btn" type="submit" style="margin-top:4px;">Salvar preferência</button>
+        <p class="captura-status" id="pagamentoStatus" role="status"></p>
+      </form>
     </div>
 
     <p class="section-title"> Histórico de Pagamentos</p>
@@ -102,18 +156,41 @@
 
   </main>
 
-  <div class="accessibility-widget">
-    <input type="checkbox" id="access-toggle">
-    <label for="access-toggle" class="access-button" title="Acessibilidade">
-      <img src="../../assets/img/acessibilidade.png" class="access-icon-img" alt="">
-    </label>
-    <div class="access-menu">
-      <label><input type="checkbox" id="font-toggle">  Aumentar fonte</label>
-      <label><input type="checkbox" id="contrast-toggle">  Alto contraste</label>
-      <label><input type="checkbox" id="read-toggle">  Modo leitura</label>
-    </div>
-  </div>
 <script src="../../assets/js/validation.js"></script>
+<script>
+/* Preferência de pagamento — doc, seção 6.
+   Protótipo: guarda no localStorage. Na integração vira
+   PUT /moradores/me/preferencia-cobranca. */
+function salvarPreferenciaPagamento(e) {
+  e.preventDefault();
+  var forma = document.querySelector('input[name="forma_pagamento"]:checked');
+  var dia = document.getElementById('diaCobranca');
+  var status = document.getElementById('pagamentoStatus');
+
+  var pref = { forma: forma ? forma.value : 'pix', dia: dia ? dia.value : '10' };
+  try { localStorage.setItem('smartcondo_pref_cobranca', JSON.stringify(pref)); } catch (_) {}
+
+  var nomes = { pix: 'Pix', boleto: 'Boleto bancário',
+                debito_automatico: 'Débito automático', cartao: 'Cartão de crédito' };
+  if (status) {
+    status.textContent = 'Preferência salva: ' + (nomes[pref.forma] || pref.forma) +
+                         ', cobrança todo dia ' + pref.dia + '.';
+  }
+  return false;
+}
+
+// Restaura a escolha anterior ao abrir a tela
+(function() {
+  try {
+    var pref = JSON.parse(localStorage.getItem('smartcondo_pref_cobranca'));
+    if (!pref) return;
+    var radio = document.querySelector('input[name="forma_pagamento"][value="' + pref.forma + '"]');
+    if (radio) radio.checked = true;
+    var dia = document.getElementById('diaCobranca');
+    if (dia && pref.dia) dia.value = pref.dia;
+  } catch (_) {}
+})();
+</script>
 <script>try{var _d=JSON.parse(localStorage.getItem("smartcondo_perfil_morador"));if(_d&&_d.nome)document.getElementById("hdrName").textContent=_d.nome;}catch(_e){}</script>
 <script src="../../assets/js/acessibilidade.js"></script>
 </body>

@@ -1442,3 +1442,139 @@ a, button, .role-btn, .dash-card, .list-item, .register-card, .register-card-com
 
 /* ── Card hover glow refinado ──────────────────────────────── */
 .form-card:hover { box-shadow: var(--shadow-md); border-color: rgba(16,182,168,.15); transition: all .25s var(--ease-smooth); }
+/* ═════════════════════════════════════════════════════════════
+   TEMA ESCURO / CLARO  (Documentação, seção 12.4)
+   Por padrão o SmartCondo segue a definição de modo de cor do
+   sistema operacional; o usuário pode sobrescrever a qualquer
+   momento pelo widget de acessibilidade (auto / claro / escuro).
+   A classe .tema-escuro é aplicada no <body> por acessibilidade.js.
+   ═════════════════════════════════════════════════════════════ */
+body.tema-escuro {
+  --primary:        #16c9b9;
+  --primary-dark:   #12ab9e;
+  --primary-light:  #103734;
+  --primary-glow:   rgba(22,201,185,.28);
+
+  --background:     #0c1719;
+  --surface:        #152427;
+  --surface-2:      #1b2f33;
+  --border:         #2d474d;
+  --border-soft:    #23393e;
+
+  --text:           #eaf4f6;
+  --text-2:         #c6dade;
+  --muted:          #8fa9af;
+
+  --shadow-xs:  0 1px 3px rgba(0,0,0,.45), 0 1px 2px rgba(0,0,0,.35);
+  --shadow-sm:  0 0 0 1px rgba(255,255,255,.05), 0 2px 6px rgba(0,0,0,.4), 0 8px 20px rgba(0,0,0,.45);
+  --shadow-md:  0 0 0 1px rgba(255,255,255,.06), 0 4px 10px rgba(0,0,0,.45), 0 16px 40px rgba(0,0,0,.5);
+  --shadow-lg:  0 0 0 1px rgba(255,255,255,.06), 0 8px 20px rgba(0,0,0,.5), 0 32px 64px rgba(0,0,0,.55);
+  --shadow-btn: 0 2px 6px rgba(22,201,185,.3), 0 8px 20px rgba(22,201,185,.22);
+
+  color-scheme: dark;
+  background: var(--background);
+  color: var(--text);
+}
+
+/* dashboard.css carrega depois e define body.dashboard-body com a mesma
+   especificidade; por isso o fundo escuro precisa de um seletor mais forte. */
+body.dashboard-body.tema-escuro {
+  background-color: #0c1719;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 0% 0%,     rgba(22,201,185,.10) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 100% 100%, rgba(22,201,185,.07) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='1' cy='1' r='1' fill='%2316c9b9' fill-opacity='.07'/%3E%3C/svg%3E");
+}
+
+/* ── Superfícies que estavam com branco fixo ──────────────────── */
+body.tema-escuro .dash-wrapper,
+body.tema-escuro .history-table .table-row {
+  background: var(--surface);
+}
+body.tema-escuro .dash-wrapper {
+  border-color: rgba(22,201,185,.22);
+  box-shadow: 0 2px 8px rgba(0,0,0,.45), 0 8px 32px rgba(0,0,0,.4);
+}
+body.tema-escuro .history-table .table-row:nth-child(even) { background: var(--surface-2); }
+body.tema-escuro .history-table .table-row:hover {
+  background: linear-gradient(90deg, rgba(22,201,185,.16), rgba(22,201,185,.06));
+}
+body.tema-escuro .login-brand { background: var(--surface); }
+body.tema-escuro .logout-btn:hover {
+  background: rgba(240,80,80,.16); color: #ff9c9c; border-color: rgba(240,80,80,.4);
+}
+
+/* ── Caixas de alerta (âmbar / vermelho) ──────────────────────── */
+body.tema-escuro .alert-box.warning,
+body.tema-escuro .step-alert {
+  background: linear-gradient(135deg, rgba(230,162,60,.16), rgba(230,162,60,.07));
+  border-color: rgba(230,162,60,.4); color: #f3c877;
+}
+body.tema-escuro .step-alert.danger {
+  background: linear-gradient(135deg, rgba(245,108,108,.16), rgba(245,108,108,.07));
+  border-color: rgba(245,108,108,.4); color: #ffa8a8;
+}
+body.tema-escuro .alert-box { color: #7fdcd2; }
+
+/* ── Tabelas, listas e formulários ────────────────────────────── */
+body.tema-escuro .table-head { background: var(--surface-2); color: var(--text); }
+body.tema-escuro .table-row:hover { background: rgba(22,201,185,.1); }
+body.tema-escuro input,
+body.tema-escuro select,
+body.tema-escuro textarea {
+  background: var(--surface-2); color: var(--text); border-color: var(--border);
+}
+body.tema-escuro input::placeholder,
+body.tema-escuro textarea::placeholder { color: var(--muted); }
+
+/* ── Ícones SVG monocromáticos: clareia para ler no escuro ────── */
+body.tema-escuro img[src*="/icons/"] { filter: invert(.88) hue-rotate(180deg) brightness(1.12); }
+body.tema-escuro .dash-greeting img[src*="/icons/"] { filter: brightness(0) invert(1); }
+body.tema-escuro .action-btn img[src*="/icons/"],
+body.tema-escuro .app-bar img[src*="/icons/"] { filter: none; }
+
+/* O modo alto contraste tem prioridade sobre o tema escuro */
+body.tema-escuro.alto-contraste { color-scheme: light; }
+
+/* ── Seletor de modo de cor no widget (doc 12.4) ──────────────── */
+.access-theme {
+  margin-top: 6px; padding: 10px 12px 4px;
+  border-top: 1px solid var(--border-soft);
+}
+.access-theme-label {
+  display: block; font-size: 11px; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+}
+.access-theme-opts {
+  display: flex; gap: 4px;
+  background: var(--surface-2); padding: 3px;
+  border-radius: var(--radius-xs); border: 1px solid var(--border-soft);
+}
+.access-theme-btn {
+  flex: 1; border: none; background: transparent; cursor: pointer;
+  font-family: inherit; font-size: 12px; font-weight: 600; color: var(--text-2);
+  padding: 7px 4px; border-radius: 6px;
+  transition: all .15s var(--ease-smooth);
+}
+.access-theme-btn:hover { background: var(--primary-light); color: var(--primary); }
+.access-theme-btn.ativo {
+  background: var(--primary); color: #fff;
+  box-shadow: 0 1px 3px var(--primary-glow);
+}
+.access-theme-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--primary-glow), 0 0 0 1px var(--primary);
+}
+
+/* O botão do VLibras não pode cobrir o widget de acessibilidade */
+div[vw] { z-index: 998; }
+
+/* ── Barra superior no tema escuro ────────────────────────────── */
+body.tema-escuro .app-bar {
+  background: rgba(21,36,39,.92);
+  border-bottom-color: rgba(22,201,185,.22);
+  box-shadow: 0 1px 0 rgba(0,0,0,.35), 0 4px 16px rgba(0,0,0,.35);
+}
+body.tema-escuro .layout-mobile .tab-bar,
+body.tema-escuro .bottom-nav,
+body.tema-escuro .tab-bar { background: rgba(21,36,39,.96); border-top-color: var(--border-soft); }

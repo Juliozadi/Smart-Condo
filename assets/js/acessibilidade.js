@@ -1,3 +1,11 @@
+/* ═══════════════════════════════════════════════════════════════
+   SmartCondo — Acessibilidade
+   Documentação, seção 12:
+     12.2 VLibras         — tradução para Libras (deficiência auditiva)
+     12.3 Tamanho da fonte
+     12.4 Mudança de cores — modo claro/escuro, seguindo por padrão a
+                             definição do sistema operacional do usuário
+   ═══════════════════════════════════════════════════════════════ */
 (function() {
   'use strict';
 
@@ -10,23 +18,83 @@
   })();
 
   var STORAGE_KEY = 'smartcondo_acessibilidade';
+  var TEMAS = ['auto', 'claro', 'escuro'];
 
+  /* ── Preferências ───────────────────────────────────────────── */
   function getPrefs() {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-    } catch (_) { return {}; }
+      var p = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      if (TEMAS.indexOf(p.tema) === -1) p.tema = 'auto';
+      return p;
+    } catch (_) { return { tema: 'auto' }; }
   }
 
   function savePrefs(prefs) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs)); } catch (_) {}
   }
 
+  /* ── Tema (12.4) ────────────────────────────────────────────── */
+  var mqEscuro = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+
+  // "auto" = o que o sistema operacional do usuário estiver usando
+  function temaEscuroAtivo(tema) {
+    if (tema === 'escuro') return true;
+    if (tema === 'claro') return false;
+    return !!(mqEscuro && mqEscuro.matches);
+  }
+
+  function aplicarTema(tema) {
+    if (!document.body) return;
+    document.body.classList.toggle('tema-escuro', temaEscuroAtivo(tema));
+  }
+
+  // Aplicado já na execução do script (antes do DOMContentLoaded) para
+  // reduzir o flash de tema claro em quem usa o SO no modo escuro.
+  var prefsIniciais = getPrefs();
+  aplicarTema(prefsIniciais.tema);
+
+  // O usuário "pode alterar a qualquer momento" o modo do SO (doc 12.4):
+  // enquanto o tema estiver em "auto", a página acompanha a mudança.
+  if (mqEscuro) {
+    var onMudancaSO = function() {
+      if (getPrefs().tema === 'auto') aplicarTema('auto');
+    };
+    if (mqEscuro.addEventListener) mqEscuro.addEventListener('change', onMudancaSO);
+    else if (mqEscuro.addListener) mqEscuro.addListener(onMudancaSO);
+  }
+
   function applyPrefs(prefs) {
     document.body.classList.toggle('font-grande', !!prefs.fontGrande);
     document.body.classList.toggle('alto-contraste', !!prefs.altoContraste);
     document.body.classList.toggle('modo-leitura', !!prefs.modoLeitura);
+    aplicarTema(prefs.tema);
   }
 
+  /* ── VLibras (12.2) ─────────────────────────────────────────── */
+  // Injetado aqui para valer nas 33 páginas sem duplicar markup.
+  function injectVLibras() {
+    if (document.querySelector('[vw]')) return;
+
+    var wrapper = document.createElement('div');
+    wrapper.setAttribute('vw', '');
+    wrapper.className = 'enabled';
+    wrapper.innerHTML =
+      '<div vw-access-button class="active"></div>' +
+      '<div vw-plugin-wrapper><div class="vw-plugin-top-wrapper"></div></div>';
+    document.body.appendChild(wrapper);
+
+    var script = document.createElement('script');
+    script.src = 'https://vlibras.gov.br/app/vlibras-plugin.js';
+    script.async = true;
+    script.onload = function() {
+      try { new window.VLibras.Widget('https://vlibras.gov.br/app'); } catch (_) {}
+    };
+    // Sem rede (ex.: aberto via file://) o widget some e o resto da página segue normal.
+    script.onerror = function() { wrapper.remove(); };
+    document.body.appendChild(script);
+  }
+
+  /* ── Widget de acessibilidade ───────────────────────────────── */
   function injectWidget() {
     var existing = document.querySelector('.accessibility-widget');
     if (existing) existing.remove();
@@ -41,6 +109,14 @@
           '<label role="menuitem" tabindex="0"><input type="checkbox" id="font-toggle"> Aumentar fonte</label>' +
           '<label role="menuitem" tabindex="0"><input type="checkbox" id="contrast-toggle"> Alto contraste</label>' +
           '<label role="menuitem" tabindex="0"><input type="checkbox" id="read-toggle"> Modo leitura</label>' +
+          '<div class="access-theme" role="radiogroup" aria-label="Modo de cor">' +
+            '<span class="access-theme-label">Modo de cor</span>' +
+            '<div class="access-theme-opts">' +
+              '<button type="button" class="access-theme-btn" data-tema="auto" role="radio" aria-checked="false" title="Seguir o sistema operacional">Auto</button>' +
+              '<button type="button" class="access-theme-btn" data-tema="claro" role="radio" aria-checked="false" title="Sempre claro">Claro</button>' +
+              '<button type="button" class="access-theme-btn" data-tema="escuro" role="radio" aria-checked="false" title="Sempre escuro">Escuro</button>' +
+            '</div>' +
+          '</div>' +
         '</div>' +
       '</div>';
 
@@ -107,15 +183,36 @@
         document.body.classList.toggle('modo-leitura', this.checked);
       });
     }
+
+    // Seletor de modo de cor (12.4)
+    var botoesTema = widget.querySelectorAll('.access-theme-btn');
+    function marcarTema(tema) {
+      botoesTema.forEach(function(btn) {
+        var ativo = btn.getAttribute('data-tema') === tema;
+        btn.classList.toggle('ativo', ativo);
+        btn.setAttribute('aria-checked', ativo ? 'true' : 'false');
+      });
+    }
+    marcarTema(prefs.tema);
+    botoesTema.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        prefs.tema = this.getAttribute('data-tema');
+        savePrefs(prefs);
+        aplicarTema(prefs.tema);
+        marcarTema(prefs.tema);
+      });
+    });
+  }
+
+  function iniciar() {
+    injectWidget();
+    setupWidget();
+    injectVLibras();
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-      injectWidget();
-      setupWidget();
-    });
+    document.addEventListener('DOMContentLoaded', iniciar);
   } else {
-    injectWidget();
-    setupWidget();
+    iniciar();
   }
 })();

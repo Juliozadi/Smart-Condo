@@ -82,39 +82,39 @@
 <body class="dashboard-body layout-mobile">
   <header class="app-bar"><div class="app-bar-inner">
     <div class="app-bar-left">
-      <a href="dashboard.html" class="mobile-back"><img src="/assets/img/icons/arrow-left.svg" width="16" height="16" alt=""></a>
+      <a href="dashboard.html" class="mobile-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""></a>
       <a href="../../index.html" class="app-bar-brand"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
     </div>
-    <div class="app-bar-right"><span class="profile-link"><span class="profile-avatar"><img src="/assets/img/icons/user.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">João Silva</span><span class="profile-role">Morador</span></span><a href="../../index.html" class="logout-btn"><img src="/assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
+    <div class="app-bar-right"><span class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/user.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">João Silva</span><span class="profile-role">Morador</span></span><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
   </div></header>
   <main class="dash-wrapper">
 
     <div class="dash-greeting">
       <p class="greeting-sub">Apto 204 — João Silva</p>
-      <h2 class="greeting-name"><img src="/assets/img/icons/user.svg" width="16" height="16" alt="">Meu Perfil</h2>
+      <h2 class="greeting-name"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Meu Perfil</h2>
       <p class="greeting-condo"> Seus dados pessoais e informações da unidade</p>
     </div>
 
     <div class="profile-top">
       <div class="p-avatar-wrap">
         <div class="p-avatar" onclick="abrirModalFoto()">
-          <img src="/assets/img/icons/user.svg" width="16" height="16" alt="" id="avatarIcon">
-          <img id="avatarPreview" src="" alt="" style="display:none;">
-          <div class="avatar-overlay"><img src="/assets/img/icons/camera.svg" width="16" height="16" alt=""></div>
-          <button type="button" class="avatar-remove" id="btnRemoveAvatar" title="Remover foto" onclick="event.stopPropagation();removerAvatar()"><img src="/assets/img/icons/xmark.svg" width="10" height="10" alt=""></button>
-          <button type="button" class="avatar-edit-icon" id="btnEditAvatar" onclick="event.stopPropagation();document.getElementById('avatarInput').click()" title="Alterar foto"><img src="/assets/img/icons/camera.svg" width="14" height="14" alt=""></button>
+          <img src="../../assets/img/icons/user.svg" width="16" height="16" alt="" id="avatarIcon">
+          <img id="avatarPreview" alt="" style="display:none;">
+          <div class="avatar-overlay"><img src="../../assets/img/icons/camera.svg" width="16" height="16" alt=""></div>
+          <button type="button" class="avatar-remove" id="btnRemoveAvatar" title="Remover foto" onclick="event.stopPropagation();removerAvatar()"><img src="../../assets/img/icons/xmark.svg" width="10" height="10" alt=""></button>
+          <button type="button" class="avatar-edit-icon" id="btnEditAvatar" onclick="event.stopPropagation();document.getElementById('avatarInput').click()" title="Alterar foto"><img src="../../assets/img/icons/camera.svg" width="14" height="14" alt=""></button>
         </div>
       </div>
       <div class="p-name">
         <h1 id="viewNome">João Silva</h1>
-        <p class="p-role"><img src="/assets/img/icons/user.svg" width="16" height="16" alt=""> Morador</p>
+        <p class="p-role"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt=""> Morador</p>
         <span class="p-tag">Residencial das Palmeiras · Apto 204</span>
-        <div class="p-status" id="pStatus"><img src="/assets/img/icons/circle-check.svg" width="16" height="16" alt=""> Dados salvos automaticamente</div>
+        <div class="p-status" id="pStatus"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt=""> Dados salvos automaticamente</div>
       </div>
     </div>
 
     <div class="p-card">
-      <h3><img src="/assets/img/icons/user.svg" width="16" height="16" alt=""> Dados Pessoais</h3>
+      <h3><img src="../../assets/img/icons/user.svg" width="16" height="16" alt=""> Dados Pessoais</h3>
       <div class="p-grid">
         <div class="p-field"><div class="p-lbl">CPF</div><div class="p-val" id="val-cpf"><span class="p-badge"><span class="b-txt">123.456.789-00</span><span class="b-dot"></span></span></div></div>
         <div class="p-field"><div class="p-lbl">RG</div><div class="p-val" id="val-rg"><span class="p-badge"><span class="b-txt">12.345.678-9</span><span class="b-dot"></span></span></div></div>
@@ -126,7 +126,7 @@
     </div>
 
     <div class="p-card">
-      <h3><img src="/assets/img/icons/building.svg" width="16" height="16" alt=""> Unidade</h3>
+      <h3><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Unidade</h3>
       <div class="p-grid">
         <div class="p-field"><div class="p-lbl">Apartamento</div><div class="p-val" id="val-apto"><span class="p-badge"><span class="b-txt">204</span><span class="b-dot"></span></span></div><div class="p-edit"><input type="text" id="edit-apto" value="204"></div></div>
         <div class="p-field"><div class="p-lbl">Bloco / Torre</div><div class="p-val" id="val-bloco"><span class="p-badge"><span class="b-txt">Bloco A</span><span class="b-dot"></span></span></div><div class="p-edit"><input type="text" id="edit-bloco" value="Bloco A"></div></div>
@@ -138,7 +138,7 @@
     </div>
 
     <div class="p-card">
-      <h3><img src="/assets/img/icons/phone.svg" width="16" height="16" alt=""> Contato de Emergência</h3>
+      <h3><img src="../../assets/img/icons/phone.svg" width="16" height="16" alt=""> Contato de Emergência</h3>
       <div class="p-grid">
         <div class="p-field"><div class="p-lbl">Nome</div><div class="p-val" id="val-emergNome"><span class="p-badge"><span class="b-txt">Maria Aparecida Silva</span><span class="b-dot"></span></span></div><div class="p-edit"><input type="text" id="edit-emergNome" value="Maria Aparecida Silva"></div></div>
         <div class="p-field"><div class="p-lbl">Parentesco</div><div class="p-val" id="val-emergParent"><span class="p-badge"><span class="b-txt">Cônjuge</span><span class="b-dot"></span></span></div><div class="p-edit"><input type="text" id="edit-emergParent" value="Cônjuge"></div></div>
@@ -147,7 +147,7 @@
     </div>
 
     <div class="p-card">
-      <h3><img src="/assets/img/icons/car.svg" width="16" height="16" alt=""> Veículos</h3>
+      <h3><img src="../../assets/img/icons/car.svg" width="16" height="16" alt=""> Veículos</h3>
       <div class="p-grid">
         <div class="p-field"><div class="p-lbl">Veículo 1</div><div class="p-val" id="val-car1"><span class="p-badge"><span class="b-txt">Honda Civic · ABC-1234 · Vaga 12</span><span class="b-dot"></span></span></div><div class="p-edit"><input type="text" id="edit-car1" value="Honda Civic · ABC-1234 · Vaga 12"></div></div>
         <div class="p-field"><div class="p-lbl">Veículo 2</div><div class="p-val" id="val-car2"><span class="p-badge"><span class="b-txt">VW T-Cross · DEF-5678 · Vaga 13</span><span class="b-dot"></span></span></div><div class="p-edit"><input type="text" id="edit-car2" value="VW T-Cross · DEF-5678 · Vaga 13"></div></div>
@@ -155,33 +155,33 @@
     </div>
 
     <div class="p-actions" id="viewActions">
-      <button class="action-btn" onclick="entrarEdicao()"><img src="/assets/img/icons/pen.svg" width="16" height="16" alt=""> Editar Perfil</button>
-      <a href="dashboard.html" class="action-btn outline"><img src="/assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar</a>
+      <button class="action-btn" onclick="entrarEdicao()"><img src="../../assets/img/icons/pen.svg" width="16" height="16" alt=""> Editar Perfil</button>
+      <a href="dashboard.html" class="action-btn outline"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar</a>
     </div>
 
     <div class="p-actions" id="editActions" style="display:none;">
-      <button class="action-btn" onclick="salvarDados()"><img src="/assets/img/icons/floppy-disk.svg" width="16" height="16" alt=""> Salvar Alterações</button>
-      <button class="action-btn outline" onclick="cancelarEdicao()"><img src="/assets/img/icons/xmark.svg" width="16" height="16" alt=""> Cancelar</button>
+      <button class="action-btn" onclick="salvarDados()"><img src="../../assets/img/icons/floppy-disk.svg" width="16" height="16" alt=""> Salvar Alterações</button>
+      <button class="action-btn outline" onclick="cancelarEdicao()"><img src="../../assets/img/icons/xmark.svg" width="16" height="16" alt=""> Cancelar</button>
     </div>
 
   </main>
 
   <div class="modal-overlay" id="modalFoto" onclick="fecharModalFoto(event)">
     <div class="modal-card" onclick="event.stopPropagation()">
-      <button class="modal-close" onclick="fecharModalFoto()"><img src="/assets/img/icons/xmark.svg" width="14" height="14" alt=""></button>
+      <button class="modal-close" onclick="fecharModalFoto()"><img src="../../assets/img/icons/xmark.svg" width="14" height="14" alt=""></button>
       <div class="modal-foto-wrap">
-        <img src="/assets/img/icons/user.svg" alt="" id="modalFotoImg">
+        <img src="../../assets/img/icons/user.svg" alt="" id="modalFotoImg">
       </div>
       <div class="modal-actions">
-        <button class="action-btn" id="modalAddFotoBtn" onclick="document.getElementById('avatarInput').click();fecharModalFoto()"><img src="/assets/img/icons/camera.svg" width="16" height="16" alt=""> Adicionar foto</button>
-        <button class="action-btn" id="modalTrocarBtn" style="display:none" onclick="document.getElementById('avatarInput').click();fecharModalFoto()"><img src="/assets/img/icons/camera.svg" width="16" height="16" alt=""> Trocar foto</button>
-        <button class="action-btn outline danger" id="modalRemoverBtn" style="display:none" onclick="removerAvatar();fecharModalFoto()"><img src="/assets/img/icons/circle-xmark.svg" width="16" height="16" alt=""> Remover foto</button>
+        <button class="action-btn" id="modalAddFotoBtn" onclick="document.getElementById('avatarInput').click();fecharModalFoto()"><img src="../../assets/img/icons/camera.svg" width="16" height="16" alt=""> Adicionar foto</button>
+        <button class="action-btn" id="modalTrocarBtn" style="display:none" onclick="document.getElementById('avatarInput').click();fecharModalFoto()"><img src="../../assets/img/icons/camera.svg" width="16" height="16" alt=""> Trocar foto</button>
+        <button class="action-btn outline danger" id="modalRemoverBtn" style="display:none" onclick="removerAvatar();fecharModalFoto()"><img src="../../assets/img/icons/circle-xmark.svg" width="16" height="16" alt=""> Remover foto</button>
       </div>
     </div>
   </div>
 
   <div id="toast" class="toast">
-    <div class="t-icon"><img src="/assets/img/icons/floppy-disk.svg" width="16" height="16" alt=""></div>
+    <div class="t-icon"><img src="../../assets/img/icons/floppy-disk.svg" width="16" height="16" alt=""></div>
     <div class="t-content">
       <span class="t-title" id="toastTitle">Dados salvos</span>
       <span class="t-sub" id="toastSub">Suas informações foram armazenadas com segurança</span>
@@ -189,17 +189,6 @@
     <div class="t-progress"></div>
   </div>
 
-  <div class="accessibility-widget">
-    <input type="checkbox" id="access-toggle">
-    <label for="access-toggle" class="access-button" title="Acessibilidade">
-      <img src="../../assets/img/acessibilidade.png" class="access-icon-img" alt="">
-    </label>
-    <div class="access-menu">
-      <label><input type="checkbox" id="font-toggle">  Aumentar fonte</label>
-      <label><input type="checkbox" id="contrast-toggle">  Alto contraste</label>
-      <label><input type="checkbox" id="read-toggle">  Modo leitura</label>
-    </div>
-  </div>
   <input type="file" id="avatarInput" accept="image/*" onchange="trocarAvatar(event)" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
   <script src="../../assets/js/validation.js"></script>
   <script>

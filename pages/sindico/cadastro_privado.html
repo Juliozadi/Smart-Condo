@@ -30,9 +30,9 @@
 
     <div style="text-align:center;margin-bottom:28px;">
       <div style="width:72px;height:72px;background:linear-gradient(135deg,#ede0ff,#d8c0ff);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 6px 20px rgba(145,100,250,.25);">
-        <img src="/assets/img/icons/lock.svg" width="16" height="16" alt="">
+        <img src="../../assets/img/icons/lock.svg" width="16" height="16" alt="">
       </div>
-      <h2 style="color:#060f18;font-size:24px;margin-bottom:8px;"><img src="/assets/img/icons/lock.svg" width="16" height="16" alt=""> Área Restrita</h2>
+      <h2 style="color:#060f18;font-size:24px;margin-bottom:8px;"><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""> Área Restrita</h2>
       <p style="font-size:14px;color:var(--muted);line-height:1.6;max-width:320px;margin:0 auto;">
         Esta página é exclusiva para administradores do SmartCondo.<br>
         Informe o código de autorização para continuar.
@@ -51,7 +51,7 @@
             onblur="this.style.borderColor='rgba(145,100,250,.3)';this.style.boxShadow='none'">
         </div>
         <p id="erroMsg" style="font-size:12px;color:#c0392b;font-weight:600;margin-top:6px;display:none;">
-          <img src="/assets/img/icons/circle-xmark.svg" width="16" height="16" alt="">Código inválido. Verifique com a administração.
+          <img src="../../assets/img/icons/circle-xmark.svg" width="16" height="16" alt="">Código inválido. Verifique com a administração.
         </p>
       </div>
     </div>
@@ -68,7 +68,7 @@
     </div>
 
     <a href="../../index.html" class="back-link" style="justify-content:center;margin-top:20px;">
-      <img src="/assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar para o login
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar para o login
     </a>
 
   </div>
@@ -77,7 +77,7 @@
   <div class="form-screen" id="formScreen">
 
     <div class="chosen-role sindico" style="justify-content:center;">
-      <img src="/assets/img/icons/star.svg" width="16" height="16" alt=""> Cadastro de Síndico — Autorizado
+      <img src="../../assets/img/icons/star.svg" width="16" height="16" alt=""> Cadastro de Síndico — Autorizado
     </div>
 
     <div class="form-progress-bar">
@@ -98,17 +98,17 @@
       </nav>
 
       <div class="form-section">
-        <p class="form-section-title"><img src="/assets/img/icons/id-card.svg" width="16" height="16" alt=""> Dados do Síndico <span class="section-tag obrig">Obrigatório</span></p>
+        <p class="form-section-title"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt=""> Dados do Síndico <span class="section-tag obrig">Obrigatório</span></p>
         <div class="cad-row">
           <div class="cad-group"><label>Nome completo <span class="req">*</span></label><input type="text" placeholder="Como consta no documento" required></div>
           <div class="cad-group"><label>CPF <span class="req">*</span></label><input type="text" placeholder="000.000.000-00" required maxlength="14"></div>
         </div>
         <div class="cad-row">
-          <div class="cad-group"><label><img src="/assets/img/icons/id-card.svg" width="16" height="16" alt="">RG <span class="req">*</span></label><input type="text" placeholder="00.000.000-0" required></div>
+          <div class="cad-group"><label><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">RG <span class="req">*</span></label><input type="text" placeholder="00.000.000-0" required></div>
           <div class="cad-group"><label>Data de nascimento <span class="req">*</span></label><input type="date" required></div>
         </div>
         <div class="cad-row">
-          <div class="cad-group"><label>E-mail pessoal <span class="req">*</span></label><div class="cad-input-icon"><img src="/assets/img/icons/envelope.svg" width="16" height="16" alt=""><input type="email" placeholder="seu@email.com" required></div></div>
+          <div class="cad-group"><label>E-mail pessoal <span class="req">*</span></label><div class="cad-input-icon"><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt=""><input type="email" placeholder="seu@email.com" required></div></div>
           <div class="cad-group"><label>Celular / WhatsApp <span class="req">*</span></label><div class="cad-input-icon"><input type="tel" placeholder="(00) 90000-0000" class="mask-tel" required></div></div>
         </div>
         <div class="cad-row">
@@ -118,13 +118,13 @@
           <div class="cad-group"><label>Unidade <span class="req">*</span></label><input type="text" placeholder="Ex: Apto 101 — Bloco A" required></div>
         </div>
         <div class="cad-row">
-          <div class="cad-group"><label><img src="/assets/img/icons/calendar-check.svg" width="16" height="16" alt="">Início do mandato <span class="req">*</span></label><input type="date" required></div>
+          <div class="cad-group"><label><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt="">Início do mandato <span class="req">*</span></label><input type="date" required></div>
           <div class="cad-group"><label>Término do mandato <span class="req">*</span></label><input type="date" required></div>
         </div>
       </div>
 
       <div class="step-nav-btns">
-          <button type="button" class="step-btn-back" onclick="voltarLock()"><img src="/assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar</button>
+          <button type="button" class="step-btn-back" onclick="voltarLock()"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar</button>
           <a href="javascript:void(0)" class="step-btn-next purple" onclick="return validarEIr(1)">Próximo </a>
       </div>
     </div>
@@ -132,7 +132,7 @@
     <div id="sstep2" class="step-page">
       <div class="step-counter">Etapa 2 de 4</div>
       <nav class="step-nav">
-        <div class="step-nav-item done-s"><div class="step-nav-circle"><img src="/assets/img/icons/check.svg" width="16" height="16" alt=""></div><span class="step-nav-label">Pessoal</span></div>
+        <div class="step-nav-item done-s"><div class="step-nav-circle"><img src="../../assets/img/icons/check.svg" width="16" height="16" alt=""></div><span class="step-nav-label">Pessoal</span></div>
         <div class="step-nav-line done-line-s"></div>
         <div class="step-nav-item active-s"><div class="step-nav-circle">2</div><span class="step-nav-label">Condomínio</span></div>
         <div class="step-nav-line"></div>
@@ -142,8 +142,8 @@
       </nav>
 
       <div class="form-section">
-        <p class="form-section-title"><img src="/assets/img/icons/building.svg" width="16" height="16" alt=""> Dados do Condomínio <span class="section-tag obrig">Obrigatório</span></p>
-        <div class="cad-group"><label>Nome do condomínio <span class="req">*</span></label><div class="cad-input-icon"><img src="/assets/img/icons/building.svg" width="16" height="16" alt=""><input type="text" placeholder="Ex: Residencial das Palmeiras" required></div></div>
+        <p class="form-section-title"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Dados do Condomínio <span class="section-tag obrig">Obrigatório</span></p>
+        <div class="cad-group"><label>Nome do condomínio <span class="req">*</span></label><div class="cad-input-icon"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""><input type="text" placeholder="Ex: Residencial das Palmeiras" required></div></div>
         <div class="cad-row">
           <div class="cad-group"><label>CNPJ <span class="req">*</span></label><input type="text" placeholder="00.000.000/0000-00" class="mask-cnpj" required maxlength="18"></div>
           <div class="cad-group"><label>Tipo <span class="req">*</span></label><select required><option value="" disabled selected>Selecione</option><option>Residencial</option><option>Comercial</option><option>Misto</option></select></div>
@@ -160,7 +160,7 @@
       </div>
 
       <div class="step-nav-btns">
-        <a href="#sstep1" class="step-btn-back" onclick="mostrarStep(1)"><img src="/assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar</a>
+        <a href="#sstep1" class="step-btn-back" onclick="mostrarStep(1)"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar</a>
         <a href="javascript:void(0)" class="step-btn-next purple" onclick="return validarEIr(2)">Próximo </a>
       </div>
     </div>
@@ -168,9 +168,9 @@
     <div id="sstep3" class="step-page">
       <div class="step-counter">Etapa 3 de 4</div>
       <nav class="step-nav">
-        <div class="step-nav-item done-s"><div class="step-nav-circle"><img src="/assets/img/icons/check.svg" width="16" height="16" alt=""></div><span class="step-nav-label">Pessoal</span></div>
+        <div class="step-nav-item done-s"><div class="step-nav-circle"><img src="../../assets/img/icons/check.svg" width="16" height="16" alt=""></div><span class="step-nav-label">Pessoal</span></div>
         <div class="step-nav-line done-line-s"></div>
-        <div class="step-nav-item done-s"><div class="step-nav-circle"><img src="/assets/img/icons/check.svg" width="16" height="16" alt=""></div><span class="step-nav-label">Condomínio</span></div>
+        <div class="step-nav-item done-s"><div class="step-nav-circle"><img src="../../assets/img/icons/check.svg" width="16" height="16" alt=""></div><span class="step-nav-label">Condomínio</span></div>
         <div class="step-nav-line done-line-s"></div>
         <div class="step-nav-item active-s"><div class="step-nav-circle">3</div><span class="step-nav-label">Documentos</span></div>
         <div class="step-nav-line"></div>
@@ -178,24 +178,24 @@
       </nav>
 
       <div class="form-section">
-        <p class="form-section-title"><img src="/assets/img/icons/folder-open.svg" width="16" height="16" alt=""> Documentos Legais <span class="section-tag obrig">Obrigatório</span></p>
+        <p class="form-section-title"><img src="../../assets/img/icons/folder-open.svg" width="16" height="16" alt=""> Documentos Legais <span class="section-tag obrig">Obrigatório</span></p>
         <div class="step-alert danger"><p>Todos os documentos abaixo são verificados pela equipe SmartCondo antes da ativação da conta.</p></div>
 
         <label class="doc-upload" for="ds-ata"><div class="doc-upload-icon purple"></div><div class="doc-upload-text"><strong>Ata de Eleição do Síndico</strong><span>Assinada e registrada em cartório</span></div><span class="doc-upload-badge req">Obrigatório</span></label>
         <input type="file" id="ds-ata" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" required>
 
-        <label class="doc-upload" for="ds-conv"><div class="doc-upload-icon"><img src="/assets/img/icons/file-contract.svg" width="16" height="16" alt=""></div><div class="doc-upload-text"><strong>Convenção do Condomínio</strong><span>Registrada em cartório</span></div><span class="doc-upload-badge req">Obrigatório</span></label>
+        <label class="doc-upload" for="ds-conv"><div class="doc-upload-icon"><img src="../../assets/img/icons/file-contract.svg" width="16" height="16" alt=""></div><div class="doc-upload-text"><strong>Convenção do Condomínio</strong><span>Registrada em cartório</span></div><span class="doc-upload-badge req">Obrigatório</span></label>
         <input type="file" id="ds-conv" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" required>
 
         <label class="doc-upload" for="ds-cnpj"><div class="doc-upload-icon blue"></div><div class="doc-upload-text"><strong>Cartão CNPJ do Condomínio</strong><span>Emitido pela Receita Federal</span></div><span class="doc-upload-badge req">Obrigatório</span></label>
         <input type="file" id="ds-cnpj" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" required>
 
-        <label class="doc-upload" for="ds-rg"><div class="doc-upload-icon"><img src="/assets/img/icons/id-card.svg" width="16" height="16" alt=""></div><div class="doc-upload-text"><strong>RG ou CNH do Síndico</strong><span>Frente e verso com foto</span></div><span class="doc-upload-badge req">Obrigatório</span></label>
+        <label class="doc-upload" for="ds-rg"><div class="doc-upload-icon"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt=""></div><div class="doc-upload-text"><strong>RG ou CNH do Síndico</strong><span>Frente e verso com foto</span></div><span class="doc-upload-badge req">Obrigatório</span></label>
         <input type="file" id="ds-rg" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" required>
       </div>
 
       <div class="step-nav-btns">
-        <a href="#sstep2" class="step-btn-back" onclick="mostrarStep(2)"><img src="/assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar</a>
+        <a href="#sstep2" class="step-btn-back" onclick="mostrarStep(2)"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar</a>
         <a href="javascript:void(0)" class="step-btn-next purple" onclick="return validarEIr(3)">Próximo </a>
       </div>
     </div>
@@ -203,28 +203,28 @@
     <div id="sstep4" class="step-page">
       <div class="step-counter">Etapa 4 de 4</div>
       <nav class="step-nav">
-        <div class="step-nav-item done-s"><div class="step-nav-circle"><img src="/assets/img/icons/check.svg" width="16" height="16" alt=""></div><span class="step-nav-label">Pessoal</span></div>
+        <div class="step-nav-item done-s"><div class="step-nav-circle"><img src="../../assets/img/icons/check.svg" width="16" height="16" alt=""></div><span class="step-nav-label">Pessoal</span></div>
         <div class="step-nav-line done-line-s"></div>
-        <div class="step-nav-item done-s"><div class="step-nav-circle"><img src="/assets/img/icons/check.svg" width="16" height="16" alt=""></div><span class="step-nav-label">Condomínio</span></div>
+        <div class="step-nav-item done-s"><div class="step-nav-circle"><img src="../../assets/img/icons/check.svg" width="16" height="16" alt=""></div><span class="step-nav-label">Condomínio</span></div>
         <div class="step-nav-line done-line-s"></div>
-        <div class="step-nav-item done-s"><div class="step-nav-circle"><img src="/assets/img/icons/check.svg" width="16" height="16" alt=""></div><span class="step-nav-label">Documentos</span></div>
+        <div class="step-nav-item done-s"><div class="step-nav-circle"><img src="../../assets/img/icons/check.svg" width="16" height="16" alt=""></div><span class="step-nav-label">Documentos</span></div>
         <div class="step-nav-line done-line-s"></div>
         <div class="step-nav-item active-s"><div class="step-nav-circle">4</div><span class="step-nav-label">Segurança</span></div>
       </nav>
 
       <div class="form-section">
-        <p class="form-section-title"><img src="/assets/img/icons/lock.svg" width="16" height="16" alt=""> Segurança da Conta Admin <span class="section-tag obrig">Obrigatório</span></p>
-        <div class="step-alert danger"><img src="/assets/img/icons/lock.svg" width="16" height="16" alt=""><p>A conta de síndico tem <strong>acesso total ao sistema</strong>. Ative todas as proteções abaixo.</p></div>
-        <div class="cad-group"><label>E-mail administrador <span class="req">*</span></label><div class="cad-input-icon"><img src="/assets/img/icons/envelope.svg" width="16" height="16" alt=""><input type="email" placeholder="email@condominio.com.br" required></div></div>
+        <p class="form-section-title"><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""> Segurança da Conta Admin <span class="section-tag obrig">Obrigatório</span></p>
+        <div class="step-alert danger"><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""><p>A conta de síndico tem <strong>acesso total ao sistema</strong>. Ative todas as proteções abaixo.</p></div>
+        <div class="cad-group"><label>E-mail administrador <span class="req">*</span></label><div class="cad-input-icon"><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt=""><input type="email" placeholder="email@condominio.com.br" required></div></div>
         <div class="cad-group">
           <label>Senha de administrador <span class="req">*</span></label>
-          <div class="cad-input-icon"><img src="/assets/img/icons/lock.svg" width="16" height="16" alt=""><input type="password" placeholder="Senha forte para conta admin" required></div>
+          <div class="cad-input-icon"><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""><input type="password" placeholder="Senha forte para conta admin" required></div>
           <div class="pwd-strength-row">
             <div class="pwd-strength"><div class="pwd-bar weak"></div><div class="pwd-bar medium"></div><div class="pwd-bar"></div><div class="pwd-bar"></div></div>
             <span class="pwd-level medium">Média</span>
           </div>
         </div>
-        <div class="cad-group"><label>Confirmar senha <span class="req">*</span></label><div class="cad-input-icon"><img src="/assets/img/icons/lock.svg" width="16" height="16" alt=""><input type="password" placeholder="Repita a senha" required></div></div>
+        <div class="cad-group"><label>Confirmar senha <span class="req">*</span></label><div class="cad-input-icon"><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""><input type="password" placeholder="Repita a senha" required></div></div>
         <div class="cad-divider">Proteções de Segurança</div>
         <div class="toggle-row"><div class="toggle-info"><strong>2FA por SMS</strong><span>Código a cada novo login</span></div><div class="toggle-switch"><input type="checkbox" id="2fa-s" checked><label for="2fa-s"></label></div></div>
         <div class="toggle-row"><div class="toggle-info"><strong>Alerta de login em novo dispositivo</strong><span>Notificação imediata</span></div><div class="toggle-switch"><input type="checkbox" id="alert-s" checked><label for="alert-s"></label></div></div>
@@ -236,12 +236,12 @@
       <div class="terms-check" style="margin-top:10px;"><input type="checkbox" required><span>Autorizo o tratamento dos dados conforme a <a href="#">LGPD (Lei 13.709/2018)</a>.</span></div>
 
       <div class="step-nav-btns" style="margin-top:20px;">
-        <a href="#sstep3" class="step-btn-back" onclick="mostrarStep(3)"><img src="/assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar</a>
-        <a href="javascript:void(0)" class="step-btn-next purple" onclick="return validarEFinalizar()"><img src="/assets/img/icons/star.svg" width="16" height="16" alt=""> Enviar para verificação</a>
+        <a href="#sstep3" class="step-btn-back" onclick="mostrarStep(3)"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar</a>
+        <a href="javascript:void(0)" class="step-btn-next purple" onclick="return validarEFinalizar()"><img src="../../assets/img/icons/star.svg" width="16" height="16" alt=""> Enviar para verificação</a>
       </div>
 
       <div class="info-card" style="margin-top:14px;">
-        <img src="/assets/img/icons/clock.svg" width="16" height="16" alt="">
+        <img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">
         <p>Verificação dos documentos legais em até <strong>5 dias úteis</strong>.</p>
       </div>
     </div>
@@ -250,17 +250,6 @@
 
 </main>
 
-<div class="accessibility-widget">
-  <input type="checkbox" id="access-toggle">
-  <label for="access-toggle" class="access-button" title="Acessibilidade">
-    <img src="../../assets/img/acessibilidade.png" class="access-icon-img" alt="">
-  </label>
-  <div class="access-menu">
-    <label><input type="checkbox" id="font-toggle">  Aumentar fonte</label>
-    <label><input type="checkbox" id="contrast-toggle">  Alto contraste</label>
-    <label><input type="checkbox" id="read-toggle">  Modo leitura</label>
-  </div>
-</div>
 
 <script>
   // Código de autorização — em produção real, isso seria validado no servidor

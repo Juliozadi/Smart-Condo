@@ -7,6 +7,9 @@
     <img src="https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=fff" alt="HTML5">
     <img src="https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=fff" alt="CSS3">
     <img src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=000" alt="JavaScript">
+    <img src="https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff" alt="Python">
+    <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=fff" alt="FastAPI">
+    <img src="https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=fff" alt="PostgreSQL">
     <img src="https://img.shields.io/badge/licença-MIT-blue" alt="License">
   </p>
 </div>
@@ -17,7 +20,7 @@
 
 O **SmartCondo** é um sistema de gestão condominial desenvolvido como projeto integrador da faculdade. A plataforma centraliza em um único lugar todas as atividades relacionadas à administração de um condomínio, oferecendo três perfis de acesso com funcionalidades específicas para cada tipo de usuário.
 
-O projeto é **100% front-end** (protótipo funcional), construído com tecnologias web puras — sem frameworks ou bibliotecas externas — com o objetivo de consolidar os fundamentos do desenvolvimento web.
+O projeto tem duas partes. O **front-end** é construído com tecnologias web puras — sem frameworks nem bibliotecas externas — e o **back-end** é uma API REST em Python com PostgreSQL, como define a documentação do projeto (seções 10.4 e 10.5).
 
 ---
 
@@ -60,10 +63,14 @@ O projeto é **100% front-end** (protótipo funcional), construído com tecnolog
 | **CSS3** | Design system com variáveis, glassmorphism, animações e responsividade |
 | **JavaScript** | Validação de formulários, máscaras de input, acessibilidade e interatividade |
 | **LocalStorage** | Persistência de preferências de acessibilidade e nome do perfil |
+| **VLibras** | Tradução do conteúdo para Libras (documentação, seção 12.2) |
+| **Python / FastAPI** | API REST do back-end (documentação, seção 10.4) |
+| **PostgreSQL** | Banco de dados (documentação, seção 10.5) |
+| **SQLAlchemy / Alembic** | ORM e migrações |
 | **Google Fonts** | Plus Jakarta Sans (única fonte do projeto) |
 | **SVG** | 47 ícones customizados |
 
-**Sem frameworks, sem build tools, sem dependências externas.** Apenas HTML, CSS e JavaScript puros.
+O **front-end** não usa frameworks, build tools nem dependências externas: apenas HTML, CSS e JavaScript puros. O **back-end** fica em `backend/` e tem README próprio.
 
 ---
 
@@ -72,7 +79,7 @@ O projeto é **100% front-end** (protótipo funcional), construído com tecnolog
 - **Design system completo** — Variáveis CSS para cores, sombras, bordas e espaçamentos
 - **Detecção de perfil em tempo real** — Ao digitar a senha, o sistema identifica automaticamente o perfil
 - **Multi-step forms** — Navegação entre etapas de cadastro usando CSS `:target`
-- **Acessibilidade** — Widget com aumento de fonte, alto contraste e modo leitura (persistido em `localStorage`)
+- **Acessibilidade** — VLibras, modo claro/escuro seguindo o sistema operacional, aumento de fonte, alto contraste e modo leitura
 - **Glassmorphism** — Barra superior com efeito de vidro (`backdrop-filter: blur`)
 - **Layout responsivo** — Duas variações: `layout-mobile` (bottom tab bar) e `layout-desktop`
 - **Micro-interações** — Hover lifts, shimmer, pulse em badges e animações suaves
@@ -92,7 +99,8 @@ SmartCondo/
 │   │   └── dashboard.css              # Estilos dos dashboards
 │   ├── js/
 │   │   ├── validation.js              # Validações e máscaras de input
-│   │   └── acessibilidade.js          # Widget de acessibilidade
+│   │   ├── foto.js                    # Captura de foto (vídeo porteiro)
+│   │   └── acessibilidade.js          # Acessibilidade, VLibras e tema
 │   └── img/
 │       ├── logo.png
 │       ├── acessibilidade.png
@@ -137,7 +145,48 @@ SmartCondo/
         └── aguardando_aprovacao.html
 ```
 
-**Total:** 33 páginas HTML, 2 arquivos CSS, 2 arquivos JS, 47 ícones SVG.
+
+E o back-end:
+
+```
+backend/
+├── alembic/                           # Migrações do banco
+├── app/
+│   ├── core/                          # Configuração, banco e segurança
+│   ├── models/                        # 16 tabelas
+│   ├── schemas/                       # Entrada e saída da API
+│   ├── services/                      # Regras de negócio
+│   ├── api/routers/                   # Endpoints
+│   └── main.py
+└── tests/                             # 120 testes
+```
+
+**Total:** 33 páginas HTML, 2 arquivos CSS, 3 arquivos JS, 47 ícones SVG e
+uma API com 55 endpoints.
+
+---
+
+## 🗄️ Back-end
+
+A API fica em [`backend/`](backend/), com instruções completas no
+[README do back-end](backend/README.md).
+
+```bash
+cd backend
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env          # ajuste a SECRET_KEY e a DATABASE_URL
+alembic upgrade head
+uvicorn app.main:app --reload
+```
+
+Documentação interativa da API em <http://localhost:8000/docs>.
+
+**55 endpoints**, cobrindo os casos de uso e as histórias de usuário da
+documentação — cadastro com código de confirmação, login, recuperação de
+senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
+ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e
+comunicados. **120 testes** rodando contra PostgreSQL.
 
 ---
 
@@ -164,10 +213,14 @@ SmartCondo/
 
 ## 📌 Funcionalidades Futuras
 
-- [ ] Implementação de backend com API REST
-- [ ] Autenticação com JWT
-- [ ] Banco de dados real (PostgreSQL/MySQL)
-- [ ] Notificações push e e-mail
+- [x] Implementação de backend com API REST
+- [x] Autenticação com JWT
+- [x] Banco de dados real (PostgreSQL)
+- [ ] Envio real de e-mail e SMS (a interface já existe; falta o provedor)
+- [ ] Upload das fotos do vídeo porteiro (a API guarda a URL)
+- [ ] Integrar as telas do front-end à API
+- [ ] Chat e chamada de voz com o porteiro (Node.js, seção 11.5.2)
+- [ ] Notificações push
 - [ ] Painel de gráficos com dados dinâmicos
 - [ ] Aplicativo mobile (React Native)
 - [ ] Integração com sistemas de portaria física

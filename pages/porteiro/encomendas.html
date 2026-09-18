@@ -18,8 +18,8 @@
         <span class="brand-name">Smart<strong>Condo</strong></span>
       </a>
       <div class="app-bar-right">
-        <a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="/assets/img/icons/shield-halved.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Carlos Pereira</span><span class="profile-role">Porteiro</span></a>
-        <a href="../../index.html" class="logout-btn"><img src="/assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
+        <a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/shield-halved.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Carlos Pereira</span><span class="profile-role">Porteiro</span></a>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
       </div>
     </div>
   </header>
@@ -27,29 +27,29 @@
   <main class="dash-wrapper">
 
     <a href="dashboard.html" class="dash-back">
-      <img src="/assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Porteiro
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Porteiro
     </a>
 
     <div class="dash-greeting">
-      <p class="greeting-sub"><img src="/assets/img/icons/clock.svg" width="16" height="16" alt="">Turno 07h – 15h · Carlos Pereira</p>
-      <h2 class="greeting-name"><img src="/assets/img/icons/box-archive.svg" alt="" style="width:26px;height:26px;vertical-align:middle;margin-right:8px;filter:brightness(0) invert(1);width:16px;height:16px"> Encomendas</h2>
-      <p class="greeting-condo"><img src="/assets/img/icons/box-archive.svg" alt="" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;filter:brightness(0) invert(1);width:16px;height:16px"> Registre recebimentos e confirme retiradas</p>
+      <p class="greeting-sub"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Turno 07h – 15h · Carlos Pereira</p>
+      <h2 class="greeting-name"><img src="../../assets/img/icons/box-archive.svg" alt="" style="width:26px;height:26px;vertical-align:middle;margin-right:8px;filter:brightness(0) invert(1);width:16px;height:16px"> Encomendas</h2>
+      <p class="greeting-condo"><img src="../../assets/img/icons/box-archive.svg" alt="" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;filter:brightness(0) invert(1);width:16px;height:16px"> Registre recebimentos e confirme retiradas</p>
     </div>
 
     <div class="stats-row">
       <div class="stat-card amber"><span class="stat-value">7</span><span class="stat-label">Aguardando</span></div>
-      <div class="stat-card blue"><span class="stat-value">3</span><span class="stat-label"><img src="/assets/img/icons/box-open.svg" width="16" height="16" alt="">Recebidas</span></div>
-      <div class="stat-card red"><span class="stat-value">2</span><span class="stat-label"><img src="/assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt="">Atrasadas</span></div>
+      <div class="stat-card blue"><span class="stat-value">3</span><span class="stat-label"><img src="../../assets/img/icons/box-open.svg" width="16" height="16" alt="">Recebidas</span></div>
+      <div class="stat-card red"><span class="stat-value">2</span><span class="stat-label"><img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt="">Atrasadas</span></div>
     </div>
 
     <!-- Registrar nova encomenda -->
     <p class="section-title"> Registrar Nova Encomenda</p>
     <div class="form-card">
-      <h3><img src="/assets/img/icons/box.svg" width="16" height="16" alt=""> Dados da Encomenda</h3>
+      <h3><img src="../../assets/img/icons/box.svg" width="16" height="16" alt=""> Dados da Encomenda</h3>
       <form action="dashboard.html">
         <div class="form-row">
           <div class="form-group">
-            <label><img src="/assets/img/icons/user.svg" width="16" height="16" alt="">Destinatário — Apartamento</label>
+            <label><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Destinatário — Apartamento</label>
             <select required>
               <option value="" disabled selected>Selecione o apto</option>
               <option>Apto 101</option><option>Apto 102</option><option>Apto 103</option>
@@ -70,7 +70,7 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label><img src="/assets/img/icons/box.svg" width="16" height="16" alt="">Tipo de volume</label>
+            <label><img src="../../assets/img/icons/box.svg" width="16" height="16" alt="">Tipo de volume</label>
             <select required>
               <option value="" disabled selected>Selecione</option>
               <option>Caixa pequena</option><option>Caixa média</option><option>Caixa grande</option>
@@ -84,7 +84,7 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label><img src="/assets/img/icons/clock.svg" width="16" height="16" alt="">Data e hora de recebimento</label>
+            <label><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Data e hora de recebimento</label>
             <input type="datetime-local" required>
           </div>
           <div class="form-group">
@@ -92,6 +92,19 @@
             <input type="text" placeholder="Frágil, refrigerado, urgente...">
           </div>
         </div>
+        <!-- Foto da encomenda — doc, seção 6 -->
+        <div class="captura-foto"
+             data-rotulo="Foto da encomenda"
+             data-dica="A foto acompanha a notificação de chegada, para o morador conferir o volume antes de descer."
+             data-icone="../../assets/img/icons/camera.svg"
+             data-input="foto_encomenda"></div>
+
+        <p class="aviso-notificacao">
+          <img src="../../assets/img/icons/bullhorn.svg" alt="">
+          <span>Ao registrar, o morador destinatário recebe uma <strong>notificação de chegada</strong>
+          com a foto do volume e o código de rastreio.</span>
+        </p>
+
         <button class="action-btn" type="submit" style="margin-top:4px;">
           Registrar Recebimento
         </button>
@@ -99,11 +112,11 @@
     </div>
 
     <!-- Encomendas aguardando -->
-    <p class="section-title"><img src="/assets/img/icons/clock.svg" width="16" height="16" alt=""> Aguardando Retirada</p>
+    <p class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Aguardando Retirada</p>
     <div class="list-items">
 
       <div class="list-item">
-        <div class="card-icon icon-yellow" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;"><img src="/assets/img/icons/box.svg" width="16" height="16" alt=""></div>
+        <div class="card-icon icon-yellow" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;"><img src="../../assets/img/icons/box.svg" width="16" height="16" alt=""></div>
         <div class="list-info">
           <h5>Apto 204 — João Silva</h5>
           <p>Amazon · Caixa média · Recebida 17/03 às 08h30 · Código: BR789012345</p>
@@ -112,7 +125,7 @@
       </div>
 
       <div class="list-item">
-        <div class="card-icon icon-teal" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;"><img src="/assets/img/icons/envelope.svg" width="16" height="16" alt=""></div>
+        <div class="card-icon icon-teal" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;"><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt=""></div>
         <div class="list-info">
           <h5>Apto 110 — Maria Santos</h5>
           <p>Correios · Envelope · Recebida 16/03 às 14h10</p>
@@ -121,7 +134,7 @@
       </div>
 
       <div class="list-item">
-        <div class="card-icon icon-blue" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;"><img src="/assets/img/icons/box-open.svg" width="16" height="16" alt=""></div>
+        <div class="card-icon icon-blue" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;"><img src="../../assets/img/icons/box-open.svg" width="16" height="16" alt=""></div>
         <div class="list-info">
           <h5>Apto 312 — Carlos Mendes</h5>
           <p>Shopee · Caixa grande · Recebida 15/03 às 11h50</p>
@@ -130,7 +143,7 @@
       </div>
 
       <div class="list-item">
-        <div class="card-icon icon-red" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;"><img src="/assets/img/icons/circle-exclamation.svg" alt=""></div>
+        <div class="card-icon icon-red" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;"><img src="../../assets/img/icons/circle-exclamation.svg" alt=""></div>
         <div class="list-info">
           <h5>Apto 201 — Ana Ribeiro</h5>
           <p>iFood · Alimento perecível — ⚠️ REQUER ATENÇÃO IMEDIATA</p>
@@ -141,13 +154,13 @@
     </div>
 
     <!-- Confirmar retirada -->
-    <p class="section-title"><img src="/assets/img/icons/check.svg" width="16" height="16" alt="">Confirmar Retirada</p>
+    <p class="section-title"><img src="../../assets/img/icons/check.svg" width="16" height="16" alt="">Confirmar Retirada</p>
     <div class="form-card">
       <h3> Registro de Retirada</h3>
       <form action="dashboard.html">
         <div class="form-row">
           <div class="form-group">
-            <label><img src="/assets/img/icons/building.svg" width="16" height="16" alt="">Apartamento</label>
+            <label><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Apartamento</label>
             <select required><option value="" disabled selected>Selecione o apto</option>
               <option>Apto 204</option><option>Apto 110</option><option>Apto 312</option><option>Apto 201</option>
             </select>
@@ -159,16 +172,16 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label><img src="/assets/img/icons/id-card.svg" width="16" height="16" alt="">Documento</label>
+            <label><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">Documento</label>
             <input type="text" placeholder="CPF ou RG" required>
           </div>
           <div class="form-group">
-            <label><img src="/assets/img/icons/clock.svg" width="16" height="16" alt="">Horário de retirada</label>
+            <label><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Horário de retirada</label>
             <input type="time" required>
           </div>
         </div>
         <button class="action-btn" type="submit" style="background:linear-gradient(135deg,#32c871,#1e9956);box-shadow:0 2px 6px rgba(50,200,113,.25),0 6px 16px rgba(50,200,113,.18);margin-top:4px;">
-          <img src="/assets/img/icons/check.svg" width="16" height="16" alt="">Confirmar Retirada
+          <img src="../../assets/img/icons/check.svg" width="16" height="16" alt="">Confirmar Retirada
         </button>
       </form>
     </div>
@@ -176,26 +189,16 @@
     <!-- Histórico do dia -->
     <p class="section-title"> Retiradas de Hoje</p>
     <div class="data-table">
-      <div class="table-head cols-4"><span><img src="/assets/img/icons/building.svg" width="16" height="16" alt="">Apto / Morador</span><span>Remetente</span><span><img src="/assets/img/icons/clock.svg" width="16" height="16" alt="">Retirada</span><span><img src="/assets/img/icons/user.svg" width="16" height="16" alt="">Por quem</span></div>
+      <div class="table-head cols-4"><span><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Apto / Morador</span><span>Remetente</span><span><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Retirada</span><span><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Por quem</span></div>
       <div class="table-row cols-4"><span>Apto 103 — Pedro Lima</span><span>Mercado Livre</span><span>08h45</span><span>Pedro Lima</span></div>
       <div class="table-row cols-4"><span>Apto 405 — Sandra Costa</span><span>Correios</span><span>10h20</span><span>Sandra Costa</span></div>
     </div>
 
   </main>
 
-  <div class="accessibility-widget">
-    <input type="checkbox" id="access-toggle">
-    <label for="access-toggle" class="access-button" title="Acessibilidade">
-      <img src="../../assets/img/acessibilidade.png" class="access-icon-img" alt="">
-    </label>
-    <div class="access-menu">
-      <label><input type="checkbox" id="font-toggle">  Aumentar fonte</label>
-      <label><input type="checkbox" id="contrast-toggle">  Alto contraste</label>
-      <label><input type="checkbox" id="read-toggle">  Modo leitura</label>
-    </div>
-  </div>
 
-  <script src="../../assets/js/validation.js"></script>
+  <script src="../../assets/js/foto.js"></script>
+<script src="../../assets/js/validation.js"></script>
   <script>
   document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.form-card form').forEach(function(form) {

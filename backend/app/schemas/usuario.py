@@ -1,0 +1,160 @@
+"""Schemas de cadastro, login e recuperação de senha.
+
+Documentação, seção 9 — casos de uso "Cadastro", "Login do usuário",
+"Esqueci minha senha" e "Permissão do Porteiro".
+"""
+from __future__ import annotations
+
+from datetime import date, datetime
+
+from pydantic import EmailStr, Field, model_validator
+
+from app.models.enums import (
+    CanalVerificacao, Papel, StatusUsuario, TipoOcupacao,
+)
+from app.schemas.comuns import CPF, SchemaBase, Senha, Telefone
+
+
+# ── Cadastro (seção 9) ───────────────────────────────────────────────
+class CadastroBase(SchemaBase):
+    nome: str = Field(min_length=3, max_length=160)
+    email: EmailStr
+    cpf: CPF
+    telefone: Telefone
+    data_nascimento: date | None = None
+    senha: Senha
+    # "o sistema salva e envia um código de confirmação pelo meio escolhido"
+    canal_confirmacao: CanalVerificacao = CanalVerificacao.EMAIL
+
+
+class CadastroSindico(CadastroBase):
+    """O síndico se cadastra sozinho e depois cadastra o condomínio."""
+
+
+class CadastroMorador(CadastroBase):
+    """Seção 11.3: o morador informa o condomínio, o bloco/torre, as vagas
+    de garagem e o vínculo dele com o estabelecimento."""
+
+    condominio_id: int
+    unidade_numero: str = Field(min_length=1, max_length=20)
+    unidade_bloco: str = Field(default="unico", max_length=20)
+    tipo_ocupacao: TipoOcupacao
+
+
+class CadastroPorteiro(CadastroBase):
+    """Seção 11.2: o cadastro do porteiro leva os dados pessoais e, por fim,
+    as permissões de uso no sistema. Quem cadastra é o síndico."""
+
+    condominio_id: int
+    permissoes: "PermissoesPorteiroEntrada | None" = None
+
+
+# ── Confirmação do cadastro ──────────────────────────────────────────
+class ConfirmacaoCodigo(SchemaBase):
+    email: EmailStr
+    codigo: str = Field(min_length=4, max_length=8)
+
+
+class ReenvioCodigo(SchemaBase):
+    email: EmailStr
+    canal: CanalVerificacao = CanalVerificacao.EMAIL
+
+
+# ── Login (seção 9) ──────────────────────────────────────────────────
+class LoginEntrada(SchemaBase):
+    email: EmailStr
+    senha: str = Field(min_length=1, max_length=72)
+
+
+class TokenSaida(SchemaBase):
+    access_token: str
+    token_type: str = "bearer"
+    expira_em_min: int
+    usuario: "UsuarioSaida"
+
+
+# ── Esqueci minha senha (seção 9) ────────────────────────────────────
+class SolicitacaoRecuperacao(SchemaBase):
+    email: EmailStr
+    canal: CanalVerificacao = CanalVerificacao.EMAIL
+
+
+class RedefinicaoSenha(SchemaBase):
+    email: EmailStr
+    codigo: str = Field(min_length=4, max_length=8)
+    nova_senha: Senha
+    confirmacao_senha: str
+
+    @model_validator(mode="after")
+    def conferir_confirmacao(self) -> "RedefinicaoSenha":
+        if self.nova_senha != self.confirmacao_senha:
+            raise ValueError("A confirmação não confere com a nova senha.")
+        return self
+
+
+class TrocaSenha(SchemaBase):
+    senha_atual: str = Field(min_length=1, max_length=72)
+    nova_senha: Senha
+
+
+# ── Permissões do porteiro (seção 9) ─────────────────────────────────
+class PermissoesPorteiroEntrada(SchemaBase):
+    registrar_visitantes: bool = True
+    registrar_encomendas: bool = True
+    registrar_veiculos: bool = True
+    registrar_ocorrencias: bool = True
+    acessar_financeiro: bool = False
+
+
+class PermissoesPorteiroSaida(PermissoesPorteiroEntrada):
+    porteiro_id: int
+
+
+# ── Saída ────────────────────────────────────────────────────────────
+class UnidadeResumo(SchemaBase):
+    id: int
+    numero: str
+    bloco: str
+    andar: int | None = None
+    vagas_garagem: int
+
+
+class UsuarioSaida(SchemaBase):
+    id: int
+    nome: str
+    email: EmailStr
+    telefone: str
+    papel: Papel
+    status: StatusUsuario
+    condominio_id: int | None = None
+    unidade: UnidadeResumo | None = None
+    tipo_ocupacao: TipoOcupacao | None = None
+    foto_url: str | None = None
+    criado_em: datetime
+
+
+class UsuarioAtualizacao(SchemaBase):
+    nome: str | None = Field(default=None, min_length=3, max_length=160)
+    telefone: Telefone | None = None
+    data_nascimento: date | None = None
+    foto_url: str | None = Field(default=None, max_length=500)
+
+
+class AprovacaoUsuario(SchemaBase):
+    """O síndico aprova ou recusa o cadastro (telas de aguardando aprovação)."""
+    aprovado: bool
+    motivo: str | None = Field(default=None, max_length=300)
+
+
+class CadastroSaida(SchemaBase):
+    """Resposta do cadastro: o usuário criado e para onde o código foi."""
+    usuario: UsuarioSaida
+    codigo_enviado_para: str
+    canal: CanalVerificacao
+    expira_em_min: int
+    # Só preenchido quando DEBUG está ligado, para testar sem e-mail/SMS real.
+    codigo_debug: str | None = None
+
+
+CadastroPorteiro.model_rebuild()
+TokenSaida.model_rebuild()
