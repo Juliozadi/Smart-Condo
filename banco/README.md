@@ -1,81 +1,43 @@
 # Banco de dados — SmartCondo
 
-Scripts SQL para rodar no **pgAdmin** (PostgreSQL).
+Scripts SQL do banco, prontos para rodar no **pgAdmin**.
 
 | Arquivo | O que faz |
 |---|---|
-| `01_criar_tabelas.sql` | Cria as 5 tabelas, as chaves e as restrições |
-| `02_carga_dados.sql` | Carrega 18 registros de exemplo |
+| `01_criar_tabelas.sql` | Cria os tipos, as 16 tabelas, as chaves e os índices |
+| `02_carga_dados.sql` | Carrega um condomínio completo de demonstração |
 
-Esta é a **versão reduzida**, para apresentar o início do projeto. A
-modelagem completa do sistema, com 16 tabelas, está em
-[`completo/`](completo/).
+Os dois arquivos são SQL puro, sem comentários — as explicações ficam
+neste README.
 
-Os arquivos são SQL puro, sem comentários — as explicações ficam aqui.
+Banco: **PostgreSQL 16**.
 
 ---
 
 ## Como executar no pgAdmin
 
-1. **Crie o banco.** Botão direito em **Databases → Create → Database…**,
-   com o nome `smartcondo`.
-2. **Selecione** o banco `smartcondo`.
-3. **Tools → Query Tool**.
-4. Abra `01_criar_tabelas.sql` (ícone de pasta) e execute com **F5**.
-   Na primeira vez aparecem avisos `NOTICE: table ... does not exist,
-   skipping` — é esperado, o script apaga antes de recriar.
-5. Abra `02_carga_dados.sql` e execute com **F5**.
+1. **Crie o banco.** No painel da esquerda, clique com o botão direito em
+   **Databases → Create → Database…** e dê o nome `smartcondo`.
 
-Os dois podem ser executados quantas vezes quiser.
+2. **Selecione o banco** `smartcondo` que acabou de criar.
 
----
+3. **Abra o Query Tool** em **Tools → Query Tool**.
 
-## As 5 tabelas
+4. **Abra `01_criar_tabelas.sql`** pelo ícone de pasta e execute com **F5**.
+   Vão aparecer avisos `NOTICE: table ... does not exist, skipping` na
+   primeira execução — é esperado: o script apaga o que existir antes de
+   recriar, e na primeira vez não existe nada.
 
-| Tabela | Guarda | Registros |
-|---|---|---|
-| `condominios` | O condomínio | 1 |
-| `unidades` | Apartamentos do condomínio | 4 |
-| `usuarios` | Síndico, porteiro e moradores | 5 |
-| `espacos_comuns` | Salão, churrasqueira, piscina, academia | 4 |
-| `reservas` | Reservas dos espaços pelos moradores | 4 |
+5. **Abra `02_carga_dados.sql`** e execute com **F5**.
 
-### Relacionamentos
-
-```
-condominios
-    ├── unidades          (um condomínio tem várias unidades)
-    ├── usuarios          (um condomínio tem vários usuários)
-    └── espacos_comuns    (um condomínio tem vários espaços)
-
-usuarios ──── unidades    (o morador pertence a uma unidade)
-
-reservas ──── usuarios          (quem reservou)
-         └──── espacos_comuns   (o que foi reservado)
-```
-
----
-
-## Regras garantidas pelo banco
-
-Não são validações só da tela — o banco recusa o dado errado:
-
-| Regra | Como |
-|---|---|
-| `papel` só aceita síndico, porteiro ou morador | `CHECK` |
-| Morador precisa ter unidade; síndico e porteiro, não | `CHECK` |
-| `status` da reserva só aceita pendente, aprovada ou recusada | `CHECK` |
-| A hora de término é depois da de início | `CHECK` |
-| Capacidade do espaço é maior que zero | `CHECK` |
-| E-mail e CNPJ não se repetem | `UNIQUE` |
-| Não há duas unidades com o mesmo número no condomínio | `UNIQUE` |
-| Toda unidade, usuário, espaço e reserva aponta para algo que existe | `FOREIGN KEY` |
+Os dois scripts podem ser executados quantas vezes quiser: cada um limpa
+o que criou antes de recriar.
 
 ---
 
 ## Conferindo
 
-Tabelas criadas:
+Depois do passo 4, as tabelas criadas:
 
 ```sql
 SELECT tablename FROM pg_tables
@@ -83,30 +45,65 @@ SELECT tablename FROM pg_tables
  ORDER BY tablename;
 ```
 
-Dados carregados:
+Depois do passo 5, os dados carregados:
 
 ```sql
 SELECT 'condominios' AS tabela, COUNT(*) FROM condominios
 UNION ALL SELECT 'unidades',    COUNT(*) FROM unidades
 UNION ALL SELECT 'usuarios',    COUNT(*) FROM usuarios
 UNION ALL SELECT 'espacos',     COUNT(*) FROM espacos_comuns
-UNION ALL SELECT 'reservas',    COUNT(*) FROM reservas;
+UNION ALL SELECT 'reservas',    COUNT(*) FROM reservas
+UNION ALL SELECT 'cobrancas',   COUNT(*) FROM cobrancas
+UNION ALL SELECT 'pagamentos',  COUNT(*) FROM pagamentos
+UNION ALL SELECT 'comunicados', COUNT(*) FROM comunicados;
 ```
 
-Uma consulta que atravessa as cinco tabelas, boa para mostrar na
-apresentação:
+---
 
-```sql
-SELECT u.nome AS morador,
-       un.bloco || '-' || un.numero AS unidade,
-       e.nome AS espaco,
-       r.data, r.hora_inicio, r.hora_fim, r.status
-  FROM reservas r
-  JOIN usuarios u       ON u.id  = r.morador_id
-  JOIN unidades un      ON un.id = u.unidade_id
-  JOIN espacos_comuns e ON e.id  = r.espaco_id
- ORDER BY r.data;
-```
+## As 16 tabelas
+
+| Tabela | Guarda |
+|---|---|
+| `condominios` | Condomínios cadastrados pelo administrador |
+| `unidades` | Apartamentos ou casas de cada condomínio |
+| `usuarios` | Administradores, síndicos, porteiros e moradores |
+| `permissoes_porteiro` | O que cada porteiro pode fazer, definido pelo síndico |
+| `codigos_verificacao` | Códigos de confirmação e de recuperação de senha |
+| `espacos_comuns` | Salão, churrasqueira, piscina, academia e demais áreas |
+| `reservas` | Pedidos de reserva, aprovados ou recusados pelo síndico |
+| `registros_ocupacao` | Contagem de pessoas nas áreas de uso livre |
+| `preferencias_cobranca` | Dia do vencimento e forma de pagamento do morador |
+| `cobrancas` | Taxa condominial por unidade e competência |
+| `pagamentos` | Pagamentos recebidos, com meio, valor e data |
+| `comunicados` | Avisos publicados pelo síndico |
+| `leituras_comunicado` | Quem já leu cada comunicado |
+| `visitantes` | Registro de visitantes, com a foto do vídeo porteiro |
+| `encomendas` | Encomendas recebidas na portaria |
+| `ocorrencias` | Chamados abertos por moradores, porteiros ou síndico |
+
+---
+
+## Detalhes da modelagem
+
+**Tipos enumerados.** Papel, status, forma de pagamento e categoria usam
+`CREATE TYPE ... AS ENUM`, e não texto livre: o banco recusa qualquer valor
+fora da lista.
+
+**Referência circular.** `condominios.sindico_id` aponta para `usuarios` e
+`usuarios.condominio_id` aponta para `condominios` — uma tabela referencia a
+outra. Por isso:
+
+- em `01_criar_tabelas.sql`, as chaves estrangeiras são criadas **depois**
+  de todas as tabelas existirem;
+- em `02_carga_dados.sql`, o condomínio entra **sem** o síndico, e o vínculo
+  é fechado por um `UPDATE` no fim do script.
+
+**Contadores.** A carga insere os `id` explicitamente, então as sequências
+são reposicionadas com `setval` no fim do script. Sem isso, o primeiro
+cadastro feito pelo sistema tentaria repetir um `id` já usado.
+
+**Senhas.** Gravadas em hash **bcrypt**, nunca em texto puro — nem no banco,
+nem no script de carga. O mesmo vale para os códigos de verificação.
 
 ---
 
@@ -114,24 +111,29 @@ SELECT u.nome AS morador,
 
 Todas com a senha `smartcondo123`:
 
-| E-mail | Papel | Unidade |
-|---|---|---|
-| `sindico@smartcondo.com` | Síndico | — |
-| `porteiro@smartcondo.com` | Porteiro | — |
-| `joao@smartcondo.com` | Morador | B-204 |
-| `ana@smartcondo.com` | Morador | B-301 |
-| `bruno@smartcondo.com` | Morador | A-102 |
+| E-mail | Papel |
+|---|---|
+| `admin@smartcondo.com` | Administrador da plataforma |
+| `sindico@smartcondo.com` | Síndico |
+| `porteiro@smartcondo.com` | Porteiro — todas as permissões |
+| `renata@smartcondo.com` | Porteira — sem veículos nem ocorrências |
+| `morador@smartcondo.com` | Morador do apto 204 |
+| `ana@smartcondo.com` | Moradora do apto 301 |
+| `bruno@smartcondo.com` | Morador do apto 102 |
+| `marina@smartcondo.com` | Moradora do apto 410 |
+| `pedro@smartcondo.com` | Aguardando aprovação do síndico |
 
-As senhas estão em **hash bcrypt**, nunca em texto puro.
+**Código de acesso do condomínio:** `PALM-2025` — é o que o morador informa
+para se cadastrar sozinho.
 
 ---
 
-## Versão completa
+## Relação com a aplicação
 
-A pasta [`completo/`](completo/) tem a modelagem final do sistema: 16
-tabelas, cobrindo também financeiro, comunicados, portaria (visitantes e
-encomendas), ocorrências e permissões do porteiro. É a estrutura que o
-back-end usa de verdade (`backend/alembic/`).
+Estes scripts são a mesma estrutura que o back-end cria pelas migrações do
+Alembic (`backend/alembic/`) e a mesma carga do comando
+`python -m app.seed`. Foram gerados a partir do banco real, então não
+divergem da aplicação.
 
-Use a versão reduzida para apresentar; a completa fica como referência do
-que o projeto alcança.
+Quem for rodar a API pode usar as migrações; quem quiser apenas ver o banco
+no pgAdmin usa estes dois arquivos.
