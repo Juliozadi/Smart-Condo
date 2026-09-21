@@ -24,7 +24,7 @@ from app.models.enums import CanalVerificacao, FinalidadeCodigo, Papel, StatusUs
 from app.models.usuario import Usuario
 from app.schemas.comuns import Mensagem
 from app.schemas.usuario import (
-    CadastroMorador, CadastroSaida, ConfirmacaoCodigo, LoginEntrada,
+    CadastroMorador, CadastroSaida, ConfirmacaoCodigo, LoginEntrada, PerfilSaida,
     RedefinicaoSenha, ReenvioCodigo, SolicitacaoRecuperacao, TokenSaida, TrocaSenha,
     UsuarioSaida,
 )
@@ -206,7 +206,7 @@ def redefinir_senha(dados: RedefinicaoSenha, db: Session = Depends(get_db)) -> M
     return Mensagem(detalhe="Senha redefinida. Faça o login com a nova senha.")
 
 
-@router.get("/eu", response_model=UsuarioSaida, summary="Dados do usuário autenticado")
+@router.get("/eu", response_model=PerfilSaida, summary="Dados do usuário autenticado")
 def usuario_autenticado(usuario: Usuario = Depends(get_usuario_atual)) -> Usuario:
     return usuario
 

@@ -1920,3 +1920,21 @@ body.tema-escuro .marca-fixado { background: rgba(230,162,60,.2); color: #e8bb70
 }
 .link-baixar:hover { background: var(--primary); color: #fff; }
 .card-info .glifo { width: 26px; height: 26px; }
+
+/* ── Perfil ──────────────────────────────────────────────────────── */
+.p-nota { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-top: 12px; }
+/* minmax(0,...) deixa a coluna encolher; sem isso os tres campos de
+   senha ficavam com a largura minima do conteudo e estouravam a tela. */
+.p-senha .p-grid { gap: 14px; grid-template-columns: repeat(auto-fit, minmax(0, 200px)); }
+@media (max-width: 640px) {
+  .p-grid, .p-senha .p-grid { grid-template-columns: minmax(0, 1fr); }
+}
+.p-senha .form-group { display: flex; flex-direction: column; gap: 6px; }
+.p-senha label { font-size: 12px; font-weight: 700; color: var(--muted); }
+.p-senha input {
+  padding: 11px 12px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs); background: var(--surface-2);
+  color: var(--text); font-size: 14px; font-family: inherit; outline: none;
+}
+.p-senha input:focus { border-color: var(--primary); }
+.p-senha .form-erro { margin: 10px 0; }

@@ -246,6 +246,34 @@ def test_rota_protegida_com_token_valido(cliente, cenario):
     assert r.json()["papel"] == "sindico"
 
 
+def test_perfil_traz_cpf_e_nascimento_mas_a_listagem_nao(cliente, cenario):
+    """O usuário vê o próprio CPF; a listagem do síndico não expõe o dos outros."""
+    meu = cliente.get("/api/v1/auth/eu", headers=cab(cenario["sindico"])).json()
+    assert "cpf" in meu
+    assert "data_nascimento" in meu
+
+    lista = cliente.get("/api/v1/usuarios", headers=cab(cenario["sindico"])).json()
+    assert lista, "o síndico precisa enxergar alguém na listagem"
+    assert all("cpf" not in u for u in lista)
+
+
+def test_usuario_atualiza_o_proprio_perfil(cliente, cenario):
+    """A tela de perfil grava nome, telefone e data de nascimento."""
+    r = cliente.patch(
+        "/api/v1/usuarios/eu",
+        json={"nome": "Roberto do Nascimento", "telefone": "(67) 98888-7777",
+              "data_nascimento": "1990-04-15"},
+        headers=cab(cenario["sindico"]),
+    )
+    assert r.status_code == 200, r.text
+    assert r.json()["nome"] == "Roberto do Nascimento"
+    assert r.json()["data_nascimento"] == "1990-04-15"
+
+    de_novo = cliente.get("/api/v1/auth/eu", headers=cab(cenario["sindico"])).json()
+    assert de_novo["telefone"] == "67988887777"
+    assert de_novo["data_nascimento"] == "1990-04-15"
+
+
 # ── Esqueci minha senha ──────────────────────────────────────────────
 def test_recuperacao_de_senha_completa(cliente, cenario, db):
     from app.core.security import gerar_hash_codigo
