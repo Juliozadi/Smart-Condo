@@ -25,6 +25,12 @@
     };
   }
 
+  /* Compara texto ignorando acentos: quem digita "convencao" espera
+     encontrar "Convenção". */
+  function semAcento(texto) {
+    return (texto || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
   function formatarCnpj(valor) {
     var d = (valor || '').replace(/\D/g, '');
     if (d.length !== 14) return valor || '';
@@ -148,6 +154,7 @@
   global.SmartCondo.ui = {
     limparTabela: limparTabela,
     aguardar: aguardar,
+    semAcento: semAcento,
     formatarCnpj: formatarCnpj,
     formatarCpf: formatarCpf,
     formatarTelefone: formatarTelefone,

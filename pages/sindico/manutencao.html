@@ -21,71 +21,342 @@
       <p class="greeting-condo"> Ordens de serviço e fornecedores</p>
     </div>
     <div class="stats-row">
-      <div class="stat-card red"><span class="stat-value">3</span><span class="stat-label"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt="">Em aberto</span></div>
-      <div class="stat-card blue"><span class="stat-value">2</span><span class="stat-label">Em execução</span></div>
-      <div class="stat-card teal"><span class="stat-value">8</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Concluídas</span></div>
+      <div class="stat-card red"><span class="stat-value" id="totAbertas">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt="">Em aberto</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totAndamento">—</span><span class="stat-label">Em execução</span></div>
+      <div class="stat-card teal"><span class="stat-value" id="totConcluidas">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Concluídas</span></div>
     </div>
-    <p class="section-title"> Nova Ordem de Serviço</p>
+
+    <div class="admin-stats" style="grid-template-columns:repeat(2,minmax(0,1fr));">
+      <div class="admin-stat amber"><span class="stat-value" id="custoPrevisto">—</span><span class="stat-label">Custo previsto</span></div>
+      <div class="admin-stat teal"><span class="stat-value" id="custoRealizado">—</span><span class="stat-label">Custo realizado</span></div>
+    </div>
+
+    <p class="section-title">Nova Ordem de Serviço</p>
     <div class="form-card">
-      <h3> Abertura de OS</h3>
-      <div class="form-row">
-        <div class="form-group"><label for="manute_tipoDeManutencao">Tipo de manutenção</label><select id="manute_tipoDeManutencao" required style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"><option value="" disabled selected>Selecione</option><option>Elétrica</option><option>Hidráulica</option><option>Estrutural</option><option>Pintura</option><option>Jardim / Paisagismo</option><option>Elevador</option><option>Limpeza especial</option></select></div>
-        <div class="form-group"><label for="manute_prioridade">Prioridade</label><select id="manute_prioridade" required style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"><option value="" disabled selected>Selecione</option><option>🔴 Urgente</option><option>🟡 Alta</option><option>🟢 Normal</option></select></div>
-      </div>
-      <div class="form-group"><label for="manute_descricao">Descrição</label><textarea id="manute_descricao" required placeholder="Descreva o problema e localização..." style="min-height:80px;width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);resize:vertical;outline:none;"></textarea></div>
-      <div class="form-row">
-        <div class="form-group"><label for="manute_fornecedorResponsavel">Fornecedor responsável</label><input id="manute_fornecedorResponsavel" type="text" placeholder="Nome da empresa ou autônomo" required style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
-        <div class="form-group"><label for="manute_dataPrevista">Data prevista</label><input id="manute_dataPrevista" type="date" required style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
-      </div>
-      <div class="form-group"><label for="manute_custoEstimadoR">Custo estimado (R$)</label><input id="manute_custoEstimadoR" type="text" placeholder="Ex: 1.500,00" required style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
-      <a href="dashboard.html" class="action-btn" style="margin-top:4px;"><img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Abrir Ordem de Serviço</a>
+      <h3>Abertura de OS</h3>
+      <form id="formOrdem" novalidate>
+        <div class="form-row">
+          <div class="form-group"><label for="manute_tipoDeManutencao">Tipo de manutenção</label><select id="manute_tipoDeManutencao" required style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"><option value="" disabled selected>Selecione</option><option>Elétrica</option><option>Hidráulica</option><option>Estrutural</option><option>Pintura</option><option>Jardim / Paisagismo</option><option>Elevador</option><option>Limpeza especial</option><option>Outro</option></select></div>
+          <div class="form-group"><label for="manute_prioridade">Prioridade</label><select id="manute_prioridade" required style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"><option value="urgente">Urgente</option><option value="alta">Alta</option><option value="media" selected>Média</option><option value="baixa">Baixa</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="manute_local">Local</label><input id="manute_local" type="text" maxlength="120" placeholder="Ex: Corredor do 3º andar" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
+          <div class="form-group"><label for="manute_fornecedorResponsavel">Fornecedor responsável</label><input id="manute_fornecedorResponsavel" type="text" maxlength="120" placeholder="Nome da empresa ou autônomo" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
+        </div>
+        <div class="form-group"><label for="manute_descricao">Descrição</label><textarea id="manute_descricao" required maxlength="4000" placeholder="Descreva o problema e o que precisa ser feito..." style="min-height:80px;width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;resize:vertical;"></textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label for="manute_dataPrevista">Data prevista</label><input id="manute_dataPrevista" type="date" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
+          <div class="form-group"><label for="manute_custoEstimadoR">Custo estimado (R$)</label><input id="manute_custoEstimadoR" type="number" min="0" step="0.01" placeholder="Ex: 1500.00" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
+        </div>
+        <p class="form-erro" id="erroOrdem" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;"><img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Abrir Ordem de Serviço</button>
+      </form>
     </div>
-    <p class="section-title"> Ordens de Serviço Ativas</p>
-    <div class="list-items">
-      <div class="list-item">
-        <div class="card-icon icon-red" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;"><img src="../../assets/img/icons/triangle-exclamation.svg" alt=""></div>
-        <div class="list-info"><h5>Infiltração — 3º andar</h5><p>Empresa HídroFix · Aberta 15/03 · Previsão: 20/03 · R$2.800</p></div>
-        <span class="badge badge-alert">Urgente</span>
-      </div>
-      <div class="list-item">
-        <div class="card-icon icon-yellow" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;"><img src="../../assets/img/icons/bolt.svg" alt=""></div>
-        <div class="list-info"><h5>Iluminação — Corredor B</h5><p>Eletro Matos · Aberta 16/03 · Previsão: 19/03 · R$450</p></div>
-        <span class="badge badge-blue">Em execução</span>
-      </div>
-      <div class="list-item">
-        <div class="card-icon icon-teal" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;"><img src="../../assets/img/icons/building.svg" alt=""></div>
-        <div class="list-info"><h5>Pintura da fachada</h5><p>PintaCondo Ltda · Início: 01/04 · Orçamento: R$18.000</p></div>
-        <span class="badge badge-pending">Agendada</span>
-      </div>
+
+    <p class="section-title">Ordens de Serviço Ativas</p>
+    <div class="list-items" id="listaAtivas"></div>
+    <p class="estado-lista" id="estadoAtivas">Carregando…</p>
+
+    <p class="section-title">Histórico de Manutenções</p>
+    <div class="data-table tabela-status" id="tabelaHistorico">
+      <div class="table-head cols-5"><span>Serviço</span><span><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Fornecedor</span><span>Prevista</span><span>Custo</span><span>Situação</span></div>
     </div>
-    <p class="section-title"> Histórico de Manutenções</p>
-    <div class="data-table">
-      <div class="table-head cols-4"><span>Serviço</span><span><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Fornecedor</span><span>Conclusão</span><span>Custo</span></div>
-      <div class="table-row cols-4"><span>Revisão elevador</span><span>Otis Elevadores</span><span>10/03</span><span>R$1.200</span></div>
-      <div class="table-row cols-4"><span>Limpeza caixa d'água</span><span>CleanWater</span><span>05/03</span><span>R$800</span></div>
-      <div class="table-row cols-4"><span>Reparo portão eletrônico</span><span>AutoGates</span><span>28/02</span><span>R$650</span></div>
-    </div>
+    <p class="estado-lista" id="estadoHistorico"></p>
+
   </main>
 
 <script src="../../assets/js/validation.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  var btn = document.querySelector('.action-btn');
-  if (btn) {
-    btn.addEventListener('click', function(e) {
-      var inputs = this.closest('.form-card').querySelectorAll('input, select, textarea');
-      var valido = true;
-      document.querySelectorAll('.erro-validacao').forEach(function(el) { el.remove(); });
-      inputs.forEach(function(inp) {
-        if (inp.hasAttribute('required') && !inp.value.trim()) {
-          mostrarErro(inp, 'Campo obrigatório');
-          valido = false;
-        }
-      });
-      if (!valido) e.preventDefault();
+/* Manutenção: abre a ordem de serviço, acompanha as ativas e fecha
+   quando o serviço termina, registrando o custo real. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api;
+  var usuario = api.protegerPagina('sindico');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+  var ordens = [];
+
+  var ROTULO_STATUS = {
+    aberta: 'Aberta', em_andamento: 'Em execução',
+    concluida: 'Concluída', cancelada: 'Cancelada'
+  };
+  var CLASSE_STATUS = {
+    aberta: 'badge-pending', em_andamento: 'badge-blue',
+    concluida: 'badge-ok', cancelada: 'badge-neutral'
+  };
+  var ROTULO_PRIORIDADE = {
+    urgente: 'Urgente', alta: 'Alta', media: 'Média', baixa: 'Baixa'
+  };
+  var ICONE_PRIORIDADE = {
+    urgente: ['icon-red', 'triangle-exclamation.svg'],
+    alta:    ['icon-yellow', 'circle-exclamation.svg'],
+    media:   ['icon-teal', 'manutencao.svg'],
+    baixa:   ['icon-blue', 'manutencao.svg']
+  };
+
+  function dinheiro(valor) {
+    if (valor === null || valor === undefined || valor === '') return '—';
+    return 'R$ ' + Number(valor).toLocaleString('pt-BR', {
+      minimumFractionDigits: 2, maximumFractionDigits: 2
     });
   }
-});
+  function dataCurta(iso) {
+    if (!iso) return '—';
+    var p = String(iso).slice(0, 10).split('-');
+    return p[2] + '/' + p[1] + '/' + p[0];
+  }
+
+  function cartao(o) {
+    var bloco = document.createElement('div');
+    bloco.className = 'ocorrencia-bloco';
+
+    var item = document.createElement('div');
+    item.className = 'list-item';
+
+    var visual = ICONE_PRIORIDADE[o.prioridade] || ICONE_PRIORIDADE.media;
+    var icone = document.createElement('div');
+    icone.className = 'card-icon ' + visual[0] + ' icone-volume';
+    var glifo = document.createElement('span');
+    glifo.className = 'glifo';
+    glifo.style.setProperty('--icone', 'url(../../assets/img/icons/' + visual[1] + ')');
+    icone.appendChild(glifo);
+
+    var info = document.createElement('div');
+    info.className = 'list-info';
+    var h = document.createElement('h5');
+    h.textContent = o.tipo + (o.local ? ' — ' + o.local : '');
+    var p = document.createElement('p');
+    var partes = [];
+    if (o.fornecedor) partes.push(o.fornecedor);
+    partes.push('Aberta ' + dataCurta(o.criado_em));
+    if (o.data_prevista) partes.push('Previsão ' + dataCurta(o.data_prevista));
+    if (o.custo_estimado) partes.push(dinheiro(o.custo_estimado));
+    partes.push('Prioridade ' + (ROTULO_PRIORIDADE[o.prioridade] || o.prioridade).toLowerCase());
+    p.textContent = partes.join(' · ');
+    var descricao = document.createElement('p');
+    descricao.className = 'ocorrencia-descricao';
+    descricao.textContent = o.descricao;
+    info.appendChild(h); info.appendChild(p); info.appendChild(descricao);
+
+    var selo = document.createElement('span');
+    selo.className = 'badge ' + (CLASSE_STATUS[o.status] || 'badge-neutral');
+    selo.textContent = ROTULO_STATUS[o.status] || o.status;
+
+    var painel = painelAtualizacao(o);
+    var alternar = document.createElement('button');
+    alternar.type = 'button';
+    alternar.className = 'contato-btn';
+    alternar.textContent = 'Atualizar';
+    alternar.setAttribute('aria-expanded', 'false');
+    alternar.addEventListener('click', function() {
+      var abrindo = painel.hidden;
+      painel.hidden = !abrindo;
+      alternar.setAttribute('aria-expanded', String(abrindo));
+    });
+
+    item.appendChild(icone);
+    item.appendChild(info);
+    item.appendChild(alternar);
+    item.appendChild(selo);
+    bloco.appendChild(item);
+    bloco.appendChild(painel);
+    return bloco;
+  }
+
+  function painelAtualizacao(o) {
+    var painel = document.createElement('div');
+    painel.className = 'painel-resposta';
+    painel.hidden = true;
+
+    function grupo(rotuloTexto, elemento, id) {
+      var rotulo = document.createElement('label');
+      rotulo.className = 'resposta-rotulo';
+      rotulo.textContent = rotuloTexto;
+      rotulo.setAttribute('for', id);
+      elemento.id = id;
+      painel.appendChild(rotulo);
+      painel.appendChild(elemento);
+    }
+
+    var status = document.createElement('select');
+    ['aberta', 'em_andamento', 'concluida', 'cancelada'].forEach(function(v) {
+      var op = document.createElement('option');
+      op.value = v;
+      op.textContent = ROTULO_STATUS[v];
+      status.appendChild(op);
+    });
+    status.value = o.status;
+    grupo('Situação', status, 'status-os-' + o.id);
+
+    var fornecedor = document.createElement('input');
+    fornecedor.type = 'text';
+    fornecedor.maxLength = 120;
+    fornecedor.value = o.fornecedor || '';
+    fornecedor.placeholder = 'Quem está executando';
+    grupo('Fornecedor', fornecedor, 'fornecedor-os-' + o.id);
+
+    var custo = document.createElement('input');
+    custo.type = 'number';
+    custo.min = '0';
+    custo.step = '0.01';
+    custo.value = o.custo_real !== null && o.custo_real !== undefined ? o.custo_real : '';
+    custo.placeholder = 'Quanto custou de fato';
+    grupo('Custo real (R$)', custo, 'custo-os-' + o.id);
+
+    var observacoes = document.createElement('textarea');
+    observacoes.rows = 2;
+    observacoes.maxLength = 2000;
+    observacoes.value = o.observacoes || '';
+    observacoes.placeholder = 'O que foi feito, peças trocadas, pendências…';
+    grupo('Observações', observacoes, 'obs-os-' + o.id);
+
+    var rodape = document.createElement('div');
+    rodape.className = 'resposta-rodape';
+    var salvar = document.createElement('button');
+    salvar.type = 'button';
+    salvar.className = 'action-btn';
+    salvar.style.cssText = 'width:auto;margin:0;padding:9px 18px;font-size:13px;';
+    salvar.textContent = 'Salvar';
+    var cancelar = document.createElement('button');
+    cancelar.type = 'button';
+    cancelar.className = 'pill-acao recusar';
+    cancelar.textContent = 'Cancelar OS';
+    var aviso = document.createElement('span');
+    aviso.className = 'permissoes-aviso';
+    aviso.setAttribute('role', 'status');
+    rodape.appendChild(salvar);
+    rodape.appendChild(cancelar);
+    rodape.appendChild(aviso);
+    painel.appendChild(rodape);
+
+    salvar.addEventListener('click', function() {
+      salvar.disabled = true;
+      aviso.textContent = 'Salvando…';
+      var corpo = { status: status.value, observacoes: observacoes.value.trim() || null };
+      if (fornecedor.value.trim()) corpo.fornecedor = fornecedor.value.trim();
+      if (custo.value !== '') corpo.custo_real = Number(custo.value);
+      api.put('/manutencao/' + o.id, corpo)
+        .then(carregar)
+        .catch(function(e) { salvar.disabled = false; aviso.textContent = e.message; });
+    });
+    cancelar.addEventListener('click', function() {
+      if (!confirm('Cancelar a ordem "' + o.tipo + '"?')) return;
+      cancelar.disabled = true;
+      api.remover('/manutencao/' + o.id)
+        .then(carregar)
+        .catch(function(e) { cancelar.disabled = false; aviso.textContent = e.message; });
+    });
+
+    return painel;
+  }
+
+  function montarLinha(o) {
+    var linha = document.createElement('div');
+    linha.className = 'table-row cols-5';
+    linha.innerHTML =
+      '<span></span><span></span><span></span><span></span>' +
+      '<span><span class="badge"></span></span>';
+    linha.children[0].textContent = o.tipo + (o.local ? ' — ' + o.local : '');
+    linha.children[1].textContent = o.fornecedor || '—';
+    linha.children[2].textContent = dataCurta(o.data_prevista);
+    linha.children[3].textContent = dinheiro(
+      o.custo_real !== null && o.custo_real !== undefined ? o.custo_real : o.custo_estimado);
+    var selo = linha.children[4].firstChild;
+    selo.className = 'badge ' + (CLASSE_STATUS[o.status] || 'badge-neutral');
+    selo.textContent = ROTULO_STATUS[o.status] || o.status;
+    if (o.observacoes) linha.title = o.observacoes;
+    return linha;
+  }
+
+  function carregar() {
+    campo('estadoAtivas').textContent = 'Carregando…';
+    return Promise.all([
+      api.get('/manutencao/resumo'),
+      api.get('/manutencao')
+    ]).then(function(r) {
+      var resumo = r[0];
+      ordens = r[1];
+
+      campo('totAbertas').textContent = resumo.abertas;
+      campo('totAndamento').textContent = resumo.em_andamento;
+      campo('totConcluidas').textContent = resumo.concluidas;
+      campo('custoPrevisto').textContent = dinheiro(resumo.custo_previsto);
+      campo('custoRealizado').textContent = dinheiro(resumo.custo_realizado);
+
+      var ativas = ordens.filter(function(o) {
+        return o.status === 'aberta' || o.status === 'em_andamento';
+      });
+      var caixa = campo('listaAtivas');
+      caixa.innerHTML = '';
+      campo('estadoAtivas').textContent =
+        ativas.length ? '' : 'Nenhuma ordem de serviço em aberto.';
+      ativas.forEach(function(o) { caixa.appendChild(cartao(o)); });
+
+      var tabela = campo('tabelaHistorico');
+      var cabecalho = tabela.querySelector('.table-head');
+      tabela.innerHTML = '';
+      tabela.appendChild(cabecalho);
+      campo('estadoHistorico').textContent =
+        ordens.length ? '' : 'Nenhuma ordem registrada ainda.';
+      ordens.forEach(function(o) { tabela.appendChild(montarLinha(o)); });
+    }).catch(function(e) {
+      campo('estadoAtivas').textContent = e.message;
+      campo('estadoHistorico').textContent = '';
+    });
+  }
+
+  campo('formOrdem').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('erroOrdem');
+    erro.className = 'form-erro';
+    erro.textContent = '';
+
+    var tipo = campo('manute_tipoDeManutencao').value;
+    var descricao = campo('manute_descricao').value.trim();
+    if (!tipo) {
+      erro.textContent = 'Escolha o tipo de manutenção.';
+      return;
+    }
+    if (descricao.length < 5) {
+      erro.textContent = 'Descreva o serviço com um pouco mais de detalhe.';
+      return;
+    }
+
+    var corpo = {
+      tipo: tipo,
+      descricao: descricao,
+      prioridade: campo('manute_prioridade').value || 'media'
+    };
+    var local = campo('manute_local').value.trim();
+    if (local) corpo.local = local;
+    var fornecedor = campo('manute_fornecedorResponsavel').value.trim();
+    if (fornecedor) corpo.fornecedor = fornecedor;
+    if (campo('manute_dataPrevista').value) corpo.data_prevista = campo('manute_dataPrevista').value;
+    if (campo('manute_custoEstimadoR').value !== '') {
+      corpo.custo_estimado = Number(campo('manute_custoEstimadoR').value);
+    }
+
+    var botao = this.querySelector('button[type=submit]');
+    var rotulo = botao.innerHTML;
+    botao.disabled = true;
+    botao.textContent = 'Abrindo…';
+
+    api.post('/manutencao', corpo)
+      .then(function() {
+        campo('formOrdem').reset();
+        erro.className = 'form-erro sucesso';
+        erro.textContent = 'Ordem de serviço aberta.';
+        return carregar();
+      })
+      .catch(function(e) { erro.textContent = e.message; })
+      .then(function() { botao.disabled = false; botao.innerHTML = rotulo; });
+  });
+
+  campo('hdrName').textContent = usuario.nome;
+  carregar();
+})();
 </script>
 <script src="../../assets/js/sessao.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>

@@ -188,12 +188,12 @@
   }
 
   function aplicarFiltros() {
-    var busca = campo('buscaMorador').value.trim().toLowerCase();
+    var busca = ui.semAcento(campo('buscaMorador').value.trim());
     var status = campo('filtroStatus').value;
     var lista = moradores.filter(function(u) {
       if (status && u.status !== status) return false;
       if (!busca) return true;
-      return (u.nome + ' ' + u.email + ' ' + unidadeDe(u)).toLowerCase().indexOf(busca) >= 0;
+      return ui.semAcento(u.nome + ' ' + u.email + ' ' + unidadeDe(u)).indexOf(busca) >= 0;
     });
 
     var tabela = campo('tabelaMoradores');

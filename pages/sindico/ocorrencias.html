@@ -90,6 +90,12 @@
     return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2);
   }
 
+  /* Busca sem acento: quem digita "garagem" ou "Lampada" precisa achar
+     "Lâmpada queimada na garagem". */
+  function semAcento(texto) {
+    return (texto || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
   /* O painel de resposta fica escondido até o síndico pedir, para a
      lista continuar legível quando há muitos chamados. */
   function painelResposta(o, aoResponder) {
@@ -227,7 +233,7 @@
   }
 
   function aplicarFiltros() {
-    var busca = campo('buscaOcorrencia').value.trim().toLowerCase();
+    var busca = semAcento(campo('buscaOcorrencia').value.trim());
     var status = campo('filtroStatus').value;
     var prioridade = campo('filtroPrioridade').value;
 
@@ -235,8 +241,8 @@
       if (status && o.status !== status) return false;
       if (prioridade && o.prioridade !== prioridade) return false;
       if (!busca) return true;
-      var alvo = [o.titulo, o.descricao, o.aberta_por_nome, o.local, o.unidade]
-        .filter(Boolean).join(' ').toLowerCase();
+      var alvo = semAcento([o.titulo, o.descricao, o.aberta_por_nome, o.local, o.unidade]
+        .filter(Boolean).join(' '));
       return alvo.indexOf(busca) >= 0;
     });
 
