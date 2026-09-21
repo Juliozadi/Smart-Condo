@@ -11,6 +11,7 @@
     <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=fff" alt="FastAPI">
     <img src="https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=fff" alt="PostgreSQL">
     <img src="https://github.com/Juliozadi/Smart-Condo/actions/workflows/testes.yml/badge.svg" alt="Testes">
+    <img src="https://img.shields.io/badge/licença-MIT-blue" alt="Licença MIT">
   </p>
 </div>
 
@@ -257,6 +258,26 @@ todas com a senha `smartcondo123`:
 - [ ] Painel de gráficos com dados dinâmicos
 - [ ] Aplicativo mobile (React Native)
 - [ ] Integração com sistemas de portaria física
+
+---
+
+## 👥 Autores
+
+Projeto Integrador I, desenvolvido por:
+
+- Júlio César Zadi de Assis dos Santos
+- Joao Victor Muller Miranda
+- Luan Flores Martins
+- Lenini Bellodi Júnior
+- Juliano dos Santos Apolinario Araujo
+
+---
+
+## 📜 Licença
+
+Distribuído sob a [licença MIT](LICENSE) — o código pode ser usado,
+copiado e modificado, inclusive comercialmente, desde que o aviso de
+autoria seja mantido.
 
 ---
 
