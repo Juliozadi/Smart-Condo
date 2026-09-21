@@ -26,74 +26,274 @@
   <main class="dash-wrapper wide">
     <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
     <div class="dash-greeting">
-      <p class="greeting-sub"> Painel Administrativo</p>
+      <p class="greeting-sub">Painel Administrativo</p>
       <h2 class="greeting-name"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt=""> Gestão de Porteiros</h2>
-      <p class="greeting-condo"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt=""> Equipe de portaria · 6 funcionários</p>
+      <p class="greeting-condo" id="resumoEquipe">Carregando…</p>
     </div>
     <div class="stats-row">
-      <div class="stat-card teal"><span class="stat-value">6</span><span class="stat-label"> Funcionários</span></div>
-      <div class="stat-card blue"><span class="stat-value">2</span><span class="stat-label">Turno ativo</span></div>
-      <div class="stat-card amber"><span class="stat-value">1</span><span class="stat-label"> Folga hoje</span></div>
+      <div class="stat-card teal"><span class="stat-value" id="totPorteiros">—</span><span class="stat-label">Funcionários</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totAtivos">—</span><span class="stat-label">Ativos</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totPendentesP">—</span><span class="stat-label">Aguard. aprov.</span></div>
     </div>
-    <p class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Turno Atual — 07h às 15h</p>
-    <div class="list-items">
-      <div class="list-item">
-        <div class="list-avatar">CP</div>
-        <div class="list-info"><h5>Carlos Pereira</h5><p>Portaria Principal · Entrada: 07h00 · CLT</p></div>
-        <div class="contato-acoes">
-          <button type="button" class="contato-btn" data-contato="chat" data-nome="Carlos Pereira" title="Abrir chat com Carlos Pereira" aria-label="Abrir chat com Carlos Pereira">
-            <img src="../../assets/img/icons/comunicados.svg" alt="">Chat
-          </button>
-          <button type="button" class="contato-btn" data-contato="voz" data-nome="Carlos Pereira" title="Ligar para Carlos Pereira" aria-label="Ligar para Carlos Pereira">
-            <img src="../../assets/img/icons/phone.svg" alt="">Ligar
-          </button>
-        </div>
-        <span class="badge badge-ok">Ativo</span>
-      </div>
-      <div class="list-item">
-        <div class="list-avatar amber">RM</div>
-        <div class="list-info"><h5>Renata Moura</h5><p>Portaria de Serviço · Entrada: 07h00 · CLT</p></div>
-        <div class="contato-acoes">
-          <button type="button" class="contato-btn" data-contato="chat" data-nome="Renata Moura" title="Abrir chat com Renata Moura" aria-label="Abrir chat com Renata Moura">
-            <img src="../../assets/img/icons/comunicados.svg" alt="">Chat
-          </button>
-          <button type="button" class="contato-btn" data-contato="voz" data-nome="Renata Moura" title="Ligar para Renata Moura" aria-label="Ligar para Renata Moura">
-            <img src="../../assets/img/icons/phone.svg" alt="">Ligar
-          </button>
-        </div>
-        <span class="badge badge-ok">Ativo</span>
-      </div>
+
+    <div id="blocoPendentes">
+      <p class="section-title">Cadastros Aguardando Aprovação</p>
+      <div class="list-items" id="listaPendentes"></div>
+      <p class="estado-lista" id="estadoPendentes">Carregando…</p>
     </div>
+
+    <p class="section-title"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt=""> Equipe de Portaria</p>
+    <div class="list-items" id="listaPorteiros"></div>
+    <p class="estado-lista" id="estadoPorteiros">Carregando…</p>
     <p class="contato-status" id="contatoStatus" role="status"></p>
 
-    <p class="section-title"> Escala da Semana</p>
-    <div class="data-table">
-      <div class="table-head cols-5"><span><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt="">Porteiro</span><span>Seg</span><span> Ter</span><span> Qua</span><span><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Turno</span></div>
-      <div class="table-row cols-5"><span><strong>Carlos Pereira</strong></span><span><span class="badge badge-ok">07–15h</span></span><span><span class="badge badge-ok">07–15h</span></span><span><span class="badge badge-ok">07–15h</span></span><span>Manhã</span></div>
-      <div class="table-row cols-5"><span><strong>Renata Moura</strong></span><span><span class="badge badge-ok">07–15h</span></span><span><span class="badge badge-ok">07–15h</span></span><span><span class="badge badge-neutral">Folga</span></span><span>Manhã</span></div>
-      <div class="table-row cols-5"><span><strong>Fábio Santos</strong></span><span><span class="badge badge-blue">15–23h</span></span><span><span class="badge badge-blue">15–23h</span></span><span><span class="badge badge-blue">15–23h</span></span><span>Tarde</span></div>
-      <div class="table-row cols-5"><span><strong>Paula Gomes</strong></span><span><span class="badge badge-blue">15–23h</span></span><span><span class="badge badge-neutral">Folga</span></span><span><span class="badge badge-blue">15–23h</span></span><span>Tarde</span></div>
-      <div class="table-row cols-5"><span><strong>Diego Alves</strong></span><span><span class="badge badge-alert">23–07h</span></span><span><span class="badge badge-alert">23–07h</span></span><span><span class="badge badge-alert">23–07h</span></span><span>Noturno</span></div>
-      <div class="table-row cols-5"><span><strong>Joana Lima</strong></span><span><span class="badge badge-neutral">Folga</span></span><span><span class="badge badge-alert">23–07h</span></span><span><span class="badge badge-alert">23–07h</span></span><span>Noturno</span></div>
-    </div>
     <a href="cadastrar_porteiro.html" class="action-btn" style="margin-bottom:12px;">Cadastrar Novo Porteiro</a>
-    <a href="#" class="action-btn outline"> Editar Escala</a>
   </main>
 
 <script src="../../assets/js/validation.js"></script>
+<script src="../../assets/js/admin-ui.js"></script>
 <script>
-/* Contato com o porteiro por chat ou voz — doc, seção 11.5.2.
-   Protótipo: confirma a ação na tela. Na integração, o chat abre a thread
-   em tempo real (Node.js) e "Ligar" inicia a chamada de voz. */
+/* Gestão de porteiros: a equipe vem da API e cada porteiro tem o painel
+   de permissões da seção 9 da documentação ("o síndico escolhe quais
+   ações estarão disponíveis para o porteiro"). */
 (function() {
-  var status = document.getElementById('contatoStatus');
-  document.querySelectorAll('.contato-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var nome = this.getAttribute('data-nome');
-      var via = this.getAttribute('data-contato') === 'voz' ? 'Chamada de voz' : 'Chat';
-      if (status) status.textContent = via + ' com ' + nome + ' — iniciando…';
+  'use strict';
+  var api = window.SmartCondo.api, ui = window.SmartCondo.ui;
+  if (!api.protegerPagina('sindico')) return;
+
+  function campo(id) { return document.getElementById(id); }
+  var acoes = [];
+
+  var CORES = ['', 'amber', 'blue', 'purple'];
+  function iniciais(nome) {
+    var p = (nome || '').trim().split(/\s+/);
+    return (((p[0] || '')[0] || '') + ((p[p.length - 1] || '')[0] || '')).toUpperCase();
+  }
+  function cor(nome) {
+    var soma = 0;
+    for (var i = 0; i < (nome || '').length; i++) soma += nome.charCodeAt(i);
+    return CORES[soma % CORES.length];
+  }
+
+  function avatarDe(p) {
+    var el = document.createElement('div');
+    el.className = ('list-avatar ' + cor(p.nome)).trim();
+    el.textContent = iniciais(p.nome);
+    return el;
+  }
+
+  function infoDe(p, texto) {
+    var info = document.createElement('div');
+    info.className = 'list-info';
+    var h = document.createElement('h5');
+    h.textContent = p.nome;
+    var sub = document.createElement('p');
+    sub.textContent = texto;
+    info.appendChild(h);
+    info.appendChild(sub);
+    return info;
+  }
+
+  function cartaoPendente(p) {
+    var item = document.createElement('div');
+    item.className = 'list-item';
+    item.appendChild(avatarDe(p));
+    item.appendChild(infoDe(p, p.email + ' · ' + ui.formatarTelefone(p.telefone)));
+
+    var acoesEl = document.createElement('div');
+    acoesEl.className = 'acoes-aprovacao';
+    var sim = document.createElement('button');
+    sim.type = 'button'; sim.className = 'pill-acao aprovar'; sim.textContent = 'Aprovar';
+    var nao = document.createElement('button');
+    nao.type = 'button'; nao.className = 'pill-acao recusar'; nao.textContent = 'Recusar';
+    acoesEl.appendChild(sim); acoesEl.appendChild(nao);
+
+    function decidir(aprovado) {
+      sim.disabled = nao.disabled = true;
+      api.post('/usuarios/' + p.id + '/aprovacao', { aprovado: aprovado })
+        .then(carregar)
+        .catch(function(e) { sim.disabled = nao.disabled = false; alert(e.message); });
+    }
+    sim.addEventListener('click', function() { decidir(true); });
+    nao.addEventListener('click', function() {
+      if (confirm('Recusar o cadastro de ' + p.nome + '?')) decidir(false);
     });
-  });
+
+    item.appendChild(acoesEl);
+    return item;
+  }
+
+  /* Painel de permissões: abre sob o porteiro, carrega o que está
+     valendo hoje e grava a escolha do síndico. */
+  function painelPermissoes(p) {
+    var painel = document.createElement('div');
+    painel.className = 'painel-permissoes';
+    painel.hidden = true;
+
+    var titulo = document.createElement('p');
+    titulo.className = 'permissoes-titulo';
+    titulo.textContent = 'O que ' + p.nome.split(' ')[0] + ' pode fazer no sistema';
+    painel.appendChild(titulo);
+
+    var grade = document.createElement('div');
+    grade.className = 'permissoes-grade';
+    var caixas = {};
+    acoes.forEach(function(acao) {
+      var rotulo = document.createElement('label');
+      rotulo.className = 'permissao-item';
+      var caixa = document.createElement('input');
+      caixa.type = 'checkbox';
+      caixas[acao.chave] = caixa;
+      var texto = document.createElement('span');
+      texto.textContent = acao.rotulo;
+      rotulo.appendChild(caixa);
+      rotulo.appendChild(texto);
+      grade.appendChild(rotulo);
+    });
+    painel.appendChild(grade);
+
+    var rodape = document.createElement('div');
+    rodape.className = 'permissoes-rodape';
+    var salvar = document.createElement('button');
+    salvar.type = 'button';
+    salvar.className = 'action-btn';
+    salvar.style.cssText = 'width:auto;margin:0;padding:9px 18px;font-size:13px;';
+    salvar.textContent = 'Salvar permissões';
+    var aviso = document.createElement('span');
+    aviso.className = 'permissoes-aviso';
+    aviso.setAttribute('role', 'status');
+    rodape.appendChild(salvar);
+    rodape.appendChild(aviso);
+    painel.appendChild(rodape);
+
+    var carregado = false;
+    function carregarPermissoes() {
+      if (carregado) return;
+      aviso.textContent = 'Carregando…';
+      api.get('/usuarios/porteiros/' + p.id + '/permissoes')
+        .then(function(dados) {
+          acoes.forEach(function(a) { caixas[a.chave].checked = !!dados[a.chave]; });
+          aviso.textContent = '';
+          carregado = true;
+        })
+        .catch(function(e) {
+          // 404 = ainda sem permissões definidas; começa tudo desmarcado.
+          if (e.status === 404) { aviso.textContent = 'Nenhuma permissão definida ainda.'; carregado = true; }
+          else aviso.textContent = e.message;
+        });
+    }
+
+    salvar.addEventListener('click', function() {
+      var corpo = {};
+      acoes.forEach(function(a) { corpo[a.chave] = caixas[a.chave].checked; });
+      salvar.disabled = true;
+      aviso.textContent = 'Salvando…';
+      api.put('/usuarios/porteiros/' + p.id + '/permissoes', corpo)
+        .then(function() { aviso.textContent = 'Permissões salvas.'; })
+        .catch(function(e) { aviso.textContent = e.message; })
+        .then(function() { salvar.disabled = false; });
+    });
+
+    return { elemento: painel, carregar: carregarPermissoes };
+  }
+
+  function cartaoPorteiro(p) {
+    var bloco = document.createElement('div');
+    bloco.className = 'porteiro-bloco';
+
+    var item = document.createElement('div');
+    item.className = 'list-item';
+    item.appendChild(avatarDe(p));
+    item.appendChild(infoDe(p, p.email + ' · ' + ui.formatarTelefone(p.telefone)));
+
+    var contato = document.createElement('div');
+    contato.className = 'contato-acoes';
+    [['chat', 'Chat', 'comunicados.svg'], ['voz', 'Ligar', 'phone.svg']].forEach(function(via) {
+      var botao = document.createElement('button');
+      botao.type = 'button';
+      botao.className = 'contato-btn';
+      botao.title = (via[0] === 'voz' ? 'Ligar para ' : 'Abrir chat com ') + p.nome;
+      botao.setAttribute('aria-label', botao.title);
+      var img = document.createElement('img');
+      img.src = '../../assets/img/icons/' + via[2];
+      img.alt = '';
+      botao.appendChild(img);
+      botao.appendChild(document.createTextNode(via[1]));
+      botao.addEventListener('click', function() {
+        campo('contatoStatus').textContent =
+          (via[0] === 'voz' ? 'Chamada de voz' : 'Chat') + ' com ' + p.nome + ' — iniciando…';
+      });
+      contato.appendChild(botao);
+    });
+    item.appendChild(contato);
+
+    var selo = document.createElement('span');
+    selo.className = 'badge ' + (ui.CLASSE_STATUS[p.status] || 'badge-neutral');
+    selo.textContent = ui.ROTULO_STATUS[p.status] || p.status;
+    item.appendChild(selo);
+
+    var permissoes = painelPermissoes(p);
+
+    var alternar = document.createElement('button');
+    alternar.type = 'button';
+    alternar.className = 'contato-btn';
+    alternar.textContent = 'Permissões';
+    alternar.setAttribute('aria-expanded', 'false');
+    alternar.addEventListener('click', function() {
+      var abrindo = permissoes.elemento.hidden;
+      permissoes.elemento.hidden = !abrindo;
+      alternar.setAttribute('aria-expanded', String(abrindo));
+      if (abrindo) permissoes.carregar();
+    });
+    contato.appendChild(alternar);
+
+    bloco.appendChild(item);
+    bloco.appendChild(permissoes.elemento);
+    return bloco;
+  }
+
+  function carregar() {
+    campo('estadoPorteiros').textContent = 'Carregando…';
+    return api.get('/usuarios?papel=porteiro')
+      .then(function(lista) {
+        var pendentes = lista.filter(function(p) { return p.status === 'aguardando_aprovacao'; });
+        var equipe = lista.filter(function(p) { return p.status !== 'aguardando_aprovacao'; });
+
+        campo('totPorteiros').textContent = lista.length;
+        campo('totAtivos').textContent =
+          lista.filter(function(p) { return p.status === 'ativo'; }).length;
+        campo('totPendentesP').textContent = pendentes.length;
+
+        // Sem ninguem na fila, a secao inteira sai da tela.
+        campo('blocoPendentes').hidden = !pendentes.length;
+        var caixaPend = campo('listaPendentes');
+        caixaPend.innerHTML = '';
+        campo('estadoPendentes').textContent = '';
+        pendentes.forEach(function(p) { caixaPend.appendChild(cartaoPendente(p)); });
+
+        var caixa = campo('listaPorteiros');
+        caixa.innerHTML = '';
+        campo('estadoPorteiros').textContent =
+          equipe.length ? '' : 'Nenhum porteiro cadastrado ainda.';
+        equipe.forEach(function(p) { caixa.appendChild(cartaoPorteiro(p)); });
+      })
+      .catch(function(e) {
+        campo('estadoPorteiros').textContent = e.message;
+        campo('estadoPendentes').textContent = '';
+      });
+  }
+
+  var usuario = api.sessao.usuario();
+  if (usuario) campo('hdrName').textContent = usuario.nome;
+
+  api.get('/condominios/meu')
+    .then(function(c) { campo('resumoEquipe').textContent = 'Equipe de portaria · ' + c.nome; })
+    .catch(function() { campo('resumoEquipe').textContent = 'Equipe de portaria'; });
+
+  api.get('/usuarios/porteiros/acoes')
+    .then(function(lista) { acoes = lista; })
+    .catch(function() { acoes = []; })
+    .then(carregar);
 })();
 </script>
 <script src="../../assets/js/sessao.js"></script>
