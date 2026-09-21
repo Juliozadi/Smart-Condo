@@ -50,8 +50,8 @@
       <form action="dashboard.html" onsubmit="return validarOcorrencias()">
         <div class="form-row">
           <div class="form-group">
-            <label>Tipo de ocorrência</label>
-            <select required>
+            <label for="ocorre_tipoDeOcorrencia">Tipo de ocorrência</label>
+            <select id="ocorre_tipoDeOcorrencia" required>
               <option value="" disabled selected>Selecione</option>
               <option>Barulho excessivo</option>
               <option>Vazamento / infiltração</option>
@@ -65,8 +65,8 @@
             </select>
           </div>
           <div class="form-group">
-            <label>Prioridade</label>
-            <select required>
+            <label for="ocorre_prioridade">Prioridade</label>
+            <select id="ocorre_prioridade" required>
               <option value="" disabled selected>Selecione</option>
               <option>🔴 Urgente — risco imediato</option>
               <option>🟡 Alta — afeta minha unidade</option>
@@ -76,8 +76,8 @@
           </div>
         </div>
         <div class="form-group">
-          <label>Local da ocorrência</label>
-          <select required>
+          <label for="ocorre_localDaOcorrencia">Local da ocorrência</label>
+          <select id="ocorre_localDaOcorrencia" required>
             <option value="" disabled selected>Selecione</option>
             <option>Minha unidade (Apto 204)</option>
             <option>Corredor do 2º andar</option>
@@ -89,8 +89,8 @@
           </select>
         </div>
         <div class="form-group">
-          <label>Descrição detalhada</label>
-          <textarea required placeholder="Descreva a ocorrência com o máximo de detalhes possível..." style="min-height:100px;width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);resize:vertical;outline:none;" onFocus="this.style.borderColor='var(--primary)'" onBlur="this.style.borderColor='var(--border)'"></textarea>
+          <label for="ocorre_descricaoDetalhada">Descrição detalhada</label>
+          <textarea id="ocorre_descricaoDetalhada" required placeholder="Descreva a ocorrência com o máximo de detalhes possível..." style="min-height:100px;width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);resize:vertical;outline:none;" onFocus="this.style.borderColor='var(--primary)'" onBlur="this.style.borderColor='var(--border)'"></textarea>
         </div>
         <div class="form-group">
           <label>Foto ou comprovante <span style="font-size:11px;color:var(--muted);font-weight:400;">(opcional)</span></label>

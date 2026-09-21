@@ -929,7 +929,7 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
   .cols-5         { grid-template-columns: 2fr 1fr 1fr; }
   .cols-5 span:nth-child(4),
   .cols-5 span:nth-child(5) { display: none; }
-  .cols-6         { grid-template-columns: 2fr 1fr .8fr; }
+  .cols-6         { grid-template-columns: 1.6fr .9fr .9fr .7fr; }
   .cols-6 span:nth-child(3),
   .cols-6 span:nth-child(4) { display: none; }
 }
@@ -1609,3 +1609,61 @@ body:has(.step-page:target) .step-page.default-step {
   font-weight: 600; padding: 28px 16px;
 }
 .lista-email { font-size: 11.5px; color: var(--muted); font-weight: 500; }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVIDADE NO CELULAR — correções
+
+   A barra superior estourava a largura em 26 das 33 telas: a regra de
+   celular escondia .user-chip, mas as páginas passaram a usar
+   .profile-link, que nunca recebeu o mesmo tratamento.
+   ═══════════════════════════════════════════ */
+
+/* Nada pode ultrapassar a largura da janela. */
+.app-bar-inner { gap: 10px; min-width: 0; }
+.app-bar-brand { min-width: 0; flex-shrink: 1; }
+.app-bar-right { min-width: 0; flex-shrink: 1; }
+
+@media (max-width: 640px) {
+  /* No celular o chip vira só o avatar: nome e papel saem, e o toque
+     continua levando ao perfil. */
+  .profile-link {
+    padding: 4px; gap: 0;
+    background: transparent; border-color: transparent;
+  }
+  .profile-name,
+  .profile-role { display: none; }
+
+  /* O botão "Sair" fica só com o ícone. */
+  .logout-btn {
+    padding: 7px 9px; gap: 0;
+    font-size: 0;            /* esconde o texto, mantém o ícone */
+  }
+  .logout-btn img { width: 16px; height: 16px; }
+
+  .brand-name { font-size: 14px; }
+
+  /* As telas do administrador usam layout-desktop, que não tinha limite
+     de largura no celular. */
+  .layout-desktop .dash-wrapper,
+  .layout-desktop .app-bar-inner,
+  .dash-wrapper.wide,
+  .app-bar-inner.wide { max-width: 100%; }
+
+  .dash-wrapper { margin-left: 8px; margin-right: 8px; }
+
+  /* Os filtros das telas de administração empilham. */
+  .barra-acoes { flex-direction: column; align-items: stretch; }
+  .barra-acoes select,
+  .barra-acoes .btn-novo { width: 100%; }
+
+  /* O modal ocupa a tela toda, com respiro nas bordas. */
+  .modal-fundo { padding: 16px 10px; }
+  .modal-caixa { padding: 18px 16px; }
+}
+
+@media (max-width: 400px) {
+  .app-bar-inner { padding: 10px 12px; }
+  /* Em telas bem estreitas o nome da marca sai; o logo continua levando
+     ao painel. */
+  .brand-name { display: none; }
+}

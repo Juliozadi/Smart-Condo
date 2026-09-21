@@ -50,8 +50,8 @@
       <form action="dashboard.html">
         <div class="form-row">
           <div class="form-group">
-            <label>Tipo de ocorrência</label>
-            <select required>
+            <label for="ocorre_tipoDeOcorrencia">Tipo de ocorrência</label>
+            <select id="ocorre_tipoDeOcorrencia" required>
               <option value="" disabled selected>Selecione</option>
               <option>Entrada não autorizada</option>
               <option>Barulho excessivo</option>
@@ -65,8 +65,8 @@
             </select>
           </div>
           <div class="form-group">
-            <label>Grau de urgência</label>
-            <select required>
+            <label for="ocorre_grauDeUrgencia">Grau de urgência</label>
+            <select id="ocorre_grauDeUrgencia" required>
               <option value="" disabled selected>Selecione</option>
               <option>🔴 Urgente — acionar síndico imediatamente</option>
               <option>🟡 Alta — comunicar no turno</option>
@@ -76,8 +76,8 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Local da ocorrência</label>
-            <select required>
+            <label for="ocorre_localDaOcorrencia">Local da ocorrência</label>
+            <select id="ocorre_localDaOcorrencia" required>
               <option value="" disabled selected>Selecione</option>
               <option>Portaria</option>
               <option>Estacionamento</option>
@@ -89,8 +89,8 @@
             </select>
           </div>
           <div class="form-group">
-            <label><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Apartamento envolvido</label>
-            <select required>
+            <label for="ocorre_apartamentoEnvolvido"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Apartamento envolvido</label>
+            <select id="ocorre_apartamentoEnvolvido" required>
               <option value="" disabled selected>Não aplicável / selecione</option>
               <option>Apto 101</option><option>Apto 102</option><option>Apto 103</option>
               <option>Apto 204</option><option>Apto 305</option><option>Apto 410</option>
@@ -98,21 +98,21 @@
           </div>
         </div>
         <div class="form-group">
-          <label>Data e horário da ocorrência</label>
-          <input type="datetime-local" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;" required>
+          <label for="ocorre_dataEHorarioDaOcorrencia">Data e horário da ocorrência</label>
+          <input id="ocorre_dataEHorarioDaOcorrencia" type="datetime-local" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;" required>
         </div>
         <div class="form-group">
-          <label>Descrição completa</label>
-          <textarea placeholder="Descreva detalhadamente o que ocorreu: quem estava envolvido, o que foi feito, quais medidas foram tomadas..." style="min-height:120px;width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);resize:vertical;outline:none;" required></textarea>
+          <label for="ocorre_descricaoCompleta">Descrição completa</label>
+          <textarea id="ocorre_descricaoCompleta" placeholder="Descreva detalhadamente o que ocorreu: quem estava envolvido, o que foi feito, quais medidas foram tomadas..." style="min-height:120px;width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);resize:vertical;outline:none;" required></textarea>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Testemunhas</label>
-            <input type="text" placeholder="Nomes de quem presenciou">
+            <label for="ocorre_testemunhas">Testemunhas</label>
+            <input id="ocorre_testemunhas" type="text" placeholder="Nomes de quem presenciou">
           </div>
           <div class="form-group">
-            <label>Providência tomada</label>
-            <select required>
+            <label for="ocorre_providenciaTomada">Providência tomada</label>
+            <select id="ocorre_providenciaTomada" required>
               <option value="" disabled selected>Selecione</option>
               <option>Apenas registrado</option>
               <option>Síndico foi notificado</option>

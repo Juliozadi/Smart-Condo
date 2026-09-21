@@ -50,8 +50,8 @@
       <form action="dashboard.html">
         <div class="form-row">
           <div class="form-group">
-            <label><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Destinatário — Apartamento</label>
-            <select required>
+            <label for="encome_destinatarioApartamento"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Destinatário — Apartamento</label>
+            <select id="encome_destinatarioApartamento" required>
               <option value="" disabled selected>Selecione o apto</option>
               <option>Apto 101</option><option>Apto 102</option><option>Apto 103</option>
               <option>Apto 201</option><option>Apto 202</option><option>Apto 203</option><option>Apto 204</option>
@@ -61,8 +61,8 @@
             </select>
           </div>
           <div class="form-group">
-            <label>Remetente / Transportadora</label>
-            <select required>
+            <label for="encome_remetenteTransportadora">Remetente / Transportadora</label>
+            <select id="encome_remetenteTransportadora" required>
               <option value="" disabled selected>Selecione</option>
               <option>Correios</option><option>Amazon</option><option>Mercado Livre</option>
               <option>Shopee</option><option>iFood / Delivery</option><option>Transportadora própria</option><option>Outro</option>
@@ -71,26 +71,26 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label><img src="../../assets/img/icons/box.svg" width="16" height="16" alt="">Tipo de volume</label>
-            <select required>
+            <label for="encome_tipoDeVolume"><img src="../../assets/img/icons/box.svg" width="16" height="16" alt="">Tipo de volume</label>
+            <select id="encome_tipoDeVolume" required>
               <option value="" disabled selected>Selecione</option>
               <option>Caixa pequena</option><option>Caixa média</option><option>Caixa grande</option>
               <option>Envelope / documento</option><option>Pacote frágil</option><option>Alimento / perecível</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Código de rastreio</label>
-            <input type="text" placeholder="Ex: BR123456789" style="text-transform:uppercase;" required>
+            <label for="encome_codigoDeRastreio">Código de rastreio</label>
+            <input id="encome_codigoDeRastreio" type="text" placeholder="Ex: BR123456789" style="text-transform:uppercase;" required>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Data e hora de recebimento</label>
-            <input type="datetime-local" required>
+            <label for="encome_dataEHoraDeRecebimento"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Data e hora de recebimento</label>
+            <input id="encome_dataEHoraDeRecebimento" type="datetime-local" required>
           </div>
           <div class="form-group">
-            <label>Observações</label>
-            <input type="text" placeholder="Frágil, refrigerado, urgente...">
+            <label for="encome_observacoes">Observações</label>
+            <input id="encome_observacoes" type="text" placeholder="Frágil, refrigerado, urgente...">
           </div>
         </div>
         <!-- Foto da encomenda — doc, seção 6 -->
@@ -161,24 +161,24 @@
       <form action="dashboard.html">
         <div class="form-row">
           <div class="form-group">
-            <label><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Apartamento</label>
-            <select required><option value="" disabled selected>Selecione o apto</option>
+            <label for="encome_apartamento"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Apartamento</label>
+            <select id="encome_apartamento" required><option value="" disabled selected>Selecione o apto</option>
               <option>Apto 204</option><option>Apto 110</option><option>Apto 312</option><option>Apto 201</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Nome de quem retirou</label>
-            <input type="text" placeholder="Nome do morador ou autorizado" required>
+            <label for="encome_nomeDeQuemRetirou">Nome de quem retirou</label>
+            <input id="encome_nomeDeQuemRetirou" type="text" placeholder="Nome do morador ou autorizado" required>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">Documento</label>
-            <input type="text" placeholder="CPF ou RG" required>
+            <label for="encome_documento"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">Documento</label>
+            <input id="encome_documento" type="text" placeholder="CPF ou RG" required>
           </div>
           <div class="form-group">
-            <label><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Horário de retirada</label>
-            <input type="time" required>
+            <label for="encome_horarioDeRetirada"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Horário de retirada</label>
+            <input id="encome_horarioDeRetirada" type="time" required>
           </div>
         </div>
         <button class="action-btn" type="submit" style="background:linear-gradient(135deg,#32c871,#1e9956);box-shadow:0 2px 6px rgba(50,200,113,.25),0 6px 16px rgba(50,200,113,.18);margin-top:4px;">

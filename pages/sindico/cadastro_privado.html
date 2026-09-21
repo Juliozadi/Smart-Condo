@@ -42,7 +42,7 @@
 
     <div style="background:linear-gradient(135deg,rgba(145,100,250,.06),rgba(145,100,250,.02));border:1.5px solid rgba(145,100,250,.2);border-radius:var(--radius-md);padding:20px;margin-bottom:24px;">
       <div class="cad-group" style="margin-bottom:0;">
-        <label style="font-size:12px;font-weight:700;color:#6540c8;text-transform:uppercase;letter-spacing:.5px;">
+        <label for="codigoInput" style="font-size:12px;font-weight:700;color:#6540c8;text-transform:uppercase;letter-spacing:.5px;">
           Código de Autorização
         </label>
         <div style="position:relative;margin-top:6px;">
@@ -101,26 +101,26 @@
       <div class="form-section">
         <p class="form-section-title"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt=""> Dados do Síndico <span class="section-tag obrig">Obrigatório</span></p>
         <div class="cad-row">
-          <div class="cad-group"><label>Nome completo <span class="req">*</span></label><input type="text" placeholder="Como consta no documento" required></div>
-          <div class="cad-group"><label>CPF <span class="req">*</span></label><input type="text" placeholder="000.000.000-00" required maxlength="14"></div>
+          <div class="cad-group"><label for="cadast_nomeCompleto">Nome completo <span class="req">*</span></label><input id="cadast_nomeCompleto" type="text" placeholder="Como consta no documento" required></div>
+          <div class="cad-group"><label for="cadast_cpf">CPF <span class="req">*</span></label><input id="cadast_cpf" type="text" placeholder="000.000.000-00" required maxlength="14"></div>
         </div>
         <div class="cad-row">
-          <div class="cad-group"><label><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">RG <span class="req">*</span></label><input type="text" placeholder="00.000.000-0" required></div>
-          <div class="cad-group"><label>Data de nascimento <span class="req">*</span></label><input type="date" required></div>
+          <div class="cad-group"><label for="cadast_rg"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">RG <span class="req">*</span></label><input id="cadast_rg" type="text" placeholder="00.000.000-0" required></div>
+          <div class="cad-group"><label for="cadast_dataDeNascimento">Data de nascimento <span class="req">*</span></label><input id="cadast_dataDeNascimento" type="date" required></div>
         </div>
         <div class="cad-row">
-          <div class="cad-group"><label>E-mail pessoal <span class="req">*</span></label><div class="cad-input-icon"><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt=""><input type="email" placeholder="seu@email.com" required></div></div>
-          <div class="cad-group"><label>Celular / WhatsApp <span class="req">*</span></label><div class="cad-input-icon"><input type="tel" placeholder="(00) 90000-0000" class="mask-tel" required></div></div>
+          <div class="cad-group"><label for="cadast_eMailPessoal">E-mail pessoal <span class="req">*</span></label><div class="cad-input-icon"><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt=""><input id="cadast_eMailPessoal" type="email" placeholder="seu@email.com" required></div></div>
+          <div class="cad-group"><label for="cadast_celularWhatsapp">Celular / WhatsApp <span class="req">*</span></label><div class="cad-input-icon"><input id="cadast_celularWhatsapp" type="tel" placeholder="(00) 90000-0000" class="mask-tel" required></div></div>
         </div>
         <div class="cad-row">
-          <div class="cad-group"><label>Tipo de síndico <span class="req">*</span></label>
-            <select required><option value="" disabled selected>Selecione</option><option>Síndico morador (eleito)</option><option>Síndico profissional</option><option>Subsíndico</option></select>
+          <div class="cad-group"><label for="cadast_tipoDeSindico">Tipo de síndico <span class="req">*</span></label>
+            <select id="cadast_tipoDeSindico" required><option value="" disabled selected>Selecione</option><option>Síndico morador (eleito)</option><option>Síndico profissional</option><option>Subsíndico</option></select>
           </div>
-          <div class="cad-group"><label>Unidade <span class="req">*</span></label><input type="text" placeholder="Ex: Apto 101 — Bloco A" required></div>
+          <div class="cad-group"><label for="cadast_unidade">Unidade <span class="req">*</span></label><input id="cadast_unidade" type="text" placeholder="Ex: Apto 101 — Bloco A" required></div>
         </div>
         <div class="cad-row">
-          <div class="cad-group"><label><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt="">Início do mandato <span class="req">*</span></label><input type="date" required></div>
-          <div class="cad-group"><label>Término do mandato <span class="req">*</span></label><input type="date" required></div>
+          <div class="cad-group"><label for="cadast_inicioDoMandato"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt="">Início do mandato <span class="req">*</span></label><input id="cadast_inicioDoMandato" type="date" required></div>
+          <div class="cad-group"><label for="cadast_terminoDoMandato">Término do mandato <span class="req">*</span></label><input id="cadast_terminoDoMandato" type="date" required></div>
         </div>
       </div>
 
@@ -144,19 +144,19 @@
 
       <div class="form-section">
         <p class="form-section-title"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Dados do Condomínio <span class="section-tag obrig">Obrigatório</span></p>
-        <div class="cad-group"><label>Nome do condomínio <span class="req">*</span></label><div class="cad-input-icon"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""><input type="text" placeholder="Ex: Residencial das Palmeiras" required></div></div>
+        <div class="cad-group"><label for="cadast_nomeDoCondominio">Nome do condomínio <span class="req">*</span></label><div class="cad-input-icon"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""><input id="cadast_nomeDoCondominio" type="text" placeholder="Ex: Residencial das Palmeiras" required></div></div>
         <div class="cad-row">
-          <div class="cad-group"><label>CNPJ <span class="req">*</span></label><input type="text" placeholder="00.000.000/0000-00" class="mask-cnpj" required maxlength="18"></div>
-          <div class="cad-group"><label>Tipo <span class="req">*</span></label><select required><option value="" disabled selected>Selecione</option><option>Residencial</option><option>Comercial</option><option>Misto</option></select></div>
+          <div class="cad-group"><label for="cadast_cnpj">CNPJ <span class="req">*</span></label><input id="cadast_cnpj" type="text" placeholder="00.000.000/0000-00" class="mask-cnpj" required maxlength="18"></div>
+          <div class="cad-group"><label for="cadast_tipo">Tipo <span class="req">*</span></label><select id="cadast_tipo" required><option value="" disabled selected>Selecione</option><option>Residencial</option><option>Comercial</option><option>Misto</option></select></div>
         </div>
-        <div class="cad-group"><label>Endereço completo <span class="req">*</span></label><div class="cad-input-icon"><input type="text" placeholder="Rua, número — Bairro, Cidade - UF" required></div></div>
+        <div class="cad-group"><label for="cadast_enderecoCompleto">Endereço completo <span class="req">*</span></label><div class="cad-input-icon"><input id="cadast_enderecoCompleto" type="text" placeholder="Rua, número — Bairro, Cidade - UF" required></div></div>
         <div class="cad-row">
-          <div class="cad-group"><label>CEP <span class="req">*</span></label><input type="text" placeholder="00000-000" class="mask-cep" required maxlength="9"></div>
-          <div class="cad-group"><label>Nº de unidades <span class="req">*</span></label><input type="text" placeholder="Ex: 48" required></div>
+          <div class="cad-group"><label for="cadast_cep">CEP <span class="req">*</span></label><input id="cadast_cep" type="text" placeholder="00000-000" class="mask-cep" required maxlength="9"></div>
+          <div class="cad-group"><label for="cadast_noDeUnidades">Nº de unidades <span class="req">*</span></label><input id="cadast_noDeUnidades" type="text" placeholder="Ex: 48" required></div>
         </div>
         <div class="cad-row">
-          <div class="cad-group"><label>Taxa mensal (R$) <span class="req">*</span></label><div class="cad-input-icon"><input type="text" placeholder="Ex: 380,00" required></div></div>
-          <div class="cad-group"><label>Vencimento do boleto <span class="req">*</span></label><select required><option value="" disabled selected>Selecione o dia</option><option>Dia 05</option><option>Dia 10</option><option>Dia 15</option><option>Dia 20</option><option>Dia 25</option></select></div>
+          <div class="cad-group"><label for="cadast_taxaMensalR">Taxa mensal (R$) <span class="req">*</span></label><div class="cad-input-icon"><input id="cadast_taxaMensalR" type="text" placeholder="Ex: 380,00" required></div></div>
+          <div class="cad-group"><label for="cadast_vencimentoDoBoleto">Vencimento do boleto <span class="req">*</span></label><select id="cadast_vencimentoDoBoleto" required><option value="" disabled selected>Selecione o dia</option><option>Dia 05</option><option>Dia 10</option><option>Dia 15</option><option>Dia 20</option><option>Dia 25</option></select></div>
         </div>
       </div>
 
@@ -216,25 +216,25 @@
       <div class="form-section">
         <p class="form-section-title"><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""> Segurança da Conta Admin <span class="section-tag obrig">Obrigatório</span></p>
         <div class="step-alert danger"><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""><p>A conta de síndico tem <strong>acesso total ao sistema</strong>. Ative todas as proteções abaixo.</p></div>
-        <div class="cad-group"><label>E-mail administrador <span class="req">*</span></label><div class="cad-input-icon"><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt=""><input type="email" placeholder="email@condominio.com.br" required></div></div>
+        <div class="cad-group"><label for="cadast_eMailAdministrador">E-mail administrador <span class="req">*</span></label><div class="cad-input-icon"><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt=""><input id="cadast_eMailAdministrador" type="email" placeholder="email@condominio.com.br" required></div></div>
         <div class="cad-group">
-          <label>Senha de administrador <span class="req">*</span></label>
-          <div class="cad-input-icon"><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""><input type="password" placeholder="Senha forte para conta admin" required></div>
+          <label for="cadast_senhaDeAdministrador">Senha de administrador <span class="req">*</span></label>
+          <div class="cad-input-icon"><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""><input id="cadast_senhaDeAdministrador" type="password" placeholder="Senha forte para conta admin" required></div>
           <div class="pwd-strength-row">
             <div class="pwd-strength"><div class="pwd-bar weak"></div><div class="pwd-bar medium"></div><div class="pwd-bar"></div><div class="pwd-bar"></div></div>
             <span class="pwd-level medium">Média</span>
           </div>
         </div>
-        <div class="cad-group"><label>Confirmar senha <span class="req">*</span></label><div class="cad-input-icon"><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""><input type="password" placeholder="Repita a senha" required></div></div>
+        <div class="cad-group"><label for="cadast_confirmarSenha">Confirmar senha <span class="req">*</span></label><div class="cad-input-icon"><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""><input id="cadast_confirmarSenha" type="password" placeholder="Repita a senha" required></div></div>
         <div class="cad-divider">Proteções de Segurança</div>
         <div class="toggle-row"><div class="toggle-info"><strong>2FA por SMS</strong><span>Código a cada novo login</span></div><div class="toggle-switch"><input type="checkbox" id="2fa-s" checked><label for="2fa-s"></label></div></div>
         <div class="toggle-row"><div class="toggle-info"><strong>Alerta de login em novo dispositivo</strong><span>Notificação imediata</span></div><div class="toggle-switch"><input type="checkbox" id="alert-s" checked><label for="alert-s"></label></div></div>
         <div class="toggle-row"><div class="toggle-info"><strong>Aprovação manual de cadastros</strong><span>Moradores precisam de sua aprovação</span></div><div class="toggle-switch"><input type="checkbox" id="aprov-s" checked><label for="aprov-s"></label></div></div>
       </div>
 
-      <div class="terms-check"><input type="checkbox" required><span>Li e aceito os <a href="#">Termos de Uso</a> e a <a href="#">Política de Privacidade</a>.</span></div>
-      <div class="terms-check" style="margin-top:10px;"><input type="checkbox" required><span>Declaro que sou o síndico legítimo e que a <strong>Ata de Eleição enviada é autêntica</strong>.</span></div>
-      <div class="terms-check" style="margin-top:10px;"><input type="checkbox" required><span>Autorizo o tratamento dos dados conforme a <a href="#">LGPD (Lei 13.709/2018)</a>.</span></div>
+      <div class="terms-check"><input id="cadast_aceiteLiEAceitoOsTermosDeUsoEA" aria-labelledby="cadast_aceiteLiEAceitoOsTermosDeUsoEA_txt" type="checkbox" required><span id="cadast_aceiteLiEAceitoOsTermosDeUsoEA_txt">Li e aceito os <a href="#">Termos de Uso</a> e a <a href="#">Política de Privacidade</a>.</span></div>
+      <div class="terms-check" style="margin-top:10px;"><input id="cadast_aceiteDeclaroQueSouOSindicoLeg" aria-labelledby="cadast_aceiteDeclaroQueSouOSindicoLeg_txt" type="checkbox" required><span id="cadast_aceiteDeclaroQueSouOSindicoLeg_txt">Declaro que sou o síndico legítimo e que a <strong>Ata de Eleição enviada é autêntica</strong>.</span></div>
+      <div class="terms-check" style="margin-top:10px;"><input id="cadast_aceiteAutorizoOTratamentoDosDa" aria-labelledby="cadast_aceiteAutorizoOTratamentoDosDa_txt" type="checkbox" required><span id="cadast_aceiteAutorizoOTratamentoDosDa_txt">Autorizo o tratamento dos dados conforme a <a href="#">LGPD (Lei 13.709/2018)</a>.</span></div>
 
       <div class="step-nav-btns" style="margin-top:20px;">
         <a href="#sstep3" class="step-btn-back" onclick="mostrarStep(3)"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar</a>

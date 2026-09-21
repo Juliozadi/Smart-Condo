@@ -54,26 +54,26 @@
       <div class="form-card" style="margin-bottom:16px;">
         <h3><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt=""> Dados Pessoais</h3>
         <div class="form-row">
-          <div class="form-group"><label><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Nome completo *</label><input type="text" id="pNome" placeholder="Nome completo do porteiro" required></div>
-          <div class="form-group"><label>CPF *</label><input type="text" id="pCpf" placeholder="000.000.000-00" class="mask-cpf" required maxlength="14"></div>
+          <div class="form-group"><label for="pNome"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Nome completo *</label><input type="text" id="pNome" placeholder="Nome completo do porteiro" required></div>
+          <div class="form-group"><label for="pCpf">CPF *</label><input type="text" id="pCpf" placeholder="000.000.000-00" class="mask-cpf" required maxlength="14"></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">RG *</label><input type="text" placeholder="00.000.000-0" required></div>
-          <div class="form-group"><label>Data de nascimento *</label><input type="date" id="pNascimento" required></div>
+          <div class="form-group"><label for="cadast_rg"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">RG *</label><input id="cadast_rg" type="text" placeholder="00.000.000-0" required></div>
+          <div class="form-group"><label for="pNascimento">Data de nascimento *</label><input type="date" id="pNascimento" required></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">E-mail *</label><input type="email" id="pEmail" placeholder="email@exemplo.com" required></div>
-          <div class="form-group"><label>Celular *</label><input type="tel" id="pTelefone" placeholder="(00) 90000-0000" class="mask-tel" required></div>
+          <div class="form-group"><label for="pEmail"><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">E-mail *</label><input type="email" id="pEmail" placeholder="email@exemplo.com" required></div>
+          <div class="form-group"><label for="pTelefone">Celular *</label><input type="tel" id="pTelefone" placeholder="(00) 90000-0000" class="mask-tel" required></div>
         </div>
-        <div class="form-group"><label>Endereço residencial</label><input type="text" placeholder="Rua, número, bairro, cidade/UF"></div>
+        <div class="form-group"><label for="cadast_enderecoResidencial">Endereço residencial</label><input id="cadast_enderecoResidencial" type="text" placeholder="Rua, número, bairro, cidade/UF"></div>
       </div>
 
       <!-- SEÇÃO 2: Dados Profissionais -->
       <div class="form-card" style="margin-bottom:16px;">
         <h3><img src="../../assets/img/icons/briefcase.svg" width="16" height="16" alt=""> Dados Profissionais</h3>
         <div class="form-row">
-          <div class="form-group"><label><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Turno de trabalho *</label>
-            <select required>
+          <div class="form-group"><label for="cadast_turnoDeTrabalho"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Turno de trabalho *</label>
+            <select id="cadast_turnoDeTrabalho" required>
               <option value="" disabled selected>Selecione o turno</option>
               <option>Manhã — 07h às 15h</option>
               <option>Tarde — 15h às 23h</option>
@@ -81,8 +81,8 @@
               <option>Diarista / Especial</option>
             </select>
           </div>
-          <div class="form-group"><label><img src="../../assets/img/icons/file-contract.svg" width="16" height="16" alt="">Tipo de contrato *</label>
-            <select required>
+          <div class="form-group"><label for="cadast_tipoDeContrato"><img src="../../assets/img/icons/file-contract.svg" width="16" height="16" alt="">Tipo de contrato *</label>
+            <select id="cadast_tipoDeContrato" required>
               <option value="" disabled selected>Selecione</option>
               <option>CLT — Funcionário fixo</option>
               <option>Terceirizado</option>
@@ -92,9 +92,9 @@
           </div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>Data de início *</label><input type="date" required></div>
-          <div class="form-group"><label>Local de atuação *</label>
-            <select required>
+          <div class="form-group"><label for="cadast_dataDeInicio">Data de início *</label><input id="cadast_dataDeInicio" type="date" required></div>
+          <div class="form-group"><label for="cadast_localDeAtuacao">Local de atuação *</label>
+            <select id="cadast_localDeAtuacao" required>
               <option value="" disabled selected>Selecione</option>
               <option>Portaria Principal</option>
               <option>Portaria Secundária</option>
@@ -104,11 +104,11 @@
           </div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>NIS / PIS *</label><input type="text" placeholder="000.00000.00-0" required></div>
-          <div class="form-group"><label>Nº CTPS</label><input type="text" placeholder="Série e número"></div>
+          <div class="form-group"><label for="cadast_nisPis">NIS / PIS *</label><input id="cadast_nisPis" type="text" placeholder="000.00000.00-0" required></div>
+          <div class="form-group"><label for="cadast_noCtps">Nº CTPS</label><input id="cadast_noCtps" type="text" placeholder="Série e número"></div>
         </div>
-        <div class="form-group"><label><img src="../../assets/img/icons/pen.svg" width="16" height="16" alt="">Observações internas</label>
-          <textarea placeholder="Notas sobre o porteiro (visíveis apenas para o síndico)..." style="width:100%;min-height:70px;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);resize:vertical;outline:none;transition:.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+        <div class="form-group"><label for="cadast_observacoesInternas"><img src="../../assets/img/icons/pen.svg" width="16" height="16" alt="">Observações internas</label>
+          <textarea id="cadast_observacoesInternas" placeholder="Notas sobre o porteiro (visíveis apenas para o síndico)..." style="width:100%;min-height:70px;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);resize:vertical;outline:none;transition:.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'"></textarea>
         </div>
       </div>
 
@@ -125,11 +125,11 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">E-mail de acesso</label>
+            <label for="pEmailEspelho"><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">E-mail de acesso</label>
             <input type="text" id="pEmailEspelho" disabled placeholder="O e-mail informado acima" style="opacity:.75;">
             <span style="font-size:11px;color:var(--muted);margin-top:4px;display:block;font-weight:500;">O porteiro entra com o mesmo e-mail dos dados pessoais</span>
           </div>
-          <div class="form-group"><label>Senha de acesso *</label>
+          <div class="form-group"><label for="pSenha">Senha de acesso *</label>
             <input type="text" id="pSenha" placeholder="Mínimo 8 caracteres" required minlength="8" maxlength="72" style="font-family:monospace;letter-spacing:1px;">
             <span style="font-size:11px;color:var(--muted);margin-top:4px;display:block;font-weight:500;">Ao menos uma letra e um número ou símbolo</span>
           </div>
@@ -193,8 +193,8 @@
 
       <!-- Confirmação -->
       <div class="terms-check">
-        <input type="checkbox" required>
-        <span>Confirmo que revisei todos os documentos do porteiro, incluindo a Certidão de Antecedentes Criminais, e autorizo o cadastro deste funcionário no sistema.</span>
+        <input id="cadast_aceiteConfirmoQueReviseiTodosOsDoc" aria-labelledby="cadast_aceiteConfirmoQueReviseiTodosOsDoc_txt" type="checkbox" required>
+        <span id="cadast_aceiteConfirmoQueReviseiTodosOsDoc_txt">Confirmo que revisei todos os documentos do porteiro, incluindo a Certidão de Antecedentes Criminais, e autorizo o cadastro deste funcionário no sistema.</span>
       </div>
 
       <button type="submit" class="action-btn" style="margin-top:22px;">
