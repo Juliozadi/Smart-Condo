@@ -148,17 +148,75 @@ def status_apos_confirmacao(papel: Papel) -> StatusUsuario:
     return StatusUsuario.AGUARDANDO_APROVACAO
 
 
+def _minutos_de_bloqueio_restantes(usuario: Usuario) -> int:
+    """Quanto falta do bloqueio, arredondado para cima."""
+    if usuario.bloqueado_ate is None:
+        return 0
+    # Mesma defesa que validar_codigo faz com expira_em: dependendo do
+    # driver, o timestamp pode voltar sem fuso e a subtração estoura.
+    bloqueado_ate = usuario.bloqueado_ate
+    if bloqueado_ate.tzinfo is None:
+        bloqueado_ate = bloqueado_ate.replace(tzinfo=timezone.utc)
+    restante = bloqueado_ate - _agora()
+    if restante.total_seconds() <= 0:
+        return 0
+    return max(1, -(-int(restante.total_seconds()) // 60))
+
+
+def _contar_senha_errada(db: Session, usuario: Usuario) -> None:
+    """Soma uma tentativa e tranca a conta ao estourar o limite."""
+    usuario.tentativas_login += 1
+    if usuario.tentativas_login >= settings.MAX_TENTATIVAS_LOGIN:
+        usuario.bloqueado_ate = _agora() + timedelta(minutes=settings.BLOQUEIO_LOGIN_MIN)
+        usuario.tentativas_login = 0
+    # Precisa gravar aqui: quem chamou vai receber exceção e não commita.
+    db.commit()
+
+
 def autenticar(db: Session, email: str, senha: str) -> Usuario:
-    """Valida as credenciais do login (seção 9)."""
+    """Valida as credenciais do login (seção 9).
+
+    Sem limite de tentativas, adivinhar a senha é só questão de tempo.
+    O bloqueio conta por conta, é temporário e some no primeiro acerto.
+
+    Ele não esconde quais e-mails existem — o 429 só aparece para conta
+    cadastrada. Mas isso não abre nada novo: o cadastro já responde "Já
+    existe um cadastro com este e-mail". Limitar por IP, que resolveria
+    os dois, depende de saber o IP real atrás do proxy.
+    """
     usuario = buscar_por_email(db, email)
+    bloqueio_venceu = False
+
+    if usuario is not None:
+        faltam = _minutos_de_bloqueio_restantes(usuario)
+        if faltam:
+            # Antes de conferir a senha: conta trancada não gasta bcrypt.
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=(
+                    "Muitas tentativas de login. Tente novamente em "
+                    f"{faltam} minuto{'s' if faltam > 1 else ''}."
+                ),
+            )
+        # O bloqueio venceu: marca para limpar, senão o carimbo vencido
+        # fica no cadastro para sempre. A flag é necessária porque zerar
+        # o campo aqui esconderia a mudança da condição lá embaixo.
+        bloqueio_venceu = usuario.bloqueado_ate is not None
 
     # A mensagem é a mesma para e-mail inexistente e senha errada, para não
     # revelar quais e-mails estão cadastrados.
     if usuario is None or not conferir_senha(senha, usuario.senha_hash):
+        if usuario is not None:
+            _contar_senha_errada(db, usuario)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="E-mail ou senha incorretos.",
         )
+
+    if usuario.tentativas_login or bloqueio_venceu:
+        usuario.tentativas_login = 0
+        usuario.bloqueado_ate = None
+        db.commit()
     return usuario
 
 

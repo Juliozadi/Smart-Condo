@@ -235,6 +235,8 @@ CREATE TABLE usuarios (
     avaliado_por_id integer,
     avaliado_em timestamp with time zone,
     motivo_recusa text,
+    tentativas_login integer NOT NULL,
+    bloqueado_ate timestamp with time zone,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL
 );

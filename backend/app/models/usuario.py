@@ -68,6 +68,13 @@ class Usuario(Base, TimestampMixin):
     avaliado_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     motivo_recusa: Mapped[str | None] = mapped_column(Text)
 
+    # Senhas erradas seguidas. Fica no banco, e não em memória, para o
+    # contador sobreviver ao reinício do servidor e valer para todos os
+    # processos — o mesmo motivo pelo qual codigos_verificacao já conta
+    # as tentativas por aqui.
+    tentativas_login: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    bloqueado_ate: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
     condominio: Mapped["Condominio | None"] = relationship(
         back_populates="usuarios", foreign_keys=[condominio_id]
     )

@@ -35,6 +35,12 @@ class Settings(BaseSettings):
     # senha (documentação, seção 9: "Cadastro" e "Esqueci minha senha").
     CODIGO_VERIFICACAO_EXPIRA_MIN: int = 15
 
+    # Quantas senhas erradas seguidas antes de trancar a conta, e por
+    # quanto tempo. O bloqueio é temporário de propósito: permanente,
+    # bastaria errar a senha de alguém para deixá-lo de fora.
+    MAX_TENTATIVAS_LOGIN: int = Field(default=5, ge=3, le=20)
+    BLOQUEIO_LOGIN_MIN: int = Field(default=15, ge=1, le=1440)
+
     # ── CORS ─────────────────────────────────────────────────────────
     # O front-end é servido de qualquer porta local (o python -m
     # http.server, o Live Server do VS Code, etc.), então a origem é
