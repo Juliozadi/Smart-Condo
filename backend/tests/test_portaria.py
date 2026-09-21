@@ -23,7 +23,7 @@ def cenario(cliente, db):
     _, tok_bruno = cadastrar_morador(
         cliente, tok_sindico, cond, email="bruno@exemplo.com", cpf=CPFS[3], unidade="301"
     )
-    _, tok_porteiro = cadastrar_porteiro(cliente, tok_sindico, cond["id"], cpf=CPFS[2])
+    _, tok_porteiro = cadastrar_porteiro(cliente, tok_sindico, cond, cpf=CPFS[2])
 
     unidades = cliente.get("/api/v1/condominios/meu/unidades", headers=cab(tok_sindico)).json()
     u204 = next(u for u in unidades if u["numero"] == "204")
@@ -157,7 +157,7 @@ def test_saida_so_apos_a_entrada(cliente, cenario):
 def test_porteiro_sem_permissao_nao_registra_visitante(cliente, cenario):
     """Documentação, seção 9: vale o que o síndico liberou."""
     porteiro_id, tok = cadastrar_porteiro(
-        cliente, cenario["sindico"], cenario["cond"]["id"],
+        cliente, cenario["sindico"], cenario["cond"],
         email="limitado@exemplo.com", cpf=CPFS[4],
         permissoes={
             "registrar_visitantes": False, "registrar_encomendas": True,
@@ -175,7 +175,7 @@ def test_porteiro_sem_permissao_nao_registra_visitante(cliente, cenario):
 
 def test_permissao_revogada_passa_a_valer(cliente, cenario):
     porteiro_id, tok = cadastrar_porteiro(
-        cliente, cenario["sindico"], cenario["cond"]["id"],
+        cliente, cenario["sindico"], cenario["cond"],
         email="revog@exemplo.com", cpf=CPFS[5],
     )
     assert registrar_visitante(cliente, tok, cenario["u204"]).status_code == 201
@@ -285,6 +285,43 @@ def test_morador_abre_e_sindico_responde(cliente, cenario):
     assert resposta.json()["status"] == "resolvida"
 
 
+def test_ocorrencia_guarda_local_e_prioridade(cliente, cenario):
+    """O formulário pergunta onde foi e o quanto corre; os dois precisam
+    chegar ao banco, senão o síndico não consegue priorizar a fila."""
+    abertura = cliente.post(
+        "/api/v1/portaria/ocorrencias",
+        json={
+            "titulo": "Vazamento na garagem",
+            "descricao": "Poça de água embaixo da vaga 12 desde ontem.",
+            "categoria": "manutencao",
+            "local": "Estacionamento — vaga 12",
+            "prioridade": "urgente",
+        },
+        headers=cab(cenario["ana"]),
+    )
+    assert abertura.status_code == 201, abertura.text
+    o = abertura.json()
+    assert o["local"] == "Estacionamento — vaga 12"
+    assert o["prioridade"] == "urgente"
+
+    listada = cliente.get(
+        "/api/v1/portaria/ocorrencias", headers=cab(cenario["ana"])
+    ).json()[0]
+    assert listada["local"] == "Estacionamento — vaga 12"
+    assert listada["prioridade"] == "urgente"
+
+
+def test_ocorrencia_sem_prioridade_entra_como_normal(cliente, cenario):
+    aberta = cliente.post(
+        "/api/v1/portaria/ocorrencias",
+        json={"titulo": "Portão lento", "descricao": "O portão demora a fechar."},
+        headers=cab(cenario["ana"]),
+    )
+    assert aberta.status_code == 201, aberta.text
+    assert aberta.json()["prioridade"] == "normal"
+    assert aberta.json()["local"] is None
+
+
 def test_morador_so_ve_as_proprias_ocorrencias(cliente, cenario):
     cliente.post(
         "/api/v1/portaria/ocorrencias",
@@ -308,7 +345,7 @@ def test_morador_so_ve_as_proprias_ocorrencias(cliente, cenario):
 
 def test_porteiro_sem_permissao_nao_abre_ocorrencia(cliente, cenario):
     _, tok = cadastrar_porteiro(
-        cliente, cenario["sindico"], cenario["cond"]["id"],
+        cliente, cenario["sindico"], cenario["cond"],
         email="semocr@exemplo.com", cpf=CPFS[4],
         permissoes={
             "registrar_visitantes": True, "registrar_encomendas": True,

@@ -1,4 +1,7 @@
 DROP TABLE IF EXISTS
+    documentos,
+    ordens_servico,
+    movimentacoes_veiculo,
     ocorrencias,
     encomendas,
     visitantes,
@@ -12,23 +15,29 @@ DROP TABLE IF EXISTS
     espacos_comuns,
     codigos_verificacao,
     permissoes_porteiro,
-    unidades,
     usuarios,
+    unidades,
     condominios
 CASCADE;
 
 DROP TYPE IF EXISTS
     canal_verificacao,
     categoria_comunicado,
+    categoria_documento,
+    categoria_veiculo,
     finalidade_codigo,
     forma_pagamento,
     papel_usuario,
+    prioridade_ocorrencia,
+    prioridade_ordem_servico,
     status_cobranca,
     status_encomenda,
     status_ocorrencia,
+    status_ordem_servico,
     status_reserva,
     status_usuario,
     status_visitante,
+    tipo_movimentacao,
     tipo_ocupacao
 CASCADE;
 
@@ -44,6 +53,21 @@ CREATE TYPE categoria_comunicado AS ENUM (
     'SEGURANCA',
     'EVENTO',
     'URGENTE'
+);
+
+CREATE TYPE categoria_documento AS ENUM (
+    'CONVENCAO',
+    'REGIMENTO',
+    'ATA',
+    'PLANTA',
+    'PRESTACAO_CONTAS',
+    'OUTRO'
+);
+
+CREATE TYPE categoria_veiculo AS ENUM (
+    'MORADOR',
+    'VISITANTE',
+    'PRESTADOR'
 );
 
 CREATE TYPE finalidade_codigo AS ENUM (
@@ -65,6 +89,20 @@ CREATE TYPE papel_usuario AS ENUM (
     'ADMIN'
 );
 
+CREATE TYPE prioridade_ocorrencia AS ENUM (
+    'BAIXA',
+    'NORMAL',
+    'ALTA',
+    'URGENTE'
+);
+
+CREATE TYPE prioridade_ordem_servico AS ENUM (
+    'BAIXA',
+    'MEDIA',
+    'ALTA',
+    'URGENTE'
+);
+
 CREATE TYPE status_cobranca AS ENUM (
     'ABERTA',
     'PAGA',
@@ -83,6 +121,13 @@ CREATE TYPE status_ocorrencia AS ENUM (
     'EM_ANALISE',
     'RESOLVIDA',
     'ARQUIVADA'
+);
+
+CREATE TYPE status_ordem_servico AS ENUM (
+    'ABERTA',
+    'EM_ANDAMENTO',
+    'CONCLUIDA',
+    'CANCELADA'
 );
 
 CREATE TYPE status_reserva AS ENUM (
@@ -109,6 +154,11 @@ CREATE TYPE status_visitante AS ENUM (
     'SAIU'
 );
 
+CREATE TYPE tipo_movimentacao AS ENUM (
+    'ENTRADA',
+    'SAIDA'
+);
+
 CREATE TYPE tipo_ocupacao AS ENUM (
     'PROPRIETARIO',
     'INQUILINO',
@@ -132,7 +182,6 @@ CREATE TABLE condominios (
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
     codigo_acesso character varying(20) NOT NULL
 );
-
 CREATE SEQUENCE condominios_id_seq
     AS integer
     START WITH 1
@@ -142,9 +191,32 @@ CREATE SEQUENCE condominios_id_seq
     CACHE 1;
 ALTER SEQUENCE condominios_id_seq OWNED BY condominios.id;
 ALTER TABLE ONLY condominios ALTER COLUMN id SET DEFAULT nextval('condominios_id_seq'::regclass);
-
 ALTER TABLE ONLY condominios
     ADD CONSTRAINT condominios_pkey PRIMARY KEY (id);
+
+CREATE TABLE unidades (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    numero character varying(20) NOT NULL,
+    bloco character varying(20) NOT NULL,
+    andar integer,
+    vagas_garagem integer NOT NULL,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL
+);
+CREATE SEQUENCE unidades_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE unidades_id_seq OWNED BY unidades.id;
+ALTER TABLE ONLY unidades ALTER COLUMN id SET DEFAULT nextval('unidades_id_seq'::regclass);
+ALTER TABLE ONLY unidades
+    ADD CONSTRAINT unidades_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY unidades
+    ADD CONSTRAINT uq_unidade_no_condominio UNIQUE (condominio_id, bloco, numero);
 
 CREATE TABLE usuarios (
     id integer NOT NULL,
@@ -163,7 +235,6 @@ CREATE TABLE usuarios (
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL
 );
-
 CREATE SEQUENCE usuarios_id_seq
     AS integer
     START WITH 1
@@ -173,35 +244,8 @@ CREATE SEQUENCE usuarios_id_seq
     CACHE 1;
 ALTER SEQUENCE usuarios_id_seq OWNED BY usuarios.id;
 ALTER TABLE ONLY usuarios ALTER COLUMN id SET DEFAULT nextval('usuarios_id_seq'::regclass);
-
 ALTER TABLE ONLY usuarios
     ADD CONSTRAINT usuarios_pkey PRIMARY KEY (id);
-
-CREATE TABLE unidades (
-    id integer NOT NULL,
-    condominio_id integer NOT NULL,
-    numero character varying(20) NOT NULL,
-    bloco character varying(20) NOT NULL,
-    andar integer,
-    vagas_garagem integer NOT NULL,
-    criado_em timestamp with time zone DEFAULT now() NOT NULL,
-    atualizado_em timestamp with time zone DEFAULT now() NOT NULL
-);
-
-CREATE SEQUENCE unidades_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-ALTER SEQUENCE unidades_id_seq OWNED BY unidades.id;
-ALTER TABLE ONLY unidades ALTER COLUMN id SET DEFAULT nextval('unidades_id_seq'::regclass);
-
-ALTER TABLE ONLY unidades
-    ADD CONSTRAINT unidades_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY unidades
-    ADD CONSTRAINT uq_unidade_no_condominio UNIQUE (condominio_id, bloco, numero);
 
 CREATE TABLE permissoes_porteiro (
     id integer NOT NULL,
@@ -215,7 +259,6 @@ CREATE TABLE permissoes_porteiro (
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL
 );
-
 CREATE SEQUENCE permissoes_porteiro_id_seq
     AS integer
     START WITH 1
@@ -225,7 +268,6 @@ CREATE SEQUENCE permissoes_porteiro_id_seq
     CACHE 1;
 ALTER SEQUENCE permissoes_porteiro_id_seq OWNED BY permissoes_porteiro.id;
 ALTER TABLE ONLY permissoes_porteiro ALTER COLUMN id SET DEFAULT nextval('permissoes_porteiro_id_seq'::regclass);
-
 ALTER TABLE ONLY permissoes_porteiro
     ADD CONSTRAINT permissoes_porteiro_pkey PRIMARY KEY (id);
 
@@ -242,7 +284,6 @@ CREATE TABLE codigos_verificacao (
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL
 );
-
 CREATE SEQUENCE codigos_verificacao_id_seq
     AS integer
     START WITH 1
@@ -252,7 +293,6 @@ CREATE SEQUENCE codigos_verificacao_id_seq
     CACHE 1;
 ALTER SEQUENCE codigos_verificacao_id_seq OWNED BY codigos_verificacao.id;
 ALTER TABLE ONLY codigos_verificacao ALTER COLUMN id SET DEFAULT nextval('codigos_verificacao_id_seq'::regclass);
-
 ALTER TABLE ONLY codigos_verificacao
     ADD CONSTRAINT codigos_verificacao_pkey PRIMARY KEY (id);
 
@@ -268,7 +308,6 @@ CREATE TABLE espacos_comuns (
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL
 );
-
 CREATE SEQUENCE espacos_comuns_id_seq
     AS integer
     START WITH 1
@@ -278,7 +317,6 @@ CREATE SEQUENCE espacos_comuns_id_seq
     CACHE 1;
 ALTER SEQUENCE espacos_comuns_id_seq OWNED BY espacos_comuns.id;
 ALTER TABLE ONLY espacos_comuns ALTER COLUMN id SET DEFAULT nextval('espacos_comuns_id_seq'::regclass);
-
 ALTER TABLE ONLY espacos_comuns
     ADD CONSTRAINT espacos_comuns_pkey PRIMARY KEY (id);
 
@@ -299,7 +337,6 @@ CREATE TABLE reservas (
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT ck_reserva_intervalo CHECK ((hora_fim > hora_inicio))
 );
-
 CREATE SEQUENCE reservas_id_seq
     AS integer
     START WITH 1
@@ -309,7 +346,6 @@ CREATE SEQUENCE reservas_id_seq
     CACHE 1;
 ALTER SEQUENCE reservas_id_seq OWNED BY reservas.id;
 ALTER TABLE ONLY reservas ALTER COLUMN id SET DEFAULT nextval('reservas_id_seq'::regclass);
-
 ALTER TABLE ONLY reservas
     ADD CONSTRAINT reservas_pkey PRIMARY KEY (id);
 
@@ -323,7 +359,6 @@ CREATE TABLE registros_ocupacao (
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT ck_ocupacao_nao_negativa CHECK ((pessoas >= 0))
 );
-
 CREATE SEQUENCE registros_ocupacao_id_seq
     AS integer
     START WITH 1
@@ -333,7 +368,6 @@ CREATE SEQUENCE registros_ocupacao_id_seq
     CACHE 1;
 ALTER SEQUENCE registros_ocupacao_id_seq OWNED BY registros_ocupacao.id;
 ALTER TABLE ONLY registros_ocupacao ALTER COLUMN id SET DEFAULT nextval('registros_ocupacao_id_seq'::regclass);
-
 ALTER TABLE ONLY registros_ocupacao
     ADD CONSTRAINT registros_ocupacao_pkey PRIMARY KEY (id);
 
@@ -346,7 +380,6 @@ CREATE TABLE preferencias_cobranca (
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT ck_dia_vencimento CHECK (((dia_vencimento >= 1) AND (dia_vencimento <= 28)))
 );
-
 CREATE SEQUENCE preferencias_cobranca_id_seq
     AS integer
     START WITH 1
@@ -356,7 +389,6 @@ CREATE SEQUENCE preferencias_cobranca_id_seq
     CACHE 1;
 ALTER SEQUENCE preferencias_cobranca_id_seq OWNED BY preferencias_cobranca.id;
 ALTER TABLE ONLY preferencias_cobranca ALTER COLUMN id SET DEFAULT nextval('preferencias_cobranca_id_seq'::regclass);
-
 ALTER TABLE ONLY preferencias_cobranca
     ADD CONSTRAINT preferencias_cobranca_pkey PRIMARY KEY (id);
 
@@ -372,7 +404,6 @@ CREATE TABLE cobrancas (
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT ck_cobranca_valor_positivo CHECK ((valor > (0)::numeric))
 );
-
 CREATE SEQUENCE cobrancas_id_seq
     AS integer
     START WITH 1
@@ -382,7 +413,6 @@ CREATE SEQUENCE cobrancas_id_seq
     CACHE 1;
 ALTER SEQUENCE cobrancas_id_seq OWNED BY cobrancas.id;
 ALTER TABLE ONLY cobrancas ALTER COLUMN id SET DEFAULT nextval('cobrancas_id_seq'::regclass);
-
 ALTER TABLE ONLY cobrancas
     ADD CONSTRAINT cobrancas_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY cobrancas
@@ -401,7 +431,6 @@ CREATE TABLE pagamentos (
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT ck_pagamento_valor_positivo CHECK ((valor > (0)::numeric))
 );
-
 CREATE SEQUENCE pagamentos_id_seq
     AS integer
     START WITH 1
@@ -411,7 +440,6 @@ CREATE SEQUENCE pagamentos_id_seq
     CACHE 1;
 ALTER SEQUENCE pagamentos_id_seq OWNED BY pagamentos.id;
 ALTER TABLE ONLY pagamentos ALTER COLUMN id SET DEFAULT nextval('pagamentos_id_seq'::regclass);
-
 ALTER TABLE ONLY pagamentos
     ADD CONSTRAINT pagamentos_pkey PRIMARY KEY (id);
 
@@ -427,7 +455,6 @@ CREATE TABLE comunicados (
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL
 );
-
 CREATE SEQUENCE comunicados_id_seq
     AS integer
     START WITH 1
@@ -437,7 +464,6 @@ CREATE SEQUENCE comunicados_id_seq
     CACHE 1;
 ALTER SEQUENCE comunicados_id_seq OWNED BY comunicados.id;
 ALTER TABLE ONLY comunicados ALTER COLUMN id SET DEFAULT nextval('comunicados_id_seq'::regclass);
-
 ALTER TABLE ONLY comunicados
     ADD CONSTRAINT comunicados_pkey PRIMARY KEY (id);
 
@@ -447,7 +473,6 @@ CREATE TABLE leituras_comunicado (
     usuario_id integer NOT NULL,
     lido_em timestamp with time zone NOT NULL
 );
-
 CREATE SEQUENCE leituras_comunicado_id_seq
     AS integer
     START WITH 1
@@ -457,7 +482,6 @@ CREATE SEQUENCE leituras_comunicado_id_seq
     CACHE 1;
 ALTER SEQUENCE leituras_comunicado_id_seq OWNED BY leituras_comunicado.id;
 ALTER TABLE ONLY leituras_comunicado ALTER COLUMN id SET DEFAULT nextval('leituras_comunicado_id_seq'::regclass);
-
 ALTER TABLE ONLY leituras_comunicado
     ADD CONSTRAINT leituras_comunicado_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY leituras_comunicado
@@ -480,7 +504,6 @@ CREATE TABLE visitantes (
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL
 );
-
 CREATE SEQUENCE visitantes_id_seq
     AS integer
     START WITH 1
@@ -490,7 +513,6 @@ CREATE SEQUENCE visitantes_id_seq
     CACHE 1;
 ALTER SEQUENCE visitantes_id_seq OWNED BY visitantes.id;
 ALTER TABLE ONLY visitantes ALTER COLUMN id SET DEFAULT nextval('visitantes_id_seq'::regclass);
-
 ALTER TABLE ONLY visitantes
     ADD CONSTRAINT visitantes_pkey PRIMARY KEY (id);
 
@@ -510,7 +532,6 @@ CREATE TABLE encomendas (
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL
 );
-
 CREATE SEQUENCE encomendas_id_seq
     AS integer
     START WITH 1
@@ -520,7 +541,6 @@ CREATE SEQUENCE encomendas_id_seq
     CACHE 1;
 ALTER SEQUENCE encomendas_id_seq OWNED BY encomendas.id;
 ALTER TABLE ONLY encomendas ALTER COLUMN id SET DEFAULT nextval('encomendas_id_seq'::regclass);
-
 ALTER TABLE ONLY encomendas
     ADD CONSTRAINT encomendas_pkey PRIMARY KEY (id);
 
@@ -532,6 +552,8 @@ CREATE TABLE ocorrencias (
     titulo character varying(180) NOT NULL,
     descricao text NOT NULL,
     categoria character varying(60) NOT NULL,
+    local character varying(120),
+    prioridade prioridade_ocorrencia NOT NULL,
     foto_url character varying(500),
     status status_ocorrencia NOT NULL,
     resposta text,
@@ -540,7 +562,6 @@ CREATE TABLE ocorrencias (
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL
 );
-
 CREATE SEQUENCE ocorrencias_id_seq
     AS integer
     START WITH 1
@@ -550,9 +571,93 @@ CREATE SEQUENCE ocorrencias_id_seq
     CACHE 1;
 ALTER SEQUENCE ocorrencias_id_seq OWNED BY ocorrencias.id;
 ALTER TABLE ONLY ocorrencias ALTER COLUMN id SET DEFAULT nextval('ocorrencias_id_seq'::regclass);
-
 ALTER TABLE ONLY ocorrencias
     ADD CONSTRAINT ocorrencias_pkey PRIMARY KEY (id);
+
+CREATE TABLE movimentacoes_veiculo (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    placa character varying(10) NOT NULL,
+    modelo character varying(60),
+    cor character varying(30),
+    tipo tipo_movimentacao NOT NULL,
+    categoria categoria_veiculo NOT NULL,
+    unidade_id integer,
+    registrada_por_id integer,
+    registrada_em timestamp with time zone NOT NULL,
+    observacao text,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL
+);
+CREATE SEQUENCE movimentacoes_veiculo_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE movimentacoes_veiculo_id_seq OWNED BY movimentacoes_veiculo.id;
+ALTER TABLE ONLY movimentacoes_veiculo ALTER COLUMN id SET DEFAULT nextval('movimentacoes_veiculo_id_seq'::regclass);
+ALTER TABLE ONLY movimentacoes_veiculo
+    ADD CONSTRAINT movimentacoes_veiculo_pkey PRIMARY KEY (id);
+
+CREATE TABLE ordens_servico (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    tipo character varying(60) NOT NULL,
+    descricao text NOT NULL,
+    local character varying(120),
+    prioridade prioridade_ordem_servico NOT NULL,
+    status status_ordem_servico NOT NULL,
+    fornecedor character varying(120),
+    data_prevista date,
+    custo_estimado numeric(10,2),
+    custo_real numeric(10,2),
+    aberta_por_id integer,
+    concluida_em timestamp with time zone,
+    observacoes text,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT ck_os_custo_estimado CHECK (((custo_estimado IS NULL) OR (custo_estimado >= (0)::numeric))),
+    CONSTRAINT ck_os_custo_real CHECK (((custo_real IS NULL) OR (custo_real >= (0)::numeric)))
+);
+CREATE SEQUENCE ordens_servico_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE ordens_servico_id_seq OWNED BY ordens_servico.id;
+ALTER TABLE ONLY ordens_servico ALTER COLUMN id SET DEFAULT nextval('ordens_servico_id_seq'::regclass);
+ALTER TABLE ONLY ordens_servico
+    ADD CONSTRAINT ordens_servico_pkey PRIMARY KEY (id);
+
+CREATE TABLE documentos (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    titulo character varying(180) NOT NULL,
+    descricao text,
+    categoria categoria_documento NOT NULL,
+    arquivo_url character varying(500) NOT NULL,
+    tamanho_kb integer,
+    unidade_id integer,
+    publicado_por_id integer,
+    publicado_em timestamp with time zone NOT NULL,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL
+);
+CREATE SEQUENCE documentos_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE documentos_id_seq OWNED BY documentos.id;
+ALTER TABLE ONLY documentos ALTER COLUMN id SET DEFAULT nextval('documentos_id_seq'::regclass);
+ALTER TABLE ONLY documentos
+    ADD CONSTRAINT documentos_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY cobrancas
     ADD CONSTRAINT cobrancas_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
@@ -568,6 +673,15 @@ ALTER TABLE ONLY comunicados
 
 ALTER TABLE ONLY condominios
     ADD CONSTRAINT fk_condominios_sindico_id FOREIGN KEY (sindico_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY documentos
+    ADD CONSTRAINT documentos_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY documentos
+    ADD CONSTRAINT documentos_publicado_por_id_fkey FOREIGN KEY (publicado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY documentos
+    ADD CONSTRAINT documentos_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY encomendas
     ADD CONSTRAINT encomendas_registrada_por_id_fkey FOREIGN KEY (registrada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
@@ -587,6 +701,15 @@ ALTER TABLE ONLY leituras_comunicado
 ALTER TABLE ONLY leituras_comunicado
     ADD CONSTRAINT leituras_comunicado_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY movimentacoes_veiculo
+    ADD CONSTRAINT movimentacoes_veiculo_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY movimentacoes_veiculo
+    ADD CONSTRAINT movimentacoes_veiculo_registrada_por_id_fkey FOREIGN KEY (registrada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY movimentacoes_veiculo
+    ADD CONSTRAINT movimentacoes_veiculo_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE SET NULL;
+
 ALTER TABLE ONLY ocorrencias
     ADD CONSTRAINT ocorrencias_aberta_por_id_fkey FOREIGN KEY (aberta_por_id) REFERENCES usuarios(id) ON DELETE CASCADE;
 
@@ -598,6 +721,12 @@ ALTER TABLE ONLY ocorrencias
 
 ALTER TABLE ONLY ocorrencias
     ADD CONSTRAINT ocorrencias_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY ordens_servico
+    ADD CONSTRAINT ordens_servico_aberta_por_id_fkey FOREIGN KEY (aberta_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY ordens_servico
+    ADD CONSTRAINT ordens_servico_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY pagamentos
     ADD CONSTRAINT pagamentos_cobranca_id_fkey FOREIGN KEY (cobranca_id) REFERENCES cobrancas(id) ON DELETE CASCADE;
@@ -667,6 +796,16 @@ CREATE INDEX ix_comunicados_publicado_em ON comunicados USING btree (publicado_e
 
 CREATE INDEX ix_condominios_sindico_id ON condominios USING btree (sindico_id);
 
+CREATE INDEX ix_documentos_categoria ON documentos USING btree (categoria);
+
+CREATE INDEX ix_documentos_condominio_id ON documentos USING btree (condominio_id);
+
+CREATE INDEX ix_documentos_publicado_em ON documentos USING btree (publicado_em);
+
+CREATE INDEX ix_documentos_publicado_por_id ON documentos USING btree (publicado_por_id);
+
+CREATE INDEX ix_documentos_unidade_id ON documentos USING btree (unidade_id);
+
 CREATE INDEX ix_encomendas_codigo_rastreio ON encomendas USING btree (codigo_rastreio);
 
 CREATE INDEX ix_encomendas_registrada_por_id ON encomendas USING btree (registrada_por_id);
@@ -681,13 +820,35 @@ CREATE INDEX ix_leituras_comunicado_comunicado_id ON leituras_comunicado USING b
 
 CREATE INDEX ix_leituras_comunicado_usuario_id ON leituras_comunicado USING btree (usuario_id);
 
+CREATE INDEX ix_movimentacoes_veiculo_condominio_id ON movimentacoes_veiculo USING btree (condominio_id);
+
+CREATE INDEX ix_movimentacoes_veiculo_placa ON movimentacoes_veiculo USING btree (placa);
+
+CREATE INDEX ix_movimentacoes_veiculo_registrada_em ON movimentacoes_veiculo USING btree (registrada_em);
+
+CREATE INDEX ix_movimentacoes_veiculo_registrada_por_id ON movimentacoes_veiculo USING btree (registrada_por_id);
+
+CREATE INDEX ix_movimentacoes_veiculo_tipo ON movimentacoes_veiculo USING btree (tipo);
+
+CREATE INDEX ix_movimentacoes_veiculo_unidade_id ON movimentacoes_veiculo USING btree (unidade_id);
+
 CREATE INDEX ix_ocorrencias_aberta_por_id ON ocorrencias USING btree (aberta_por_id);
 
 CREATE INDEX ix_ocorrencias_condominio_id ON ocorrencias USING btree (condominio_id);
 
+CREATE INDEX ix_ocorrencias_prioridade ON ocorrencias USING btree (prioridade);
+
 CREATE INDEX ix_ocorrencias_status ON ocorrencias USING btree (status);
 
 CREATE INDEX ix_ocorrencias_unidade_id ON ocorrencias USING btree (unidade_id);
+
+CREATE INDEX ix_ordens_servico_aberta_por_id ON ordens_servico USING btree (aberta_por_id);
+
+CREATE INDEX ix_ordens_servico_condominio_id ON ordens_servico USING btree (condominio_id);
+
+CREATE INDEX ix_ordens_servico_prioridade ON ordens_servico USING btree (prioridade);
+
+CREATE INDEX ix_ordens_servico_status ON ordens_servico USING btree (status);
 
 CREATE INDEX ix_pagamentos_cobranca_id ON pagamentos USING btree (cobranca_id);
 

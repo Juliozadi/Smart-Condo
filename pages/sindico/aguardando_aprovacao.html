@@ -30,12 +30,13 @@
         </div>
       </div>
 
-      <h2 class="waiting-title"> Solicitação enviada!</h2>
+      <h2 class="waiting-title">Conta de síndico ainda não liberada</h2>
       <p class="waiting-subtitle">
-        O cadastro do condomínio foi recebido. Nossa equipe realizará a <strong>verificação dos documentos legais</strong>, incluindo a Ata de Eleição, antes de ativar sua conta de síndico.
+        Quem cria a conta de síndico é o <strong>administrador da plataforma</strong>, junto
+        com o condomínio. Se você chegou até aqui, a sua conta existe mas ainda não está
+        ativa — fale com a administração para liberar o acesso.
       </p>
 
-      <!-- Status track — 5 etapas para síndico (processo mais rigoroso) -->
       <div class="status-track">
 
         <div class="status-step done">
@@ -43,54 +44,19 @@
             <img src="../../assets/img/icons/check.svg" width="16" height="16" alt="">
           </div>
           <div class="ss-info">
-            <strong>Cadastro enviado</strong>
-            <span>Dados do síndico e do condomínio recebidos</span>
-          </div>
-          <span class="ss-badge done" style="background:rgba(145,100,250,.1);color:#6540c8;border-color:rgba(145,100,250,.2);">Concluído</span>
-        </div>
-
-        <div class="status-step done">
-          <div class="ss-icon done" style="background:linear-gradient(135deg,#9e72fc,#7a4ee0);">
-            <img src="../../assets/img/icons/folder-open.svg" width="16" height="16" alt="">
-          </div>
-          <div class="ss-info">
-            <strong>Documentos recebidos</strong>
-            <span>Ata de eleição, Convenção e CNPJ em fila</span>
+            <strong>Conta criada pelo administrador</strong>
+            <span>Dados do síndico e o condomínio que ele administra</span>
           </div>
           <span class="ss-badge done" style="background:rgba(145,100,250,.1);color:#6540c8;border-color:rgba(145,100,250,.2);">Concluído</span>
         </div>
 
         <div class="status-step active">
-          <div class="ss-icon active">
-            
-          </div>
+          <div class="ss-icon active"></div>
           <div class="ss-info">
-            <strong>Verificação legal dos documentos</strong>
-            <span>Equipe SmartCondo valida Ata, CNPJ e Convenção</span>
+            <strong>Liberação do acesso</strong>
+            <span>A administração ativa a conta no painel dela</span>
           </div>
           <span class="ss-badge active">Em andamento</span>
-        </div>
-
-        <div class="status-step pending">
-          <div class="ss-icon pending">
-            
-          </div>
-          <div class="ss-info">
-            <strong>Condomínio registrado na plataforma</strong>
-            <span>Unidades, áreas comuns e configurações ativadas</span>
-          </div>
-          <span class="ss-badge pending">Pendente</span>
-        </div>
-
-        <div class="status-step pending">
-          <div class="ss-icon pending">
-            
-          </div>
-          <div class="ss-info">
-            <strong>E-mail de ativação enviado</strong>
-            <span>Credenciais de administrador e link de acesso</span>
-          </div>
-          <span class="ss-badge pending">Pendente</span>
         </div>
 
         <div class="status-step pending">
@@ -98,34 +64,20 @@
             <img src="../../assets/img/icons/star.svg" width="16" height="16" alt="">
           </div>
           <div class="ss-info">
-            <strong>Conta de síndico ativa</strong>
-            <span>Acesso completo ao painel administrativo</span>
+            <strong>Painel do síndico disponível</strong>
+            <span>Entrar com o e-mail e a senha do cadastro</span>
           </div>
           <span class="ss-badge pending">Pendente</span>
         </div>
 
       </div>
 
-      <!-- Prazo -->
       <div class="waiting-info-box" style="background:linear-gradient(135deg,rgba(145,100,250,.06),rgba(145,100,250,.02));border-color:rgba(145,100,250,.2);">
         <img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">
         <div>
-          <strong style="display:block;margin-bottom:3px;color:#4a28a0;">Prazo estimado: 5 dias úteis</strong>
-          A verificação dos documentos legais exige análise manual pela equipe SmartCondo. Você será notificado por e-mail a cada atualização do processo.
-        </div>
-      </div>
-
-      <!-- Alerta documentos obrigatórios -->
-      <div style="background:linear-gradient(135deg,rgba(230,162,60,.08),rgba(230,162,60,.04));border:1.5px solid rgba(230,162,60,.3);border-radius:var(--radius-sm);padding:16px 18px;display:flex;align-items:flex-start;gap:12px;text-align:left;margin-bottom:20px;font-size:13px;color:#7a5200;font-weight:500;line-height:1.6;">
-        <img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt="">
-        <div>
-          <strong style="display:block;margin-bottom:6px;color:#5a3c00;">Documentos verificados nesta etapa</strong>
-          <div style="display:flex;flex-direction:column;gap:5px;">
-            <span>Ata de Eleição do Síndico (registrada em cartório)</span>
-            <span><img src="../../assets/img/icons/file-contract.svg" width="16" height="16" alt="">Convenção do Condomínio</span>
-            <span>Cartão CNPJ — Receita Federal</span>
-            <span><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">Documento de identidade do síndico</span>
-          </div>
+          <strong style="display:block;margin-bottom:3px;">Depende da administração</strong>
+          Não há prazo automático: a liberação acontece quando a administração ativa a
+          conta. O acesso é com o mesmo e-mail e a mesma senha do cadastro.
         </div>
       </div>
 
@@ -159,20 +111,24 @@
         <!-- Código de acesso para convidar porteiros/moradores -->
         <div style="margin-top:14px;padding:14px;background:linear-gradient(135deg,rgba(145,100,250,.07),rgba(145,100,250,.03));border:1px solid rgba(145,100,250,.18);border-radius:var(--radius-xs);">
           <p style="font-size:12px;font-weight:700;color:#6540c8;margin-bottom:4px;">Código de acesso do condomínio</p>
-          <p style="font-size:12px;color:var(--muted);font-weight:500;line-height:1.5;">Após a ativação, você receberá um <strong style="color:#6540c8;">código único do condomínio</strong> para compartilhar com moradores e porteiros durante o cadastro deles.</p>
+          <p style="font-size:12px;color:var(--muted);font-weight:500;line-height:1.5;">Com a conta ativa, o painel mostra o <strong style="color:#6540c8;">código único do condomínio</strong> para compartilhar com moradores e porteiros durante o cadastro deles.</p>
         </div>
       </div>
 
       <!-- Contato suporte -->
       <div style="font-size:13px;color:var(--muted);text-align:center;line-height:1.8;padding:16px;background:var(--surface-2);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:20px;">
-        <p style="font-weight:700;color:var(--text-2);margin-bottom:6px;">Acompanhe o processo</p>
-        <p>Nossa equipe entrará em contato se precisar de documentos adicionais:</p>
+        <p style="font-weight:700;color:var(--text-2);margin-bottom:6px;">Precisa de ajuda?</p>
+        <p>Fale com a administração da plataforma:</p>
         <p style="margin-top:6px;">
           <strong style="color:var(--primary);">smartcondoip@gmail.com</strong>
           &nbsp;·&nbsp;
           <strong style="color:var(--primary);">(67) 91234-5678</strong>
         </p>
       </div>
+
+      <a href="../../index.html" class="login-btn" style="max-width:320px;margin:0 auto 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;">
+        <img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt=""> Já fui aprovado — entrar
+      </a>
 
       <a href="../../index.html" class="back-link" style="display:inline-flex;margin-top:0;">
         <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar para o login

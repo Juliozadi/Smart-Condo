@@ -8,7 +8,7 @@
   <script src="../../assets/js/api.js"></script><link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
-<body class="dashboard-body layout-mobile">
+<body class="dashboard-body layout-desktop">
   <header class="app-bar"><div class="app-bar-inner wide">
     <a href="../../index.html" class="app-bar-brand"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
     <div class="app-bar-right"><a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role">Síndico</span></a><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
@@ -21,45 +21,257 @@
       <p class="greeting-condo"> Gestão financeira completa do condomínio</p>
     </div>
     <div class="balance-card">
-      <p class="balance-label">Saldo do Fundo de Reserva</p>
-      <p class="balance-value">R$ 48.320,00</p>
-      <p class="balance-sub">Atualizado em 18/03/2025</p>
+      <p class="balance-label">Total recebido</p>
+      <p class="balance-value" id="totalRecebido">—</p>
+      <p class="balance-sub" id="balanceSub">Somando todos os pagamentos registrados</p>
       <div class="balance-pills">
-        <span class="balance-pill"> Receita mar: R$14.600</span>
-        <span class="balance-pill"> Despesa mar: R$11.200</span>
-        <span class="balance-pill"><img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt=""> Inadimp: R$3.800</span>
+        <span class="balance-pill" id="pillAberto">Em aberto: —</span>
+        <span class="balance-pill" id="pillVencido"><img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt=""> Vencido: —</span>
       </div>
     </div>
     <div class="admin-stats">
-      <div class="admin-stat teal"><span class="stat-value">R$18.400</span><span class="stat-label"> Receita prevista</span></div>
-      <div class="admin-stat blue"><span class="stat-value">R$14.600</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt=""> Arrecadado</span></div>
-      <div class="admin-stat red"><span class="stat-value">R$3.800</span><span class="stat-label"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt=""> Inadimplência</span></div>
-      <div class="admin-stat amber"><span class="stat-value">R$11.200</span><span class="stat-label"> Despesas</span></div>
+      <div class="admin-stat teal"><span class="stat-value" id="statRecebido">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Recebido</span></div>
+      <div class="admin-stat blue"><span class="stat-value" id="statAberto">—</span><span class="stat-label">Em aberto</span></div>
+      <div class="admin-stat red"><span class="stat-value" id="statVencido">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt="">Vencido</span></div>
+      <div class="admin-stat amber"><span class="stat-value" id="statInadimplentes">—</span><span class="stat-label">Unidades em atraso</span></div>
     </div>
-    <p class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Ações</p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;">
-      <a href="#" class="action-btn" style="width:auto;flex:1;min-width:160px;margin-bottom:0;"> Gerar Boletos</a>
-      <a href="#" class="action-btn outline" style="width:auto;flex:1;min-width:160px;margin-bottom:0;"> Exportar Relatório</a>
+
+    <p class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Gerar Cobranças</p>
+    <div class="form-card">
+      <h3>Cobrança mensal</h3>
+      <form id="formCobranca" novalidate>
+        <div class="form-row">
+          <div class="form-group"><label for="fin_competencia">Competência</label><input id="fin_competencia" type="month" required style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
+          <div class="form-group"><label for="fin_valor">Valor por unidade (R$)</label><input id="fin_valor" type="number" min="0.01" step="0.01" required placeholder="Ex: 380.00" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="fin_descricao">Descrição</label><input id="fin_descricao" type="text" required minlength="3" maxlength="180" placeholder="Ex: Taxa condominial" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
+          <div class="form-group"><label for="fin_unidade">Unidade</label><select id="fin_unidade" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"><option value="" selected>Todas as unidades</option></select></div>
+        </div>
+        <p class="aviso-notificacao">
+          <img src="../../assets/img/icons/bullhorn.svg" alt="">
+          <span>Sem informar a data de vencimento, cada cobrança usa o
+          <strong>dia que o morador escolheu</strong> na preferência dele. Unidades que já
+          tenham cobrança nesta competência são puladas.</span>
+        </p>
+        <p class="form-erro" id="erroCobranca" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;">Gerar Cobranças</button>
+      </form>
     </div>
-    <p class="section-title"> Inadimplentes — Março 2025</p>
-    <div class="data-table">
-      <div class="table-head cols-4"><span><img src="../../assets/img/icons/user.svg" width="16" height="16" alt=""> Unidade / Morador</span><span> Meses</span><span> Valor</span><span><img src="../../assets/img/icons/phone.svg" width="16" height="16" alt=""> Contato</span></div>
-      <div class="table-row cols-4"><span><strong>Apto 103</strong> — Ana Ribeiro</span><span>2 meses</span><span>R$760</span><span><a href="#" style="color:var(--primary);font-weight:700;font-size:12px;text-decoration:none;"><img src="../../assets/img/icons/phone.svg" width="16" height="16" alt=""> Notificar</a></span></div>
-      <div class="table-row cols-4"><span><strong>Apto 207</strong> — Pedro Lima</span><span>1 mês</span><span>R$380</span><span><a href="#" style="color:var(--primary);font-weight:700;font-size:12px;text-decoration:none;"><img src="../../assets/img/icons/phone.svg" width="16" height="16" alt=""> Notificar</a></span></div>
-      <div class="table-row cols-4"><span><strong>Apto 301</strong> — Sandra Costa</span><span>3 meses</span><span>R$1.140</span><span><a href="#" style="color:var(--primary);font-weight:700;font-size:12px;text-decoration:none;"><img src="../../assets/img/icons/phone.svg" width="16" height="16" alt=""> Notificar</a></span></div>
+
+    <p class="section-title">Cobranças</p>
+    <div class="barra-acoes">
+      <select id="filtroStatus" aria-label="Filtrar por status">
+        <option value="">Todos os status</option>
+        <option value="aberta">Aberta</option>
+        <option value="vencida">Vencida</option>
+        <option value="paga">Paga</option>
+        <option value="cancelada">Cancelada</option>
+      </select>
+      <button type="button" id="btnExportar" class="action-btn outline" style="width:auto;margin:0;">Exportar (CSV)</button>
     </div>
-    <p class="section-title"> Despesas do Mês</p>
-    <div class="data-table">
-      <div class="table-head cols-4"><span>Item</span><span> Categoria</span><span>Data</span><span>Valor</span></div>
-      <div class="table-row cols-4"><span>Folha de pagamento</span><span>Pessoal</span><span>01/03</span><span>R$7.200</span></div>
-      <div class="table-row cols-4"><span>Energia elétrica</span><span>Utilidades</span><span>05/03</span><span>R$1.850</span></div>
-      <div class="table-row cols-4"><span>Água / SAAE</span><span>Utilidades</span><span>08/03</span><span>R$980</span></div>
-      <div class="table-row cols-4"><span>Seguro do condomínio</span><span>Seguros</span><span>10/03</span><span>R$620</span></div>
-      <div class="table-row cols-4"><span>Limpeza caixa d'água</span><span>Manutenção</span><span>05/03</span><span>R$550</span></div>
+    <div class="data-table tabela-status" id="tabelaCobrancas">
+      <div class="table-head cols-6"><span><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Unidade</span><span>Competência</span><span>Descrição</span><span>Vencimento</span><span>Valor</span><span>Situação</span></div>
     </div>
+    <p class="estado-lista" id="estadoTabela">Carregando…</p>
+
   </main>
 
 <script src="../../assets/js/validation.js"></script>
+<script>
+/* Financeiro do síndico: indicadores de GET /financeiro/resumo, geração
+   de cobranças e a lista do que está aberto, vencido ou pago. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api;
+  var usuario = api.protegerPagina('sindico');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+  var cobrancas = [];
+  var unidades = [];
+
+  var ROTULO_STATUS = {
+    aberta: 'Aberta', vencida: 'Vencida', paga: 'Paga', cancelada: 'Cancelada'
+  };
+  var CLASSE_STATUS = {
+    aberta: 'badge-pending', vencida: 'badge-alert',
+    paga: 'badge-ok', cancelada: 'badge-neutral'
+  };
+
+  function dinheiro(valor) {
+    return 'R$ ' + Number(valor).toLocaleString('pt-BR', {
+      minimumFractionDigits: 2, maximumFractionDigits: 2
+    });
+  }
+  function partes(iso) { var p = (iso || '').split('-'); return { a: +p[0], m: +p[1], d: +p[2] }; }
+  function dataCurta(iso) {
+    var p = partes(iso);
+    return ('0' + p.d).slice(-2) + '/' + ('0' + p.m).slice(-2) + '/' + p.a;
+  }
+  function competenciaCurta(iso) {
+    var p = partes(iso);
+    return ('0' + p.m).slice(-2) + '/' + p.a;
+  }
+
+  function montarLinha(c) {
+    var linha = document.createElement('div');
+    linha.className = 'table-row cols-6';
+    linha.innerHTML =
+      '<span><strong></strong></span><span></span><span></span><span></span>' +
+      '<span></span><span><span class="badge"></span></span>';
+    linha.children[0].firstChild.textContent = c.unidade || '—';
+    linha.children[1].textContent = competenciaCurta(c.competencia);
+    linha.children[2].textContent = c.descricao;
+    linha.children[3].textContent = dataCurta(c.vencimento);
+    linha.children[4].textContent = dinheiro(c.valor);
+    var selo = linha.children[5].firstChild;
+    selo.className = 'badge ' + (CLASSE_STATUS[c.status] || 'badge-neutral');
+    selo.textContent = ROTULO_STATUS[c.status] || c.status;
+    if (Number(c.total_pago) > 0 && c.status !== 'paga') {
+      linha.title = 'Já pago: ' + dinheiro(c.total_pago) +
+        ' · Falta: ' + dinheiro(Number(c.valor) - Number(c.total_pago));
+    }
+    return linha;
+  }
+
+  function aplicarFiltro() {
+    var status = campo('filtroStatus').value;
+    var lista = status ? cobrancas.filter(function(c) { return c.status === status; }) : cobrancas;
+    var tabela = campo('tabelaCobrancas');
+    var cabecalho = tabela.querySelector('.table-head');
+    tabela.innerHTML = '';
+    tabela.appendChild(cabecalho);
+    campo('estadoTabela').textContent = lista.length ? '' :
+      (cobrancas.length ? 'Nenhuma cobrança com esse status.' : 'Nenhuma cobrança gerada ainda.');
+    lista.forEach(function(c) { tabela.appendChild(montarLinha(c)); });
+  }
+
+  function exportarCsv() {
+    var linhas = [['Unidade', 'Competencia', 'Descricao', 'Vencimento', 'Valor', 'Pago', 'Situacao']];
+    cobrancas.forEach(function(c) {
+      linhas.push([c.unidade || '', competenciaCurta(c.competencia), c.descricao,
+                   dataCurta(c.vencimento), c.valor, c.total_pago,
+                   ROTULO_STATUS[c.status] || c.status]);
+    });
+    var csv = linhas.map(function(l) {
+      return l.map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(';');
+    }).join('\r\n');
+    // O BOM faz o Excel abrir os acentos corretamente.
+    var url = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = 'cobrancas.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function carregarResumo() {
+    return api.get('/financeiro/resumo').then(function(r) {
+      campo('totalRecebido').textContent = dinheiro(r.total_recebido);
+      campo('statRecebido').textContent = dinheiro(r.total_recebido);
+      campo('statAberto').textContent = dinheiro(r.total_aberto);
+      campo('statVencido').textContent = dinheiro(r.total_vencido);
+      campo('statInadimplentes').textContent = r.unidades_inadimplentes;
+      campo('pillAberto').textContent = 'Em aberto: ' + dinheiro(r.total_aberto);
+      campo('pillVencido').textContent = 'Vencido: ' + dinheiro(r.total_vencido);
+      campo('balanceSub').textContent =
+        r.cobrancas_abertas + (r.cobrancas_abertas === 1 ? ' cobrança em aberto' : ' cobranças em aberto');
+    });
+  }
+
+  function carregarCobrancas() {
+    campo('estadoTabela').textContent = 'Carregando…';
+    return api.get('/financeiro/cobrancas')
+      .then(function(lista) { cobrancas = lista; aplicarFiltro(); })
+      .catch(function(e) { campo('estadoTabela').textContent = e.message; });
+  }
+
+  function carregarUnidades() {
+    return api.get('/condominios/meu/unidades').then(function(lista) {
+      unidades = lista;
+      var select = campo('fin_unidade');
+      lista.forEach(function(u) {
+        var op = document.createElement('option');
+        op.value = u.id;
+        op.textContent = 'Apto ' + (u.bloco && u.bloco !== 'unico' ? u.bloco + ' ' : '') + u.numero;
+        select.appendChild(op);
+      });
+    }).catch(function() {});
+  }
+
+  campo('formCobranca').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('erroCobranca');
+    erro.className = 'form-erro';
+    erro.textContent = '';
+
+    var competencia = campo('fin_competencia').value;
+    var valor = campo('fin_valor').value;
+    var descricao = campo('fin_descricao').value.trim();
+    if (!competencia || !valor || descricao.length < 3) {
+      erro.textContent = 'Preencha a competência, o valor e a descrição.';
+      return;
+    }
+
+    var escolhida = campo('fin_unidade').value;
+    var alvos = escolhida
+      ? unidades.filter(function(u) { return String(u.id) === escolhida; })
+      : unidades;
+    if (!alvos.length) {
+      erro.textContent = 'Nenhuma unidade cadastrada no condomínio.';
+      return;
+    }
+
+    var botao = this.querySelector('button[type=submit]');
+    var rotulo = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = 'Gerando…';
+
+    var geradas = 0, puladas = 0, falhas = [];
+    // Uma chamada por unidade: a API gera uma cobrança de cada vez, e o
+    // 409 de "já existe nesta competência" é esperado, não é erro.
+    var fila = alvos.reduce(function(anterior, u) {
+      return anterior.then(function() {
+        return api.post('/financeiro/cobrancas', {
+          unidade_id: u.id,
+          competencia: competencia + '-01',
+          descricao: descricao,
+          valor: Number(valor)
+        }).then(function() { geradas++; },
+          function(e) {
+            if (e.status === 409) puladas++;
+            else falhas.push(e.message);
+          });
+      });
+    }, Promise.resolve());
+
+    fila.then(function() {
+      var partesTexto = [geradas + (geradas === 1 ? ' cobrança gerada' : ' cobranças geradas')];
+      if (puladas) partesTexto.push(puladas + ' já existiam nesta competência');
+      if (falhas.length) partesTexto.push(falhas.length + ' com erro: ' + falhas[0]);
+      erro.className = 'form-erro' + (falhas.length ? '' : ' sucesso');
+      erro.textContent = partesTexto.join(' · ') + '.';
+      botao.disabled = false;
+      botao.textContent = rotulo;
+      return Promise.all([carregarResumo(), carregarCobrancas()]);
+    });
+  });
+
+  campo('filtroStatus').addEventListener('change', aplicarFiltro);
+  campo('btnExportar').addEventListener('click', exportarCsv);
+  campo('hdrName').textContent = usuario.nome;
+
+  // Começa na competência do mês corrente.
+  var hoje = new Date();
+  campo('fin_competencia').value =
+    hoje.getFullYear() + '-' + ('0' + (hoje.getMonth() + 1)).slice(-2);
+
+  carregarUnidades().then(function() {
+    return Promise.all([carregarResumo(), carregarCobrancas()]);
+  }).catch(function(e) { campo('estadoTabela').textContent = e.message; });
+})();
+</script>
 <script src="../../assets/js/sessao.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>
 </body></html>

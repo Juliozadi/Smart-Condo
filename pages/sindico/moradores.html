@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
-<body class="dashboard-body layout-mobile">
+<body class="dashboard-body layout-desktop">
   <header class="app-bar">
     <div class="app-bar-inner wide">
       <a href="../../index.html" class="app-bar-brand">
@@ -26,20 +26,19 @@
   <main class="dash-wrapper wide">
     <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
     <div class="dash-greeting">
-      <p class="greeting-sub"> Painel Administrativo</p>
-      <h2 class="greeting-name"> Gestão de Moradores</h2>
-      <p class="greeting-condo"> Residencial das Palmeiras · 48 unidades</p>
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h2 class="greeting-name">Gestão de Moradores</h2>
+      <p class="greeting-condo" id="resumoCondominio">Carregando…</p>
     </div>
     <div class="admin-stats">
-      <div class="admin-stat teal"><span class="stat-value">48</span><span class="stat-label"> Moradores</span></div>
-      <div class="admin-stat blue"><span class="stat-value">42</span><span class="stat-label"> Proprietários</span></div>
-      <div class="admin-stat amber"><span class="stat-value">6</span><span class="stat-label"> Inquilinos</span></div>
-      <div class="admin-stat red"><span class="stat-value">3</span><span class="stat-label">Aguard. aprov.</span></div>
+      <div class="admin-stat teal"><span class="stat-value" id="totMoradores">—</span><span class="stat-label">Moradores</span></div>
+      <div class="admin-stat blue"><span class="stat-value" id="totProprietarios">—</span><span class="stat-label">Proprietários</span></div>
+      <div class="admin-stat amber"><span class="stat-value" id="totInquilinos">—</span><span class="stat-label">Inquilinos</span></div>
+      <div class="admin-stat red"><span class="stat-value" id="totPendentes">—</span><span class="stat-label">Aguard. aprov.</span></div>
     </div>
 
-    <div class="alert-box">
-      
-      <span><strong>3 cadastros pendentes</strong> aguardando aprovação do síndico.</span>
+    <div class="alert-box" id="avisoPendentes" hidden>
+      <span id="textoPendentes"></span>
     </div>
 
     <p class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Ações</p>
@@ -47,50 +46,249 @@
       <a href="cadastrar_morador.html" class="action-btn" style="width:auto;flex:1;min-width:180px;margin-bottom:0;">
         <img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Cadastrar Morador
       </a>
-      <a href="#" class="action-btn outline" style="width:auto;flex:1;min-width:180px;margin-bottom:0;">Exportar Lista</a>
+      <button type="button" id="btnExportar" class="action-btn outline" style="width:auto;flex:1;min-width:180px;margin-bottom:0;">Exportar Lista (CSV)</button>
     </div>
     <br>
 
-    <p class="section-title"> Cadastros Aguardando Aprovação</p>
-    <div class="list-items">
-      <div class="list-item">
-        <div class="list-avatar amber">LP</div>
-        <div class="list-info"><h5>Larissa Pereira</h5><p>Apto 106 · Inquilina · Cadastrado em 16/03</p></div>
-        <div style="display:flex;gap:8px;">
-          <a href="#" style="padding:6px 12px;border-radius:20px;background:rgba(50,200,113,.1);color:#1e9956;font-size:12px;font-weight:700;text-decoration:none;border:1px solid rgba(50,200,113,.2);"><img src="../../assets/img/icons/check.svg" width="16" height="16" alt="">Aprovar</a>
-          <a href="#" style="padding:6px 12px;border-radius:20px;background:rgba(245,108,108,.1);color:#c0392b;font-size:12px;font-weight:700;text-decoration:none;border:1px solid rgba(245,108,108,.2);"><img src="../../assets/img/icons/xmark.svg" width="16" height="16" alt="">Recusar</a>
-        </div>
-      </div>
-      <div class="list-item">
-        <div class="list-avatar blue">MF</div>
-        <div class="list-info"><h5>Marcos Ferreira</h5><p>Apto 215 · Proprietário · Cadastrado em 15/03</p></div>
-        <div style="display:flex;gap:8px;">
-          <a href="#" style="padding:6px 12px;border-radius:20px;background:rgba(50,200,113,.1);color:#1e9956;font-size:12px;font-weight:700;text-decoration:none;border:1px solid rgba(50,200,113,.2);"><img src="../../assets/img/icons/check.svg" width="16" height="16" alt="">Aprovar</a>
-          <a href="#" style="padding:6px 12px;border-radius:20px;background:rgba(245,108,108,.1);color:#c0392b;font-size:12px;font-weight:700;text-decoration:none;border:1px solid rgba(245,108,108,.2);"><img src="../../assets/img/icons/xmark.svg" width="16" height="16" alt="">Recusar</a>
-        </div>
-      </div>
-      <div class="list-item">
-        <div class="list-avatar purple">CR</div>
-        <div class="list-info"><h5>Camila Rocha</h5><p>Apto 308 · Proprietária · Cadastrado em 14/03</p></div>
-        <div style="display:flex;gap:8px;">
-          <a href="#" style="padding:6px 12px;border-radius:20px;background:rgba(50,200,113,.1);color:#1e9956;font-size:12px;font-weight:700;text-decoration:none;border:1px solid rgba(50,200,113,.2);"><img src="../../assets/img/icons/check.svg" width="16" height="16" alt="">Aprovar</a>
-          <a href="#" style="padding:6px 12px;border-radius:20px;background:rgba(245,108,108,.1);color:#c0392b;font-size:12px;font-weight:700;text-decoration:none;border:1px solid rgba(245,108,108,.2);"><img src="../../assets/img/icons/xmark.svg" width="16" height="16" alt="">Recusar</a>
-        </div>
-      </div>
+    <div id="blocoPendentes">
+      <p class="section-title">Cadastros Aguardando Aprovação</p>
+      <div class="list-items" id="listaPendentes"></div>
+      <p class="estado-lista" id="estadoPendentes">Carregando…</p>
     </div>
 
-    <p class="section-title"> Todos os Moradores</p>
-    <div class="data-table">
-      <div class="table-head cols-5"><span><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Morador</span><span><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Unidade</span><span> Tipo</span><span>Desde</span><span> Status</span></div>
-      <div class="table-row cols-5"><span><strong>João Silva</strong></span><span>Apto 204</span><span>Proprietário</span><span>Jan/2020</span><span><span class="badge badge-ok">Ativo</span></span></div>
-      <div class="table-row cols-5"><span><strong>Maria Santos</strong></span><span>Apto 115</span><span>Proprietária</span><span>Mar/2019</span><span><span class="badge badge-ok">Ativo</span></span></div>
-      <div class="table-row cols-5"><span><strong>Pedro Lima</strong></span><span>Apto 207</span><span>Inquilino</span><span>Jun/2023</span><span><span class="badge badge-ok">Ativo</span></span></div>
-      <div class="table-row cols-5"><span><strong>Ana Ribeiro</strong></span><span>Apto 103</span><span>Proprietária</span><span>Ago/2018</span><span><span class="badge badge-alert">Inadimpl.</span></span></div>
-      <div class="table-row cols-5"><span><strong>Carlos Mendes</strong></span><span>Apto 308</span><span>Inquilino</span><span>Fev/2024</span><span><span class="badge badge-ok">Ativo</span></span></div>
-      <div class="table-row cols-5"><span><strong>Sandra Costa</strong></span><span>Apto 301</span><span>Proprietária</span><span>Nov/2017</span><span><span class="badge badge-alert">Inadimpl.</span></span></div>
+    <p class="section-title">Todos os Moradores</p>
+    <div class="barra-acoes">
+      <input type="search" id="buscaMorador" placeholder="Buscar por nome, e-mail ou unidade" aria-label="Buscar morador">
+      <select id="filtroStatus" aria-label="Filtrar por status">
+        <option value="">Todos os status</option>
+        <option value="ativo">Ativo</option>
+        <option value="aguardando_aprovacao">Aguardando aprovação</option>
+        <option value="aguardando_codigo">Aguardando código</option>
+        <option value="recusado">Recusado</option>
+        <option value="inativo">Inativo</option>
+      </select>
     </div>
+    <div class="data-table tabela-status" id="tabelaMoradores">
+      <div class="table-head cols-5"><span><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Morador</span><span><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Unidade</span><span>Tipo</span><span>Desde</span><span>Status</span></div>
+    </div>
+    <p class="estado-lista" id="estadoTabela"></p>
   </main>
 
+<script src="../../assets/js/admin-ui.js"></script>
+<script>
+/* Gestão de moradores do síndico: estatísticas, fila de aprovação e a
+   lista completa, tudo vindo da API. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api, ui = window.SmartCondo.ui;
+  if (!api.protegerPagina('sindico')) return;
+
+  function campo(id) { return document.getElementById(id); }
+  var moradores = [];
+
+  var INICIAIS_COR = ['teal', 'blue', 'amber', 'purple'];
+  function iniciais(nome) {
+    var p = (nome || '').trim().split(/\s+/);
+    return ((p[0] || '')[0] || '') + ((p[p.length - 1] || '')[0] || '');
+  }
+  function corDoNome(nome) {
+    var soma = 0;
+    for (var i = 0; i < (nome || '').length; i++) soma += nome.charCodeAt(i);
+    return INICIAIS_COR[soma % INICIAIS_COR.length];
+  }
+  function unidadeDe(u) {
+    if (!u.unidade) return '—';
+    var bloco = u.unidade.bloco && u.unidade.bloco !== 'unico' ? u.unidade.bloco + ' ' : '';
+    return bloco + u.unidade.numero;
+  }
+  var ROTULO_OCUPACAO = {
+    proprietario: 'Proprietário', inquilino: 'Inquilino', coabitante: 'Coabitante'
+  };
+  function desde(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '—';
+    var meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    return meses[d.getMonth()] + '/' + d.getFullYear();
+  }
+  function dataCurta(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2);
+  }
+
+  function cartaoPendente(u) {
+    var item = document.createElement('div');
+    item.className = 'list-item';
+
+    var avatar = document.createElement('div');
+    avatar.className = 'list-avatar ' + corDoNome(u.nome);
+    avatar.textContent = iniciais(u.nome).toUpperCase();
+
+    var info = document.createElement('div');
+    info.className = 'list-info';
+    var titulo = document.createElement('h5');
+    titulo.textContent = u.nome;
+    var sub = document.createElement('p');
+    sub.textContent = unidadeDe(u) + ' · ' +
+      (ROTULO_OCUPACAO[u.tipo_ocupacao] || 'Morador') +
+      ' · Cadastrado em ' + dataCurta(u.criado_em);
+    info.appendChild(titulo);
+    info.appendChild(sub);
+
+    var acoes = document.createElement('div');
+    acoes.className = 'acoes-aprovacao';
+    var aprovar = document.createElement('button');
+    aprovar.type = 'button';
+    aprovar.className = 'pill-acao aprovar';
+    aprovar.textContent = 'Aprovar';
+    var recusar = document.createElement('button');
+    recusar.type = 'button';
+    recusar.className = 'pill-acao recusar';
+    recusar.textContent = 'Recusar';
+    acoes.appendChild(aprovar);
+    acoes.appendChild(recusar);
+
+    function decidir(aprovado) {
+      aprovar.disabled = recusar.disabled = true;
+      api.post('/usuarios/' + u.id + '/aprovacao', { aprovado: aprovado })
+        .then(carregar)
+        .catch(function(e) {
+          aprovar.disabled = recusar.disabled = false;
+          alert(e.message);
+        });
+    }
+    aprovar.addEventListener('click', function() { decidir(true); });
+    recusar.addEventListener('click', function() {
+      if (!confirm('Recusar o cadastro de ' + u.nome + '?')) return;
+      decidir(false);
+    });
+
+    item.appendChild(avatar);
+    item.appendChild(info);
+    item.appendChild(acoes);
+    return item;
+  }
+
+  function montarLinha(u) {
+    var linha = document.createElement('div');
+    linha.className = 'table-row cols-5';
+    linha.innerHTML =
+      '<span><strong></strong><br><small class="lista-email"></small></span>' +
+      '<span></span><span></span><span></span>' +
+      '<span><span class="badge"></span></span>';
+    linha.children[0].firstChild.textContent = u.nome;
+    linha.children[0].querySelector('.lista-email').textContent = u.email;
+    linha.children[1].textContent = unidadeDe(u);
+    linha.children[2].textContent = ROTULO_OCUPACAO[u.tipo_ocupacao] || '—';
+    linha.children[3].textContent = desde(u.criado_em);
+    var selo = linha.children[4].firstChild;
+    selo.className = 'badge ' + (ui.CLASSE_STATUS[u.status] || 'badge-neutral');
+    selo.textContent = ui.ROTULO_STATUS[u.status] || u.status;
+    return linha;
+  }
+
+  function aplicarFiltros() {
+    var busca = ui.semAcento(campo('buscaMorador').value.trim());
+    var status = campo('filtroStatus').value;
+    var lista = moradores.filter(function(u) {
+      if (status && u.status !== status) return false;
+      if (!busca) return true;
+      return ui.semAcento(u.nome + ' ' + u.email + ' ' + unidadeDe(u)).indexOf(busca) >= 0;
+    });
+
+    var tabela = campo('tabelaMoradores');
+    ui.limparTabela(tabela);
+    campo('estadoTabela').textContent = lista.length ? '' :
+      (moradores.length ? 'Nenhum morador encontrado com esses filtros.'
+                        : 'Nenhum morador cadastrado ainda.');
+    lista.forEach(function(u) { tabela.appendChild(montarLinha(u)); });
+  }
+
+  function exportarCsv() {
+    var linhas = [['Nome', 'E-mail', 'Telefone', 'Unidade', 'Tipo', 'Status', 'Desde']];
+    moradores.forEach(function(u) {
+      linhas.push([u.nome, u.email, ui.formatarTelefone(u.telefone), unidadeDe(u),
+                   ROTULO_OCUPACAO[u.tipo_ocupacao] || '', ui.ROTULO_STATUS[u.status] || u.status,
+                   desde(u.criado_em)]);
+    });
+    var csv = linhas.map(function(l) {
+      return l.map(function(c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(';');
+    }).join('\r\n');
+    // O BOM faz o Excel abrir os acentos corretamente.
+    var url = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = 'moradores.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function atualizarResumo(condominio) {
+    var pendentes = moradores.filter(function(u) { return u.status === 'aguardando_aprovacao'; });
+    var ativos = moradores.filter(function(u) { return u.status === 'ativo'; });
+    campo('totMoradores').textContent = ativos.length;
+    campo('totProprietarios').textContent =
+      ativos.filter(function(u) { return u.tipo_ocupacao === 'proprietario'; }).length;
+    campo('totInquilinos').textContent =
+      ativos.filter(function(u) { return u.tipo_ocupacao === 'inquilino'; }).length;
+    campo('totPendentes').textContent = pendentes.length;
+
+    var aviso = campo('avisoPendentes');
+    if (pendentes.length) {
+      aviso.hidden = false;
+      campo('textoPendentes').textContent = pendentes.length === 1
+        ? '1 cadastro pendente aguardando sua aprovação.'
+        : pendentes.length + ' cadastros pendentes aguardando sua aprovação.';
+    } else {
+      aviso.hidden = true;
+    }
+
+    // Sem ninguem na fila, a secao inteira sai da tela.
+    campo('blocoPendentes').hidden = !pendentes.length;
+    var lista = campo('listaPendentes');
+    lista.innerHTML = '';
+    campo('estadoPendentes').textContent = '';
+    pendentes.forEach(function(u) { lista.appendChild(cartaoPendente(u)); });
+
+    if (condominio) {
+      campo('resumoCondominio').textContent = condominio.nome;
+    }
+  }
+
+  function carregar() {
+    campo('estadoPendentes').textContent = 'Carregando…';
+    return api.get('/usuarios?papel=morador')
+      .then(function(lista) {
+        moradores = lista;
+        atualizarResumo(null);
+        aplicarFiltros();
+      })
+      .catch(function(e) {
+        campo('estadoPendentes').textContent = e.message;
+        campo('estadoTabela').textContent = e.message;
+      });
+  }
+
+  campo('buscaMorador').addEventListener('input', ui.aguardar(aplicarFiltros, 250));
+  campo('filtroStatus').addEventListener('change', aplicarFiltros);
+  campo('btnExportar').addEventListener('click', exportarCsv);
+
+  var usuario = api.sessao.usuario();
+  if (usuario) campo('hdrName').textContent = usuario.nome;
+
+  api.get('/condominios/meu')
+    .then(function(c) {
+      return api.get('/condominios/meu/unidades').then(function(unidades) {
+        campo('resumoCondominio').textContent = c.nome + ' · ' + unidades.length + ' unidades';
+      }, function() {
+        campo('resumoCondominio').textContent = c.nome;
+      });
+    })
+    .catch(function() { campo('resumoCondominio').textContent = ''; });
+
+  carregar();
+})();
+</script>
 <script src="../../assets/js/validation.js"></script>
 <script src="../../assets/js/sessao.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>

@@ -250,7 +250,7 @@ def test_sistema_mostra_as_acoes_do_porteiro(cliente, sindico):
 def test_porteiro_nasce_com_as_permissoes_escolhidas(cliente, sindico, condominio):
     """Seção 11.2: o cadastro termina com as permissões de uso no sistema."""
     porteiro_id, _ = cadastrar_porteiro(
-        cliente, sindico, condominio["id"], cpf=CPFS[2],
+        cliente, sindico, condominio, cpf=CPFS[2],
         permissoes={
             "registrar_visitantes": True, "registrar_encomendas": False,
             "registrar_veiculos": False, "registrar_ocorrencias": True,
@@ -268,7 +268,7 @@ def test_porteiro_nasce_com_as_permissoes_escolhidas(cliente, sindico, condomini
 
 
 def test_o_financeiro_nao_vem_liberado_por_padrao(cliente, sindico, condominio):
-    porteiro_id, _ = cadastrar_porteiro(cliente, sindico, condominio["id"], cpf=CPFS[2])
+    porteiro_id, _ = cadastrar_porteiro(cliente, sindico, condominio, cpf=CPFS[2])
     r = cliente.get(
         f"/api/v1/usuarios/porteiros/{porteiro_id}/permissoes", headers=cab(sindico)
     )
@@ -277,7 +277,7 @@ def test_o_financeiro_nao_vem_liberado_por_padrao(cliente, sindico, condominio):
 
 def test_sindico_altera_as_permissoes(cliente, sindico, condominio):
     """"O síndico escolhe quais estarão disponíveis para o porteiro" (seção 9)."""
-    porteiro_id, _ = cadastrar_porteiro(cliente, sindico, condominio["id"], cpf=CPFS[2])
+    porteiro_id, _ = cadastrar_porteiro(cliente, sindico, condominio, cpf=CPFS[2])
 
     r = cliente.put(
         f"/api/v1/usuarios/porteiros/{porteiro_id}/permissoes",
@@ -295,7 +295,7 @@ def test_sindico_altera_as_permissoes(cliente, sindico, condominio):
 
 def test_porteiro_nao_mexe_nas_proprias_permissoes(cliente, sindico, condominio):
     porteiro_id, tok_porteiro = cadastrar_porteiro(
-        cliente, sindico, condominio["id"], cpf=CPFS[2]
+        cliente, sindico, condominio, cpf=CPFS[2]
     )
     r = cliente.put(
         f"/api/v1/usuarios/porteiros/{porteiro_id}/permissoes",

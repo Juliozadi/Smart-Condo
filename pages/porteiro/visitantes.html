@@ -37,15 +37,15 @@
     </div>
 
     <div class="stats-row" role="region" aria-label="Resumo de visitantes">
-      <div class="stat-card teal"><span class="stat-value" aria-label="4 no condomínio">4</span><span class="stat-label"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="" aria-hidden="true">No cond.</span></div>
-      <div class="stat-card blue"><span class="stat-value" aria-label="11 total hoje">11</span><span class="stat-label">Total hoje</span></div>
-      <div class="stat-card amber"><span class="stat-value" aria-label="7 saíram">7</span><span class="stat-label">Saíram</span></div>
+      <div class="stat-card teal"><span class="stat-value" id="totDentro">—</span><span class="stat-label"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="" aria-hidden="true">No cond.</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totHoje">—</span><span class="stat-label">Total hoje</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totSairam">—</span><span class="stat-label">Saíram</span></div>
     </div>
 
     <h2 class="section-title" id="titulo-registro"> Registrar Novo Visitante</h2>
     <div class="form-card" role="region" aria-labelledby="titulo-registro">
       <h3> Dados do Visitante</h3>
-      <form action="dashboard.html" novalidate aria-label="Formulário de registro de visitante">
+      <form id="formVisitante" novalidate aria-label="Formulário de registro de visitante">
         <div class="form-row">
           <div class="form-group"><label for="nome-visitante"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="" aria-hidden="true">Nome completo</label><input type="text" id="nome-visitante" placeholder="Nome do visitante" required autocomplete="name"></div>
           <div class="form-group"><label for="doc-visitante"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="" aria-hidden="true">CPF / Documento</label><input type="text" id="doc-visitante" placeholder="000.000.000-00" class="mask-cpf" required autocomplete="off"></div>
@@ -55,11 +55,6 @@
             <label for="apto-visitante"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="" aria-hidden="true">Visitando o apartamento</label>
             <select id="apto-visitante" required>
               <option value="" disabled selected>Selecione o apto</option>
-              <option>Apto 101</option><option>Apto 102</option><option>Apto 103</option>
-              <option>Apto 201</option><option>Apto 202</option><option>Apto 203</option><option>Apto 204</option>
-              <option>Apto 301</option><option>Apto 302</option><option>Apto 303</option><option>Apto 305</option>
-              <option>Apto 401</option><option>Apto 402</option><option>Apto 410</option>
-              <option>Apto 501</option><option>Apto 502</option>
             </select>
           </div>
           <div class="form-group">
@@ -76,7 +71,7 @@
         </div>
         <div class="form-row">
           <div class="form-group"><label for="placa-visitante"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="" aria-hidden="true">Placa do veículo (opcional)</label><input type="text" id="placa-visitante" placeholder="ABC-1D23" class="mask-placa"></div>
-          <div class="form-group"><label for="hora-visitante"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="" aria-hidden="true">Horário de entrada</label><input type="time" id="hora-visitante" required></div>
+          <div class="form-group"><label for="tipo-visita-obs">Observação (opcional)</label><input type="text" id="tipo-visita-obs" maxlength="60" placeholder="Empresa, motivo, nº do pedido…"></div>
         </div>
         <!-- Vídeo porteiro — doc, seções 6 e 8 -->
         <div class="captura-foto"
@@ -91,78 +86,238 @@
           com a foto e precisa <strong>confirmar ou recusar</strong> a entrada.</span>
         </p>
 
+        <p class="form-erro" id="erroVisitante" role="alert"></p>
         <button class="action-btn" type="submit" style="margin-top:8px;" aria-label="Registrar entrada do visitante">
           Registrar Entrada
         </button>
       </form>
     </div>
 
-    <h2 class="section-title" id="titulo-presentes"> Visitantes no Condomínio Agora</h2>
-    <div class="list-items" role="list" aria-labelledby="titulo-presentes" aria-live="polite">
-      <div class="list-item" role="listitem">
-        <div class="list-avatar" aria-hidden="true">MA</div>
-        <div class="list-info"><h3>Marcos Alves</h3><p>Apto 102 &nbsp;·&nbsp; Visita pessoal &nbsp;·&nbsp; Entrada: 09h15</p></div>
-        <span class="badge badge-ok" aria-label="Status: Dentro">Dentro</span>
-      </div>
-      <div class="list-item" role="listitem">
-        <div class="list-avatar amber" aria-hidden="true">FS</div>
-        <div class="list-info"><h3>Fernanda Souza</h3><p>Apto 305 &nbsp;·&nbsp; Visita pessoal &nbsp;·&nbsp; Entrada: 10h40</p></div>
-        <span class="badge badge-ok" aria-label="Status: Dentro">Dentro</span>
-      </div>
-      <div class="list-item" role="listitem">
-        <div class="list-avatar blue" aria-hidden="true">LO</div>
-        <div class="list-info"><h3>Lucas Oliveira</h3><p>Apto 201 &nbsp;·&nbsp; Técnico de manutenção &nbsp;·&nbsp; Entrada: 11h00</p></div>
-        <span class="badge badge-blue" aria-label="Status: Serviço">Serviço</span>
-      </div>
-      <div class="list-item" role="listitem">
-        <div class="list-avatar purple" aria-hidden="true">RP</div>
-        <div class="list-info"><h3>Rafael Pinto</h3><p>Apto 410 &nbsp;·&nbsp; Visita pessoal &nbsp;·&nbsp; Entrada: 12h55</p></div>
-        <span class="badge badge-ok" aria-label="Status: Dentro">Dentro</span>
-      </div>
-    </div>
+    <h2 class="section-title" id="titulo-presentes">Visitantes no Condomínio Agora</h2>
+    <div class="list-items" id="listaPresentes" role="list" aria-labelledby="titulo-presentes" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoPresentes">Carregando…</p>
 
-    <h2 class="section-title" id="titulo-historico"> Histórico de Hoje — 18/03/2025</h2>
-    <div class="data-table history-table" role="region" aria-labelledby="titulo-historico">
-      <div class="table-head cols-5" role="row" aria-label="Cabeçalho da tabela"><span role="columnheader"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="" aria-hidden="true">Visitante</span><span role="columnheader">Apto</span><span role="columnheader">Entrada</span><span role="columnheader">Saída</span><span role="columnheader"> Tipo</span></div>
-      <div class="table-row cols-5" role="row" aria-label="Ana Carvalho, Apto 204, entrou 07h30, saiu 08h15, Delivery"><span><strong>Ana Carvalho</strong></span><span>204</span><span>07h30</span><span>08h15</span><span><span class="badge badge-neutral">Delivery</span></span></div>
-      <div class="table-row cols-5" role="row" aria-label="José Mendes, Apto 101, entrou 07h50, saiu 09h00, Visita"><span><strong>José Mendes</strong></span><span>101</span><span>07h50</span><span>09h00</span><span><span class="badge badge-neutral">Visita</span></span></div>
-      <div class="table-row cols-5" role="row" aria-label="Técnico Eletro, Apto 502, entrou 08h20, saiu 10h10, Serviço"><span><strong>Técnico Eletro</strong></span><span>502</span><span>08h20</span><span>10h10</span><span><span class="badge badge-blue">Serviço</span></span></div>
-      <div class="table-row cols-5" role="row" aria-label="Patrícia Lima, Apto 303, entrou 08h45, saiu 09h30, Delivery"><span><strong>Patrícia Lima</strong></span><span>303</span><span>08h45</span><span>09h30</span><span><span class="badge badge-neutral">Delivery</span></span></div>
-      <div class="table-row cols-5 status-dentro" role="row" aria-label="Marcos Alves, Apto 102, entrou 09h15, ainda no condomínio"><span><strong>Marcos Alves</strong></span><span>102</span><span>09h15</span><span>—</span><span><span class="badge badge-ok">Dentro</span></span></div>
-      <div class="table-row cols-5 status-dentro" role="row" aria-label="Fernanda Souza, Apto 305, entrou 10h40, ainda no condomínio"><span><strong>Fernanda Souza</strong></span><span>305</span><span>10h40</span><span>—</span><span><span class="badge badge-ok">Dentro</span></span></div>
-      <div class="table-row cols-5 status-dentro" role="row" aria-label="Lucas Oliveira, Apto 201, entrou 11h00, ainda no condomínio"><span><strong>Lucas Oliveira</strong></span><span>201</span><span>11h00</span><span>—</span><span><span class="badge badge-blue">Serviço</span></span></div>
+    <h2 class="section-title" id="titulo-historico">Registros de Hoje</h2>
+    <div class="data-table history-table" id="tabelaHistorico" role="region" aria-labelledby="titulo-historico">
+      <div class="table-head cols-5" role="row"><span role="columnheader"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="" aria-hidden="true">Visitante</span><span role="columnheader">Apto</span><span role="columnheader">Entrada</span><span role="columnheader">Saída</span><span role="columnheader">Situação</span></div>
     </div>
+    <p class="estado-lista" id="estadoHistorico"></p>
 
   </main>
 
   <script src="../../assets/js/foto.js"></script>
   <script src="../../assets/js/validation.js"></script>
   <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    var form = document.querySelector('.form-card form');
-    if (form) {
-      form.addEventListener('submit', function(e) {
-        var inputs = this.querySelectorAll('input[required], select[required]');
-        var valido = true;
-        document.querySelectorAll('.erro-validacao').forEach(function(el) { el.remove(); });
-        inputs.forEach(function(inp) {
-          limparErro(inp);
-          if (!inp.value.trim()) {
-            mostrarErro(inp, 'Campo obrigatório');
-            valido = false;
-          }
+  /* Controle de visitantes (documentação, seção 6): o porteiro registra e
+     o morador da unidade confirma ou recusa a entrada. Enquanto ele não
+     responde, o visitante fica aguardando. */
+  (function() {
+    'use strict';
+    var api = window.SmartCondo.api;
+    var usuario = api.protegerPagina('porteiro');
+    if (!usuario) return;
+
+    function campo(id) { return document.getElementById(id); }
+    var visitantes = [];
+
+    var ROTULO_STATUS = {
+      aguardando_confirmacao: 'Aguardando morador', confirmado: 'Confirmado',
+      recusado: 'Recusado', dentro: 'Dentro', saiu: 'Saiu'
+    };
+    var CLASSE_STATUS = {
+      aguardando_confirmacao: 'badge-pending', confirmado: 'badge-blue',
+      recusado: 'badge-alert', dentro: 'badge-ok', saiu: 'badge-neutral'
+    };
+    var CORES = ['', 'amber', 'blue', 'purple'];
+
+    function iniciais(nome) {
+      var p = (nome || '').trim().split(/\s+/);
+      return (((p[0] || '')[0] || '') + ((p[p.length - 1] || '')[0] || '')).toUpperCase();
+    }
+    function cor(nome) {
+      var soma = 0;
+      for (var i = 0; i < (nome || '').length; i++) soma += nome.charCodeAt(i);
+      return CORES[soma % CORES.length];
+    }
+    function horaCurta(iso) {
+      if (!iso) return '—';
+      var d = new Date(iso);
+      if (isNaN(d)) return '—';
+      return ('0' + d.getHours()).slice(-2) + 'h' + ('0' + d.getMinutes()).slice(-2);
+    }
+    function ehDeHoje(iso) {
+      var d = new Date(iso), h = new Date();
+      return d.getFullYear() === h.getFullYear() && d.getMonth() === h.getMonth()
+             && d.getDate() === h.getDate();
+    }
+
+    function cartaoPresente(v) {
+      var item = document.createElement('div');
+      item.className = 'list-item';
+      item.setAttribute('role', 'listitem');
+
+      var avatar = document.createElement('div');
+      avatar.className = ('list-avatar ' + cor(v.nome)).trim();
+      avatar.setAttribute('aria-hidden', 'true');
+      avatar.textContent = iniciais(v.nome);
+
+      var info = document.createElement('div');
+      info.className = 'list-info';
+      var h = document.createElement('h3');
+      h.textContent = v.nome;
+      var p = document.createElement('p');
+      p.textContent = (v.unidade ? 'Apto ' + v.unidade + ' · ' : '') + v.tipo_visita +
+        (v.entrada_em ? ' · Entrada: ' + horaCurta(v.entrada_em) : '');
+      info.appendChild(h);
+      info.appendChild(p);
+
+      var selo = document.createElement('span');
+      selo.className = 'badge ' + (CLASSE_STATUS[v.status] || 'badge-neutral');
+      selo.textContent = ROTULO_STATUS[v.status] || v.status;
+
+      item.appendChild(avatar);
+      item.appendChild(info);
+
+      if (v.status === 'dentro') {
+        var saida = document.createElement('button');
+        saida.type = 'button';
+        saida.className = 'contato-btn';
+        saida.textContent = 'Registrar saída';
+        saida.addEventListener('click', function() {
+          saida.disabled = true;
+          api.post('/portaria/visitantes/' + v.id + '/saida')
+            .then(carregar)
+            .catch(function(e) { saida.disabled = false; alert(e.message); });
         });
-        if (!valido) {
-          e.preventDefault();
-          var primeiroErro = this.querySelector('.erro-validacao');
-          if (primeiroErro && primeiroErro.previousElementSibling) {
-            primeiroErro.previousElementSibling.focus();
-          }
-        }
+        item.appendChild(saida);
+      }
+
+      item.appendChild(selo);
+      return item;
+    }
+
+    function montarLinha(v) {
+      var linha = document.createElement('div');
+      linha.className = 'table-row cols-5' + (v.status === 'dentro' ? ' status-dentro' : '');
+      linha.setAttribute('role', 'row');
+      linha.innerHTML =
+        '<span><strong></strong></span><span></span><span></span><span></span>' +
+        '<span><span class="badge"></span></span>';
+      linha.children[0].firstChild.textContent = v.nome;
+      linha.children[1].textContent = v.unidade || '—';
+      linha.children[2].textContent = horaCurta(v.entrada_em);
+      linha.children[3].textContent = horaCurta(v.saida_em);
+      var selo = linha.children[4].firstChild;
+      selo.className = 'badge ' + (CLASSE_STATUS[v.status] || 'badge-neutral');
+      selo.textContent = ROTULO_STATUS[v.status] || v.status;
+      return linha;
+    }
+
+    function carregar() {
+      campo('estadoPresentes').textContent = 'Carregando…';
+      return api.get('/portaria/visitantes')
+        .then(function(lista) {
+          visitantes = lista;
+          var deHoje = lista.filter(function(v) { return ehDeHoje(v.criado_em); });
+          // "No condomínio" inclui quem ainda aguarda a resposta do morador,
+          // porque essa pessoa está na portaria neste momento.
+          var presentes = lista.filter(function(v) {
+            return v.status === 'dentro' || v.status === 'aguardando_confirmacao';
+          });
+
+          campo('totDentro').textContent = presentes.length;
+          campo('totHoje').textContent = deHoje.length;
+          campo('totSairam').textContent =
+            deHoje.filter(function(v) { return v.status === 'saiu'; }).length;
+
+          var caixa = campo('listaPresentes');
+          caixa.innerHTML = '';
+          campo('estadoPresentes').textContent =
+            presentes.length ? '' : 'Nenhum visitante no condomínio agora.';
+          presentes.forEach(function(v) { caixa.appendChild(cartaoPresente(v)); });
+
+          var tabela = campo('tabelaHistorico');
+          var cabecalho = tabela.querySelector('.table-head');
+          tabela.innerHTML = '';
+          tabela.appendChild(cabecalho);
+          campo('estadoHistorico').textContent =
+            deHoje.length ? '' : 'Nenhum registro hoje.';
+          deHoje.forEach(function(v) { tabela.appendChild(montarLinha(v)); });
+        })
+        .catch(function(e) {
+          campo('estadoPresentes').textContent = e.message;
+          campo('estadoHistorico').textContent = '';
+        });
+    }
+
+    function carregarUnidades() {
+      return api.get('/condominios/meu/unidades').then(function(lista) {
+        var select = campo('apto-visitante');
+        lista.forEach(function(u) {
+          var op = document.createElement('option');
+          op.value = u.id;
+          op.textContent = (u.bloco && u.bloco !== 'unico' ? u.bloco + ' ' : '') + u.numero;
+          select.appendChild(op);
+        });
       });
     }
 
-  });
+    campo('formVisitante').addEventListener('submit', function(evento) {
+      evento.preventDefault();
+      var erro = campo('erroVisitante');
+      erro.className = 'form-erro';
+      erro.textContent = '';
+      document.querySelectorAll('.erro-validacao').forEach(function(el) { el.remove(); });
+
+      var nome = campo('nome-visitante').value.trim();
+      var documento = campo('doc-visitante').value.trim();
+      var unidadeId = campo('apto-visitante').value;
+      var tipo = campo('tipo-visita').value;
+      var obs = campo('tipo-visita-obs').value.trim();
+
+      if (!nome || !documento || !unidadeId || !tipo) {
+        erro.textContent = 'Preencha nome, documento, apartamento e tipo de visita.';
+        return;
+      }
+
+      var corpo = {
+        unidade_id: +unidadeId,
+        nome: nome,
+        documento: documento,
+        tipo_visita: obs ? tipo + ' — ' + obs : tipo
+      };
+      var placa = campo('placa-visitante').value.trim();
+      if (placa) corpo.placa_veiculo = placa;
+
+      // A foto do vídeo porteiro vira um data URL, que não cabe no campo
+      // de 500 caracteres da API. Enquanto não houver envio de arquivo,
+      // só um endereço curto é repassado.
+      var foto = document.querySelector('.captura-valor');
+      if (foto && foto.value && foto.value.length <= 500) corpo.foto_url = foto.value;
+
+      var botao = this.querySelector('button[type=submit]');
+      var texto = botao.textContent;
+      botao.disabled = true;
+      botao.textContent = 'Registrando…';
+
+      api.post('/portaria/visitantes', corpo)
+        .then(function() {
+          campo('formVisitante').reset();
+          erro.className = 'form-erro sucesso';
+          erro.textContent = 'Visitante registrado. O morador foi notificado e precisa confirmar a entrada.';
+          return carregar();
+        })
+        .catch(function(e) { erro.textContent = e.message; })
+        .then(function() { botao.disabled = false; botao.textContent = texto; });
+    });
+
+    var cabecalho = document.querySelector('.greeting-sub');
+    if (cabecalho) cabecalho.textContent = usuario.nome + ' — Portaria';
+    var nomeTopo = document.getElementById('hdrName');
+    if (nomeTopo) nomeTopo.textContent = usuario.nome;
+
+    carregarUnidades().then(carregar, carregar);
+  })();
   </script>
 <script src="../../assets/js/sessao.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>

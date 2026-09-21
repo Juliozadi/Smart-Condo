@@ -368,7 +368,9 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
   background: var(--surface);
   border-radius: 14px;
   padding: 15px 18px;
-  display: flex; align-items: center; gap: 14px;
+  /* Quebra de linha para que o selo de status e os botoes de contato
+     nao sejam empurrados para fora do cartao em telas estreitas. */
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border);
   transition: all .2s;
@@ -386,7 +388,7 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
 .list-avatar.blue   { background: linear-gradient(135deg, #409eff, #2172c8); box-shadow: 0 3px 8px rgba(64,158,255,.3); }
 .list-avatar.purple { background: linear-gradient(135deg, #9164fa, #7a4ee0); box-shadow: 0 3px 8px rgba(145,100,250,.3); }
 
-.list-info { flex: 1; }
+.list-info { flex: 1 1 160px; min-width: 0; }
 .list-info h5 { font-size: 14px; font-weight: 700; margin-bottom: 2px; color: var(--text); }
 .list-info p  { font-size: 12px; color: var(--muted); font-weight: 400; }
 
@@ -596,15 +598,25 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
   background: linear-gradient(180deg, #eaf3f5, #ddeaed);
   padding: 12px 18px;
   display: grid;
+  column-gap: 12px;
   font-size: 10.5px; font-weight: 800; color: #2a3d48;
   text-transform: uppercase; letter-spacing: .7px;
   border-bottom: 1px solid var(--border);
 }
+.table-head > span, .table-row > span { min-width: 0; }
+/* Um selo mais largo que a coluna invadia (ou era cortado por) a celula
+   vizinha; aqui ele para na borda da coluna com reticencias. */
+.data-table .badge {
+  display: inline-block; max-width: 100%; vertical-align: middle;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.estado-lista:empty { display: none; }
 .table-head img { width: 12px; height: 12px; vertical-align: middle; margin-right: 3px; display: inline-block; }
 
 .table-row {
   padding: 14px 18px;
   display: grid;
+  column-gap: 12px;
   font-size: 13.5px; font-weight: 500;
   border-top: 1px solid var(--border-soft);
   align-items: center; transition: background .15s; color: var(--text);
@@ -726,6 +738,20 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
   .history-table .table-head {
     grid-template-columns: 2fr 1fr 1fr;
   }
+
+  /* Em 360px o padding de 18px e a ausencia de gap faziam as colunas
+     se encostarem ("R$55.200R$52.100PDF"). Aqui o respiro lateral
+     diminui, entra um gap entre colunas e as proporcoes sao refeitas
+     para que tudo caiba sem rolagem horizontal. */
+  .table-head, .table-row {
+    padding-left: 12px; padding-right: 12px;
+    column-gap: 8px;
+  }
+  .table-head { font-size: 9px; letter-spacing: .3px; }
+  .table-row { font-size: 12px; }
+  .data-table .cols-3 { grid-template-columns: 1.6fr 1fr 1fr; }
+  .data-table .cols-4 { grid-template-columns: 1.2fr 1fr 1.25fr .7fr; }
+  .data-table .badge { font-size: 9.5px; padding: 3px 7px; }
 }
 
 /* ── EMPTY STATE ─────────────────────────────────────────── */
@@ -929,9 +955,17 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
   .cols-5         { grid-template-columns: 2fr 1fr 1fr; }
   .cols-5 span:nth-child(4),
   .cols-5 span:nth-child(5) { display: none; }
-  .cols-6         { grid-template-columns: 2fr 1fr .8fr; }
+  /* A coluna de acoes recebe uma largura fixa: com fr ela encolhia e
+     os dois botoes quebravam de linha, deixando a linha altissima. */
+  .cols-6         { grid-template-columns: minmax(0,1.4fr) minmax(0,.8fr) minmax(0,.8fr) 68px; }
   .cols-6 span:nth-child(3),
   .cols-6 span:nth-child(4) { display: none; }
+
+  /* Os botoes de acao encolhiam abaixo de 24px por serem itens flex
+     dentro de uma coluna estreita; aqui eles mantem o tamanho e a
+     linha quebra quando nao couberem lado a lado. */
+  .acoes-linha { gap: 4px; }
+  .btn-acao { width: 30px; height: 30px; flex-shrink: 0; }
 }
 /* ═══════════════════════════════════════════
    MULTI-STEP CADASTRO — CSS :target approach
@@ -1435,7 +1469,7 @@ body:has(.step-page:target) .step-page.default-step {
    CONTATO COM O PORTEIRO — chat e voz
    Documentação, seção 11.5.2: "pode contatá-los por chat ou ligação de voz"
    ═══════════════════════════════════════════ */
-.contato-acoes { display: flex; gap: 6px; flex-shrink: 0; margin-right: 10px; }
+.contato-acoes { display: flex; gap: 6px; flex-wrap: wrap; margin-right: 10px; }
 .contato-btn {
   display: inline-flex; align-items: center; gap: 6px;
   font-family: inherit; font-size: 11.5px; font-weight: 700;
@@ -1551,7 +1585,7 @@ body:has(.step-page:target) .step-page.default-step {
 .acoes-linha { display: flex; gap: 6px; justify-content: flex-end; }
 .btn-acao {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
+  width: 30px; height: 30px; flex-shrink: 0; border-radius: 8px; cursor: pointer;
   background: var(--surface-2); border: 1px solid var(--border);
   transition: all .18s var(--ease-smooth);
 }
@@ -1608,4 +1642,299 @@ body:has(.step-page:target) .step-page.default-step {
   text-align: center; color: var(--muted); font-size: 13.5px;
   font-weight: 600; padding: 28px 16px;
 }
-.lista-email { font-size: 11.5px; color: var(--muted); font-weight: 500; }
+.lista-email {
+  font-size: 11.5px; color: var(--muted); font-weight: 500;
+  display: block; max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVIDADE NO CELULAR — correções
+
+   A barra superior estourava a largura em 26 das 33 telas: a regra de
+   celular escondia .user-chip, mas as páginas passaram a usar
+   .profile-link, que nunca recebeu o mesmo tratamento.
+   ═══════════════════════════════════════════ */
+
+/* Nada pode ultrapassar a largura da janela. */
+.app-bar-inner { gap: 10px; min-width: 0; }
+.app-bar-brand { min-width: 0; flex-shrink: 1; }
+.app-bar-right { min-width: 0; flex-shrink: 1; }
+
+@media (max-width: 640px) {
+  /* No celular o chip vira só o avatar: nome e papel saem, e o toque
+     continua levando ao perfil. */
+  .profile-link {
+    padding: 4px; gap: 0;
+    background: transparent; border-color: transparent;
+  }
+  .profile-name,
+  .profile-role { display: none; }
+
+  /* O botão "Sair" fica só com o ícone. */
+  .logout-btn {
+    padding: 7px 9px; gap: 0;
+    font-size: 0;            /* esconde o texto, mantém o ícone */
+  }
+  .logout-btn img { width: 16px; height: 16px; }
+
+  .brand-name { font-size: 14px; }
+
+  /* As telas do administrador usam layout-desktop, que não tinha limite
+     de largura no celular. */
+  .layout-desktop .dash-wrapper,
+  .layout-desktop .app-bar-inner,
+  .dash-wrapper.wide,
+  .app-bar-inner.wide { max-width: 100%; }
+
+  .dash-wrapper { margin-left: 8px; margin-right: 8px; }
+
+  /* Os filtros das telas de administração empilham. */
+  .barra-acoes { flex-direction: column; align-items: stretch; }
+  .barra-acoes select,
+  .barra-acoes .btn-novo { width: 100%; }
+
+  /* O modal ocupa a tela toda, com respiro nas bordas. */
+  .modal-fundo { padding: 16px 10px; }
+  .modal-caixa { padding: 18px 16px; }
+}
+
+@media (max-width: 400px) {
+  .app-bar-inner { padding: 10px 12px; }
+  /* Em telas bem estreitas o nome da marca sai; o logo continua levando
+     ao painel. */
+  .brand-name { display: none; }
+}
+
+/* ── Botões de aprovar / recusar nas filas de aprovação ──────────── */
+.acoes-aprovacao { display: flex; gap: 8px; flex-shrink: 0; }
+.pill-acao {
+  padding: 7px 13px; border-radius: 20px; cursor: pointer;
+  font-size: 12px; font-weight: 700; font-family: inherit;
+  display: inline-flex; align-items: center; gap: 5px;
+  transition: all .18s var(--ease-smooth);
+}
+.pill-acao.aprovar {
+  background: rgba(50,200,113,.1); color: #1e9956;
+  border: 1px solid rgba(50,200,113,.25);
+}
+.pill-acao.aprovar:hover:not(:disabled) { background: rgba(50,200,113,.2); }
+.pill-acao.recusar {
+  background: rgba(245,108,108,.1); color: #c0392b;
+  border: 1px solid rgba(245,108,108,.25);
+}
+.pill-acao.recusar:hover:not(:disabled) { background: rgba(245,108,108,.2); }
+.pill-acao:disabled { opacity: .5; cursor: progress; }
+.pill-acao:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-glow); }
+
+body.tema-escuro .pill-acao.aprovar { background: rgba(50,200,113,.16); color: #5fd694; }
+body.tema-escuro .pill-acao.recusar { background: rgba(245,108,108,.16); color: #f28b7d; }
+
+@media (max-width: 640px) {
+  .list-item .acoes-aprovacao { flex-direction: column; gap: 6px; }
+  .pill-acao { padding: 7px 11px; }
+}
+
+/* ── Painel de permissões do porteiro (documentação, seção 9) ────── */
+.porteiro-bloco { display: flex; flex-direction: column; }
+.painel-permissoes {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  padding: 14px 16px 16px;
+  margin: -6px 0 0;
+}
+.permissoes-titulo {
+  font-size: 12px; font-weight: 800; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .6px; margin: 0 0 10px;
+}
+.permissoes-grade {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px 14px;
+}
+.permissao-item {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 13.5px; font-weight: 500; color: var(--text); cursor: pointer;
+}
+.permissao-item input[type="checkbox"] {
+  width: 18px; height: 18px; accent-color: var(--primary); flex-shrink: 0; cursor: pointer;
+}
+.permissoes-rodape {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px;
+}
+.permissoes-aviso { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+
+/* Reserva ainda sem decisão do síndico: o bloco da data fica âmbar. */
+.reserve-date.pendente {
+  background: linear-gradient(135deg, #e6a23c, #c88b1a);
+  box-shadow: 0 4px 12px rgba(230,162,60,.3);
+}
+
+/* ── Telas do síndico no layout de computador, vistas no celular ──
+   Sem o teto que o layout-mobile impunha, as grades de quatro colunas
+   e os botões com largura mínima estouravam a tela a 360px. */
+@media (max-width: 640px) {
+  .layout-desktop .dash-grid,
+  .layout-desktop .dash-grid-sq { grid-template-columns: 1fr; }
+  /* minmax(0,...) permite que a coluna fique menor que o conteudo; sem
+     isso um valor como "R$18.400" a 32px fixava a coluna em 169px e
+     duas delas nao cabiam em 360px. */
+  .admin-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .stats-row   { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .admin-stat, .stat-card { padding: 16px 12px; min-width: 0; }
+  .admin-stat .stat-value, .stat-card .stat-value { font-size: 23px; }
+  .dash-grid .action-btn,
+  .dash-grid .btn-novo { min-width: 0; }
+}
+
+/* Tabela cujo status precisa sobreviver ao corte de colunas no celular:
+   saem as colunas do meio e a última (o status) permanece. */
+@media (max-width: 640px) {
+  .tabela-status .cols-5 { grid-template-columns: 1.5fr .9fr 1.1fr; }
+  .tabela-status .cols-5 span:nth-child(3),
+  .tabela-status .cols-5 span:nth-child(4) { display: none; }
+  .tabela-status .cols-5 span:nth-child(5) { display: block; }
+}
+
+/* ── Tela de reservas do morador ─────────────────────────────────── */
+.space-estado { font-size: 11px; font-weight: 700; margin-top: 6px; }
+.space-estado.manutencao { color: #e6a23c; }
+.space-estado.livre      { color: var(--muted); }
+
+.agenda-aviso { font-size: 12.5px; font-weight: 600; margin-top: 8px; }
+.agenda-aviso.livre   { color: #1e9956; }
+.agenda-aviso.ocupado { color: #c0392b; }
+
+.form-erro { font-size: 13px; font-weight: 600; color: #c0392b; margin-top: 8px; }
+.form-erro.sucesso { color: #1e9956; }
+
+.reserve-motivo { font-size: 11.5px; color: #c0392b; font-weight: 600; margin-top: 3px; }
+
+body.tema-escuro .agenda-aviso.livre { color: #5fd694; }
+body.tema-escuro .agenda-aviso.ocupado,
+body.tema-escuro .form-erro,
+body.tema-escuro .reserve-motivo { color: #f28b7d; }
+body.tema-escuro .form-erro.sucesso { color: #5fd694; }
+
+/* Ocorrências: ícone da lista e resposta do síndico */
+.icone-ocorrencia { width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0; }
+.ocorrencia-resposta {
+  font-size: 12px; color: var(--muted); font-weight: 500;
+  margin-top: 4px; border-left: 3px solid var(--primary);
+  padding-left: 9px;
+}
+
+/* ── Painel de resposta da ocorrência (síndico) ──────────────────── */
+.ocorrencia-bloco { display: flex; flex-direction: column; }
+.ocorrencia-descricao {
+  font-size: 12.5px; color: var(--text); font-weight: 400;
+  margin-top: 5px; line-height: 1.5;
+}
+.painel-resposta {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  padding: 14px 16px 16px;
+  margin: -6px 0 0;
+}
+.resposta-rotulo {
+  display: block; font-size: 12px; font-weight: 800; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .6px; margin: 0 0 6px;
+}
+.resposta-rotulo + select { margin-bottom: 0; }
+.painel-resposta textarea,
+.painel-resposta select {
+  width: 100%; padding: 11px 12px; margin-bottom: 12px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-xs);
+  background: var(--surface); color: var(--text);
+  font-size: 14px; font-family: inherit; outline: none;
+}
+.painel-resposta textarea { resize: vertical; min-height: 70px; }
+.painel-resposta textarea:focus,
+.painel-resposta select:focus { border-color: var(--primary); }
+.resposta-rodape { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+/* Glifo mascarado: os ícones SVG do projeto têm fill fixo, então usados
+   como <img> saem sempre na cor do arquivo. Como máscara, eles assumem a
+   cor do elemento e acompanham a variante (.icon-red, .icon-yellow…). */
+.glifo {
+  display: block; width: 24px; height: 24px;
+  background: currentColor;
+  -webkit-mask: var(--icone) center / contain no-repeat;
+          mask: var(--icone) center / contain no-repeat;
+}
+
+.icone-volume { width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; }
+
+/* ── Ocupação do estacionamento ──────────────────────────────────── */
+.painel-ocupacao {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 20px;
+  box-shadow: var(--shadow-sm); margin-bottom: 24px;
+}
+.ocupacao-cabecalho {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 14px;
+}
+.ocupacao-texto { font-size: 14px; font-weight: 700; color: var(--text); }
+.ocupacao-percentual { font-size: 13px; font-weight: 600; color: #c88b1a; }
+.ocupacao-trilho {
+  background: var(--border); border-radius: 8px; height: 10px; overflow: hidden;
+}
+.ocupacao-preenchida {
+  width: 0; height: 100%; border-radius: 8px;
+  background: linear-gradient(90deg, #13bfb0, #e6a23c);
+  transition: width .3s var(--ease-smooth);
+}
+.ocupacao-nota { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-top: 12px; }
+
+.marca-fixado {
+  display: inline-block; margin-left: 7px; padding: 1px 7px;
+  border-radius: 20px; font-size: 9.5px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .4px;
+  background: rgba(230,162,60,.14); color: #a87200;
+  border: 1px solid rgba(230,162,60,.22);
+}
+body.tema-escuro .marca-fixado { background: rgba(230,162,60,.2); color: #e8bb70; }
+.btn-acao .glifo { width: 14px; height: 14px; opacity: .75; }
+.btn-acao:hover .glifo { opacity: 1; }
+
+/* ── Lista de comunicados do morador ─────────────────────────────── */
+.comunicado-item { cursor: pointer; }
+.comunicado-item.nao-lido .notif-content h5 { font-weight: 800; }
+.comunicado-item:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-glow); }
+.comunicado-topo {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap; margin-bottom: 3px;
+}
+.comunicado-topo .badge { font-size: 10px; }
+.comunicado-autor { font-size: 11.5px; color: var(--muted); font-weight: 600; margin-top: 5px; }
+.filtro-btn { font-family: inherit; cursor: pointer; }
+
+.link-baixar {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 700; color: var(--primary);
+  text-decoration: none; padding: 7px 14px;
+  background: var(--primary-light); border-radius: 20px; flex-shrink: 0;
+}
+.link-baixar:hover { background: var(--primary); color: #fff; }
+.card-info .glifo { width: 26px; height: 26px; }
+
+/* ── Perfil ──────────────────────────────────────────────────────── */
+.p-nota { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-top: 12px; }
+/* minmax(0,...) deixa a coluna encolher; sem isso os tres campos de
+   senha ficavam com a largura minima do conteudo e estouravam a tela. */
+.p-senha .p-grid { gap: 14px; grid-template-columns: repeat(auto-fit, minmax(0, 200px)); }
+@media (max-width: 640px) {
+  .p-grid, .p-senha .p-grid { grid-template-columns: minmax(0, 1fr); }
+}
+.p-senha .form-group { display: flex; flex-direction: column; gap: 6px; }
+.p-senha label { font-size: 12px; font-weight: 700; color: var(--muted); }
+.p-senha input {
+  padding: 11px 12px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs); background: var(--surface-2);
+  color: var(--text); font-size: 14px; font-family: inherit; outline: none;
+}
+.p-senha input:focus { border-color: var(--primary); }
+.p-senha .form-erro { margin: 10px 0; }

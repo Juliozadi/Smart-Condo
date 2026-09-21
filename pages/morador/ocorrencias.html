@@ -38,131 +38,263 @@
     </div>
 
     <div class="stats-row">
-      <div class="stat-card teal"><span class="stat-value">1</span><span class="stat-label">Abertas</span></div>
-      <div class="stat-card blue"><span class="stat-value">2</span><span class="stat-label">Em análise</span></div>
-      <div class="stat-card amber"><span class="stat-value">5</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Resolvidas</span></div>
+      <div class="stat-card teal"><span class="stat-value" id="totAbertas">—</span><span class="stat-label">Abertas</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totAnalise">—</span><span class="stat-label">Em análise</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totResolvidas">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Resolvidas</span></div>
     </div>
 
     <!-- Nova ocorrência -->
     <p class="section-title"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt=""> Registrar Nova Ocorrência</p>
     <div class="form-card">
       <h3><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt=""> Descrição da Ocorrência</h3>
-      <form action="dashboard.html" onsubmit="return validarOcorrencias()">
+      <form id="formOcorrencia" novalidate>
         <div class="form-row">
           <div class="form-group">
-            <label>Tipo de ocorrência</label>
-            <select required>
+            <label for="ocorre_tipoDeOcorrencia">Tipo de ocorrência</label>
+            <select id="ocorre_tipoDeOcorrencia" required>
               <option value="" disabled selected>Selecione</option>
-              <option>Barulho excessivo</option>
-              <option>Vazamento / infiltração</option>
-              <option>Iluminação com defeito</option>
-              <option>Elevador com problema</option>
-              <option>Dano em área comum</option>
-              <option>Problema de segurança</option>
-              <option>Animais soltos</option>
-              <option>Descumprimento de regras</option>
-              <option>Outro</option>
+              <option value="convivencia">Barulho excessivo</option>
+              <option value="manutencao">Vazamento / infiltração</option>
+              <option value="manutencao">Iluminação com defeito</option>
+              <option value="manutencao">Elevador com problema</option>
+              <option value="patrimonio">Dano em área comum</option>
+              <option value="seguranca">Problema de segurança</option>
+              <option value="convivencia">Animais soltos</option>
+              <option value="convivencia">Descumprimento de regras</option>
+              <option value="geral">Outro</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Prioridade</label>
-            <select required>
+            <label for="ocorre_prioridade">Prioridade</label>
+            <select id="ocorre_prioridade" required>
               <option value="" disabled selected>Selecione</option>
-              <option>🔴 Urgente — risco imediato</option>
-              <option>🟡 Alta — afeta minha unidade</option>
-              <option>🟢 Normal — área comum</option>
-              <option>⚪ Baixa — sugestão de melhoria</option>
+              <option value="urgente">Urgente — risco imediato</option>
+              <option value="alta">Alta — afeta minha unidade</option>
+              <option value="normal" selected>Normal — área comum</option>
+              <option value="baixa">Baixa — sugestão de melhoria</option>
             </select>
           </div>
         </div>
         <div class="form-group">
-          <label>Local da ocorrência</label>
-          <select required>
+          <label for="ocorre_localDaOcorrencia">Local da ocorrência</label>
+          <select id="ocorre_localDaOcorrencia" required>
             <option value="" disabled selected>Selecione</option>
-            <option>Minha unidade (Apto 204)</option>
-            <option>Corredor do 2º andar</option>
+            <option value="__unidade">Minha unidade</option>
+            <option>Corredor</option>
             <option>Área de lazer</option>
             <option>Estacionamento</option>
             <option>Portaria</option>
             <option>Elevador</option>
-            <option>Outro local</option>
+            <option value="__outro">Outro local</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>Descrição detalhada</label>
-          <textarea required placeholder="Descreva a ocorrência com o máximo de detalhes possível..." style="min-height:100px;width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);resize:vertical;outline:none;" onFocus="this.style.borderColor='var(--primary)'" onBlur="this.style.borderColor='var(--border)'"></textarea>
+        <div class="form-group" id="grupoOutroLocal" hidden>
+          <label for="ocorre_outroLocal">Descreva o local</label>
+          <input id="ocorre_outroLocal" type="text" maxlength="120" placeholder="Ex: escada do bloco B, entre o 3º e o 4º andar">
         </div>
         <div class="form-group">
-          <label>Foto ou comprovante <span style="font-size:11px;color:var(--muted);font-weight:400;">(opcional)</span></label>
-          <label style="display:flex;align-items:center;gap:12px;padding:14px;border:2px dashed var(--border);border-radius:var(--radius-xs);cursor:pointer;background:var(--surface-2);" for="ocorr-foto">
-            <img src="../../assets/img/icons/camera.svg" width="16" height="16" alt="">
-            <div><p style="font-size:13px;color:var(--muted);font-weight:500;">Anexar imagem ou arquivo</p><p style="font-size:11px;color:#b8c6cc;">JPG, PNG, PDF · Máx. 10 MB</p></div>
-          </label>
-          <input type="file" id="ocorr-foto" accept="image/*,.pdf" style="display:none;">
+          <label for="ocorre_assunto">Assunto</label>
+          <input id="ocorre_assunto" type="text" required minlength="3" maxlength="180" placeholder="Resuma em uma linha o que aconteceu">
         </div>
+        <div class="form-group">
+          <label for="ocorre_descricaoDetalhada">Descrição detalhada</label>
+          <textarea id="ocorre_descricaoDetalhada" required placeholder="Descreva a ocorrência com o máximo de detalhes possível..." style="min-height:100px;width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);resize:vertical;outline:none;" onFocus="this.style.borderColor='var(--primary)'" onBlur="this.style.borderColor='var(--border)'"></textarea>
+        </div>
+        <p class="form-erro" id="erroOcorrencia" role="alert"></p>
         <button class="action-btn" type="submit" style="margin-top:4px;">
-           Registrar Ocorrência
+          Registrar Ocorrência
         </button>
       </form>
     </div>
 
     <!-- Ocorrências abertas -->
     <p class="section-title"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt=""> Minhas Ocorrências</p>
-    <div class="list-items">
-
-      <div class="list-item">
-        <div class="card-icon icon-red" style="width:42px;height:42px;border-radius:10px;flex-shrink:0;"><img src="../../assets/img/icons/triangle-exclamation.svg" alt=""></div>
-        <div class="list-info">
-          <h5>Infiltração no teto do banheiro</h5>
-          <p>Registrada em 12/03 &nbsp;·&nbsp; Apto 204 · Minha unidade</p>
-        </div>
-        <span class="badge badge-alert">Aberta</span>
-      </div>
-
-      <div class="list-item">
-        <div class="card-icon icon-yellow" style="width:42px;height:42px;border-radius:10px;flex-shrink:0;"><img src="../../assets/img/icons/circle-exclamation.svg" alt=""></div>
-        <div class="list-info">
-          <h5>Barulho excessivo — Apto acima</h5>
-          <p>Registrada em 05/03 &nbsp;·&nbsp; Corredor 2º andar</p>
-        </div>
-        <span class="badge badge-blue">Em análise</span>
-      </div>
-
-      <div class="list-item">
-        <div class="card-icon icon-teal" style="width:42px;height:42px;border-radius:10px;flex-shrink:0;"><img src="../../assets/img/icons/bolt.svg" alt=""></div>
-        <div class="list-info">
-          <h5>Lâmpada queimada — Corredor Bloco A</h5>
-          <p>Registrada em 18/02 &nbsp;·&nbsp; Resolvida em 22/02</p>
-        </div>
-        <span class="badge badge-ok">Resolvida</span>
-      </div>
-
-      <div class="list-item">
-        <div class="card-icon icon-blue" style="width:42px;height:42px;border-radius:10px;flex-shrink:0;"><img src="../../assets/img/icons/building.svg" alt=""></div>
-        <div class="list-info">
-          <h5>Porta do elevador não fechando corretamente</h5>
-          <p>Registrada em 10/01 &nbsp;·&nbsp; Resolvida em 15/01</p>
-        </div>
-        <span class="badge badge-ok">Resolvida</span>
-      </div>
-
-    </div>
+    <div class="list-items" id="listaOcorrencias"></div>
+    <p class="estado-lista" id="estadoOcorrencias">Carregando…</p>
 
   </main>
 
 
 <script src="../../assets/js/validation.js"></script>
 <script>
-function validarOcorrencias() {
-  document.querySelectorAll('.erro-validacao').forEach(function(el){el.remove();});
-  var form = document.querySelector('.form-card form');
-  var inputs = form.querySelectorAll('[required]');
-  var valido = true;
-  inputs.forEach(function(inp){
-    if (!inp.value.trim()) { mostrarErro(inp,'Campo obrigatório'); valido = false; }
+/* Ocorrências do morador (documentação, seção 8): abre o chamado pela API
+   e acompanha a resposta do síndico. Só as próprias ocorrências aparecem —
+   quem filtra é o servidor. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api;
+  var usuario = api.protegerPagina('morador');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+
+  var ROTULO_STATUS = {
+    aberta: 'Aberta', em_analise: 'Em análise',
+    resolvida: 'Resolvida', arquivada: 'Arquivada'
+  };
+  var CLASSE_STATUS = {
+    aberta: 'badge-alert', em_analise: 'badge-blue',
+    resolvida: 'badge-ok', arquivada: 'badge-neutral'
+  };
+  var ICONE_PRIORIDADE = {
+    urgente: ['icon-red', 'triangle-exclamation.svg'],
+    alta:    ['icon-yellow', 'circle-exclamation.svg'],
+    normal:  ['icon-teal', 'circle-exclamation.svg'],
+    baixa:   ['icon-blue', 'circle-exclamation.svg']
+  };
+  var ROTULO_PRIORIDADE = {
+    urgente: 'Urgente', alta: 'Alta', normal: 'Normal', baixa: 'Baixa'
+  };
+
+  function dataCurta(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2);
+  }
+
+  function unidadeDoUsuario() {
+    if (!usuario.unidade) return null;
+    var bloco = usuario.unidade.bloco && usuario.unidade.bloco !== 'unico'
+      ? usuario.unidade.bloco + ' ' : '';
+    return bloco + usuario.unidade.numero;
+  }
+
+  function cartao(o) {
+    var item = document.createElement('div');
+    item.className = 'list-item';
+
+    var visual = ICONE_PRIORIDADE[o.prioridade] || ICONE_PRIORIDADE.normal;
+    var icone = document.createElement('div');
+    icone.className = 'card-icon ' + visual[0] + ' icone-ocorrencia';
+    // Os SVGs têm fill fixo; como glifo mascarado eles assumem a cor da
+    // prioridade em vez de saírem sempre vermelhos.
+    var glifo = document.createElement('span');
+    glifo.className = 'glifo';
+    glifo.style.setProperty('--icone', 'url(../../assets/img/icons/' + visual[1] + ')');
+    icone.appendChild(glifo);
+
+    var info = document.createElement('div');
+    info.className = 'list-info';
+    var titulo = document.createElement('h5');
+    titulo.textContent = o.titulo;
+    var sub = document.createElement('p');
+    var partes = ['Registrada em ' + dataCurta(o.criado_em)];
+    if (o.local) partes.push(o.local);
+    partes.push('Prioridade ' + (ROTULO_PRIORIDADE[o.prioridade] || o.prioridade).toLowerCase());
+    sub.textContent = partes.join(' · ');
+    info.appendChild(titulo);
+    info.appendChild(sub);
+    if (o.resposta) {
+      var resposta = document.createElement('p');
+      resposta.className = 'ocorrencia-resposta';
+      resposta.textContent = 'Síndico: ' + o.resposta;
+      info.appendChild(resposta);
+    }
+
+    var selo = document.createElement('span');
+    selo.className = 'badge ' + (CLASSE_STATUS[o.status] || 'badge-neutral');
+    selo.textContent = ROTULO_STATUS[o.status] || o.status;
+
+    item.appendChild(icone);
+    item.appendChild(info);
+    item.appendChild(selo);
+    return item;
+  }
+
+  function carregar() {
+    campo('estadoOcorrencias').textContent = 'Carregando…';
+    return api.get('/portaria/ocorrencias')
+      .then(function(lista) {
+        campo('totAbertas').textContent =
+          lista.filter(function(o) { return o.status === 'aberta'; }).length;
+        campo('totAnalise').textContent =
+          lista.filter(function(o) { return o.status === 'em_analise'; }).length;
+        campo('totResolvidas').textContent =
+          lista.filter(function(o) { return o.status === 'resolvida'; }).length;
+
+        var caixa = campo('listaOcorrencias');
+        caixa.innerHTML = '';
+        campo('estadoOcorrencias').textContent =
+          lista.length ? '' : 'Você ainda não registrou nenhuma ocorrência.';
+        lista.forEach(function(o) { caixa.appendChild(cartao(o)); });
+      })
+      .catch(function(e) { campo('estadoOcorrencias').textContent = e.message; });
+  }
+
+  // "Outro local" abre o campo livre; "minha unidade" usa a do cadastro.
+  campo('ocorre_localDaOcorrencia').addEventListener('change', function() {
+    campo('grupoOutroLocal').hidden = this.value !== '__outro';
   });
-  return valido;
-}
+
+  function localEscolhido() {
+    var select = campo('ocorre_localDaOcorrencia');
+    if (select.value === '__outro') return campo('ocorre_outroLocal').value.trim();
+    if (select.value === '__unidade') return unidadeDoUsuario() || 'Minha unidade';
+    return select.value;
+  }
+
+  campo('formOcorrencia').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('erroOcorrencia');
+    erro.className = 'form-erro';
+    erro.textContent = '';
+
+    var select = campo('ocorre_tipoDeOcorrencia');
+    var tipo = select.options[select.selectedIndex];
+    var assunto = campo('ocorre_assunto').value.trim();
+    var descricao = campo('ocorre_descricaoDetalhada').value.trim();
+    var local = localEscolhido();
+
+    if (!select.value || !campo('ocorre_localDaOcorrencia').value) {
+      erro.textContent = 'Escolha o tipo e o local da ocorrência.';
+      return;
+    }
+    if (assunto.length < 3) {
+      erro.textContent = 'Escreva um assunto com pelo menos 3 caracteres.';
+      return;
+    }
+    if (descricao.length < 5) {
+      erro.textContent = 'Descreva a ocorrência com um pouco mais de detalhe.';
+      return;
+    }
+    if (campo('ocorre_localDaOcorrencia').value === '__outro' && !local) {
+      erro.textContent = 'Descreva o local da ocorrência.';
+      return;
+    }
+
+    var corpo = {
+      titulo: assunto,
+      descricao: descricao,
+      categoria: select.value,
+      local: local || null,
+      prioridade: campo('ocorre_prioridade').value || 'normal'
+    };
+
+    var botao = this.querySelector('button[type=submit]');
+    var texto = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = 'Enviando…';
+
+    api.post('/portaria/ocorrencias', corpo)
+      .then(function() {
+        campo('formOcorrencia').reset();
+        campo('grupoOutroLocal').hidden = true;
+        erro.className = 'form-erro sucesso';
+        erro.textContent = 'Ocorrência registrada. O síndico foi notificado.';
+        return carregar();
+      })
+      .catch(function(e) { erro.textContent = e.message; })
+      .then(function() { botao.disabled = false; botao.textContent = texto; });
+  });
+
+  var unidade = unidadeDoUsuario();
+  var cabecalho = document.querySelector('.greeting-sub');
+  if (cabecalho) cabecalho.textContent = (unidade ? unidade + ' — ' : '') + usuario.nome;
+  var nome = document.getElementById('hdrName');
+  if (nome) nome.textContent = usuario.nome;
+
+  carregar();
+})();
 </script>
 <script src="../../assets/js/sessao.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>

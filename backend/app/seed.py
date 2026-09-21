@@ -22,11 +22,14 @@ from app.core.security import gerar_hash_senha
 from app.models.comunicado import Comunicado
 from app.models.condominio import Condominio, Unidade
 from app.models.enums import (
-    CanalVerificacao, CategoriaComunicado, FormaPagamento, Papel, StatusCobranca,
-    StatusEncomenda, StatusOcorrencia, StatusReserva, StatusUsuario, StatusVisitante,
-    TipoOcupacao,
+    CanalVerificacao, CategoriaComunicado, CategoriaDocumento, CategoriaVeiculo,
+    FormaPagamento, Papel, PrioridadeOcorrencia, PrioridadeOrdemServico, StatusCobranca,
+    StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
+    StatusVisitante,
+    TipoMovimentacao, TipoOcupacao,
 )
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
+from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico
 from app.models.financeiro import Cobranca, Pagamento, PreferenciaCobranca
 from app.models.portaria import Encomenda, Ocorrencia, Visitante
 from app.models.usuario import PermissaoPorteiro, Usuario
@@ -308,16 +311,88 @@ def criar(db) -> dict:
         condominio_id=condominio.id, aberta_por_id=moradores["204"].id,
         unidade_id=unidades["204"].id, titulo="Barulho no apartamento vizinho",
         descricao="Som alto depois das 23h em dias de semana, por três noites seguidas.",
-        categoria="convivencia", status=StatusOcorrencia.ABERTA,
+        categoria="convivencia", local="Apto 205", prioridade=PrioridadeOcorrencia.ALTA,
+        status=StatusOcorrencia.ABERTA,
     ))
     db.add(Ocorrencia(
         condominio_id=condominio.id, aberta_por_id=moradores["102"].id,
         unidade_id=unidades["102"].id, titulo="Lâmpada queimada na garagem",
         descricao="A lâmpada da vaga 12 está queimada há uma semana.",
-        categoria="manutencao", status=StatusOcorrencia.RESOLVIDA,
+        categoria="manutencao", local="Estacionamento", prioridade=PrioridadeOcorrencia.BAIXA,
+        status=StatusOcorrencia.RESOLVIDA,
         resposta="Lâmpada trocada pela manutenção.", respondida_por_id=sindico.id,
         respondida_em=AGORA - timedelta(days=1),
     ))
+
+    # ── Veículos ──────────────────────────────────────────────────────
+    # Três carros no pátio (última movimentação é entrada) e um que já saiu.
+    for placa, modelo, cor, categoria, unidade, tipos in [
+        ("ABC1D23", "Fiat Argo", "Prata", CategoriaVeiculo.MORADOR, "204", ["entrada"]),
+        ("DEF2G45", "Honda Civic", "Preto", CategoriaVeiculo.MORADOR, "301", ["entrada"]),
+        ("GHI3J67", "VW Saveiro", "Branco", CategoriaVeiculo.PRESTADOR, None, ["entrada"]),
+        ("JKL4M89", "Chevrolet Onix", "Vermelho", CategoriaVeiculo.VISITANTE, None,
+         ["entrada", "saida"]),
+    ]:
+        for indice, tipo in enumerate(tipos):
+            db.add(MovimentacaoVeiculo(
+                condominio_id=condominio.id,
+                placa=placa, modelo=modelo, cor=cor,
+                tipo=TipoMovimentacao.ENTRADA if tipo == "entrada" else TipoMovimentacao.SAIDA,
+                categoria=categoria,
+                unidade_id=unidades[unidade].id if unidade else None,
+                registrada_por_id=carlos.id,
+                registrada_em=AGORA - timedelta(hours=5 - indice * 2),
+            ))
+
+    # ── Ordens de serviço ─────────────────────────────────────────────
+    for tipo, descricao, local, prioridade, situacao, fornecedor, estimado, real, dias in [
+        ("Elétrica", "Lâmpadas queimadas na garagem do subsolo.", "Garagem",
+         PrioridadeOrdemServico.MEDIA, StatusOrdemServico.ABERTA, "Elétrica Silva",
+         Decimal("450.00"), None, 0),
+        ("Hidráulica", "Vazamento na tubulação da churrasqueira.", "Área de lazer",
+         PrioridadeOrdemServico.URGENTE, StatusOrdemServico.EM_ANDAMENTO, "HidroMS",
+         Decimal("1200.00"), None, 3),
+        ("Pintura", "Repintura do hall de entrada.", "Hall",
+         PrioridadeOrdemServico.BAIXA, StatusOrdemServico.CONCLUIDA, "Pinturas Aurora",
+         Decimal("2800.00"), Decimal("2650.00"), 30),
+        ("Elevador", "Manutenção preventiva semestral.", "Torre A",
+         PrioridadeOrdemServico.ALTA, StatusOrdemServico.CONCLUIDA, "ElevaSul",
+         Decimal("900.00"), Decimal("900.00"), 45),
+    ]:
+        db.add(OrdemServico(
+            condominio_id=condominio.id, tipo=tipo, descricao=descricao, local=local,
+            prioridade=prioridade, status=situacao, fornecedor=fornecedor,
+            data_prevista=HOJE + timedelta(days=7) if situacao != StatusOrdemServico.CONCLUIDA else None,
+            custo_estimado=estimado, custo_real=real,
+            aberta_por_id=sindico.id,
+            concluida_em=(AGORA - timedelta(days=dias)
+                          if situacao == StatusOrdemServico.CONCLUIDA else None),
+        ))
+
+    # ── Documentos ────────────────────────────────────────────────────
+    for titulo, categoria, descricao, tamanho, unidade in [
+        ("Convenção do Condomínio", CategoriaDocumento.CONVENCAO,
+         "Documento registrado em cartório.", 820, None),
+        ("Regimento Interno", CategoriaDocumento.REGIMENTO,
+         "Regras de convivência e uso das áreas comuns.", 410, None),
+        ("Ata da Assembleia de Março", CategoriaDocumento.ATA,
+         "Prestação de contas e eleição do conselho.", 180, None),
+        ("Ata da Assembleia de Janeiro", CategoriaDocumento.ATA,
+         "Aprovação do orçamento anual.", 165, None),
+        ("Prestação de Contas 2024", CategoriaDocumento.PRESTACAO_CONTAS,
+         "Balanço completo do exercício.", 1240, None),
+        ("Planta Baixa — Apto 204", CategoriaDocumento.PLANTA,
+         "Planta da unidade.", 2100, "204"),
+    ]:
+        db.add(Documento(
+            condominio_id=condominio.id, titulo=titulo, categoria=categoria,
+            descricao=descricao,
+            arquivo_url=f"https://cdn.smartcondo.com/docs/{categoria.value}.pdf",
+            tamanho_kb=tamanho,
+            unidade_id=unidades[unidade].id if unidade else None,
+            publicado_por_id=sindico.id,
+            publicado_em=AGORA - timedelta(days=10),
+        ))
 
     db.commit()
     return {"condominio": condominio.nome}

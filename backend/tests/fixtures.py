@@ -118,12 +118,12 @@ def cadastrar_morador(
 
 
 def cadastrar_porteiro(
-    cliente, tok_sindico, condominio_id, email="porteiro@exemplo.com", cpf=CPFS[2],
+    cliente, tok_sindico, condominio, email="porteiro@exemplo.com", cpf=CPFS[2],
     senha="senhaforte123", permissoes=None, aprovar=True,
 ):
     corpo_envio = {
         "nome": "Carlos Pereira", "email": email, "cpf": cpf,
-        "telefone": "(67) 99999-0003", "senha": senha, "condominio_id": condominio_id,
+        "telefone": "(67) 99999-0003", "senha": senha, "condominio_id": condominio["id"],
     }
     if permissoes is not None:
         corpo_envio["permissoes"] = permissoes

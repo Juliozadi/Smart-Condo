@@ -134,6 +134,17 @@ class UsuarioSaida(SchemaBase):
     criado_em: datetime
 
 
+class PerfilSaida(UsuarioSaida):
+    """O que o usuário vê do próprio cadastro.
+
+    Traz CPF e data de nascimento, que ficam de fora de UsuarioSaida
+    justamente para não aparecerem nas listagens que o síndico e o
+    administrador enxergam.
+    """
+    cpf: str
+    data_nascimento: date | None = None
+
+
 class UsuarioAtualizacao(SchemaBase):
     nome: str | None = Field(default=None, min_length=3, max_length=160)
     telefone: Telefone | None = None

@@ -37,93 +37,21 @@
       <p class="greeting-condo"><img src="../../assets/img/icons/folder-open.svg" width="16" height="16" alt=""> Acesse e baixe os documentos do condomínio</p>
     </div>
 
-    <!-- Documentos legais -->
-    <p class="section-title"><img src="../../assets/img/icons/file-contract.svg" width="16" height="16" alt=""> Documentos Legais</p>
-    <div class="dash-grid">
-
-      <div class="dash-card" style="cursor:pointer;">
-        <div class="card-icon icon-purple"><img src="../../assets/img/icons/file-contract.svg" width="16" height="16" alt="Contrato"></div>
-        <div class="card-info">
-          <h4>Convenção do Condomínio</h4>
-          <p>Versão atualizada em Jan/2023 · PDF · 2,4 MB</p>
-        </div>
-        <a href="../assets/documentos/convencao_condominio.pdf" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--primary);text-decoration:none;padding:6px 12px;background:var(--primary-light);border-radius:20px;flex-shrink:0;">
-           Baixar
-        </a>
-      </div>
-
-      <div class="dash-card" style="cursor:pointer;">
-        <div class="card-icon icon-blue"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt="Regimento"></div>
-        <div class="card-info">
-          <h4>Regimento Interno</h4>
-          <p>Versão atualizada em Mar/2024 · PDF · 1,8 MB</p>
-        </div>
-        <a href="../assets/documentos/regimento_interno.pdf" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--primary);text-decoration:none;padding:6px 12px;background:var(--primary-light);border-radius:20px;flex-shrink:0;">
-           Baixar
-        </a>
-      </div>
-
-      <div class="dash-card" style="cursor:pointer;">
-        <div class="card-icon icon-teal"><img src="../../assets/img/icons/stamp.svg" width="16" height="16" alt="Planta"></div>
-        <div class="card-info">
-          <h4>Planta Baixa — Apto 204</h4>
-          <p>Planta original do apartamento · PDF · 3,1 MB</p>
-        </div>
-        <a href="../assets/documentos/planta_apto204.pdf" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--primary);text-decoration:none;padding:6px 12px;background:var(--primary-light);border-radius:20px;flex-shrink:0;">
-           Baixar
-        </a>
-      </div>
-
+    <div class="barra-acoes">
+      <input type="search" id="buscaDocumento" placeholder="Buscar por título ou descrição" aria-label="Buscar documento">
+      <select id="filtroCategoria" aria-label="Filtrar por categoria">
+        <option value="">Todas as categorias</option>
+        <option value="convencao">Convenção</option>
+        <option value="regimento">Regimento interno</option>
+        <option value="ata">Atas de assembleia</option>
+        <option value="planta">Plantas</option>
+        <option value="prestacao_contas">Prestação de contas</option>
+        <option value="outro">Outros</option>
+      </select>
     </div>
 
-    <!-- Atas de Assembleia -->
-    <p class="section-title"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Atas de Assembleia</p>
-    <div class="data-table">
-      <div class="table-head cols-4"><span><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt="">Assembleia</span><span>Data</span><span> Tipo</span><span>Arquivo</span></div>
-      <div class="table-row cols-4">
-        <span><strong>Ordinária 2024</strong></span>
-        <span>20/01/2024</span>
-        <span><span class="badge badge-blue">Ordinária</span></span>
-        <span><a href="../assets/atas/ordinaria2024.pdf" style="color:var(--primary);font-weight:700;font-size:13px;text-decoration:none;"> PDF</a></span>
-      </div>
-      <div class="table-row cols-4">
-        <span><strong>Extraordinária — Obras</strong></span>
-        <span>15/06/2024</span>
-        <span><span class="badge badge-amber" style="background:rgba(230,162,60,.1);color:#c88b1a;border:1px solid rgba(230,162,60,.2);">Extraordinária</span></span>
-        <span><a href="../assets/atas/extra_obras2024.pdf" style="color:var(--primary);font-weight:700;font-size:13px;text-decoration:none;"> PDF</a></span>
-      </div>
-      <div class="table-row cols-4">
-        <span><strong>Ordinária 2023</strong></span>
-        <span>22/01/2023</span>
-        <span><span class="badge badge-blue">Ordinária</span></span>
-        <span><a href="../assets/atas/ordinaria2023.pdf" style="color:var(--primary);font-weight:700;font-size:13px;text-decoration:none;"> PDF</a></span>
-      </div>
-      <div class="table-row cols-4">
-        <span><strong>Extraordinária — Eleição Síndico</strong></span>
-        <span>10/01/2023</span>
-        <span><span class="badge badge-amber" style="background:rgba(230,162,60,.1);color:#c88b1a;border:1px solid rgba(230,162,60,.2);">Extraordinária</span></span>
-        <span><a href="../assets/atas/extra_eleicao2023.pdf" style="color:var(--primary);font-weight:700;font-size:13px;text-decoration:none;"> PDF</a></span>
-      </div>
-    </div>
-
-    <!-- Prestações de Conta -->
-    <p class="section-title"> Prestação de Contas</p>
-    <div class="data-table">
-      <div class="table-head cols-4"><span>Período</span><span>Receita</span><span>Despesa</span><span>Arquivo</span></div>
-      <div class="table-row cols-4"><span>4º Trim/2024</span><span>R$55.200</span><span>R$52.100</span><span><a href="../assets/relatorios/4trim2024.pdf" style="color:var(--primary);font-weight:700;font-size:13px;text-decoration:none;"> PDF</a></span></div>
-      <div class="table-row cols-4"><span>3º Trim/2024</span><span>R$54.800</span><span>R$51.600</span><span><a href="../assets/relatorios/3trim2024.pdf" style="color:var(--primary);font-weight:700;font-size:13px;text-decoration:none;"> PDF</a></span></div>
-      <div class="table-row cols-4"><span>2º Trim/2024</span><span>R$54.400</span><span>R$55.200</span><span><a href="../assets/relatorios/2trim2024.pdf" style="color:var(--primary);font-weight:700;font-size:13px;text-decoration:none;"> PDF</a></span></div>
-      <div class="table-row cols-4"><span>1º Trim/2024</span><span>R$53.600</span><span>R$50.800</span><span><a href="../assets/relatorios/1trim2024.pdf" style="color:var(--primary);font-weight:700;font-size:13px;text-decoration:none;"> PDF</a></span></div>
-    </div>
-
-    <!-- Boletos anteriores -->
-    <p class="section-title"> Boletos Anteriores</p>
-    <div class="data-table">
-      <div class="table-head cols-4"><span>Referência</span><span>Vencimento</span><span>Valor</span><span>2ª Via</span></div>
-      <div class="table-row cols-4"><span>Fev/2025</span><span>10/02/2025</span><span>R$320,00</span><span><a href="../assets/boletos/fev2025.pdf" style="color:var(--primary);font-weight:700;font-size:13px;text-decoration:none;"> Boleto</a></span></div>
-      <div class="table-row cols-4"><span>Jan/2025</span><span>10/01/2025</span><span>R$320,00</span><span><a href="../assets/boletos/jan2025.pdf" style="color:var(--primary);font-weight:700;font-size:13px;text-decoration:none;"> Boleto</a></span></div>
-      <div class="table-row cols-4"><span>Dez/2024</span><span>10/12/2024</span><span>R$320,00</span><span><a href="../assets/boletos/dez2024.pdf" style="color:var(--primary);font-weight:700;font-size:13px;text-decoration:none;"> Boleto</a></span></div>
-    </div>
+    <div class="dash-grid" id="listaDocumentos"></div>
+    <p class="estado-lista" id="estadoLista">Carregando…</p>
 
     <div class="info-card">
       
@@ -134,6 +62,144 @@
 
   
 <script src="../../assets/js/validation.js"></script>
+<script>
+/* Documentos do condomínio (documentação, seção 11.6). O servidor já
+   entrega só o que é público mais o que é da unidade do morador. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api;
+  var usuario = api.protegerPagina('morador');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+  var documentos = [];
+
+  var ROTULO_CATEGORIA = {
+    convencao: 'Convenção', regimento: 'Regimento interno', ata: 'Ata de assembleia',
+    planta: 'Planta', prestacao_contas: 'Prestação de contas', outro: 'Outro'
+  };
+  var VISUAL_CATEGORIA = {
+    convencao: ['icon-purple', 'file-contract.svg'],
+    regimento: ['icon-blue', 'file-contract.svg'],
+    ata: ['icon-teal', 'scroll.svg'],
+    planta: ['icon-yellow', 'building.svg'],
+    prestacao_contas: ['icon-teal', 'file-invoice-dollar.svg'],
+    outro: ['icon-blue', 'folder-open.svg']
+  };
+
+  function tamanho(kb) {
+    if (!kb) return null;
+    return kb >= 1024 ? (kb / 1024).toFixed(1).replace('.', ',') + ' MB' : kb + ' KB';
+  }
+  function dataCurta(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    var meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    return meses[d.getMonth()] + '/' + d.getFullYear();
+  }
+
+  function cartao(doc) {
+    var card = document.createElement('div');
+    card.className = 'dash-card';
+
+    var visual = VISUAL_CATEGORIA[doc.categoria] || VISUAL_CATEGORIA.outro;
+    var icone = document.createElement('div');
+    icone.className = 'card-icon ' + visual[0];
+    var glifo = document.createElement('span');
+    glifo.className = 'glifo';
+    glifo.style.setProperty('--icone', 'url(../../assets/img/icons/' + visual[1] + ')');
+    icone.appendChild(glifo);
+
+    var info = document.createElement('div');
+    info.className = 'card-info';
+    var h = document.createElement('h4');
+    h.textContent = doc.titulo;
+    var p = document.createElement('p');
+    var partes = [ROTULO_CATEGORIA[doc.categoria] || doc.categoria];
+    if (doc.unidade) partes.push('Unidade ' + doc.unidade);
+    partes.push(dataCurta(doc.publicado_em));
+    var medida = tamanho(doc.tamanho_kb);
+    if (medida) partes.push(medida);
+    p.textContent = partes.join(' · ');
+    info.appendChild(h);
+    info.appendChild(p);
+    if (doc.descricao) {
+      var descricao = document.createElement('p');
+      descricao.textContent = doc.descricao;
+      info.appendChild(descricao);
+    }
+
+    var baixar = document.createElement('a');
+    baixar.className = 'link-baixar';
+    baixar.href = doc.arquivo_url;
+    baixar.target = '_blank';
+    baixar.rel = 'noopener';
+    baixar.textContent = 'Baixar';
+    baixar.setAttribute('aria-label', 'Baixar ' + doc.titulo);
+
+    card.appendChild(icone);
+    card.appendChild(info);
+    card.appendChild(baixar);
+    return card;
+  }
+
+  /* Quem digita "convencao" espera achar "Convenção": a busca compara
+     sem acento dos dois lados. */
+  function semAcento(texto) {
+    return (texto || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  function desenhar() {
+    var busca = semAcento(campo('buscaDocumento').value.trim());
+    var categoria = campo('filtroCategoria').value;
+    var lista = documentos.filter(function(d) {
+      if (categoria && d.categoria !== categoria) return false;
+      if (!busca) return true;
+      return semAcento(d.titulo + ' ' + (d.descricao || '')).indexOf(busca) >= 0;
+    });
+
+    var caixa = campo('listaDocumentos');
+    caixa.innerHTML = '';
+    campo('estadoLista').textContent = lista.length ? '' :
+      (documentos.length ? 'Nenhum documento encontrado com esses filtros.'
+                         : 'Nenhum documento publicado ainda.');
+    lista.forEach(function(d) { caixa.appendChild(cartao(d)); });
+  }
+
+  function carregar() {
+    campo('estadoLista').textContent = 'Carregando…';
+    return api.get('/documentos')
+      .then(function(lista) {
+        // Convenção e regimento primeiro, depois o mais recente.
+        var ordem = ['convencao', 'regimento', 'ata', 'prestacao_contas', 'planta', 'outro'];
+        documentos = lista.slice().sort(function(a, b) {
+          var pa = ordem.indexOf(a.categoria), pb = ordem.indexOf(b.categoria);
+          if (pa !== pb) return pa - pb;
+          return new Date(b.publicado_em) - new Date(a.publicado_em);
+        });
+        desenhar();
+      })
+      .catch(function(e) { campo('estadoLista').textContent = e.message; });
+  }
+
+  campo('buscaDocumento').addEventListener('input', (function() {
+    var timer = null;
+    return function() { clearTimeout(timer); timer = setTimeout(desenhar, 250); };
+  })());
+  campo('filtroCategoria').addEventListener('change', desenhar);
+
+  var unidade = usuario.unidade
+    ? (usuario.unidade.bloco && usuario.unidade.bloco !== 'unico'
+        ? usuario.unidade.bloco + ' ' : '') + usuario.unidade.numero
+    : null;
+  var saudacao = document.querySelector('.greeting-sub');
+  if (saudacao) saudacao.textContent = (unidade ? 'Apto ' + unidade + ' — ' : '') + usuario.nome;
+  var nomeTopo = document.getElementById('hdrName');
+  if (nomeTopo) nomeTopo.textContent = usuario.nome;
+
+  carregar();
+})();
+</script>
 <script src="../../assets/js/sessao.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>
 </body>

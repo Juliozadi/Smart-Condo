@@ -25,8 +25,8 @@ from app.schemas.admin import (
     UsuarioAdminAtualizacao, UsuarioAdminEntrada, UsuarioAdminSaida,
 )
 from app.schemas.usuario import (
-    AprovacaoUsuario, CadastroPorteiro, CadastroSaida, PermissoesPorteiroEntrada,
-    PermissoesPorteiroSaida, UsuarioAtualizacao, UsuarioSaida,
+    AprovacaoUsuario, CadastroPorteiro, CadastroSaida, PerfilSaida,
+    PermissoesPorteiroEntrada, PermissoesPorteiroSaida, UsuarioAtualizacao, UsuarioSaida,
 )
 from app.services import usuarios as servico_usuarios
 from app.services import auth as servico_auth
@@ -308,7 +308,7 @@ def aprovar_usuario(
     return usuario
 
 
-@router.patch("/eu", response_model=UsuarioSaida, summary="Atualiza o próprio perfil")
+@router.patch("/eu", response_model=PerfilSaida, summary="Atualiza o próprio perfil")
 def atualizar_perfil(
     dados: UsuarioAtualizacao,
     usuario: Usuario = Depends(get_usuario_atual),

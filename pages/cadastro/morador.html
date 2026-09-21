@@ -55,32 +55,32 @@
       <p class="form-section-title"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt=""> Dados Pessoais <span class="section-tag obrig">Obrigatório</span></p>
       <div class="cad-row">
         <div class="cad-group">
-          <label><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Nome completo <span class="req">*</span></label>
+          <label for="mNome"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Nome completo <span class="req">*</span></label>
           <input type="text" id="mNome" placeholder="Como consta no documento" required>
         </div>
         <div class="cad-group">
-          <label>Nome social</label>
-          <input type="text" placeholder="Se diferente do oficial">
+          <label for="morado_nomeSocial">Nome social</label>
+          <input id="morado_nomeSocial" type="text" placeholder="Se diferente do oficial">
         </div>
       </div>
       <div class="cad-row">
         <div class="cad-group">
-          <label>CPF <span class="req">*</span></label>
+          <label for="mCpf">CPF <span class="req">*</span></label>
           <input type="text" id="mCpf" class="mask-cpf" placeholder="000.000.000-00" required maxlength="14">
         </div>
         <div class="cad-group">
-          <label><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">RG <span class="req">*</span></label>
-          <input type="text" placeholder="00.000.000-0" required>
+          <label for="morado_rg"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">RG <span class="req">*</span></label>
+          <input id="morado_rg" type="text" placeholder="00.000.000-0" required>
         </div>
       </div>
       <div class="cad-row">
         <div class="cad-group">
-          <label>Data de nascimento <span class="req">*</span></label>
+          <label for="mNascimento">Data de nascimento <span class="req">*</span></label>
           <input type="date" id="mNascimento" required>
         </div>
         <div class="cad-group">
-          <label>Estado civil</label>
-          <select>
+          <label for="morado_estadoCivil">Estado civil</label>
+          <select id="morado_estadoCivil">
             <option value="" disabled selected>Selecione</option>
             <option>Solteiro(a)</option><option>Casado(a)</option>
             <option>União estável</option><option>Divorciado(a)</option><option>Viúvo(a)</option>
@@ -89,16 +89,16 @@
       </div>
       <div class="cad-row">
         <div class="cad-group">
-          <label>Gênero</label>
-          <select>
+          <label for="morado_genero">Gênero</label>
+          <select id="morado_genero">
             <option value="" disabled selected>Selecione</option>
             <option>Masculino</option><option>Feminino</option>
             <option>Não-binário</option><option>Prefiro não informar</option>
           </select>
         </div>
         <div class="cad-group">
-          <label><img src="../../assets/img/icons/briefcase.svg" width="16" height="16" alt="">Profissão</label>
-          <input type="text" placeholder="Ex: Engenheiro">
+          <label for="morado_profissao"><img src="../../assets/img/icons/briefcase.svg" width="16" height="16" alt="">Profissão</label>
+          <input id="morado_profissao" type="text" placeholder="Ex: Engenheiro">
         </div>
       </div>
     </div>
@@ -107,14 +107,14 @@
       <p class="form-section-title"> Contato <span class="section-tag obrig">Obrigatório</span></p>
       <div class="cad-row">
         <div class="cad-group">
-          <label>E-mail <span class="req">*</span></label>
+          <label for="mEmail">E-mail <span class="req">*</span></label>
           <div class="cad-input-icon">
             <img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">
             <input type="email" id="mEmail" placeholder="seu@email.com" required>
           </div>
         </div>
         <div class="cad-group">
-          <label>Celular / WhatsApp <span class="req">*</span></label>
+          <label for="mTelefone">Celular / WhatsApp <span class="req">*</span></label>
           <div class="cad-input-icon">
             
             <input type="tel" id="mTelefone" placeholder="(00) 90000-0000" class="mask-tel" required>
@@ -128,12 +128,12 @@
       <p style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:4px 0 12px;">Contato de Emergência <span class="req">*</span></p>
       <div class="cad-row">
         <div class="cad-group">
-          <label><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Nome <span class="req">*</span></label>
-          <input type="text" placeholder="Nome do responsável" required>
+          <label for="morado_nome"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Nome <span class="req">*</span></label>
+          <input id="morado_nome" type="text" placeholder="Nome do responsável" required>
         </div>
         <div class="cad-group">
-          <label>Parentesco <span class="req">*</span></label>
-          <select required>
+          <label for="morado_parentesco">Parentesco <span class="req">*</span></label>
+          <select id="morado_parentesco" required>
             <option value="" disabled selected>Selecione</option>
             <option>Cônjuge / Companheiro(a)</option><option>Pai / Mãe</option>
             <option>Filho(a)</option><option>Irmão / Irmã</option><option>Amigo(a)</option><option>Outro</option>
@@ -141,10 +141,10 @@
         </div>
       </div>
       <div class="cad-group">
-        <label>Telefone de emergência <span class="req">*</span></label>
+        <label for="morado_telefoneDeEmergencia">Telefone de emergência <span class="req">*</span></label>
         <div class="cad-input-icon">
           <img src="../../assets/img/icons/phone.svg" width="16" height="16" alt="">
-          <input type="tel" placeholder="(00) 90000-0000" class="mask-tel" required>
+          <input id="morado_telefoneDeEmergencia" type="tel" placeholder="(00) 90000-0000" class="mask-tel" required>
         </div>
       </div>
     </div>
@@ -206,7 +206,7 @@
         <p>Solicite o <strong>código de acesso</strong> ao síndico antes de prosseguir. O cadastro não será aprovado sem código válido.</p>
       </div>
       <div class="cad-group">
-        <label>Código de acesso do condomínio <span class="req">*</span></label>
+        <label for="mCodigoCondominio">Código de acesso do condomínio <span class="req">*</span></label>
         <div class="cad-input-icon">
           
           <input type="text" id="mCodigoCondominio" placeholder="Ex: PALM-2025" required maxlength="20" style="text-transform:uppercase;letter-spacing:1px;font-weight:600;">
@@ -214,21 +214,21 @@
       </div>
       <div class="cad-row">
         <div class="cad-group">
-          <label>Nº do apartamento <span class="req">*</span></label>
+          <label for="mApartamento">Nº do apartamento <span class="req">*</span></label>
           <input type="text" id="mApartamento" placeholder="Ex: 204" required>
         </div>
         <div class="cad-group">
-          <label>Bloco / Torre</label>
+          <label for="mBloco">Bloco / Torre</label>
           <input type="text" id="mBloco" placeholder="Ex: Bloco A">
         </div>
       </div>
       <div class="cad-row">
         <div class="cad-group">
-          <label>Andar</label>
-          <input type="text" placeholder="Ex: 2º">
+          <label for="morado_andar">Andar</label>
+          <input id="morado_andar" type="text" placeholder="Ex: 2º">
         </div>
         <div class="cad-group">
-          <label>Tipo de ocupação <span class="req">*</span></label>
+          <label for="mOcupacao">Tipo de ocupação <span class="req">*</span></label>
           <select id="mOcupacao" required>
             <option value="" disabled selected>Selecione</option>
             <option value="proprietario">Proprietário</option><option value="inquilino">Inquilino</option><option value="coabitante">Coabitante autorizado</option>
@@ -237,12 +237,12 @@
       </div>
       <div class="cad-row">
         <div class="cad-group">
-          <label>Data de mudança <span class="req">*</span></label>
-          <input type="date" required>
+          <label for="morado_dataDeMudanca">Data de mudança <span class="req">*</span></label>
+          <input id="morado_dataDeMudanca" type="date" required>
         </div>
         <div class="cad-group">
-          <label>Nº de moradores</label>
-          <select>
+          <label for="morado_noDeMoradores">Nº de moradores</label>
+          <select id="morado_noDeMoradores">
             <option value="" disabled selected>Selecione</option>
             <option>1</option><option>2</option><option>3</option><option>4</option><option>5+</option>
           </select>
@@ -253,30 +253,30 @@
     <div class="form-section">
       <p class="form-section-title"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt=""> Veículos <span class="section-tag opc">Opcional</span></p>
       <div class="cad-group">
-          <label><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Quantidade de veículos a cadastrar</label>
-          <select>
+          <label for="morado_quantidadeDeVeiculosACadastrar"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Quantidade de veículos a cadastrar</label>
+          <select id="morado_quantidadeDeVeiculosACadastrar">
             <option value="" disabled selected>Selecione</option>
             <option>Nenhum</option><option>1 veículo</option><option>2 veículos</option><option>3 ou mais</option>
           </select>
       </div>
       <div class="cad-row">
         <div class="cad-group">
-          <label><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Placa — Veículo 1</label>
-          <input type="text" placeholder="ABC-1D23" style="text-transform:uppercase;" maxlength="8">
+          <label for="morado_placaVeiculo1"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Placa — Veículo 1</label>
+          <input id="morado_placaVeiculo1" type="text" placeholder="ABC-1D23" style="text-transform:uppercase;" maxlength="8">
         </div>
         <div class="cad-group">
-          <label>Modelo e Cor</label>
-          <input type="text" placeholder="Ex: Honda Civic Prata">
+          <label for="morado_modeloECor">Modelo e Cor</label>
+          <input id="morado_modeloECor" type="text" placeholder="Ex: Honda Civic Prata">
         </div>
       </div>
       <div class="cad-row">
         <div class="cad-group">
-          <label><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Placa — Veículo 2</label>
-          <input type="text" placeholder="ABC-1D23" style="text-transform:uppercase;" maxlength="8">
+          <label for="morado_placaVeiculo2"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Placa — Veículo 2</label>
+          <input id="morado_placaVeiculo2" type="text" placeholder="ABC-1D23" style="text-transform:uppercase;" maxlength="8">
         </div>
         <div class="cad-group">
-          <label>Vaga(s) de garagem</label>
-          <input type="text" placeholder="Ex: Vagas 12 e 13">
+          <label for="morado_vagaSDeGaragem">Vaga(s) de garagem</label>
+          <input id="morado_vagaSDeGaragem" type="text" placeholder="Ex: Vagas 12 e 13">
         </div>
       </div>
     </div>
@@ -285,15 +285,15 @@
       <p class="form-section-title"> Dependentes e Animais <span class="section-tag opc">Opcional</span></p>
       <div class="cad-row">
         <div class="cad-group">
-          <label>Menores de 18 anos na unidade?</label>
-          <select>
+          <label for="morado_menoresDe18AnosNaUnidade">Menores de 18 anos na unidade?</label>
+          <select id="morado_menoresDe18AnosNaUnidade">
             <option value="" disabled selected>Selecione</option>
             <option>Não</option><option>Sim — 1</option><option>Sim — 2 ou mais</option>
           </select>
         </div>
         <div class="cad-group">
-          <label>Idosos (60+) na unidade?</label>
-          <select>
+          <label for="morado_idosos60NaUnidade">Idosos (60+) na unidade?</label>
+          <select id="morado_idosos60NaUnidade">
             <option value="" disabled selected>Selecione</option>
             <option>Não</option><option>Sim</option>
           </select>
@@ -301,16 +301,16 @@
       </div>
       <div class="cad-row">
         <div class="cad-group">
-          <label>Animais de estimação?</label>
-          <select>
+          <label for="morado_animaisDeEstimacao">Animais de estimação?</label>
+          <select id="morado_animaisDeEstimacao">
             <option value="" disabled selected>Selecione</option>
             <option>Não</option><option>Sim — cão(ões)</option><option>Sim — gato(s)</option>
             <option>Sim — múltiplos tipos</option>
           </select>
         </div>
         <div class="cad-group">
-          <label>Raça(s) / descrição</label>
-          <input type="text" placeholder="Ex: 2 cães — Golden e Poodle">
+          <label for="morado_racaSDescricao">Raça(s) / descrição</label>
+          <input id="morado_racaSDescricao" type="text" placeholder="Ex: 2 cães — Golden e Poodle">
         </div>
       </div>
     </div>
@@ -391,7 +391,7 @@
     <div class="form-section">
       <p class="form-section-title"><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""> Criação de Senha <span class="section-tag obrig">Obrigatório</span></p>
       <div class="cad-group">
-        <label><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt="">Senha <span class="req">*</span></label>
+        <label for="mSenha"><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt="">Senha <span class="req">*</span></label>
         <div class="cad-input-icon">
           <img src="../../assets/img/icons/lock.svg" width="16" height="16" alt="">
           <input type="password" id="mSenha" placeholder="Crie uma senha forte" required>
@@ -413,7 +413,7 @@
         </div>
       </div>
       <div class="cad-group">
-        <label>Confirmar senha <span class="req">*</span></label>
+        <label for="mConfirmarSenha">Confirmar senha <span class="req">*</span></label>
         <div class="cad-input-icon">
           <img src="../../assets/img/icons/lock.svg" width="16" height="16" alt="">
           <input type="password" id="mConfirmarSenha" placeholder="Repita a senha" required>
@@ -460,16 +460,16 @@
         <div class="summary-row"><span>2FA</span><span>Ativado via SMS</span></div>
       </div>
       <div class="terms-check">
-        <input type="checkbox" required>
-        <span>Li e aceito os <a href="#">Termos de Uso</a> e a <a href="#">Política de Privacidade</a> do SmartCondo.</span>
+        <input id="morado_aceiteLiEAceitoOsTermosDeUsoEAPoli" aria-labelledby="morado_aceiteLiEAceitoOsTermosDeUsoEAPoli_txt" type="checkbox" required>
+        <span id="morado_aceiteLiEAceitoOsTermosDeUsoEAPoli_txt">Li e aceito os <a href="#">Termos de Uso</a> e a <a href="#">Política de Privacidade</a> do SmartCondo.</span>
       </div>
       <div class="terms-check" style="margin-top:10px;">
-        <input type="checkbox" required>
-        <span>Declaro que todas as informações e documentos são verdadeiros, assumindo responsabilidade por eventuais falsidades.</span>
+        <input id="morado_aceiteDeclaroQueTodasAsInformacoes" aria-labelledby="morado_aceiteDeclaroQueTodasAsInformacoes_txt" type="checkbox" required>
+        <span id="morado_aceiteDeclaroQueTodasAsInformacoes_txt">Declaro que todas as informações e documentos são verdadeiros, assumindo responsabilidade por eventuais falsidades.</span>
       </div>
       <div class="terms-check" style="margin-top:10px;">
-        <input type="checkbox" required>
-        <span>Autorizo o armazenamento dos meus dados conforme a <a href="#">LGPD (Lei 13.709/2018)</a>.</span>
+        <input id="morado_aceiteAutorizoOArmazenamentoDosMeu" aria-labelledby="morado_aceiteAutorizoOArmazenamentoDosMeu_txt" type="checkbox" required>
+        <span id="morado_aceiteAutorizoOArmazenamentoDosMeu_txt">Autorizo o armazenamento dos meus dados conforme a <a href="#">LGPD (Lei 13.709/2018)</a>.</span>
       </div>
     </div>
 

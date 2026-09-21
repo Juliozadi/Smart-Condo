@@ -113,6 +113,9 @@ backend/
 | Portaria | `/api/v1/portaria` | Seção 6: vídeo porteiro, encomendas e ocorrências |
 | Financeiro | `/api/v1/financeiro` | Seção 6: cobrança na data escolhida e formas de pagamento |
 | Comunicados | `/api/v1/comunicados` | Seções 11.5.4 e 11.6.4 |
+| Veículos | `/api/v1/veiculos` | Seção 8: o porteiro controla entradas e saídas |
+| Manutenção | `/api/v1/manutencao` | Ordens de serviço abertas pelo síndico |
+| Documentos | `/api/v1/documentos` | Seção 11.6: atas, convenção e regimento |
 
 ---
 
@@ -170,7 +173,6 @@ pagou e a data.
   no log; a interface já é a definitiva).
 - Upload das fotos do vídeo porteiro: a API guarda a URL, falta o
   armazenamento dos arquivos.
-- Veículos e manutenção, que existem no front-end.
 - Chat e chamada de voz com o porteiro (seção 11.5.2), que a documentação
   coloca em Node.js por serem em tempo real.
 - Geração automática das cobranças mensais (tarefa agendada).

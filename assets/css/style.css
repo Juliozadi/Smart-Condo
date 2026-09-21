@@ -1590,3 +1590,24 @@ body.tema-escuro .tab-bar { background: rgba(21,36,39,.96); border-top-color: va
 .aviso-cadastro strong { display: block; font-size: 13px; color: var(--text); margin-bottom: 4px; }
 .aviso-cadastro p { font-size: 12.5px; color: var(--muted); line-height: 1.55; margin: 0; }
 .register-card p { font-size: 12px; color: var(--muted); font-weight: 500; margin: 2px 0 0; }
+
+/* ── Área de toque mínima (WCAG 2.5.8: 24x24 CSS px) ──────────────
+   Em telas de toque os alvos pequenos ficam difíceis de acertar.
+   O padding vertical em elemento inline aumenta a área clicável sem
+   alterar a altura da linha, então o texto continua no mesmo lugar. */
+@media (max-width: 640px) {
+  input[type="checkbox"]:not(.tag-select input), input[type="radio"],
+  .remember input[type="checkbox"],
+  .terms-check input[type="checkbox"] {
+    width: 24px; height: 24px; flex-shrink: 0;
+  }
+
+  a:not(.action-btn):not(.btn):not(.primary-btn):not(.tab-item):not(.nav-item):not(.quick-card):not(.card-link) {
+    padding-top: 5px; padding-bottom: 5px;
+  }
+
+  .toggle-senha, #toggleSenha {
+    min-width: 24px; min-height: 24px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+}

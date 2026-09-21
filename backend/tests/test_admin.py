@@ -86,6 +86,24 @@ def test_busca_de_condominio(cliente, admin):
     assert [c["nome"] for c in r.json()] == ["Palmeiras"]
 
 
+def test_busca_ignora_acento(cliente, admin):
+    """Quem digita sem acento precisa achar o nome acentuado, e vice-versa."""
+    criar_condominio_como_admin(
+        cliente, admin, nome="Condomínio Açucena", cnpj="11.222.333/0001-81"
+    )
+    criar_condominio_como_admin(cliente, admin, nome="Aurora", cnpj="45.997.418/0001-53")
+
+    sem_acento = cliente.get(
+        "/api/v1/admin/condominios", params={"busca": "acucena"}, headers=cab(admin)
+    )
+    assert [c["nome"] for c in sem_acento.json()] == ["Condomínio Açucena"]
+
+    com_acento = cliente.get(
+        "/api/v1/admin/condominios", params={"busca": "condomínio"}, headers=cab(admin)
+    )
+    assert [c["nome"] for c in com_acento.json()] == ["Condomínio Açucena"]
+
+
 def test_excluir_condominio_vazio(cliente, admin):
     cond = criar_condominio_como_admin(cliente, admin)
     assert cliente.delete(

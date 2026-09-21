@@ -99,7 +99,7 @@
   <main class="dash-wrapper">
 
     <div class="dash-greeting">
-      <p class="greeting-sub"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Turno 07h – 15h &nbsp;·&nbsp; Carlos Pereira</p>
+      <p class="greeting-sub" id="tituloSub">Meus dados</p>
       <h2 class="greeting-name"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Meu Perfil</h2>
       <p class="greeting-condo"> Seus dados pessoais e informações profissionais</p>
     </div>
@@ -125,33 +125,27 @@
     <div class="p-card">
       <h3><img src="../../assets/img/icons/user.svg" width="16" height="16" alt=""> Dados Pessoais</h3>
       <div class="p-grid">
-        <div class="p-field"><div class="p-lbl">CPF</div><div class="p-val" id="val-cpf"><span class="p-badge"><span class="b-txt">987.654.321-00</span><span class="b-dot"></span></span></div></div>
-        <div class="p-field"><div class="p-lbl">RG</div><div class="p-val" id="val-rg"><span class="p-badge"><span class="b-txt">98.765.432-1</span><span class="b-dot"></span></span></div></div>
-        <div class="p-field"><div class="p-lbl">Data de Nascimento</div><div class="p-val" id="val-nasc"><span class="p-badge"><span class="b-txt">22/08/1990</span><span class="b-dot"></span></span></div><div class="p-edit"><input type="date" id="edit-nasc" value="1990-08-22"></div></div>
-        <div class="p-field"><div class="p-lbl">E-mail</div><div class="p-val" id="val-email"><span class="p-badge"><span class="b-txt">carlos.pereira@email.com</span><span class="b-dot"></span></span></div><div class="p-edit"><input type="email" id="edit-email" value="carlos.pereira@email.com"></div></div>
-        <div class="p-field"><div class="p-lbl">Celular / WhatsApp</div><div class="p-val" id="val-tel"><span class="p-badge"><span class="b-txt">(11) 97654-3210</span><span class="b-dot"></span></span></div><div class="p-edit"><input type="tel" id="edit-tel" value="(11) 97654-3210" class="mask-tel"></div></div>
+        <div class="p-field"><div class="p-lbl">Nome completo</div><div class="p-val" id="val-nome"><span class="p-badge"><span class="b-txt">—</span><span class="b-dot"></span></span></div><div class="p-edit"><input type="text" id="edit-nome" minlength="3" maxlength="160" aria-label="Nome completo"></div></div>
+        <div class="p-field"><div class="p-lbl">CPF</div><div class="p-val" id="val-cpf"><span class="p-badge"><span class="b-txt">—</span><span class="b-dot"></span></span></div></div>
+        <div class="p-field"><div class="p-lbl">Data de Nascimento</div><div class="p-val" id="val-nasc"><span class="p-badge"><span class="b-txt">—</span><span class="b-dot"></span></span></div><div class="p-edit"><input type="date" id="edit-nasc" aria-label="Data de Nascimento"></div></div>
+        <div class="p-field"><div class="p-lbl">E-mail</div><div class="p-val" id="val-email"><span class="p-badge"><span class="b-txt">—</span><span class="b-dot"></span></span></div></div>
+        <div class="p-field"><div class="p-lbl">Celular / WhatsApp</div><div class="p-val" id="val-tel"><span class="p-badge"><span class="b-txt">—</span><span class="b-dot"></span></span></div><div class="p-edit"><input type="tel" id="edit-tel" class="mask-tel" aria-label="Celular / WhatsApp"></div></div>
+        <div class="p-field"><div class="p-lbl">Cadastro desde</div><div class="p-val" id="val-desde"><span class="p-badge"><span class="b-txt">—</span><span class="b-dot"></span></span></div></div>
       </div>
+      <p class="p-nota">CPF e e-mail não mudam por aqui: o e-mail é o login e o CPF identifica o cadastro.</p>
     </div>
 
     <div class="p-card">
-      <h3><img src="../../assets/img/icons/briefcase.svg" width="16" height="16" alt=""> Dados Profissionais</h3>
-      <div class="p-grid">
-        <div class="p-field"><div class="p-lbl">Turno</div><div class="p-val" id="val-turno"><span class="p-badge"><span class="b-txt">07h – 15h (Matutino)</span><span class="b-dot"></span></span></div><div class="p-edit"><select id="edit-turno"><option value="07h – 15h (Matutino)" selected>07h – 15h (Matutino)</option><option value="15h – 23h (Vespertino)">15h – 23h (Vespertino)</option><option value="23h – 07h (Noturno)">23h – 07h (Noturno)</option></select></div></div>
-        <div class="p-field"><div class="p-lbl">Tipo de Contrato</div><div class="p-val" id="val-contrato"><span class="p-badge"><span class="b-txt">CLT</span><span class="b-dot"></span></span></div><div class="p-edit"><select id="edit-contrato"><option value="CLT" selected>CLT</option><option value="PJ">PJ</option><option value="Temporário">Temporário</option><option value="Estágio">Estágio</option></select></div></div>
-        <div class="p-field"><div class="p-lbl">Data de Início</div><div class="p-val" id="val-inicio"><span class="p-badge"><span class="b-txt">10/01/2024</span><span class="b-dot"></span></span></div><div class="p-edit"><input type="date" id="edit-inicio" value="2024-01-10"></div></div>
-        <div class="p-field"><div class="p-lbl">Local de Atuação</div><div class="p-val" id="val-local"><span class="p-badge"><span class="b-txt">Portaria Principal</span><span class="b-dot"></span></span></div><div class="p-edit"><input type="text" id="edit-local" value="Portaria Principal"></div></div>
-      </div>
-    </div>
-
-    <div class="p-card">
-      <h3><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""> Permissões de Acesso</h3>
-      <div class="p-grid">
-        <div class="p-field"><div class="p-lbl">Visitantes</div><div class="p-val"><span class="p-badge"><span class="b-icon green"><img src="../../assets/img/icons/circle-check.svg" width="10" height="10" alt=""></span><span class="b-txt">Acesso total</span><span class="b-dot"></span></span></div></div>
-        <div class="p-field"><div class="p-lbl">Encomendas</div><div class="p-val"><span class="p-badge"><span class="b-icon green"><img src="../../assets/img/icons/circle-check.svg" width="10" height="10" alt=""></span><span class="b-txt">Acesso total</span><span class="b-dot"></span></span></div></div>
-        <div class="p-field"><div class="p-lbl">Veículos</div><div class="p-val"><span class="p-badge"><span class="b-icon green"><img src="../../assets/img/icons/circle-check.svg" width="10" height="10" alt=""></span><span class="b-txt">Acesso total</span><span class="b-dot"></span></span></div></div>
-        <div class="p-field"><div class="p-lbl">Ocorrências</div><div class="p-val"><span class="p-badge"><span class="b-icon green"><img src="../../assets/img/icons/circle-check.svg" width="10" height="10" alt=""></span><span class="b-txt">Acesso total</span><span class="b-dot"></span></span></div></div>
-        <div class="p-field"><div class="p-lbl">Financeiro</div><div class="p-val"><span class="p-badge"><span class="b-icon red"><img src="../../assets/img/icons/circle-xmark.svg" width="10" height="10" alt=""></span><span class="b-txt">Sem acesso</span><span class="b-dot"></span></span></div></div>
-      </div>
+      <h3><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""> Segurança</h3>
+      <form id="formSenha" class="p-senha" novalidate>
+        <div class="p-grid">
+          <div class="form-group"><label for="senhaAtual">Senha atual</label><input type="password" id="senhaAtual" autocomplete="current-password"></div>
+          <div class="form-group"><label for="senhaNova">Nova senha</label><input type="password" id="senhaNova" minlength="8" autocomplete="new-password"></div>
+          <div class="form-group"><label for="senhaConfirma">Repita a nova senha</label><input type="password" id="senhaConfirma" minlength="8" autocomplete="new-password"></div>
+        </div>
+        <p class="form-erro" id="erroSenha" role="alert"></p>
+        <button type="submit" class="action-btn" style="width:auto;margin:0;padding:10px 20px;font-size:13px;">Trocar senha</button>
+      </form>
     </div>
 
     <div class="p-actions" id="viewActions">
@@ -189,193 +183,199 @@
     <div class="t-progress"></div>
   </div>
 
-  <input type="file" id="avatarInput" accept="image/*" onchange="trocarAvatar(event)" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
+  <input type="file" id="avatarInput" aria-label="Selecionar foto de perfil" accept="image/*" onchange="trocarAvatar(event)" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
   <script src="../../assets/js/validation.js"></script>
-  <script>
-    const STORAGE_KEY = 'smartcondo_perfil_porteiro';
-    let dadosOriginais = null;
+<script>
+/* Perfil: carrega o próprio cadastro de GET /auth/eu e grava o que o
+   sistema deixa o usuário mudar — nome, telefone e data de nascimento —
+   em PATCH /usuarios/eu. A senha vai por POST /auth/senha/trocar. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api;
+  var usuario = api.protegerPagina('porteiro');
+  if (!usuario) return;
 
-    const fields = [
-      { id: 'nome', isNome: true },
-      { id: 'nasc', isDate: true },
-      { id: 'email' }, { id: 'tel' },
-      { id: 'turno' }, { id: 'contrato' }, { id: 'inicio', isDate: true }, { id: 'local' },
-    ];
+  function campo(id) { return document.getElementById(id); }
+  var perfil = null;
+  var dadosOriginais = null;
 
-    function setField(el, val, isDate) {
-      if (!el) return;
-      var badge = el.querySelector('.b-txt');
-      var txt = val || '';
-      if (isDate && val) {
-        var p = val.split('-');
-        txt = p[2] + '/' + p[1] + '/' + p[0];
-      }
-      if (badge) { badge.textContent = txt; }
-      else { el.textContent = txt; }
+  var ROTULO_OCUPACAO = {
+    proprietario: 'Proprietário', inquilino: 'Inquilino', coabitante: 'Coabitante'
+  };
+
+  function mostrar(id, texto) {
+    var el = campo('val-' + id);
+    if (!el) return;
+    var badge = el.querySelector('.b-txt');
+    if (badge) badge.textContent = texto || '—';
+    else el.textContent = texto || '—';
+  }
+  function formatarTelefone(valor) {
+    var d = (valor || '').replace(/\D/g, '');
+    if (d.length === 11) return '(' + d.slice(0, 2) + ') ' + d.slice(2, 7) + '-' + d.slice(7);
+    if (d.length === 10) return '(' + d.slice(0, 2) + ') ' + d.slice(2, 6) + '-' + d.slice(6);
+    return valor || '';
+  }
+  function formatarCpf(valor) {
+    var d = (valor || '').replace(/\D/g, '');
+    if (d.length !== 11) return valor || '';
+    return d.slice(0, 3) + '.' + d.slice(3, 6) + '.' + d.slice(6, 9) + '-' + d.slice(9);
+  }
+  function dataBr(iso) {
+    if (!iso) return '';
+    var p = String(iso).slice(0, 10).split('-');
+    return p[2] + '/' + p[1] + '/' + p[0];
+  }
+  function mesAno(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                 'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    return meses[d.getMonth()] + ' de ' + d.getFullYear();
+  }
+
+  function pintar(p) {
+    perfil = p;
+    campo('viewNome').textContent = p.nome;
+    var nomeTopo = document.getElementById('hdrName');
+    if (nomeTopo) nomeTopo.textContent = p.nome;
+
+    mostrar('nome', p.nome);
+    mostrar('cpf', formatarCpf(p.cpf));
+    mostrar('nasc', p.data_nascimento ? dataBr(p.data_nascimento) : 'Não informada');
+    mostrar('email', p.email);
+    mostrar('tel', formatarTelefone(p.telefone));
+    mostrar('desde', mesAno(p.criado_em));
+
+    if (campo('val-apto')) {
+      mostrar('apto', p.unidade ? p.unidade.numero : '—');
+      mostrar('bloco', p.unidade && p.unidade.bloco && p.unidade.bloco !== 'unico'
+        ? p.unidade.bloco : 'Único');
+      mostrar('andar', p.unidade && p.unidade.andar ? p.unidade.andar + 'º andar' : '—');
+      mostrar('ocupacao', ROTULO_OCUPACAO[p.tipo_ocupacao] || '—');
+      mostrar('vagas', p.unidade ? String(p.unidade.vagas_garagem) : '—');
     }
 
-    function carregarDados() {
-      const salvos = localStorage.getItem(STORAGE_KEY);
-      if (!salvos) return;
-      const dados = JSON.parse(salvos);
-      fields.forEach(f => {
-        const val = dados[f.id];
-        if (val !== undefined) {
-          const elView = document.getElementById('val-' + f.id);
-          const elEdit = document.getElementById('edit-' + f.id);
-          setField(elView, val, f.isDate);
-          if (elEdit) elEdit.value = val || '';
-        }
+    campo('edit-nome').value = p.nome;
+    campo('edit-tel').value = formatarTelefone(p.telefone);
+    campo('edit-nasc').value = p.data_nascimento ? String(p.data_nascimento).slice(0, 10) : '';
+
+    var sub = campo('tituloSub');
+    if (sub) {
+      sub.textContent = (p.unidade ? 'Apto ' + p.unidade.numero + ' — ' : '') + p.nome;
+    }
+
+    var etiqueta = document.querySelector('.p-tag');
+    if (etiqueta) {
+      etiqueta.textContent = (p.unidade ? 'Apto ' + p.unidade.numero : '') || '';
+      api.get('/condominios/meu')
+        .then(function(c) {
+          etiqueta.textContent = c.nome + (p.unidade ? ' · Apto ' + p.unidade.numero : '');
+        })
+        .catch(function() {});
+    }
+    if (p.foto_url) {
+      var img = campo('avatarPreview'), icone = campo('avatarIcon');
+      if (img) { img.src = p.foto_url; img.style.display = 'block'; }
+      if (icone) icone.style.display = 'none';
+    }
+  }
+
+  function entrarEdicao() {
+    dadosOriginais = {};
+    document.querySelectorAll('.p-edit input, .p-edit select').forEach(function(inp) {
+      dadosOriginais[inp.id] = inp.value;
+    });
+    document.querySelectorAll('.p-card').forEach(function(c) { c.classList.add('edit-mode'); });
+    campo('viewActions').style.display = 'none';
+    campo('editActions').style.display = 'flex';
+  }
+
+  function sairEdicao() {
+    document.querySelectorAll('.p-card').forEach(function(c) { c.classList.remove('edit-mode'); });
+    campo('viewActions').style.display = 'flex';
+    campo('editActions').style.display = 'none';
+    dadosOriginais = null;
+  }
+
+  function cancelarEdicao() {
+    if (dadosOriginais) {
+      document.querySelectorAll('.p-edit input, .p-edit select').forEach(function(inp) {
+        if (dadosOriginais[inp.id] !== undefined) inp.value = dadosOriginais[inp.id];
       });
-      if (dados.nome) document.getElementById('viewNome').textContent = dados.nome;
-      if (dados.avatar) {
-        const img = document.getElementById('avatarPreview');
-        const icon = document.getElementById('avatarIcon');
-        const rmBtn = document.getElementById('btnRemoveAvatar');
-        const modalImg = document.getElementById('modalFotoImg');
-        img.src = dados.avatar; img.style.display = 'block'; icon.style.display = 'none';
-        if (rmBtn) rmBtn.style.display = 'flex';
-        if (modalImg) modalImg.src = dados.avatar;
-      }
+    }
+    sairEdicao();
+  }
+
+  function salvarDados() {
+    var nome = campo('edit-nome').value.trim();
+    if (nome.length < 3) {
+      mostrarToast('Não foi possível salvar', 'O nome precisa ter pelo menos 3 caracteres.');
+      return;
+    }
+    var corpo = { nome: nome, telefone: campo('edit-tel').value };
+    // Data em branco significa "não informada"; a API aceita nulo.
+    corpo.data_nascimento = campo('edit-nasc').value || null;
+
+    var botao = campo('editActions').querySelector('button');
+    if (botao) botao.disabled = true;
+
+    api.patch('/usuarios/eu', corpo)
+      .then(function(p) {
+        pintar(p);
+        // A sessão guarda o nome que aparece no topo das outras telas.
+        api.sessao.abrir(api.sessao.token(), p);
+        sairEdicao();
+        mostrarToast('Perfil atualizado', 'Suas alterações foram salvas.');
+      })
+      .catch(function(e) { mostrarToast('Não foi possível salvar', e.message); })
+      .then(function() { if (botao) botao.disabled = false; });
+  }
+
+  campo('formSenha').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('erroSenha');
+    erro.className = 'form-erro';
+    erro.textContent = '';
+
+    var atual = campo('senhaAtual').value;
+    var nova = campo('senhaNova').value;
+    var confirma = campo('senhaConfirma').value;
+    if (!atual || !nova) {
+      erro.textContent = 'Informe a senha atual e a nova senha.';
+      return;
+    }
+    if (nova.length < 8) {
+      erro.textContent = 'A nova senha precisa ter pelo menos 8 caracteres.';
+      return;
+    }
+    if (nova !== confirma) {
+      erro.textContent = 'A confirmação não confere com a nova senha.';
+      return;
     }
 
-    function entrarEdicao() {
-      dadosOriginais = {};
-      document.querySelectorAll('.p-field').forEach(el => {
-        const inp = el.querySelector('.p-edit input, .p-edit select');
-        if (inp) dadosOriginais[inp.id] = inp.value;
-      });
-      document.querySelectorAll('.p-card').forEach(c => c.classList.add('edit-mode'));
-      document.getElementById('viewActions').style.display = 'none';
-      document.getElementById('editActions').style.display = 'flex';
-    }
+    var botao = this.querySelector('button[type=submit]');
+    botao.disabled = true;
+    api.post('/auth/senha/trocar', { senha_atual: atual, nova_senha: nova })
+      .then(function() {
+        campo('formSenha').reset();
+        erro.className = 'form-erro sucesso';
+        erro.textContent = 'Senha alterada.';
+      })
+      .catch(function(e) { erro.textContent = e.message; })
+      .then(function() { botao.disabled = false; });
+  });
 
-    function salvarDados() {
-      const dados = {};
-      fields.forEach(f => {
-        const el = document.getElementById('edit-' + f.id);
-        if (el) dados[f.id] = el.value;
-      });
-      if (document.getElementById('edit-nome')) dados.nome = document.getElementById('edit-nome').value;
-      const avatarImg = document.getElementById('avatarPreview');
-      if (avatarImg.src && avatarImg.style.display !== 'none') dados.avatar = avatarImg.src;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
-      fields.forEach(f => {
-        const elEdit = document.getElementById('edit-' + f.id);
-        const elView = document.getElementById('val-' + f.id);
-        setField(elView, elEdit ? elEdit.value : '', f.isDate);
-      });
-      if (dados.nome) document.getElementById('viewNome').textContent = dados.nome;
-      sairEdicao();
-      mostrarToast('Dados salvos com sucesso', 'Todas as alterações foram armazenadas');
-    }
+  window.entrarEdicao = entrarEdicao;
+  window.salvarDados = salvarDados;
+  window.cancelarEdicao = cancelarEdicao;
 
-    function cancelarEdicao() {
-      if (dadosOriginais) {
-        document.querySelectorAll('.p-field').forEach(el => {
-          const inp = el.querySelector('.p-edit input, .p-edit select');
-          if (inp && dadosOriginais[inp.id] !== undefined) inp.value = dadosOriginais[inp.id];
-        });
-      }
-      sairEdicao();
-    }
+  api.get('/auth/eu')
+    .then(pintar)
+    .catch(function(e) { mostrarToast('Não foi possível carregar o perfil', e.message); });
+})();
+</script>
 
-    function sairEdicao() {
-      document.querySelectorAll('.p-card').forEach(c => c.classList.remove('edit-mode'));
-      document.getElementById('viewActions').style.display = 'flex';
-      document.getElementById('editActions').style.display = 'none';
-      dadosOriginais = null;
-    }
-
-    function trocarAvatar(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(ev) {
-        const img = document.getElementById('avatarPreview');
-        const icon = document.getElementById('avatarIcon');
-        const rmBtn = document.getElementById('btnRemoveAvatar');
-        const modalImg = document.getElementById('modalFotoImg');
-        img.src = ev.target.result; img.style.display = 'block'; icon.style.display = 'none';
-        if (rmBtn) rmBtn.style.display = 'flex';
-        if (modalImg) modalImg.src = ev.target.result;
-        try {
-          const dados = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-          dados.avatar = ev.target.result;
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
-        } catch(_) {}
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function removerAvatar() {
-      const img = document.getElementById('avatarPreview');
-      const icon = document.getElementById('avatarIcon');
-      const rmBtn = document.getElementById('btnRemoveAvatar');
-      const modalImg = document.getElementById('modalFotoImg');
-      const modalRmBtn = document.getElementById('modalRemoverBtn');
-      img.src = ''; img.style.display = 'none'; icon.style.display = 'block';
-      if (rmBtn) rmBtn.style.display = 'none';
-      if (modalImg) modalImg.src = icon.src;
-      if (modalRmBtn) modalRmBtn.style.display = 'none';
-      try {
-        const dados = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-        delete dados.avatar;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
-      } catch(_) {}
-    }
-
-    function abrirModalFoto() {
-      const overlay = document.getElementById('modalFoto');
-      const avatarIcon = document.getElementById('avatarIcon');
-      const avatarImg = document.getElementById('avatarPreview');
-      const modalImg = document.getElementById('modalFotoImg');
-      const addBtn = document.getElementById('modalAddFotoBtn');
-      const trocarBtn = document.getElementById('modalTrocarBtn');
-      const rmBtn = document.getElementById('modalRemoverBtn');
-      const hasFoto = avatarImg.style.display !== 'none' && avatarImg.src;
-      if (hasFoto) {
-        modalImg.src = avatarImg.src;
-        addBtn.style.display = 'none';
-        trocarBtn.style.display = '';
-        rmBtn.style.display = '';
-      } else {
-        modalImg.src = avatarIcon.src;
-        addBtn.style.display = '';
-        trocarBtn.style.display = 'none';
-        rmBtn.style.display = 'none';
-      }
-      overlay.classList.add('show');
-    }
-
-    function fecharModalFoto(e) {
-      if (e && e.target !== e.currentTarget) return;
-      document.getElementById('modalFoto').classList.remove('show');
-    }
-
-    function mostrarToast(msg, sub) {
-      const toast = document.getElementById('toast');
-      const title = document.getElementById('toastTitle');
-      const subEl = document.getElementById('toastSub');
-      if (title) title.textContent = msg || 'Dados salvos';
-      if (subEl) subEl.textContent = sub || 'Suas informações foram armazenadas com segurança';
-      toast.className = 'toast';
-      void toast.offsetWidth;
-      toast.classList.add('show');
-      clearTimeout(toast._timer);
-      toast._timer = setTimeout(function() {
-        toast.classList.remove('show');
-      }, 3200);
-    }
-
-    function mostrarStatus() {
-      var s = document.getElementById('pStatus');
-      if (s) { s.classList.add('show'); }
-    }
-
-    carregarDados();
-    mostrarStatus();
-  </script>
 <script src="../../assets/js/sessao.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>
 </body>

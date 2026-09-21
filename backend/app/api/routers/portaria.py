@@ -341,6 +341,7 @@ def _ocorrencia_saida(db: Session, o: Ocorrencia) -> OcorrenciaSaida:
     unidade = db.get(Unidade, o.unidade_id) if o.unidade_id else None
     return OcorrenciaSaida(
         id=o.id, titulo=o.titulo, descricao=o.descricao, categoria=o.categoria,
+        local=o.local, prioridade=o.prioridade,
         foto_url=o.foto_url, status=o.status, aberta_por_id=o.aberta_por_id,
         aberta_por_nome=o.aberta_por.nome,
         unidade=unidade.identificacao if unidade else None,

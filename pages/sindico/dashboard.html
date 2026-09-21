@@ -26,21 +26,21 @@
   <main class="dash-wrapper wide">
 
     <div class="dash-greeting">
-      <p class="greeting-sub"> Painel Administrativo</p>
-      <h2 class="greeting-name">Roberto Nascimento</h2>
-      <p class="greeting-condo"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Residencial das Palmeiras &nbsp;·&nbsp; Síndico desde Jan 2023</p>
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h2 class="greeting-name" id="saudacaoNome">…</h2>
+      <p class="greeting-condo"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> <span id="saudacaoCondominio">Carregando…</span></p>
     </div>
 
     <div class="admin-stats">
-      <div class="admin-stat teal"><span class="stat-value">48</span><span class="stat-label"> Moradores</span></div>
-      <div class="admin-stat red"><span class="stat-value">6</span><span class="stat-label"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt=""> Inadimplentes</span></div>
-      <div class="admin-stat amber"><span class="stat-value">3</span><span class="stat-label"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Reservas hoje</span></div>
-      <div class="admin-stat blue"><span class="stat-value">2</span><span class="stat-label"><img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt=""> Ocorrências</span></div>
+      <div class="admin-stat teal"><span class="stat-value" id="totMoradores">—</span><span class="stat-label">Moradores</span></div>
+      <div class="admin-stat red"><span class="stat-value" id="totInadimplentes">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt="">Em atraso</span></div>
+      <div class="admin-stat amber"><span class="stat-value" id="totReservas">—</span><span class="stat-label"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt="">Reservas a aprovar</span></div>
+      <div class="admin-stat blue"><span class="stat-value" id="totOcorrencias">—</span><span class="stat-label"><img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt="">Ocorrências abertas</span></div>
     </div>
 
-    <div class="alert-box warning">
+    <div class="alert-box warning" id="avisoPendencias" hidden>
       <img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt="">
-      <span><strong>6 unidades</strong> estão inadimplentes referentes ao mês de fevereiro. Clique em Financeiro para detalhes.</span>
+      <span id="textoPendencias"></span>
     </div>
 
     <p class="section-title"> Módulos de Gestão</p>
@@ -69,47 +69,34 @@
         <div class="card-icon icon-red"><img src="../../assets/img/icons/manutencao.svg" width="16" height="16" alt="Manutenção"></div>
         <h4>Manutenção</h4><p>Ordens de serviço e fornecedores</p>
       </a>
+      <a href="ocorrencias.html" class="dash-card-sq">
+        <div class="card-icon icon-yellow"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt="Ocorrências"></div>
+        <h4>Ocorrências</h4><p>Chamados de moradores e porteiros</p>
+      </a>
     </div>
 
-    <p class="section-title"> Resumo Financeiro — Março 2025</p>
+    <p class="section-title">Resumo Financeiro</p>
     <div class="stats-row" style="margin-bottom:26px;">
-      <div class="stat-card teal"><span class="stat-value">R$18.400</span><span class="stat-label"> Receita prevista</span></div>
-      <div class="stat-card blue"><span class="stat-value">R$14.600</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt=""> Arrecadado</span></div>
-      <div class="stat-card red"><span class="stat-value">R$3.800</span><span class="stat-label"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt=""> Inadimplência</span></div>
+      <div class="stat-card teal"><span class="stat-value" id="finRecebido">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Recebido</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="finAberto">—</span><span class="stat-label">Em aberto</span></div>
+      <div class="stat-card red"><span class="stat-value" id="finVencido">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt="">Vencido</span></div>
     </div>
 
-    <p class="section-title"> Unidades Inadimplentes</p>
-    <div class="data-table">
-      <div class="table-head cols-4"><span><img src="../../assets/img/icons/user.svg" width="16" height="16" alt=""> Unidade / Morador</span><span> Meses</span><span> Valor</span><span> Status</span></div>
-      <div class="table-row cols-4"><span><strong>Apto 103</strong> — Ana Ribeiro</span><span>2 meses</span><span>R$760</span><span><span class="badge badge-alert">Atrasado</span></span></div>
-      <div class="table-row cols-4"><span><strong>Apto 207</strong> — Pedro Lima</span><span>1 mês</span><span>R$380</span><span><span class="badge badge-pending">Em atraso</span></span></div>
-      <div class="table-row cols-4"><span><strong>Apto 301</strong> — Sandra Costa</span><span>3 meses</span><span>R$1.140</span><span><span class="badge badge-alert">Atrasado</span></span></div>
-      <div class="table-row cols-4"><span><strong>Apto 402</strong> — Bruno Melo</span><span>1 mês</span><span>R$380</span><span><span class="badge badge-pending">Em atraso</span></span></div>
-      <div class="table-row cols-4"><span><strong>Apto 405</strong> — Carla Duarte</span><span>2 meses</span><span>R$760</span><span><span class="badge badge-alert">Atrasado</span></span></div>
-      <div class="table-row cols-4"><span><strong>Apto 502</strong> — Thiago Nunes</span><span>1 mês</span><span>R$380</span><span><span class="badge badge-pending">Em atraso</span></span></div>
+    <p class="section-title">Cobranças Vencidas</p>
+    <div class="data-table tabela-status" id="tabelaVencidas">
+      <div class="table-head cols-4"><span><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Unidade</span><span>Competência</span><span>Valor</span><span>Situação</span></div>
     </div>
+    <p class="estado-lista" id="estadoVencidas">Carregando…</p>
 
     <p class="section-title"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Reservas Recentes</p>
-    <div class="data-table">
-      <div class="table-head cols-4"><span><img src="../../assets/img/icons/user.svg" width="16" height="16" alt=""> Morador</span><span> Espaço</span><span> Data</span><span> Status</span></div>
-      <div class="table-row cols-4"><span>João Silva — Apto 204</span><span>Salão de Festas</span><span>22/03</span><span><span class="badge badge-ok">Aprovada</span></span></div>
-      <div class="table-row cols-4"><span>Maria Santos — Apto 115</span><span>Churrasqueira 1</span><span>23/03</span><span><span class="badge badge-ok">Aprovada</span></span></div>
-      <div class="table-row cols-4"><span>Carlos Mendes — Apto 308</span><span>Salão de Festas</span><span>29/03</span><span><span class="badge badge-pending">Pendente</span></span></div>
+    <div class="data-table tabela-status" id="tabelaReservas">
+      <div class="table-head cols-4"><span><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Morador</span><span>Espaço</span><span>Data</span><span>Situação</span></div>
     </div>
+    <p class="estado-lista" id="estadoReservas">Carregando…</p>
 
     <p class="section-title"><img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt=""> Ocorrências em Aberto</p>
-    <div class="list-items">
-      <div class="list-item">
-        <div class="card-icon icon-red" style="width:42px;height:42px;border-radius:10px;flex-shrink:0;"><img src="../../assets/img/icons/triangle-exclamation.svg" alt=""></div>
-        <div class="list-info"><h5>Infiltração no 3º andar</h5><p>Apto 302 reportou manchas de umidade — Aberta em 15/03</p></div>
-        <span class="badge badge-alert">Urgente</span>
-      </div>
-      <div class="list-item">
-        <div class="card-icon icon-yellow" style="width:42px;height:42px;border-radius:10px;flex-shrink:0;"><img src="../../assets/img/icons/bolt.svg" alt=""></div>
-        <div class="list-info"><h5>Lâmpadas apagadas — Corredor B</h5><p>2º andar sem iluminação — Aberta em 16/03</p></div>
-        <span class="badge badge-pending">Em análise</span>
-      </div>
-    </div>
+    <div class="list-items" id="listaOcorrencias"></div>
+    <p class="estado-lista" id="estadoOcorrencias">Carregando…</p>
 
     <p class="section-title"> Ações Administrativas</p>
     <a href="comunicados.html" class="action-btn"> Enviar Comunicado a Todos</a>
@@ -118,6 +105,190 @@
   </main>
 
 <script src="../../assets/js/validation.js"></script>
+<script>
+/* Painel do síndico: um retrato do condomínio montado com o resumo
+   financeiro, as reservas a aprovar e as ocorrências ainda abertas. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api;
+  var usuario = api.protegerPagina('sindico');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+
+  var ROTULO_COBRANCA = { aberta: 'Aberta', vencida: 'Vencida', paga: 'Paga', cancelada: 'Cancelada' };
+  var ROTULO_RESERVA = {
+    pendente: 'Pendente', aprovada: 'Aprovada', recusada: 'Recusada',
+    cancelada: 'Cancelada', concluida: 'Concluída'
+  };
+  var CLASSE_RESERVA = {
+    pendente: 'badge-pending', aprovada: 'badge-ok', recusada: 'badge-alert',
+    cancelada: 'badge-neutral', concluida: 'badge-blue'
+  };
+  var ROTULO_OCORRENCIA = { aberta: 'Aberta', em_analise: 'Em análise' };
+  var ICONE_PRIORIDADE = {
+    urgente: ['icon-red', 'triangle-exclamation.svg'],
+    alta:    ['icon-yellow', 'circle-exclamation.svg'],
+    normal:  ['icon-teal', 'circle-exclamation.svg'],
+    baixa:   ['icon-blue', 'circle-exclamation.svg']
+  };
+
+  function dinheiro(valor) {
+    return 'R$ ' + Number(valor).toLocaleString('pt-BR', {
+      minimumFractionDigits: 2, maximumFractionDigits: 2
+    });
+  }
+  function partes(iso) { var p = String(iso || '').slice(0, 10).split('-'); return { a: p[0], m: p[1], d: p[2] }; }
+  function dataCurta(iso) { var p = partes(iso); return p.d + '/' + p.m; }
+  function competencia(iso) { var p = partes(iso); return p.m + '/' + p.a; }
+  function hora(h) { return (h || '').slice(0, 5).replace(':', 'h'); }
+
+  var pendencias = [];
+
+  function anotarPendencia(texto) {
+    pendencias.push(texto);
+    campo('avisoPendencias').hidden = false;
+    campo('textoPendencias').textContent = pendencias.join(' · ') + '.';
+  }
+
+  function carregarMoradores() {
+    return api.get('/usuarios?papel=morador').then(function(lista) {
+      var ativos = lista.filter(function(u) { return u.status === 'ativo'; });
+      campo('totMoradores').textContent = ativos.length;
+      var aguardando = lista.filter(function(u) { return u.status === 'aguardando_aprovacao'; });
+      if (aguardando.length) {
+        anotarPendencia(aguardando.length +
+          (aguardando.length === 1 ? ' cadastro aguardando aprovação' : ' cadastros aguardando aprovação'));
+      }
+    }).catch(function() { campo('totMoradores').textContent = '—'; });
+  }
+
+  function carregarFinanceiro() {
+    return Promise.all([
+      api.get('/financeiro/resumo'),
+      api.get('/financeiro/cobrancas?status=vencida')
+    ]).then(function(r) {
+      var resumo = r[0], vencidas = r[1];
+      campo('finRecebido').textContent = dinheiro(resumo.total_recebido);
+      campo('finAberto').textContent = dinheiro(resumo.total_aberto);
+      campo('finVencido').textContent = dinheiro(resumo.total_vencido);
+      campo('totInadimplentes').textContent = resumo.unidades_inadimplentes;
+      if (resumo.unidades_inadimplentes) {
+        anotarPendencia(resumo.unidades_inadimplentes +
+          (resumo.unidades_inadimplentes === 1 ? ' unidade em atraso' : ' unidades em atraso'));
+      }
+
+      var tabela = campo('tabelaVencidas');
+      var cabecalho = tabela.querySelector('.table-head');
+      tabela.innerHTML = '';
+      tabela.appendChild(cabecalho);
+      campo('estadoVencidas').textContent =
+        vencidas.length ? '' : 'Nenhuma cobrança vencida. Tudo em dia.';
+      vencidas.slice(0, 8).forEach(function(c) {
+        var linha = document.createElement('div');
+        linha.className = 'table-row cols-4';
+        linha.innerHTML = '<span><strong></strong></span><span></span><span></span><span><span class="badge badge-alert"></span></span>';
+        linha.children[0].firstChild.textContent = c.unidade || '—';
+        linha.children[1].textContent = competencia(c.competencia);
+        linha.children[2].textContent = dinheiro(Number(c.valor) - Number(c.total_pago || 0));
+        linha.children[3].firstChild.textContent = ROTULO_COBRANCA[c.status] || c.status;
+        tabela.appendChild(linha);
+      });
+    }).catch(function(e) { campo('estadoVencidas').textContent = e.message; });
+  }
+
+  function carregarReservas() {
+    return api.get('/espacos/reservas').then(function(lista) {
+      var pendentes = lista.filter(function(r) { return r.status === 'pendente'; });
+      campo('totReservas').textContent = pendentes.length;
+      if (pendentes.length) {
+        anotarPendencia(pendentes.length +
+          (pendentes.length === 1 ? ' reserva aguardando aprovação' : ' reservas aguardando aprovação'));
+      }
+
+      var tabela = campo('tabelaReservas');
+      var cabecalho = tabela.querySelector('.table-head');
+      tabela.innerHTML = '';
+      tabela.appendChild(cabecalho);
+      campo('estadoReservas').textContent =
+        lista.length ? '' : 'Nenhuma reserva registrada.';
+      lista.slice(0, 6).forEach(function(r) {
+        var linha = document.createElement('div');
+        linha.className = 'table-row cols-4';
+        linha.innerHTML = '<span></span><span></span><span></span><span><span class="badge"></span></span>';
+        linha.children[0].textContent = r.morador_nome + (r.unidade ? ' — ' + r.unidade : '');
+        linha.children[1].textContent = r.espaco_nome;
+        linha.children[2].textContent = dataCurta(r.data) + ' · ' + hora(r.hora_inicio);
+        var selo = linha.children[3].firstChild;
+        selo.className = 'badge ' + (CLASSE_RESERVA[r.status] || 'badge-neutral');
+        selo.textContent = ROTULO_RESERVA[r.status] || r.status;
+        tabela.appendChild(linha);
+      });
+    }).catch(function(e) { campo('estadoReservas').textContent = e.message; });
+  }
+
+  function carregarOcorrencias() {
+    return api.get('/portaria/ocorrencias').then(function(lista) {
+      var abertas = lista.filter(function(o) {
+        return o.status === 'aberta' || o.status === 'em_analise';
+      });
+      campo('totOcorrencias').textContent = abertas.length;
+
+      var caixa = campo('listaOcorrencias');
+      caixa.innerHTML = '';
+      campo('estadoOcorrencias').textContent =
+        abertas.length ? '' : 'Nenhuma ocorrência em aberto.';
+      abertas.slice(0, 5).forEach(function(o) {
+        var item = document.createElement('div');
+        item.className = 'list-item';
+
+        var visual = ICONE_PRIORIDADE[o.prioridade] || ICONE_PRIORIDADE.normal;
+        var icone = document.createElement('div');
+        icone.className = 'card-icon ' + visual[0] + ' icone-ocorrencia';
+        var glifo = document.createElement('span');
+        glifo.className = 'glifo';
+        glifo.style.setProperty('--icone', 'url(../../assets/img/icons/' + visual[1] + ')');
+        icone.appendChild(glifo);
+
+        var info = document.createElement('div');
+        info.className = 'list-info';
+        var h = document.createElement('h5');
+        h.textContent = o.titulo;
+        var p = document.createElement('p');
+        p.textContent = (o.local ? o.local + ' · ' : '') + 'Aberta em ' + dataCurta(o.criado_em) +
+          ' por ' + o.aberta_por_nome;
+        info.appendChild(h); info.appendChild(p);
+
+        var selo = document.createElement('span');
+        selo.className = 'badge ' + (o.prioridade === 'urgente' ? 'badge-alert'
+          : o.status === 'aberta' ? 'badge-pending' : 'badge-blue');
+        selo.textContent = o.prioridade === 'urgente' ? 'Urgente'
+          : (ROTULO_OCORRENCIA[o.status] || o.status);
+
+        item.appendChild(icone); item.appendChild(info); item.appendChild(selo);
+        caixa.appendChild(item);
+      });
+    }).catch(function(e) { campo('estadoOcorrencias').textContent = e.message; });
+  }
+
+  campo('saudacaoNome').textContent = usuario.nome;
+  var nomeTopo = document.getElementById('hdrName');
+  if (nomeTopo) nomeTopo.textContent = usuario.nome;
+
+  api.get('/condominios/meu')
+    .then(function(c) {
+      return api.get('/condominios/meu/unidades').then(function(u) {
+        campo('saudacaoCondominio').textContent = c.nome + ' · ' + u.length + ' unidades';
+      }, function() { campo('saudacaoCondominio').textContent = c.nome; });
+    })
+    .catch(function() { campo('saudacaoCondominio').textContent = ''; });
+
+  carregarMoradores();
+  carregarFinanceiro();
+  carregarReservas();
+  carregarOcorrencias();
+})();
+</script>
 <script src="../../assets/js/sessao.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>
 </body>

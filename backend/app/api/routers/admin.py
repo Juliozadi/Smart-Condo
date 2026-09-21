@@ -82,6 +82,24 @@ def _usuario_saida(db: Session, u: Usuario) -> UsuarioAdminSaida:
     )
 
 
+# Quem digita "Joao" precisa encontrar "João". O ilike do Postgres é
+# indiferente a maiúsculas, mas não a acentos; o translate abaixo tira os
+# acentos dos dois lados sem depender da extensão unaccent, que nem toda
+# instalação tem.
+_COM_ACENTO = "áàâãäéèêëíìîïóòôõöúùûüçñÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇÑ"
+_SEM_ACENTO = "aaaaaeeeeiiiiooooouuuucnAAAAAEEEEIIIIOOOOOUUUUCN"
+
+
+def _sem_acento(coluna):
+    """Versão da coluna sem acentos, para comparar com o termo buscado."""
+    return func.translate(coluna, _COM_ACENTO, _SEM_ACENTO)
+
+
+def _termo_sem_acento(busca: str) -> str:
+    tabela = str.maketrans(_COM_ACENTO, _SEM_ACENTO)
+    return f"%{busca.strip().translate(tabela)}%"
+
+
 def _buscar_condominio(db: Session, condominio_id: int) -> Condominio:
     condominio = db.get(Condominio, condominio_id)
     if condominio is None:
@@ -125,10 +143,10 @@ def listar_condominios(
 ) -> list[CondominioAdminSaida]:
     consulta = select(Condominio).order_by(Condominio.nome)
     if busca:
-        termo = f"%{busca.strip()}%"
+        termo = _termo_sem_acento(busca)
         consulta = consulta.where(
-            Condominio.nome.ilike(termo)
-            | Condominio.cidade.ilike(termo)
+            _sem_acento(Condominio.nome).ilike(termo)
+            | _sem_acento(Condominio.cidade).ilike(termo)
             | Condominio.cnpj.ilike(termo)
         )
     return [_condominio_saida(db, c) for c in db.scalars(consulta).all()]
@@ -264,9 +282,11 @@ def listar_usuarios(
     if status_usuario is not None:
         consulta = consulta.where(Usuario.status == status_usuario)
     if busca:
-        termo = f"%{busca.strip()}%"
+        termo = _termo_sem_acento(busca)
         consulta = consulta.where(
-            Usuario.nome.ilike(termo) | Usuario.email.ilike(termo) | Usuario.cpf.ilike(termo)
+            _sem_acento(Usuario.nome).ilike(termo)
+            | Usuario.email.ilike(termo)
+            | Usuario.cpf.ilike(termo)
         )
     return [_usuario_saida(db, u) for u in db.scalars(consulta).all()]
 

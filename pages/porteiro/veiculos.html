@@ -38,119 +38,242 @@
     </div>
 
     <div class="stats-row">
-      <div class="stat-card teal"><span class="stat-value">18</span><span class="stat-label"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">No estac.</span></div>
-      <div class="stat-card blue"><span class="stat-value">24</span><span class="stat-label">Total vagas</span></div>
-      <div class="stat-card amber"><span class="stat-value">6</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Livres</span></div>
+      <div class="stat-card teal"><span class="stat-value" id="totOcupadas">—</span><span class="stat-label"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">No estac.</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totVagas">—</span><span class="stat-label">Total vagas</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totLivres">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Livres</span></div>
     </div>
 
     <!-- Ocupação visual -->
-    <p class="section-title"> Ocupação do Estacionamento</p>
-    <div style="background:var(--surface);border-radius:var(--radius-md);padding:20px;box-shadow:var(--shadow-sm);border:1px solid var(--border);margin-bottom:24px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-        <span style="font-size:14px;font-weight:700;color:var(--text);">18 de 24 vagas ocupadas</span>
-        <span style="font-size:13px;font-weight:600;color:#c88b1a;">75% ocupado</span>
+    <p class="section-title">Ocupação do Estacionamento</p>
+    <div class="painel-ocupacao">
+      <div class="ocupacao-cabecalho">
+        <span class="ocupacao-texto" id="ocupacaoTexto">Carregando…</span>
+        <span class="ocupacao-percentual" id="ocupacaoPercentual"></span>
       </div>
-      <div style="background:var(--border);border-radius:8px;height:10px;overflow:hidden;">
-        <div style="width:75%;height:100%;background:linear-gradient(90deg,#13bfb0,#e6a23c);border-radius:8px;"></div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:16px;">
-        <!-- Vagas ocupadas (teal) e livres (cinza) -->
-        <div style="height:32px;border-radius:6px;background:linear-gradient(135deg,#13bfb0,#0da099);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;">01</div>
-        <div style="height:32px;border-radius:6px;background:linear-gradient(135deg,#13bfb0,#0da099);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;">02</div>
-        <div style="height:32px;border-radius:6px;background:linear-gradient(135deg,#13bfb0,#0da099);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;">03</div>
-        <div style="height:32px;border-radius:6px;background:linear-gradient(135deg,#13bfb0,#0da099);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;">04</div>
-        <div style="height:32px;border-radius:6px;background:linear-gradient(135deg,#13bfb0,#0da099);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;">05</div>
-        <div style="height:32px;border-radius:6px;background:linear-gradient(135deg,#13bfb0,#0da099);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;">06</div>
-        <div style="height:32px;border-radius:6px;background:var(--surface-2);border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--muted);">07</div>
-        <div style="height:32px;border-radius:6px;background:var(--surface-2);border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--muted);">08</div>
-        <div style="height:32px;border-radius:6px;background:linear-gradient(135deg,#13bfb0,#0da099);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;">09</div>
-        <div style="height:32px;border-radius:6px;background:linear-gradient(135deg,#13bfb0,#0da099);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;">10</div>
-        <div style="height:32px;border-radius:6px;background:linear-gradient(135deg,#13bfb0,#0da099);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;">11</div>
-        <div style="height:32px;border-radius:6px;background:linear-gradient(135deg,#13bfb0,#0da099);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;">12</div>
-        <div style="height:32px;border-radius:6px;background:linear-gradient(135deg,#f87171,#ef4444);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;" title="Vaga de visitante">V1</div>
-        <div style="height:32px;border-radius:6px;background:linear-gradient(135deg,#f87171,#ef4444);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;" title="Vaga de visitante">V2</div>
-        <div style="height:32px;border-radius:6px;background:var(--surface-2);border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--muted);">V3</div>
-        <div style="height:32px;border-radius:6px;background:var(--surface-2);border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--muted);">V4</div>
-      </div>
-      <div style="display:flex;gap:16px;margin-top:12px;font-size:11px;font-weight:600;color:var(--muted);">
-        <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--primary);margin-right:5px;"></span>Morador</span>
-        <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#ef4444;margin-right:5px;"></span>Visitante</span>
-        <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--border);margin-right:5px;border:1px dashed #bbb;"></span>Livre</span>
-      </div>
+      <div class="ocupacao-trilho"><div class="ocupacao-preenchida" id="ocupacaoBarra"></div></div>
+      <p class="ocupacao-nota">As vagas totais vêm da soma das vagas cadastradas nas unidades.</p>
     </div>
+
+    <p class="section-title"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt=""> Veículos no Pátio Agora</p>
+    <div class="data-table tabela-status" id="tabelaPatio">
+      <div class="table-head cols-4"><span><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Placa</span><span>Modelo / cor</span><span><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Apto</span><span>Entrou</span></div>
+    </div>
+    <p class="estado-lista" id="estadoPatio">Carregando…</p>
 
     <!-- Registrar entrada/saída -->
     <p class="section-title">Registrar Movimentação</p>
     <div class="form-card">
       <h3><img src="../../assets/img/icons/car.svg" width="16" height="16" alt=""> Dados do Veículo</h3>
-      <form action="dashboard.html">
+      <form id="formVeiculo" novalidate>
         <div class="form-row">
           <div class="form-group">
-            <label><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Placa do veículo</label>
-            <input type="text" placeholder="ABC-1D23" class="mask-placa" style="text-transform:uppercase;letter-spacing:2px;font-weight:700;font-size:16px;" maxlength="8" required>
+            <label for="veicul_placaDoVeiculo"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Placa do veículo</label>
+            <input id="veicul_placaDoVeiculo" type="text" placeholder="ABC-1D23" class="mask-placa" style="text-transform:uppercase;letter-spacing:2px;font-weight:700;font-size:16px;" maxlength="8" required>
           </div>
           <div class="form-group">
-            <label>Tipo de movimentação</label>
-            <select required>
+            <label for="veicul_tipoDeMovimentacao">Tipo de movimentação</label>
+            <select id="veicul_tipoDeMovimentacao" required>
               <option value="" disabled selected>Selecione</option>
-              <option>🔵 Entrada — Morador</option>
-              <option>🔵 Saída — Morador</option>
-              <option>🔴 Entrada — Visitante</option>
-              <option>🔴 Saída — Visitante</option>
-              <option>🟡 Entrada — Prestador de serviço</option>
+              <option value="entrada|morador">Entrada — Morador</option>
+              <option value="saida|morador">Saída — Morador</option>
+              <option value="entrada|visitante">Entrada — Visitante</option>
+              <option value="saida|visitante">Saída — Visitante</option>
+              <option value="entrada|prestador">Entrada — Prestador de serviço</option>
+              <option value="saida|prestador">Saída — Prestador de serviço</option>
             </select>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Apartamento</label>
-            <select required>
-              <option value="" disabled selected>Selecione</option>
-              <option>Apto 101</option><option>Apto 102</option><option>Apto 204</option>
-              <option>Apto 305</option><option>Apto 410</option><option>Visitante</option>
+            <label for="veicul_apartamento"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Apartamento</label>
+            <select id="veicul_apartamento">
+              <option value="" selected>Sem vínculo com unidade</option>
             </select>
           </div>
           <div class="form-group">
-            <label><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Horário</label>
-            <input type="time" required>
+            <label for="veicul_modelo">Modelo e cor (opcional)</label>
+            <input id="veicul_modelo" type="text" maxlength="60" placeholder="Ex: Honda Civic prata">
           </div>
         </div>
+        <p class="form-erro" id="erroVeiculo" role="alert"></p>
         <button class="action-btn" type="submit" style="margin-top:4px;">
           <img src="../../assets/img/icons/check.svg" width="16" height="16" alt=""> Registrar Movimentação
         </button>
       </form>
     </div>
 
-    <!-- Histórico de hoje -->
-    <p class="section-title"> Movimentações de Hoje</p>
-    <div class="data-table">
-      <div class="table-head cols-4"><span><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Placa</span><span><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Apto</span><span><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Horário</span><span> Tipo</span></div>
-      <div class="table-row cols-4"><span><strong>ABC-1234</strong></span><span>Apto 204</span><span>07h15</span><span><span class="badge badge-ok">Entrada</span></span></div>
-      <div class="table-row cols-4"><span><strong>DEF-5678</strong></span><span>Apto 102</span><span>07h40</span><span><span class="badge badge-ok">Entrada</span></span></div>
-      <div class="table-row cols-4"><span><strong>GHI-9012</strong></span><span>Visitante</span><span>08h30</span><span><span class="badge badge-blue">Visita</span></span></div>
-      <div class="table-row cols-4"><span><strong>JKL-3456</strong></span><span>Apto 305</span><span>08h55</span><span><span class="badge badge-alert">Saída</span></span></div>
-      <div class="table-row cols-4"><span><strong>MNO-7890</strong></span><span>Apto 410</span><span>09h20</span><span><span class="badge badge-ok">Entrada</span></span></div>
+    <!-- Histórico -->
+    <p class="section-title">Últimas Movimentações</p>
+    <div class="data-table tabela-status" id="tabelaHistorico">
+      <div class="table-head cols-4"><span><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Placa</span><span><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Apto</span><span><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Horário</span><span>Tipo</span></div>
     </div>
+    <p class="estado-lista" id="estadoHistorico"></p>
 
   </main>
 
 
   <script src="../../assets/js/validation.js"></script>
   <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    document.querySelector('.form-card form').addEventListener('submit', function(e) {
-      var inputs = this.querySelectorAll('input[required], select[required]');
-      var valido = true;
-      document.querySelectorAll('.erro-validacao').forEach(function(el) { el.remove(); });
-      inputs.forEach(function(inp) {
-        if (!inp.value.trim()) {
-          mostrarErro(inp, 'Campo obrigatório');
-          valido = false;
-        }
+  /* Controle de veículos: entradas e saídas ficam no histórico, e quem
+     está no pátio é quem teve entrada como última movimentação. */
+  (function() {
+    'use strict';
+    var api = window.SmartCondo.api;
+    var usuario = api.protegerPagina('porteiro');
+    if (!usuario) return;
+
+    function campo(id) { return document.getElementById(id); }
+
+    var ROTULO_CATEGORIA = {
+      morador: 'Morador', visitante: 'Visitante', prestador: 'Prestador'
+    };
+    var CLASSE_TIPO = { entrada: 'badge-ok', saida: 'badge-alert' };
+
+    function placaLegivel(placa) {
+      var p = (placa || '').toUpperCase();
+      return p.length === 7 ? p.slice(0, 3) + '-' + p.slice(3) : p;
+    }
+    function horaCurta(iso) {
+      var d = new Date(iso);
+      if (isNaN(d)) return '—';
+      return ('0' + d.getHours()).slice(-2) + 'h' + ('0' + d.getMinutes()).slice(-2);
+    }
+    function dataHora(iso) {
+      var d = new Date(iso);
+      if (isNaN(d)) return '—';
+      var hoje = new Date();
+      var mesmoDia = d.getDate() === hoje.getDate() && d.getMonth() === hoje.getMonth()
+                     && d.getFullYear() === hoje.getFullYear();
+      return mesmoDia ? horaCurta(iso)
+        : ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) +
+          ' ' + horaCurta(iso);
+    }
+
+    function linhaPatio(v) {
+      var linha = document.createElement('div');
+      linha.className = 'table-row cols-4';
+      linha.innerHTML = '<span><strong></strong></span><span></span><span></span><span></span>';
+      linha.children[0].firstChild.textContent = placaLegivel(v.placa);
+      linha.children[1].textContent =
+        [v.modelo, v.cor].filter(Boolean).join(' · ') || ROTULO_CATEGORIA[v.categoria] || '—';
+      linha.children[2].textContent = v.unidade || ROTULO_CATEGORIA[v.categoria] || '—';
+      linha.children[3].textContent = dataHora(v.desde);
+      return linha;
+    }
+
+    function linhaHistorico(m) {
+      var linha = document.createElement('div');
+      linha.className = 'table-row cols-4';
+      linha.innerHTML =
+        '<span><strong></strong></span><span></span><span></span>' +
+        '<span><span class="badge"></span></span>';
+      linha.children[0].firstChild.textContent = placaLegivel(m.placa);
+      linha.children[1].textContent = m.unidade || ROTULO_CATEGORIA[m.categoria] || '—';
+      linha.children[2].textContent = dataHora(m.registrada_em);
+      var selo = linha.children[3].firstChild;
+      selo.className = 'badge ' + (CLASSE_TIPO[m.tipo] || 'badge-neutral');
+      selo.textContent = m.tipo === 'entrada' ? 'Entrada' : 'Saída';
+      if (m.observacao) linha.title = m.observacao;
+      return linha;
+    }
+
+    function carregar() {
+      return Promise.all([
+        api.get('/veiculos/ocupacao'),
+        api.get('/veiculos/patio'),
+        api.get('/veiculos?limite=30')
+      ]).then(function(r) {
+        var ocupacao = r[0], patio = r[1], historico = r[2];
+
+        campo('totOcupadas').textContent = ocupacao.ocupadas;
+        campo('totVagas').textContent = ocupacao.vagas_totais;
+        campo('totLivres').textContent = ocupacao.livres;
+        campo('ocupacaoTexto').textContent =
+          ocupacao.ocupadas + ' de ' + ocupacao.vagas_totais + ' vagas ocupadas';
+        campo('ocupacaoPercentual').textContent = ocupacao.percentual + '% ocupado';
+        campo('ocupacaoBarra').style.width = ocupacao.percentual + '%';
+
+        var tPatio = campo('tabelaPatio');
+        var cabPatio = tPatio.querySelector('.table-head');
+        tPatio.innerHTML = '';
+        tPatio.appendChild(cabPatio);
+        campo('estadoPatio').textContent =
+          patio.length ? '' : 'Nenhum veículo no pátio agora.';
+        patio.forEach(function(v) { tPatio.appendChild(linhaPatio(v)); });
+
+        var tHist = campo('tabelaHistorico');
+        var cabHist = tHist.querySelector('.table-head');
+        tHist.innerHTML = '';
+        tHist.appendChild(cabHist);
+        campo('estadoHistorico').textContent =
+          historico.length ? '' : 'Nenhuma movimentação registrada.';
+        historico.forEach(function(m) { tHist.appendChild(linhaHistorico(m)); });
+      }).catch(function(e) {
+        campo('estadoPatio').textContent = e.message;
+        campo('estadoHistorico').textContent = '';
       });
-      if (!valido) e.preventDefault();
+    }
+
+    function carregarUnidades() {
+      return api.get('/condominios/meu/unidades').then(function(lista) {
+        var select = campo('veicul_apartamento');
+        lista.forEach(function(u) {
+          var op = document.createElement('option');
+          op.value = u.id;
+          op.textContent = 'Apto ' +
+            (u.bloco && u.bloco !== 'unico' ? u.bloco + ' ' : '') + u.numero;
+          select.appendChild(op);
+        });
+      }).catch(function() { /* segue sem vínculo com unidade */ });
+    }
+
+    campo('formVeiculo').addEventListener('submit', function(evento) {
+      evento.preventDefault();
+      var erro = campo('erroVeiculo');
+      erro.className = 'form-erro';
+      erro.textContent = '';
+
+      var placa = campo('veicul_placaDoVeiculo').value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      var movimento = campo('veicul_tipoDeMovimentacao').value;
+      if (placa.length < 7) {
+        erro.textContent = 'Informe a placa completa (7 caracteres).';
+        return;
+      }
+      if (!movimento) {
+        erro.textContent = 'Escolha o tipo de movimentação.';
+        return;
+      }
+
+      var partes = movimento.split('|');
+      var corpo = { placa: placa, tipo: partes[0], categoria: partes[1] };
+      var unidadeId = campo('veicul_apartamento').value;
+      if (unidadeId) corpo.unidade_id = +unidadeId;
+      var modelo = campo('veicul_modelo').value.trim();
+      if (modelo) corpo.modelo = modelo;
+
+      var botao = this.querySelector('button[type=submit]');
+      var rotulo = botao.innerHTML;
+      botao.disabled = true;
+      botao.textContent = 'Registrando…';
+
+      api.post('/veiculos', corpo)
+        .then(function() {
+          campo('formVeiculo').reset();
+          erro.className = 'form-erro sucesso';
+          erro.textContent = 'Movimentação registrada.';
+          return carregar();
+        })
+        .catch(function(e) { erro.textContent = e.message; })
+        .then(function() { botao.disabled = false; botao.innerHTML = rotulo; });
     });
-  });
+
+    var cabecalho = document.querySelector('.greeting-sub');
+    if (cabecalho) cabecalho.textContent = usuario.nome + ' — Portaria';
+    var nomeTopo = document.getElementById('hdrName');
+    if (nomeTopo) nomeTopo.textContent = usuario.nome;
+
+    carregarUnidades().then(carregar, carregar);
+  })();
   </script>
 <script src="../../assets/js/sessao.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>

@@ -26,15 +26,15 @@
   <main class="dash-wrapper">
 
     <div class="dash-greeting">
-      <p class="greeting-sub"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt="">Plantão ativo &nbsp;·&nbsp; Turno: 07h – 15h</p>
-      <h2 class="greeting-name"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Carlos Pereira</h2>
-      <p class="greeting-condo"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Residencial das Palmeiras &nbsp;·&nbsp; Portaria Principal</p>
+      <p class="greeting-sub"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt="">Portaria</p>
+      <h2 class="greeting-name"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt=""><span id="saudacaoNome">…</span></h2>
+      <p class="greeting-condo"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> <span id="saudacaoCondominio">Carregando…</span></p>
     </div>
 
     <div class="stats-row">
-      <div class="stat-card teal"><span class="stat-value">4</span><span class="stat-label"><img src="../../assets/img/icons/person-walking-arrow-right.svg" width="16" height="16" alt=""> Visitantes</span></div>
-      <div class="stat-card amber"><span class="stat-value">7</span><span class="stat-label"><img src="../../assets/img/icons/box-archive.svg" width="16" height="16" alt=""> Encomendas</span></div>
-      <div class="stat-card blue"><span class="stat-value">2</span><span class="stat-label"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt=""> Avisos</span></div>
+      <div class="stat-card teal"><span class="stat-value" id="totVisitantes">—</span><span class="stat-label"><img src="../../assets/img/icons/person-walking-arrow-right.svg" width="16" height="16" alt="">No condomínio</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totEncomendas">—</span><span class="stat-label"><img src="../../assets/img/icons/box-archive.svg" width="16" height="16" alt="">Encomendas</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totVeiculos">—</span><span class="stat-label"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">No pátio</span></div>
     </div>
 
     <p class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Ações Rápidas</p>
@@ -62,69 +62,189 @@
     </div>
 
     <p class="section-title"><img src="../../assets/img/icons/person-walking-arrow-right.svg" width="16" height="16" alt=""> Visitantes no Condomínio Agora</p>
-    <div class="list-items">
-      <div class="list-item">
-        <div class="list-avatar">MA</div>
-        <div class="list-info"><h5>Marcos Alves</h5><p>Apto 102 &nbsp;·&nbsp; Visita pessoal &nbsp;·&nbsp; Entrada: 09h15</p></div>
-        <span class="badge badge-ok">Dentro</span>
-      </div>
-      <div class="list-item">
-        <div class="list-avatar amber">FS</div>
-        <div class="list-info"><h5>Fernanda Souza</h5><p>Apto 305 &nbsp;·&nbsp; Visita pessoal &nbsp;·&nbsp; Entrada: 10h40</p></div>
-        <span class="badge badge-ok">Dentro</span>
-      </div>
-      <div class="list-item">
-        <div class="list-avatar blue">LO</div>
-        <div class="list-info"><h5>Lucas Oliveira</h5><p>Apto 201 &nbsp;·&nbsp; Técnico de manutenção &nbsp;·&nbsp; Entrada: 11h00</p></div>
-        <span class="badge badge-blue">Serviço</span>
-      </div>
-      <div class="list-item">
-        <div class="list-avatar purple">RP</div>
-        <div class="list-info"><h5>Rafael Pinto</h5><p>Apto 410 &nbsp;·&nbsp; Visita pessoal &nbsp;·&nbsp; Entrada: 12h55</p></div>
-        <span class="badge badge-ok">Dentro</span>
-      </div>
-    </div>
+    <div class="list-items" id="listaVisitantes"></div>
+    <p class="estado-lista" id="estadoVisitantes">Carregando…</p>
 
     <a href="visitantes.html" class="action-btn">
       <img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Registrar Novo Visitante
     </a>
 
-    <p class="section-title"><img src="../../assets/img/icons/box.svg" alt="" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;width:16px;height:16px"> Encomendas Aguardando Retirada</p>
-    <div class="list-items">
-      <div class="list-item">
-        <div class="card-icon icon-yellow" style="width:42px;height:42px;border-radius:10px;flex-shrink:0;"><img src="../../assets/img/icons/box.svg" alt="" style="width:20px;height:20px;width:16px;height:16px"></div>
-        <div class="list-info"><h5>Encomenda — Apto 204</h5><p>Remetente: Amazon &nbsp;·&nbsp; Recebida em 17/03 às 08h30</p></div>
-        <span class="badge badge-pending">Aguardando</span>
-      </div>
-      <div class="list-item">
-        <div class="card-icon icon-teal" style="width:42px;height:42px;border-radius:10px;flex-shrink:0;"><img src="../../assets/img/icons/envelope.svg" alt="" style="width:20px;height:20px;width:16px;height:16px"></div>
-        <div class="list-info"><h5>Correspondência — Apto 110</h5><p>Remetente: Correios &nbsp;·&nbsp; Recebida em 16/03 às 14h10</p></div>
-        <span class="badge badge-pending">Aguardando</span>
-      </div>
-      <div class="list-item">
-        <div class="card-icon icon-blue" style="width:42px;height:42px;border-radius:10px;flex-shrink:0;"><img src="../../assets/img/icons/box-open.svg" alt="" style="width:20px;height:20px;width:16px;height:16px"></div>
-        <div class="list-info"><h5>Encomenda grande — Apto 312</h5><p>Remetente: Shopee &nbsp;·&nbsp; Recebida em 15/03 às 11h50</p></div>
-        <span class="badge badge-alert">3 dias</span>
-      </div>
-    </div>
+    <p class="section-title"><img src="../../assets/img/icons/box.svg" width="16" height="16" alt=""> Encomendas Aguardando Retirada</p>
+    <div class="list-items" id="listaEncomendas"></div>
+    <p class="estado-lista" id="estadoEncomendas">Carregando…</p>
 
     <p class="section-title"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt=""> Avisos do Síndico</p>
-    <div class="notif-list">
-      <div class="notif-item">
-        <div class="notif-dot alert"></div>
-        <div class="notif-content"><h5>Proibição de obras nos finais de semana</h5><p>Não autorizar entrada de prestadores para obras aos sábados e domingos.</p></div>
-        <span class="notif-time">Hoje</span>
-      </div>
-      <div class="notif-item">
-        <div class="notif-dot amber"></div>
-        <div class="notif-content"><h5>Reunião de equipe — 20/03</h5><p>Obrigatória para todos os porteiros na sala de administração às 08h.</p></div>
-        <span class="notif-time">15/03</span>
-      </div>
-    </div>
+    <div class="notif-list" id="listaAvisos"></div>
+    <p class="estado-lista" id="estadoAvisos">Carregando…</p>
 
   </main>
 
   <script src="../../assets/js/validation.js"></script>
+  <script>
+  /* Painel do porteiro: quem está no condomínio agora, o que aguarda
+     retirada, quantos carros estão no pátio e os avisos do síndico. */
+  (function() {
+    'use strict';
+    var api = window.SmartCondo.api;
+    var usuario = api.protegerPagina('porteiro');
+    if (!usuario) return;
+
+    function campo(id) { return document.getElementById(id); }
+
+    var CORES = ['', 'amber', 'blue', 'purple'];
+    function iniciais(nome) {
+      var p = (nome || '').trim().split(/\s+/);
+      return (((p[0] || '')[0] || '') + ((p[p.length - 1] || '')[0] || '')).toUpperCase();
+    }
+    function cor(nome) {
+      var soma = 0;
+      for (var i = 0; i < (nome || '').length; i++) soma += nome.charCodeAt(i);
+      return CORES[soma % CORES.length];
+    }
+    function horaCurta(iso) {
+      var d = new Date(iso);
+      if (isNaN(d)) return '';
+      return ('0' + d.getHours()).slice(-2) + 'h' + ('0' + d.getMinutes()).slice(-2);
+    }
+    function dataHora(iso) {
+      var d = new Date(iso);
+      if (isNaN(d)) return '';
+      return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) +
+             ' às ' + horaCurta(iso);
+    }
+    function diasParados(iso) {
+      var d = new Date(iso);
+      if (isNaN(d)) return 0;
+      return Math.floor((Date.now() - d.getTime()) / 86400000);
+    }
+    function quando(iso) {
+      var d = new Date(iso);
+      if (isNaN(d)) return '';
+      var dias = Math.floor((new Date().setHours(0,0,0,0) - new Date(iso).setHours(0,0,0,0)) / 86400000);
+      if (dias <= 0) return 'Hoje';
+      if (dias === 1) return 'Ontem';
+      return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2);
+    }
+
+    function carregarVisitantes() {
+      return api.get('/portaria/visitantes').then(function(lista) {
+        // Quem está na portaria agora: dentro, ou ainda esperando o
+        // morador responder.
+        var presentes = lista.filter(function(v) {
+          return v.status === 'dentro' || v.status === 'aguardando_confirmacao';
+        });
+        campo('totVisitantes').textContent = presentes.length;
+
+        var caixa = campo('listaVisitantes');
+        caixa.innerHTML = '';
+        campo('estadoVisitantes').textContent =
+          presentes.length ? '' : 'Nenhum visitante no condomínio agora.';
+        presentes.slice(0, 6).forEach(function(v) {
+          var item = document.createElement('div');
+          item.className = 'list-item';
+          var avatar = document.createElement('div');
+          avatar.className = ('list-avatar ' + cor(v.nome)).trim();
+          avatar.textContent = iniciais(v.nome);
+          var info = document.createElement('div');
+          info.className = 'list-info';
+          var h = document.createElement('h5');
+          h.textContent = v.nome;
+          var p = document.createElement('p');
+          p.textContent = (v.unidade ? 'Apto ' + v.unidade + ' · ' : '') + v.tipo_visita +
+            (v.entrada_em ? ' · Entrada: ' + horaCurta(v.entrada_em) : '');
+          info.appendChild(h); info.appendChild(p);
+          var selo = document.createElement('span');
+          var dentro = v.status === 'dentro';
+          selo.className = 'badge ' + (dentro ? 'badge-ok' : 'badge-pending');
+          selo.textContent = dentro ? 'Dentro' : 'Aguardando morador';
+          item.appendChild(avatar); item.appendChild(info); item.appendChild(selo);
+          caixa.appendChild(item);
+        });
+      }).catch(function(e) { campo('estadoVisitantes').textContent = e.message; });
+    }
+
+    function carregarEncomendas() {
+      return api.get('/portaria/encomendas?status=aguardando_retirada').then(function(lista) {
+        campo('totEncomendas').textContent = lista.length;
+
+        var caixa = campo('listaEncomendas');
+        caixa.innerHTML = '';
+        campo('estadoEncomendas').textContent =
+          lista.length ? '' : 'Nenhuma encomenda aguardando retirada.';
+        lista.slice(0, 6).forEach(function(e) {
+          var item = document.createElement('div');
+          item.className = 'list-item';
+          var dias = diasParados(e.recebida_em);
+          var icone = document.createElement('div');
+          icone.className = 'card-icon ' + (dias >= 3 ? 'icon-red' : 'icon-yellow') + ' icone-ocorrencia';
+          var glifo = document.createElement('span');
+          glifo.className = 'glifo';
+          glifo.style.setProperty('--icone', 'url(../../assets/img/icons/box.svg)');
+          icone.appendChild(glifo);
+          var info = document.createElement('div');
+          info.className = 'list-info';
+          var h = document.createElement('h5');
+          h.textContent = 'Apto ' + (e.unidade || '—') + ' — ' + e.tipo_volume;
+          var p = document.createElement('p');
+          p.textContent = 'Remetente: ' + e.remetente + ' · Recebida em ' + dataHora(e.recebida_em);
+          info.appendChild(h); info.appendChild(p);
+          var selo = document.createElement('span');
+          selo.className = 'badge ' + (dias >= 3 ? 'badge-alert' : 'badge-pending');
+          selo.textContent = dias === 0 ? 'Hoje' : (dias === 1 ? '1 dia' : dias + ' dias');
+          item.appendChild(icone); item.appendChild(info); item.appendChild(selo);
+          caixa.appendChild(item);
+        });
+      }).catch(function(e) { campo('estadoEncomendas').textContent = e.message; });
+    }
+
+    function carregarVeiculos() {
+      return api.get('/veiculos/patio')
+        .then(function(lista) { campo('totVeiculos').textContent = lista.length; })
+        .catch(function() { campo('totVeiculos').textContent = '—'; });
+    }
+
+    function carregarAvisos() {
+      return api.get('/comunicados').then(function(lista) {
+        var caixa = campo('listaAvisos');
+        caixa.innerHTML = '';
+        campo('estadoAvisos').textContent =
+          lista.length ? '' : 'Nenhum aviso publicado.';
+        lista.slice(0, 4).forEach(function(c) {
+          var item = document.createElement('div');
+          item.className = 'notif-item';
+          var ponto = document.createElement('div');
+          ponto.className = 'notif-dot' +
+            (c.categoria === 'urgente' ? ' alert' : (c.fixado ? ' amber' : ''));
+          var corpo = document.createElement('div');
+          corpo.className = 'notif-content';
+          var h = document.createElement('h5');
+          h.textContent = c.titulo;
+          var p = document.createElement('p');
+          p.textContent = c.conteudo;
+          corpo.appendChild(h); corpo.appendChild(p);
+          var data = document.createElement('span');
+          data.className = 'notif-time';
+          data.textContent = quando(c.publicado_em);
+          item.appendChild(ponto); item.appendChild(corpo); item.appendChild(data);
+          caixa.appendChild(item);
+        });
+      }).catch(function(e) { campo('estadoAvisos').textContent = e.message; });
+    }
+
+    campo('saudacaoNome').textContent = usuario.nome;
+    var nomeTopo = document.getElementById('hdrName');
+    if (nomeTopo) nomeTopo.textContent = usuario.nome;
+
+    api.get('/condominios/meu')
+      .then(function(c) { campo('saudacaoCondominio').textContent = c.nome; })
+      .catch(function() { campo('saudacaoCondominio').textContent = ''; });
+
+    carregarVisitantes();
+    carregarEncomendas();
+    carregarVeiculos();
+    carregarAvisos();
+  })();
+  </script>
 <script src="../../assets/js/sessao.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>
 </body>

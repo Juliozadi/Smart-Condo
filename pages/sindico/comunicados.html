@@ -8,7 +8,7 @@
   <script src="../../assets/js/api.js"></script><link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
-<body class="dashboard-body layout-mobile">
+<body class="dashboard-body layout-desktop">
   <header class="app-bar"><div class="app-bar-inner wide">
     <a href="../../index.html" class="app-bar-brand"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
     <div class="app-bar-right"><a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role">Síndico</span></a><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
@@ -21,54 +21,184 @@
       <p class="greeting-condo"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt=""> Envie avisos para todos os moradores</p>
     </div>
     <div class="stats-row">
-      <div class="stat-card teal"><span class="stat-value">12</span><span class="stat-label">Enviados</span></div>
-      <div class="stat-card blue"><span class="stat-value">48</span><span class="stat-label">Destinatários</span></div>
-      <div class="stat-card amber"><span class="stat-value">3</span><span class="stat-label"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Agendados</span></div>
+      <div class="stat-card teal"><span class="stat-value" id="totPublicados">—</span><span class="stat-label">Publicados</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totMoradores">—</span><span class="stat-label">Moradores avisados</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totFixados">—</span><span class="stat-label">Fixados no topo</span></div>
     </div>
-    <p class="section-title"> Novo Comunicado</p>
+
+    <p class="section-title">Novo Comunicado</p>
     <div class="form-card">
-      <h3> Redigir Comunicado</h3>
-      <div class="form-group"><label>Título do comunicado</label><input type="text" placeholder="Ex: Manutenção da caixa d'água — 19/03" required style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
-      <div class="form-row">
-        <div class="form-group"><label>Categoria</label><select required style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"><option value="" disabled selected>Selecione</option><option>Manutenção</option><option>Assembleia</option><option>Urgente</option><option>Informativo</option><option>Financeiro</option><option>Regras e convivência</option></select></div>
-        <div class="form-group"><label>Destinatários</label><select required style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"><option value="" disabled selected>Selecione</option><option>Todos os moradores</option><option>Apenas proprietários</option><option>Apenas inquilinos</option><option>Equipe de portaria</option><option>Todos (moradores + porteiros)</option></select></div>
-      </div>
-      <div class="form-group"><label>Mensagem</label><textarea required placeholder="Digite o comunicado completo aqui..." style="min-height:120px;width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);resize:vertical;outline:none;"></textarea></div>
-      <div class="form-row">
-        <div class="form-group"><label><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Envio imediato ou agendado?</label><select style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"><option>Enviar agora</option><option>Agendar para data específica</option></select></div>
-        <div class="form-group"><label>Data de envio (se agendado)</label><input type="datetime-local" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
-      </div>
-      <a href="dashboard.html" class="action-btn" style="margin-top:4px;"> Enviar Comunicado</a>
+      <h3>Redigir Comunicado</h3>
+      <form id="formComunicado" novalidate>
+        <div class="form-group"><label for="comuni_tituloDoComunicado">Título do comunicado</label><input id="comuni_tituloDoComunicado" type="text" required minlength="3" maxlength="180" placeholder="Ex: Manutenção da caixa d'água — 19/03" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
+        <div class="form-row">
+          <div class="form-group"><label for="comuni_categoria">Categoria</label><select id="comuni_categoria" required style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"><option value="" disabled selected>Selecione</option><option value="geral">Informativo</option><option value="manutencao">Manutenção</option><option value="financeiro">Financeiro</option><option value="seguranca">Segurança</option><option value="evento">Evento / Assembleia</option><option value="urgente">Urgente</option></select></div>
+          <div class="form-group"><label for="comuni_fixado">Fixar no topo</label><select id="comuni_fixado" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"><option value="nao" selected>Não</option><option value="sim">Sim — aparece antes dos demais</option></select></div>
+        </div>
+        <div class="form-group"><label for="comuni_mensagem">Mensagem</label><textarea id="comuni_mensagem" required maxlength="8000" placeholder="Digite o comunicado completo aqui..." style="min-height:120px;width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;resize:vertical;"></textarea></div>
+        <p class="aviso-notificacao">
+          <img src="../../assets/img/icons/bullhorn.svg" alt="">
+          <span>O comunicado vai para <strong>todos os moradores do condomínio</strong> assim que
+          for publicado. Cada um recebe um aviso e o comunicado aparece no painel dele.</span>
+        </p>
+        <p class="form-erro" id="erroComunicado" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;">Publicar Comunicado</button>
+      </form>
     </div>
-    <p class="section-title"> Comunicados Recentes</p>
-    <div class="data-table">
-      <div class="table-head cols-4"><span><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt="">Título</span><span> Categoria</span><span>Data</span><span>Lidos</span></div>
-      <div class="table-row cols-4"><span><strong>Falta de água — 19/03</strong></span><span><span class="badge badge-alert">Urgente</span></span><span>Hoje</span><span>36/48</span></div>
-      <div class="table-row cols-4"><span><strong>Assembleia 28/03</strong></span><span><span class="badge badge-blue">Assembleia</span></span><span>Ontem</span><span>41/48</span></div>
-      <div class="table-row cols-4"><span><strong>Manutenção da piscina</strong></span><span><span class="badge badge-pending">Manutenção</span></span><span>14/03</span><span>44/48</span></div>
-      <div class="table-row cols-4"><span><strong>Nova portaria eletrônica</strong></span><span><span class="badge badge-ok">Informativo</span></span><span>10/03</span><span>48/48</span></div>
+
+    <p class="section-title">Comunicados Publicados</p>
+    <div class="data-table tabela-status" id="tabelaComunicados">
+      <div class="table-head cols-5"><span><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt="">Título</span><span>Categoria</span><span>Publicado</span><span>Autor</span><span>Ações</span></div>
     </div>
+    <p class="estado-lista" id="estadoTabela">Carregando…</p>
+
   </main>
 
 <script src="../../assets/js/validation.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  var btn = document.querySelector('.action-btn');
-  if (btn) {
-    btn.addEventListener('click', function(e) {
-      var inputs = this.closest('.form-card').querySelectorAll('input, select, textarea');
-      var valido = true;
-      document.querySelectorAll('.erro-validacao').forEach(function(el) { el.remove(); });
-      inputs.forEach(function(inp) {
-        if (inp.hasAttribute('required') && !inp.value.trim()) {
-          mostrarErro(inp, 'Campo obrigatório');
-          valido = false;
-        }
-      });
-      if (!valido) e.preventDefault();
-    });
+/* Comunicados do síndico: publica para o condomínio inteiro e lista o
+   que já foi publicado, com a opção de remover. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api;
+  var usuario = api.protegerPagina('sindico');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+
+  var ROTULO_CATEGORIA = {
+    geral: 'Informativo', manutencao: 'Manutenção', financeiro: 'Financeiro',
+    seguranca: 'Segurança', evento: 'Evento', urgente: 'Urgente'
+  };
+  var CLASSE_CATEGORIA = {
+    geral: 'badge-ok', manutencao: 'badge-pending', financeiro: 'badge-blue',
+    seguranca: 'badge-blue', evento: 'badge-blue', urgente: 'badge-alert'
+  };
+
+  function quando(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    var dias = Math.floor((new Date().setHours(0,0,0,0) - new Date(iso).setHours(0,0,0,0)) / 86400000);
+    if (dias <= 0) return 'Hoje';
+    if (dias === 1) return 'Ontem';
+    return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2);
   }
-});
+
+  function montarLinha(c) {
+    var linha = document.createElement('div');
+    linha.className = 'table-row cols-5';
+    linha.innerHTML =
+      '<span><strong></strong></span><span><span class="badge"></span></span>' +
+      '<span></span><span></span><span class="acoes-linha"></span>';
+
+    var titulo = linha.children[0].firstChild;
+    titulo.textContent = c.titulo;
+    if (c.fixado) {
+      var marca = document.createElement('span');
+      marca.className = 'marca-fixado';
+      marca.textContent = 'fixado';
+      linha.children[0].appendChild(marca);
+    }
+    var selo = linha.children[1].firstChild;
+    selo.className = 'badge ' + (CLASSE_CATEGORIA[c.categoria] || 'badge-neutral');
+    selo.textContent = ROTULO_CATEGORIA[c.categoria] || c.categoria;
+    linha.children[2].textContent = quando(c.publicado_em);
+    linha.children[3].textContent = c.autor_nome;
+    linha.title = c.conteudo;
+
+    var remover = document.createElement('button');
+    remover.type = 'button';
+    remover.className = 'btn-acao perigo';
+    remover.title = 'Remover comunicado';
+    var glifo = document.createElement('span');
+    glifo.className = 'glifo';
+    glifo.style.setProperty('--icone', 'url(../../assets/img/icons/xmark.svg)');
+    remover.appendChild(glifo);
+    remover.addEventListener('click', function() {
+      if (!confirm('Remover o comunicado "' + c.titulo + '"?')) return;
+      remover.disabled = true;
+      api.remover('/comunicados/' + c.id)
+        .then(carregar)
+        .catch(function(e) { remover.disabled = false; alert(e.message); });
+    });
+    linha.children[4].appendChild(remover);
+    return linha;
+  }
+
+  function carregar() {
+    campo('estadoTabela').textContent = 'Carregando…';
+    return api.get('/comunicados')
+      .then(function(lista) {
+        campo('totPublicados').textContent = lista.length;
+        campo('totFixados').textContent =
+          lista.filter(function(c) { return c.fixado; }).length;
+
+        var tabela = campo('tabelaComunicados');
+        var cabecalho = tabela.querySelector('.table-head');
+        tabela.innerHTML = '';
+        tabela.appendChild(cabecalho);
+        campo('estadoTabela').textContent =
+          lista.length ? '' : 'Nenhum comunicado publicado ainda.';
+        lista.forEach(function(c) { tabela.appendChild(montarLinha(c)); });
+      })
+      .catch(function(e) { campo('estadoTabela').textContent = e.message; });
+  }
+
+  campo('formComunicado').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('erroComunicado');
+    erro.className = 'form-erro';
+    erro.textContent = '';
+
+    var titulo = campo('comuni_tituloDoComunicado').value.trim();
+    var categoria = campo('comuni_categoria').value;
+    var mensagem = campo('comuni_mensagem').value.trim();
+
+    if (titulo.length < 3) {
+      erro.textContent = 'Escreva um título com pelo menos 3 caracteres.';
+      return;
+    }
+    if (!categoria) {
+      erro.textContent = 'Escolha a categoria do comunicado.';
+      return;
+    }
+    if (mensagem.length < 5) {
+      erro.textContent = 'Escreva a mensagem do comunicado.';
+      return;
+    }
+
+    var botao = this.querySelector('button[type=submit]');
+    var rotulo = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = 'Publicando…';
+
+    api.post('/comunicados', {
+      titulo: titulo,
+      conteudo: mensagem,
+      categoria: categoria,
+      fixado: campo('comuni_fixado').value === 'sim'
+    })
+      .then(function() {
+        campo('formComunicado').reset();
+        erro.className = 'form-erro sucesso';
+        erro.textContent = 'Comunicado publicado. Os moradores foram avisados.';
+        return carregar();
+      })
+      .catch(function(e) { erro.textContent = e.message; })
+      .then(function() { botao.disabled = false; botao.textContent = rotulo; });
+  });
+
+  campo('hdrName').textContent = usuario.nome;
+
+  api.get('/usuarios?papel=morador')
+    .then(function(lista) {
+      campo('totMoradores').textContent =
+        lista.filter(function(u) { return u.status === 'ativo'; }).length;
+    })
+    .catch(function() { campo('totMoradores').textContent = '—'; });
+
+  carregar();
+})();
 </script>
 <script src="../../assets/js/sessao.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>
