@@ -28,6 +28,7 @@ DROP TYPE IF EXISTS
     finalidade_codigo,
     forma_pagamento,
     papel_usuario,
+    prioridade_ocorrencia,
     prioridade_ordem_servico,
     status_cobranca,
     status_encomenda,
@@ -86,6 +87,13 @@ CREATE TYPE papel_usuario AS ENUM (
     'PORTEIRO',
     'MORADOR',
     'ADMIN'
+);
+
+CREATE TYPE prioridade_ocorrencia AS ENUM (
+    'BAIXA',
+    'NORMAL',
+    'ALTA',
+    'URGENTE'
 );
 
 CREATE TYPE prioridade_ordem_servico AS ENUM (
@@ -544,6 +552,8 @@ CREATE TABLE ocorrencias (
     titulo character varying(180) NOT NULL,
     descricao text NOT NULL,
     categoria character varying(60) NOT NULL,
+    local character varying(120),
+    prioridade prioridade_ocorrencia NOT NULL,
     foto_url character varying(500),
     status status_ocorrencia NOT NULL,
     resposta text,
@@ -825,6 +835,8 @@ CREATE INDEX ix_movimentacoes_veiculo_unidade_id ON movimentacoes_veiculo USING 
 CREATE INDEX ix_ocorrencias_aberta_por_id ON ocorrencias USING btree (aberta_por_id);
 
 CREATE INDEX ix_ocorrencias_condominio_id ON ocorrencias USING btree (condominio_id);
+
+CREATE INDEX ix_ocorrencias_prioridade ON ocorrencias USING btree (prioridade);
 
 CREATE INDEX ix_ocorrencias_status ON ocorrencias USING btree (status);
 

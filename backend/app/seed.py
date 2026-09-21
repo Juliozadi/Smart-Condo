@@ -23,8 +23,9 @@ from app.models.comunicado import Comunicado
 from app.models.condominio import Condominio, Unidade
 from app.models.enums import (
     CanalVerificacao, CategoriaComunicado, CategoriaDocumento, CategoriaVeiculo,
-    FormaPagamento, Papel, PrioridadeOrdemServico, StatusCobranca, StatusEncomenda,
-    StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario, StatusVisitante,
+    FormaPagamento, Papel, PrioridadeOcorrencia, PrioridadeOrdemServico, StatusCobranca,
+    StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
+    StatusVisitante,
     TipoMovimentacao, TipoOcupacao,
 )
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
@@ -310,13 +311,15 @@ def criar(db) -> dict:
         condominio_id=condominio.id, aberta_por_id=moradores["204"].id,
         unidade_id=unidades["204"].id, titulo="Barulho no apartamento vizinho",
         descricao="Som alto depois das 23h em dias de semana, por três noites seguidas.",
-        categoria="convivencia", status=StatusOcorrencia.ABERTA,
+        categoria="convivencia", local="Apto 205", prioridade=PrioridadeOcorrencia.ALTA,
+        status=StatusOcorrencia.ABERTA,
     ))
     db.add(Ocorrencia(
         condominio_id=condominio.id, aberta_por_id=moradores["102"].id,
         unidade_id=unidades["102"].id, titulo="Lâmpada queimada na garagem",
         descricao="A lâmpada da vaga 12 está queimada há uma semana.",
-        categoria="manutencao", status=StatusOcorrencia.RESOLVIDA,
+        categoria="manutencao", local="Estacionamento", prioridade=PrioridadeOcorrencia.BAIXA,
+        status=StatusOcorrencia.RESOLVIDA,
         resposta="Lâmpada trocada pela manutenção.", respondida_por_id=sindico.id,
         respondida_em=AGORA - timedelta(days=1),
     ))

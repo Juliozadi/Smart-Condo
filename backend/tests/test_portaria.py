@@ -285,6 +285,43 @@ def test_morador_abre_e_sindico_responde(cliente, cenario):
     assert resposta.json()["status"] == "resolvida"
 
 
+def test_ocorrencia_guarda_local_e_prioridade(cliente, cenario):
+    """O formulário pergunta onde foi e o quanto corre; os dois precisam
+    chegar ao banco, senão o síndico não consegue priorizar a fila."""
+    abertura = cliente.post(
+        "/api/v1/portaria/ocorrencias",
+        json={
+            "titulo": "Vazamento na garagem",
+            "descricao": "Poça de água embaixo da vaga 12 desde ontem.",
+            "categoria": "manutencao",
+            "local": "Estacionamento — vaga 12",
+            "prioridade": "urgente",
+        },
+        headers=cab(cenario["ana"]),
+    )
+    assert abertura.status_code == 201, abertura.text
+    o = abertura.json()
+    assert o["local"] == "Estacionamento — vaga 12"
+    assert o["prioridade"] == "urgente"
+
+    listada = cliente.get(
+        "/api/v1/portaria/ocorrencias", headers=cab(cenario["ana"])
+    ).json()[0]
+    assert listada["local"] == "Estacionamento — vaga 12"
+    assert listada["prioridade"] == "urgente"
+
+
+def test_ocorrencia_sem_prioridade_entra_como_normal(cliente, cenario):
+    aberta = cliente.post(
+        "/api/v1/portaria/ocorrencias",
+        json={"titulo": "Portão lento", "descricao": "O portão demora a fechar."},
+        headers=cab(cenario["ana"]),
+    )
+    assert aberta.status_code == 201, aberta.text
+    assert aberta.json()["prioridade"] == "normal"
+    assert aberta.json()["local"] is None
+
+
 def test_morador_so_ve_as_proprias_ocorrencias(cliente, cenario):
     cliente.post(
         "/api/v1/portaria/ocorrencias",

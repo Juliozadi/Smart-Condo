@@ -87,6 +87,14 @@ class StatusOcorrencia(str, enum.Enum):
     ARQUIVADA = "arquivada"
 
 
+class PrioridadeOcorrencia(str, enum.Enum):
+    """Quanto o caso corre: alimenta a fila de atendimento do síndico."""
+    BAIXA = "baixa"
+    NORMAL = "normal"
+    ALTA = "alta"
+    URGENTE = "urgente"
+
+
 class CategoriaComunicado(str, enum.Enum):
     GERAL = "geral"
     MANUTENCAO = "manutencao"

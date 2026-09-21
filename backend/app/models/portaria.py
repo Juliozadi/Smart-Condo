@@ -19,7 +19,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
 from app.models.base import TimestampMixin
-from app.models.enums import StatusEncomenda, StatusOcorrencia, StatusVisitante
+from app.models.enums import (
+    PrioridadeOcorrencia, StatusEncomenda, StatusOcorrencia, StatusVisitante,
+)
 
 if TYPE_CHECKING:
     from app.models.condominio import Unidade
@@ -126,6 +128,16 @@ class Ocorrencia(Base, TimestampMixin):
     titulo: Mapped[str] = mapped_column(String(180), nullable=False)
     descricao: Mapped[str] = mapped_column(Text, nullable=False)
     categoria: Mapped[str] = mapped_column(String(60), nullable=False, default="geral")
+    # Onde o caso aconteceu, em texto livre: "Elevador", "Apto 204",
+    # "Corredor do 2º andar". O formulário sugere opções, mas o morador
+    # pode descrever um lugar que não está na lista.
+    local: Mapped[str | None] = mapped_column(String(120))
+    prioridade: Mapped[PrioridadeOcorrencia] = mapped_column(
+        SAEnum(PrioridadeOcorrencia, name="prioridade_ocorrencia"),
+        nullable=False,
+        default=PrioridadeOcorrencia.NORMAL,
+        index=True,
+    )
     foto_url: Mapped[str | None] = mapped_column(String(500))
 
     status: Mapped[StatusOcorrencia] = mapped_column(

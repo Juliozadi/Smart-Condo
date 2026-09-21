@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Ocorrências do Condomínio</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script><link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-desktop">
+  <header class="app-bar"><div class="app-bar-inner wide">
+    <a href="../../index.html" class="app-bar-brand"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
+    <div class="app-bar-right"><a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;"></span><span class="profile-name" id="hdrName">Síndico</span><span class="profile-role">Síndico</span></a><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
+  </div></header>
+  <main class="dash-wrapper wide">
+    <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
+    <div class="dash-greeting">
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h2 class="greeting-name"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt=""> Ocorrências do Condomínio</h2>
+      <p class="greeting-condo">Responda os chamados abertos por moradores e porteiros</p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card amber"><span class="stat-value" id="totAbertas">—</span><span class="stat-label">Abertas</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totAnalise">—</span><span class="stat-label">Em análise</span></div>
+      <div class="stat-card teal"><span class="stat-value" id="totResolvidas">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Resolvidas</span></div>
+    </div>
+
+    <div class="barra-acoes">
+      <input type="search" id="buscaOcorrencia" placeholder="Buscar por assunto, autor ou local" aria-label="Buscar ocorrência">
+      <select id="filtroStatus" aria-label="Filtrar por status">
+        <option value="">Todos os status</option>
+        <option value="aberta">Aberta</option>
+        <option value="em_analise">Em análise</option>
+        <option value="resolvida">Resolvida</option>
+        <option value="arquivada">Arquivada</option>
+      </select>
+      <select id="filtroPrioridade" aria-label="Filtrar por prioridade">
+        <option value="">Todas as prioridades</option>
+        <option value="urgente">Urgente</option>
+        <option value="alta">Alta</option>
+        <option value="normal">Normal</option>
+        <option value="baixa">Baixa</option>
+      </select>
+    </div>
+
+    <div class="list-items" id="listaOcorrencias"></div>
+    <p class="estado-lista" id="estadoLista">Carregando…</p>
+  </main>
+
+<script src="../../assets/js/validation.js"></script>
+<script>
+/* Ocorrências do condomínio pelo lado do síndico (documentação, seção 8):
+   lista tudo o que foi aberto e permite responder mudando o status. A
+   fila vem ordenada pela urgência, para o que corre aparecer primeiro. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api;
+  var usuario = api.protegerPagina('sindico');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+  var ocorrencias = [];
+
+  var ROTULO_STATUS = {
+    aberta: 'Aberta', em_analise: 'Em análise',
+    resolvida: 'Resolvida', arquivada: 'Arquivada'
+  };
+  var CLASSE_STATUS = {
+    aberta: 'badge-alert', em_analise: 'badge-blue',
+    resolvida: 'badge-ok', arquivada: 'badge-neutral'
+  };
+  var ROTULO_PRIORIDADE = {
+    urgente: 'Urgente', alta: 'Alta', normal: 'Normal', baixa: 'Baixa'
+  };
+  var ICONE_PRIORIDADE = {
+    urgente: ['icon-red', 'triangle-exclamation.svg'],
+    alta:    ['icon-yellow', 'circle-exclamation.svg'],
+    normal:  ['icon-teal', 'circle-exclamation.svg'],
+    baixa:   ['icon-blue', 'circle-exclamation.svg']
+  };
+  // Quanto menor o número, mais alto na fila.
+  var PESO_PRIORIDADE = { urgente: 0, alta: 1, normal: 2, baixa: 3 };
+  var PESO_STATUS = { aberta: 0, em_analise: 1, resolvida: 2, arquivada: 3 };
+
+  function dataCurta(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2);
+  }
+
+  /* O painel de resposta fica escondido até o síndico pedir, para a
+     lista continuar legível quando há muitos chamados. */
+  function painelResposta(o, aoResponder) {
+    var painel = document.createElement('div');
+    painel.className = 'painel-resposta';
+    painel.hidden = true;
+
+    var rotuloTexto = document.createElement('label');
+    rotuloTexto.className = 'resposta-rotulo';
+    rotuloTexto.textContent = 'Resposta ao morador';
+    var texto = document.createElement('textarea');
+    texto.className = 'resposta-texto';
+    texto.rows = 3;
+    texto.maxLength = 2000;
+    texto.placeholder = 'Explique o que foi feito ou o que será feito…';
+    texto.value = o.resposta || '';
+    rotuloTexto.setAttribute('for', 'resposta-' + o.id);
+    texto.id = 'resposta-' + o.id;
+
+    var rotuloStatus = document.createElement('label');
+    rotuloStatus.className = 'resposta-rotulo';
+    rotuloStatus.textContent = 'Novo status';
+    rotuloStatus.setAttribute('for', 'status-' + o.id);
+    var select = document.createElement('select');
+    select.id = 'status-' + o.id;
+    ['em_analise', 'resolvida', 'arquivada', 'aberta'].forEach(function(valor) {
+      var op = document.createElement('option');
+      op.value = valor;
+      op.textContent = ROTULO_STATUS[valor];
+      select.appendChild(op);
+    });
+    select.value = o.status === 'aberta' ? 'em_analise' : o.status;
+
+    var rodape = document.createElement('div');
+    rodape.className = 'resposta-rodape';
+    var enviar = document.createElement('button');
+    enviar.type = 'button';
+    enviar.className = 'action-btn';
+    enviar.style.cssText = 'width:auto;margin:0;padding:9px 18px;font-size:13px;';
+    enviar.textContent = 'Enviar resposta';
+    var aviso = document.createElement('span');
+    aviso.className = 'permissoes-aviso';
+    aviso.setAttribute('role', 'status');
+    rodape.appendChild(enviar);
+    rodape.appendChild(aviso);
+
+    enviar.addEventListener('click', function() {
+      var conteudo = texto.value.trim();
+      if (conteudo.length < 3) {
+        aviso.textContent = 'Escreva a resposta antes de enviar.';
+        return;
+      }
+      enviar.disabled = true;
+      aviso.textContent = 'Enviando…';
+      api.post('/portaria/ocorrencias/' + o.id + '/resposta',
+               { status: select.value, resposta: conteudo })
+        .then(aoResponder)
+        .catch(function(e) { enviar.disabled = false; aviso.textContent = e.message; });
+    });
+
+    painel.appendChild(rotuloTexto);
+    painel.appendChild(texto);
+    painel.appendChild(rotuloStatus);
+    painel.appendChild(select);
+    painel.appendChild(rodape);
+    return painel;
+  }
+
+  function cartao(o) {
+    var bloco = document.createElement('div');
+    bloco.className = 'ocorrencia-bloco';
+
+    var item = document.createElement('div');
+    item.className = 'list-item';
+
+    var visual = ICONE_PRIORIDADE[o.prioridade] || ICONE_PRIORIDADE.normal;
+    var icone = document.createElement('div');
+    icone.className = 'card-icon ' + visual[0] + ' icone-ocorrencia';
+    // Os SVGs têm fill fixo; como glifo mascarado eles assumem a cor da
+    // prioridade em vez de saírem sempre vermelhos.
+    var glifo = document.createElement('span');
+    glifo.className = 'glifo';
+    glifo.style.setProperty('--icone', 'url(../../assets/img/icons/' + visual[1] + ')');
+    icone.appendChild(glifo);
+
+    var info = document.createElement('div');
+    info.className = 'list-info';
+    var titulo = document.createElement('h5');
+    titulo.textContent = o.titulo;
+    var sub = document.createElement('p');
+    var partes = [o.aberta_por_nome + (o.unidade ? ' — ' + o.unidade : '')];
+    if (o.local) partes.push(o.local);
+    partes.push(dataCurta(o.criado_em));
+    partes.push('Prioridade ' + (ROTULO_PRIORIDADE[o.prioridade] || o.prioridade).toLowerCase());
+    sub.textContent = partes.join(' · ');
+    var descricao = document.createElement('p');
+    descricao.className = 'ocorrencia-descricao';
+    descricao.textContent = o.descricao;
+    info.appendChild(titulo);
+    info.appendChild(sub);
+    info.appendChild(descricao);
+    if (o.resposta) {
+      var resposta = document.createElement('p');
+      resposta.className = 'ocorrencia-resposta';
+      resposta.textContent = 'Resposta: ' + o.resposta;
+      info.appendChild(resposta);
+    }
+
+    var selo = document.createElement('span');
+    selo.className = 'badge ' + (CLASSE_STATUS[o.status] || 'badge-neutral');
+    selo.textContent = ROTULO_STATUS[o.status] || o.status;
+
+    var painel = painelResposta(o, carregar);
+
+    var alternar = document.createElement('button');
+    alternar.type = 'button';
+    alternar.className = 'contato-btn';
+    alternar.textContent = o.resposta ? 'Editar resposta' : 'Responder';
+    alternar.setAttribute('aria-expanded', 'false');
+    alternar.addEventListener('click', function() {
+      var abrindo = painel.hidden;
+      painel.hidden = !abrindo;
+      alternar.setAttribute('aria-expanded', String(abrindo));
+      if (abrindo) painel.querySelector('textarea').focus();
+    });
+
+    item.appendChild(icone);
+    item.appendChild(info);
+    item.appendChild(alternar);
+    item.appendChild(selo);
+
+    bloco.appendChild(item);
+    bloco.appendChild(painel);
+    return bloco;
+  }
+
+  function aplicarFiltros() {
+    var busca = campo('buscaOcorrencia').value.trim().toLowerCase();
+    var status = campo('filtroStatus').value;
+    var prioridade = campo('filtroPrioridade').value;
+
+    var lista = ocorrencias.filter(function(o) {
+      if (status && o.status !== status) return false;
+      if (prioridade && o.prioridade !== prioridade) return false;
+      if (!busca) return true;
+      var alvo = [o.titulo, o.descricao, o.aberta_por_nome, o.local, o.unidade]
+        .filter(Boolean).join(' ').toLowerCase();
+      return alvo.indexOf(busca) >= 0;
+    });
+
+    var caixa = campo('listaOcorrencias');
+    caixa.innerHTML = '';
+    campo('estadoLista').textContent = lista.length ? '' :
+      (ocorrencias.length ? 'Nenhuma ocorrência com esses filtros.'
+                          : 'Nenhuma ocorrência registrada ainda.');
+    lista.forEach(function(o) { caixa.appendChild(cartao(o)); });
+  }
+
+  function carregar() {
+    campo('estadoLista').textContent = 'Carregando…';
+    return api.get('/portaria/ocorrencias')
+      .then(function(lista) {
+        // Primeiro o que ainda está em aberto, depois o mais urgente.
+        ocorrencias = lista.sort(function(a, b) {
+          var pa = PESO_STATUS[a.status], pb = PESO_STATUS[b.status];
+          if (pa !== pb) return pa - pb;
+          var qa = PESO_PRIORIDADE[a.prioridade], qb = PESO_PRIORIDADE[b.prioridade];
+          if (qa !== qb) return qa - qb;
+          return new Date(b.criado_em) - new Date(a.criado_em);
+        });
+
+        campo('totAbertas').textContent =
+          lista.filter(function(o) { return o.status === 'aberta'; }).length;
+        campo('totAnalise').textContent =
+          lista.filter(function(o) { return o.status === 'em_analise'; }).length;
+        campo('totResolvidas').textContent =
+          lista.filter(function(o) { return o.status === 'resolvida'; }).length;
+
+        aplicarFiltros();
+      })
+      .catch(function(e) { campo('estadoLista').textContent = e.message; });
+  }
+
+  campo('buscaOcorrencia').addEventListener('input', (function() {
+    var timer = null;
+    return function() { clearTimeout(timer); timer = setTimeout(aplicarFiltros, 250); };
+  })());
+  ['filtroStatus', 'filtroPrioridade'].forEach(function(id) {
+    campo(id).addEventListener('change', aplicarFiltros);
+  });
+
+  campo('hdrName').textContent = usuario.nome;
+  carregar();
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

@@ -8,7 +8,9 @@ from datetime import datetime
 
 from pydantic import Field
 
-from app.models.enums import StatusEncomenda, StatusOcorrencia, StatusVisitante
+from app.models.enums import (
+    PrioridadeOcorrencia, StatusEncomenda, StatusOcorrencia, StatusVisitante,
+)
 from app.schemas.comuns import CPF, SchemaBase
 
 
@@ -79,6 +81,8 @@ class OcorrenciaEntrada(SchemaBase):
     titulo: str = Field(min_length=3, max_length=180)
     descricao: str = Field(min_length=5, max_length=4000)
     categoria: str = Field(default="geral", max_length=60)
+    local: str | None = Field(default=None, max_length=120)
+    prioridade: PrioridadeOcorrencia = PrioridadeOcorrencia.NORMAL
     foto_url: str | None = Field(default=None, max_length=500)
 
 
@@ -87,6 +91,8 @@ class OcorrenciaSaida(SchemaBase):
     titulo: str
     descricao: str
     categoria: str
+    local: str | None = None
+    prioridade: PrioridadeOcorrencia
     foto_url: str | None = None
     status: StatusOcorrencia
     aberta_por_id: int
