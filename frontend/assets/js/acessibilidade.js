@@ -9,12 +9,19 @@
 (function() {
   'use strict';
 
+  // As páginas ficam em profundidades diferentes (index.html na raiz,
+  // pages/morador/x.html dois níveis abaixo). O caminho sai do src
+  // deste próprio arquivo, que termina em "assets/js/": o que vem
+  // antes é a raiz. Assim não importa de que pasta o site é servido
+  // nem se a página foi aberta direto do disco.
   var BASE = (function() {
-    var path = window.location.pathname.replace(/\/[^/]*\.html$/, '/');
-    var depth = Math.max(0, path.split('/').length - 2);
-    var up = '';
-    for (var i = 0; i < depth; i++) up += '../';
-    return up;
+    var scripts = document.getElementsByTagName('script');
+    for (var i = scripts.length - 1; i >= 0; i--) {
+      var src = scripts[i].getAttribute('src') || '';
+      var corte = src.indexOf('assets/js/');
+      if (corte !== -1) return src.slice(0, corte);
+    }
+    return '';
   })();
 
   var STORAGE_KEY = 'smartcondo_acessibilidade';

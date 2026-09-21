@@ -1,7 +1,26 @@
+# Dependências
 node_modules/
-
 .venv/
-backend/.env
+venv/
+
+# Python
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Ambiente — nunca versionar (tem SECRET_KEY e senha do banco)
+.env
+*.env
+!.env.example
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Saída temporária
+*.log

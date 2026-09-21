@@ -20,13 +20,18 @@
 
   // ── Caminho relativo até a raiz do projeto ────────────────────
   // As páginas ficam em profundidades diferentes (index.html na raiz,
-  // pages/morador/x.html dois níveis abaixo).
+  // pages/morador/x.html dois níveis abaixo). O caminho sai do src
+  // deste próprio arquivo, que termina em "assets/js/": o que vem
+  // antes é a raiz. Assim não importa de que pasta o site é servido
+  // nem se a página foi aberta direto do disco.
   var BASE = (function() {
-    var caminho = global.location.pathname.replace(/\/[^/]*\.html$/, '/');
-    var niveis = Math.max(0, caminho.split('/').length - 2);
-    var subir = '';
-    for (var i = 0; i < niveis; i++) subir += '../';
-    return subir;
+    var scripts = document.getElementsByTagName('script');
+    for (var i = scripts.length - 1; i >= 0; i--) {
+      var src = scripts[i].getAttribute('src') || '';
+      var corte = src.indexOf('assets/js/');
+      if (corte !== -1) return src.slice(0, corte);
+    }
+    return '';
   })();
 
   var CHAVE_TOKEN = 'smartcondo_token';

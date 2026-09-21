@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/img/logo.png" alt="SmartCondo Logo" width="80">
+  <img src="frontend/assets/img/logo.png" alt="SmartCondo Logo" width="80">
   <h1 align="center">SmartCondo</h1>
   <p align="center"><strong>Sistema de Gestão de Condomínios</strong></p>
   <p align="center">
@@ -116,6 +116,20 @@ O **front-end** não usa frameworks, build tools nem dependências externas: ape
 
 ```
 SmartCondo/
+├── frontend/                          # Interface (HTML, CSS e JS puros)
+├── backend/                           # API REST em FastAPI
+├── banco/                             # Scripts SQL para o pgAdmin
+├── documentacao/                      # Documento ABNT do Projeto Integrador
+├── ACESSOS.md                         # Contas de demonstração e como subir
+└── README.md
+```
+
+Cada pasta tem o seu próprio README com as instruções específicas.
+
+### `frontend/`
+
+```
+frontend/
 ├── index.html                         # Página de login
 ├── assets/
 │   ├── css/
@@ -133,47 +147,15 @@ SmartCondo/
 │       ├── acessibilidade.png
 │       └── icons/                     # 47 ícones SVG
 └── pages/
-    ├── cadastro/                      # Cadastro de usuários
-    │   ├── cadastro.html
-    │   ├── morador.html
-    │   └── confirmar_codigo.html
-    ├── login/                         # Fluxo de recuperação de senha
-    │   ├── esqueci_senha.html
-    │   ├── codigo_recuperacao.html
-    │   └── nova_senha.html
-    ├── morador/                       # Módulo do morador (7 páginas)
-    │   ├── dashboard.html
-    │   ├── reservas.html
-    │   ├── financeiro.html
-    │   ├── comunicados.html
-    │   ├── documentos.html
-    │   ├── ocorrencias.html
-    │   ├── perfil.html
-    │   └── aguardando_aprovacao.html
-    ├── porteiro/                      # Módulo do porteiro (6 páginas)
-    │   ├── dashboard.html
-    │   ├── visitantes.html
-    │   ├── encomendas.html
-    │   ├── veiculos.html
-    │   ├── ocorrencias.html
-    │   ├── perfil.html
-    │   └── aguardando_aprovacao.html
-    └── sindico/                       # Módulo do síndico (11 páginas)
-        ├── dashboard.html
-        ├── financeiro.html
-        ├── moradores.html
-        ├── porteiros.html
-        ├── reservas.html
-        ├── comunicados.html
-        ├── manutencao.html
-        ├── perfil.html
-        ├── cadastro_privado.html
-        ├── cadastrar_porteiro.html
-        └── aguardando_aprovacao.html
+    ├── cadastro/                      # Cadastro de usuários (3 páginas)
+    ├── login/                         # Recuperação de senha (3 páginas)
+    ├── morador/                       # Módulo do morador (8 páginas)
+    ├── porteiro/                      # Módulo do porteiro (7 páginas)
+    ├── sindico/                       # Módulo do síndico (13 páginas)
+    └── admin/                         # Módulo do administrador (3 páginas)
 ```
 
-
-E o back-end:
+### `backend/`
 
 ```
 backend/
@@ -184,11 +166,12 @@ backend/
 │   ├── schemas/                       # Entrada e saída da API
 │   ├── services/                      # Regras de negócio
 │   ├── api/routers/                   # Endpoints
+│   ├── seed.py                        # Dados de demonstração
 │   └── main.py
 └── tests/                             # 196 casos de teste
 ```
 
-**Total:** 37 páginas HTML, 2 arquivos CSS, 6 arquivos JS, 47 ícones SVG e
+**Total:** 38 páginas HTML, 2 arquivos CSS, 6 arquivos JS, 47 ícones SVG e
 uma API com 78 endpoints.
 
 ---
@@ -238,7 +221,8 @@ alembic upgrade head
 python -m app.seed --limpar
 uvicorn app.main:app --reload
 
-# 2. Front-end, em outro terminal, na raiz do projeto
+# 2. Front-end, em outro terminal, na pasta frontend/
+cd frontend
 python -m http.server 8080
 ```
 

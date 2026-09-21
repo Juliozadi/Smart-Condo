@@ -86,9 +86,10 @@ A API sobe em <http://localhost:8000> e a documentação interativa fica em
 
 ### 3. Front-end
 
-Em **outro terminal**, na raiz do projeto:
+Em **outro terminal**, na pasta `frontend/`:
 
 ```bash
+cd frontend
 python -m http.server 8080
 ```
 
