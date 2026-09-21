@@ -57,6 +57,17 @@ class Usuario(Base, TimestampMixin):
 
     foto_url: Mapped[str | None] = mapped_column(String(500))
 
+    # Quem avaliou o cadastro, quando e — na recusa — por quê. Segue a
+    # mesma convenção de reservas (avaliada_por_id/avaliada_em/
+    # motivo_recusa) e de ocorrências: toda decisão do sistema deixa
+    # registro de autoria. Sem isso não há como responder "quem liberou
+    # o acesso deste morador?", que é a decisão mais sensível de todas.
+    avaliado_por_id: Mapped[int | None] = mapped_column(
+        ForeignKey("usuarios.id", ondelete="SET NULL")
+    )
+    avaliado_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    motivo_recusa: Mapped[str | None] = mapped_column(Text)
+
     condominio: Mapped["Condominio | None"] = relationship(
         back_populates="usuarios", foreign_keys=[condominio_id]
     )
