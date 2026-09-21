@@ -37,13 +37,17 @@ seções novas descrevendo o que foi construído desde então.
 - **12.1 Boas práticas** ganhou um parágrafo sobre o que foi de fato
   implementado em acessibilidade (rótulos associados, área mínima de
   toque, verificação em 360 px).
-
-> **Pendente de atualizar no .docx:** a seção 12 ainda não menciona a
-> paleta de contraste. O sistema hoje tem um conjunto de cores
-> semânticas com um tom por tema, cada valor escolhido para passar os
-> 4,5:1 do WCAG AA sobre todos os fundos em que a cor aparece, e o modo
-> alto contraste usa os mesmos tokens em versão 7:1 (AAA). A medição é
-> feita por script, percorrendo as 38 páginas nos dois temas.
+- **12.1 Boas práticas** ganhou mais dois parágrafos sobre o contraste:
+  as cores semânticas com um valor por tema, escolhidas até alcançar
+  4,5:1 sobre todos os fundos em que a cor aparece, o modo alto
+  contraste em 7:1, e a medição por script, que achou 305 textos em
+  desacordo e hoje não acha nenhum.
+- **13.2 Segurança dos dados** ganhou três parágrafos: o bloqueio da
+  conta após cinco senhas erradas, o registro de autoria de cada
+  decisão do sistema, e os dois documentos legais com a base na LGPD.
+- **15 Testes** passou de 196 para 203 casos, com a tabela por arquivo
+  corrigida, e ganhou um parágrafo sobre as verificações automáticas a
+  cada envio de código.
 
 ## Numeração
 

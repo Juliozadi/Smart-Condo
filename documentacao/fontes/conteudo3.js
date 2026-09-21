@@ -7,6 +7,8 @@ const acessibilidade = {
     { n: '12.1', nome: 'Boas práticas', paragrafos: [
       'Criação de telas e visuais intuitivos e acessíveis, com cores não extravagantes e de pouca saturação, pensando em pessoas com daltonismo e/ou deficiências visuais, toda a paleta de cores do SmartCondo foi calculada usando padrões de estilo já utilizados nos meios digitais e que garantem o conforto visual ao usuário.',
       'Além da paleta, foram adotadas práticas que atendem às recomendações da WCAG (Web Content Accessibility Guidelines). Todos os campos de formulário têm rótulo associado, de modo que um leitor de tela anuncie corretamente o que está sendo pedido. Os elementos clicáveis respeitam a área mínima de toque de 24 por 24 pixels, recomendada para quem usa o sistema pelo celular. As telas também foram verificadas em largura de 360 pixels, para garantir que nenhum conteúdo fique cortado ou exija rolagem lateral.',
+      'O contraste entre texto e fundo é tratado por um conjunto de cores semânticas — sucesso, aviso, erro, informação e a cor da marca aplicada a texto — com um valor próprio para o tema claro e outro para o escuro. Cada valor foi escolhido por busca, aumentando ou diminuindo a luminosidade até alcançar a razão mínima de 4,5:1 exigida pela WCAG nível AA, e essa verificação foi feita contra todos os fundos em que a cor de fato aparece: as superfícies do tema, as tintas translúcidas dos selos de situação e as pílulas de identificação. No modo de alto contraste, os mesmos elementos assumem valores que alcançam 7:1, a razão do nível AAA.',
+      'A conferência não é visual: um script percorre as telas do sistema nos dois temas e em duas larguras de tela, mede a razão de contraste de cada texto visível e acusa o que ficar abaixo do mínimo. A primeira execução encontrou 305 textos em desacordo, sendo o pior deles um título com razão de 1,21 — praticamente ilegível. Depois da correção, a mesma medição não encontra nenhum.',
     ]},
     { n: '12.2', nome: 'VLibras', paragrafos: [
       'O VLibras é um conjunto de ferramentas gratuitas e de código aberto que traduz conteúdos digitais (texto, áudio e vídeo) em português para Libras, tornando computadores, celulares e plataformas Web mais acessíveis para as pessoas surdas. Será utilizado no projeto SmartCondo com o intuito de atender às necessidades dos usuários com deficiências auditivas.',
@@ -58,6 +60,9 @@ const arquitetura = {
       'As senhas nunca são guardadas em texto puro: o sistema armazena apenas o hash gerado pelo algoritmo bcrypt, que é de mão única. Mesmo com acesso ao banco, não é possível recuperar a senha original.',
       'O acesso às rotas da API é controlado por token JWT, emitido no login e enviado em toda requisição seguinte. O token carrega o papel do usuário, e cada rota declara qual papel pode acessá-la. Um morador que tente acessar uma rota do síndico recebe erro de permissão, mesmo que altere o código da tela no próprio navegador.',
       'O sistema também evita revelar informação desnecessária. O erro de login é o mesmo para e-mail inexistente e senha errada, para não permitir descobrir quais e-mails estão cadastrados. Na tela de reservas, a mensagem de conflito informa o horário já ocupado, mas nunca quem reservou, atendendo ao sigilo pedido na seção 6.',
+      'Para que a senha não possa ser descoberta por tentativa e erro, o login conta as tentativas malsucedidas e bloqueia a conta por quinze minutos depois de cinco senhas erradas seguidas. O bloqueio é temporário de propósito: fosse permanente, bastaria errar a senha de alguém repetidamente para deixá-lo fora do sistema. Acertar a senha zera a contagem. A verificação do bloqueio acontece antes da conferência da senha, de modo que uma conta bloqueada não consuma processamento a cada nova tentativa.',
+      'Toda decisão tomada dentro do sistema guarda o registro de quem a tomou e quando. Isso vale para a aprovação de uma reserva, para a resposta a uma ocorrência e também para a aprovação do cadastro de um morador, que é a decisão que concede acesso ao sistema; quando o cadastro é recusado, o motivo fica gravado junto.',
+      'Por fim, o tratamento dos dados pessoais é descrito em dois documentos acessíveis pelo próprio sistema: os Termos de Uso e a Política de Privacidade. A política relaciona, um a um, os dados que o sistema guarda, a base legal de cada tratamento, o prazo de guarda e os direitos previstos no artigo 18 da Lei 13.709/2018, a Lei Geral de Proteção de Dados. O aceite desses documentos é condição para concluir o cadastro.',
     ], tabela: null },
   ],
 };
@@ -88,15 +93,16 @@ const api = {
 // ── 15 Testes automatizados (nova) ──────────────────────────────────
 const testes = {
   paragrafos: [
-    'As regras do sistema são verificadas por uma suíte de 196 casos de teste automatizados, escritos com pytest e executados contra um banco PostgreSQL real, e não contra um banco simulado. Assim, restrições de chave estrangeira e de unicidade também são exercitadas.',
+    'As regras do sistema são verificadas por uma suíte de 203 casos de teste automatizados, escritos com pytest e executados contra um banco PostgreSQL real, e não contra um banco simulado. Assim, restrições de chave estrangeira e de unicidade também são exercitadas.',
     'Os testes não conferem apenas se o caminho feliz funciona. Boa parte deles verifica justamente o que o sistema precisa recusar: um morador não pode ver a ocorrência de outro; um porteiro sem a permissão liberada pelo síndico não consegue registrar uma ocorrência; uma reserva que se sobrepõe a outra é recusada; a mensagem de conflito não revela quem reservou; e a senha nunca é gravada em texto puro.',
     'Cada vez que uma regra nova é escrita, um teste correspondente é adicionado. Isso permite alterar o código com segurança: se uma mudança quebrar uma regra antiga, a suíte acusa antes de o problema chegar à tela.',
+    'A suíte é executada automaticamente a cada envio de código ao repositório, junto com duas outras verificações: a aplicação das mudanças de estrutura do banco no sentido de ida e de volta, feita com a tabela já populada, que é a situação em que uma alteração mal escrita falha; e a execução dos scripts de criação e carga do banco em um banco vazio, já que eles são mantidos manualmente e podem deixar de acompanhar uma mudança de estrutura.',
   ],
   tabela: [
     ['Arquivo de teste', 'Casos', 'O que cobre'],
-    ['test_auth.py', '28', 'Cadastro, código de confirmação, login e recuperação de senha'],
+    ['test_auth.py', '33', 'Cadastro, código de confirmação, login, bloqueio por tentativas e recuperação de senha'],
     ['test_admin.py', '28', 'Painel do administrador e gestão da plataforma'],
-    ['test_usuarios.py', '28', 'Hierarquia de cadastro, aprovação e permissões do porteiro'],
+    ['test_usuarios.py', '30', 'Hierarquia de cadastro, aprovação com registro de autoria e permissões do porteiro'],
     ['test_operacao.py', '32', 'Veículos, ordens de serviço e documentos'],
     ['test_financeiro.py', '30', 'Cobranças, pagamentos e inadimplência'],
     ['test_portaria.py', '24', 'Visitantes, encomendas e ocorrências'],
