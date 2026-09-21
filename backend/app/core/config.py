@@ -1,8 +1,10 @@
 """Configuração da aplicação, lida do ambiente (.env)."""
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+CHAVE_DE_EXEMPLO = "troque-esta-chave-em-producao"
 
 
 class Settings(BaseSettings):
@@ -21,7 +23,7 @@ class Settings(BaseSettings):
 
     # ── Autenticação ─────────────────────────────────────────────────
     # Em produção esta chave vem do ambiente; nunca deve ficar no código.
-    SECRET_KEY: str = Field(default="troque-esta-chave-em-producao", min_length=16)
+    SECRET_KEY: str = Field(default=CHAVE_DE_EXEMPLO, min_length=16)
     ALGORITMO_JWT: str = "HS256"
     ACCESS_TOKEN_EXPIRA_MIN: int = 60 * 8
 
@@ -41,6 +43,22 @@ class Settings(BaseSettings):
     # servidor". Em produção, aponte CORS_ORIGINS para o domínio real.
     CORS_ORIGINS: list[str] = []
     CORS_ORIGIN_REGEX: str = r"https?://(localhost|127\.0\.0\.1)(:\d+)?"
+
+    @model_validator(mode="after")
+    def _recusar_chave_de_exemplo(self) -> "Settings":
+        """Com DEBUG desligado, subir com a chave do .env.example seria
+        deixar qualquer um assinar um token: ela está no repositório, e
+        é ela que assina o JWT e embaralha os códigos de verificação.
+        """
+        if not self.DEBUG and self.SECRET_KEY == CHAVE_DE_EXEMPLO:
+            raise ValueError(
+                "SECRET_KEY ainda é a de exemplo.\n"
+                "  Primeira vez aqui? Copie backend/.env.example para "
+                "backend/.env — ele já vem com DEBUG=true.\n"
+                "  Em produção, gere uma chave própria com:\n"
+                "    python -c \"import secrets; print(secrets.token_urlsafe(48))\""
+            )
+        return self
 
 
 @lru_cache
