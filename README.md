@@ -211,7 +211,7 @@ está em **[`ACESSOS.md`](ACESSOS.md)**.
 Em resumo:
 
 ```bash
-git clone https://github.com/joaovitorarantes86-ui/Smart-Condo.git
+git clone https://github.com/Juliozadi/Smart-Condo.git
 cd Smart-Condo
 
 # 1. API (precisa do PostgreSQL rodando)
