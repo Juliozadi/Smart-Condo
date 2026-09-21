@@ -38,6 +38,13 @@ seções novas descrevendo o que foi construído desde então.
   implementado em acessibilidade (rótulos associados, área mínima de
   toque, verificação em 360 px).
 
+> **Pendente de atualizar no .docx:** a seção 12 ainda não menciona a
+> paleta de contraste. O sistema hoje tem um conjunto de cores
+> semânticas com um tom por tema, cada valor escolhido para passar os
+> 4,5:1 do WCAG AA sobre todos os fundos em que a cor aparece, e o modo
+> alto contraste usa os mesmos tokens em versão 7:1 (AAA). A medição é
+> feita por script, percorrendo as 38 páginas nos dois temas.
+
 ## Numeração
 
 A numeração de 1 a 12 **não mudou**, de propósito: os comentários do
