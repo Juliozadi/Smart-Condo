@@ -41,6 +41,24 @@ class Settings(BaseSettings):
     MAX_TENTATIVAS_LOGIN: int = Field(default=5, ge=3, le=20)
     BLOQUEIO_LOGIN_MIN: int = Field(default=15, ge=1, le=1440)
 
+    # ── Envio de e-mail ──────────────────────────────────────────────
+    # Sem SMTP_HOST o código não é enviado: fica só no log, que serve
+    # para desenvolvimento. Em produção isso trava o cadastro — o
+    # morador espera um código que nunca chega —, por isso a aplicação
+    # avisa em voz alta ao subir sem SMTP com DEBUG desligado.
+    SMTP_HOST: str = ""
+    SMTP_PORTA: int = Field(default=587, ge=1, le=65535)
+    SMTP_USUARIO: str = ""
+    SMTP_SENHA: str = ""
+    SMTP_TLS: bool = True
+    SMTP_REMETENTE: str = "SmartCondo <nao-responda@smartcondo.com>"
+    # Um servidor SMTP lento não pode segurar a requisição do cadastro.
+    SMTP_TIMEOUT_S: int = Field(default=10, ge=1, le=60)
+
+    @property
+    def email_configurado(self) -> bool:
+        return bool(self.SMTP_HOST)
+
     # ── CORS ─────────────────────────────────────────────────────────
     # O front-end é servido de qualquer porta local (o python -m
     # http.server, o Live Server do VS Code, etc.), então a origem é

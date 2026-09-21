@@ -6,6 +6,7 @@ Documentação, seção 10.4: o back-end é em Python; seção 10.5: PostgreSQL.
 from __future__ import annotations
 
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder
@@ -25,7 +26,29 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)-7s %(name)s — %(message)s",
 )
 
+logger = logging.getLogger("smartcondo")
+
+
+@asynccontextmanager
+async def ciclo_de_vida(_: FastAPI):
+    """Avisa, ao subir, o que está faltando para o sistema funcionar.
+
+    Sem SMTP o código de confirmação não chega a ninguém, e o morador
+    que se cadastra fica preso em "aguardando código" sem entender por
+    quê. Em desenvolvimento isso é esperado — o código volta na resposta
+    da API. Em produção é uma falha silenciosa, então ela grita aqui.
+    """
+    if not settings.DEBUG and not settings.email_configurado:
+        logger.warning(
+            "SMTP não configurado: nenhum código de confirmação ou de "
+            "recuperação de senha será entregue, e o cadastro de morador "
+            "vai travar. Preencha SMTP_HOST no .env."
+        )
+    yield
+
+
 app = FastAPI(
+    lifespan=ciclo_de_vida,
     title=settings.APP_NOME,
     version=settings.APP_VERSAO,
     description=(

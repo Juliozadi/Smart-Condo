@@ -171,7 +171,7 @@ backend/
 │   ├── api/routers/                   # Endpoints
 │   ├── seed.py                        # Dados de demonstração
 │   └── main.py
-└── tests/                             # 203 casos de teste
+└── tests/                             # 210 casos de teste
 ```
 
 **Total:** 41 páginas HTML, 2 arquivos CSS, 6 arquivos JS, 47 ícones SVG e
@@ -199,7 +199,7 @@ Documentação interativa da API em <http://localhost:8000/docs>.
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e
-comunicados. **203 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
+comunicados. **210 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
 
 ---
 
@@ -250,7 +250,8 @@ todas com a senha `smartcondo123`:
 - [x] Implementação de backend com API REST
 - [x] Autenticação com JWT
 - [x] Banco de dados real (PostgreSQL)
-- [ ] Envio real de e-mail e SMS (a interface já existe; falta o provedor)
+- [x] Envio real de e-mail (SMTP)
+- [ ] Envio de SMS (a interface já existe; falta o provedor)
 - [ ] Upload das fotos do vídeo porteiro (a API guarda a URL)
 - [x] Integrar as telas do front-end à API
 - [ ] Chat e chamada de voz com o porteiro (Node.js, seção 11.5.2)
