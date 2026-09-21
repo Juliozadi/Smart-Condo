@@ -1,0 +1,138 @@
+/* Seções 12 a 18. */
+
+// ── 12 Acessibilidade ───────────────────────────────────────────────
+const acessibilidade = {
+  intro: 'Utilização de recursos para promover a inclusão de pessoas com deficiência ou dificuldade em utilizar serviços, nesse caso, digitais. Nós utilizaremos ferramentas web de alteração de tamanho de texto, cores e visualizações para garantir a acessibilidade de usuários com deficiências comunicacionais e digitais.',
+  itens: [
+    { n: '12.1', nome: 'Boas práticas', paragrafos: [
+      'Criação de telas e visuais intuitivos e acessíveis, com cores não extravagantes e de pouca saturação, pensando em pessoas com daltonismo e/ou deficiências visuais, toda a paleta de cores do SmartCondo foi calculada usando padrões de estilo já utilizados nos meios digitais e que garantem o conforto visual ao usuário.',
+      'Além da paleta, foram adotadas práticas que atendem às recomendações da WCAG (Web Content Accessibility Guidelines). Todos os campos de formulário têm rótulo associado, de modo que um leitor de tela anuncie corretamente o que está sendo pedido. Os elementos clicáveis respeitam a área mínima de toque de 24 por 24 pixels, recomendada para quem usa o sistema pelo celular. As telas também foram verificadas em largura de 360 pixels, para garantir que nenhum conteúdo fique cortado ou exija rolagem lateral.',
+    ]},
+    { n: '12.2', nome: 'VLibras', paragrafos: [
+      'O VLibras é um conjunto de ferramentas gratuitas e de código aberto que traduz conteúdos digitais (texto, áudio e vídeo) em português para Libras, tornando computadores, celulares e plataformas Web mais acessíveis para as pessoas surdas. Será utilizado no projeto SmartCondo com o intuito de atender às necessidades dos usuários com deficiências auditivas.',
+    ]},
+    { n: '12.3', nome: 'Tamanho da fonte', paragrafos: [
+      'O usuário terá a opção de manipular o tamanho da fonte de todo o texto acessível da aplicação, de acordo com a necessidade preferível, a fim de promover a acessibilidade visual do usuário do SmartCondo.',
+    ]},
+    { n: '12.4', nome: 'Mudança de cores', paragrafos: [
+      'O usuário também poderá aplicar recursos para mudança das cores da aplicação, como o modo escuro ou claro, de acordo com a preferência dele. Por padrão, o SmartCondo usará a definição de modo de cor do sistema operacional do usuário, que por sua vez, pode alterar a qualquer momento.',
+    ]},
+  ],
+};
+
+// ── 13 Arquitetura e banco de dados (nova) ──────────────────────────
+const arquitetura = {
+  paragrafos: [
+    'O SmartCondo está dividido em três camadas independentes, que se comunicam entre si mas podem ser desenvolvidas e testadas separadamente.',
+    'A primeira é o front-end, escrito em HTML, CSS e JavaScript puro, sem frameworks. É o que o usuário enxerga no navegador. Toda a conversa com o servidor passa por um único arquivo, o api.js, que centraliza o endereço da API, o token da sessão e o tratamento dos erros. Com isso, nenhuma tela precisa saber como uma requisição é montada, e uma mudança no formato de autenticação é feita em um lugar só.',
+    'A segunda é a API REST, escrita em Python com FastAPI. É ela que aplica as regras do negócio: quem pode cadastrar quem, se uma reserva conflita com outra já existente, se um porteiro tem permissão para registrar uma ocorrência. Nenhuma dessas decisões fica no navegador, porque o código do navegador pode ser alterado pelo usuário.',
+    'A terceira é o banco de dados PostgreSQL, acessado pela API por meio do SQLAlchemy. As mudanças de estrutura são versionadas com o Alembic.',
+  ],
+  subsecoes: [
+    { n: '13.1', nome: 'Modelagem do banco de dados', paragrafos: [
+      'O banco tem 19 tabelas, ligadas por 39 chaves estrangeiras. A tabela central é usuarios, que guarda os quatro papéis do sistema em um único lugar, diferenciados por uma coluna de papel. Essa escolha evita quatro tabelas quase idênticas e permite que o login, a recuperação de senha e o perfil funcionem igual para todos.',
+      'Há um ponto de atenção na modelagem: condominios aponta para o síndico responsável e usuarios aponta para o condomínio, o que forma uma referência circular. Por isso, nos scripts de criação, todas as tabelas são criadas primeiro e as chaves estrangeiras só depois.',
+    ], tabela: [
+      ['Tabela', 'O que guarda'],
+      ['condominios', 'Condomínios cadastrados pelo administrador'],
+      ['unidades', 'Apartamentos ou casas de cada condomínio'],
+      ['usuarios', 'Administradores, síndicos, porteiros e moradores'],
+      ['permissoes_porteiro', 'O que cada porteiro pode fazer, definido pelo síndico'],
+      ['codigos_verificacao', 'Códigos de confirmação e de recuperação de senha'],
+      ['espacos_comuns', 'Salão, churrasqueira, piscina, academia e demais áreas'],
+      ['reservas', 'Pedidos de reserva, aprovados ou recusados pelo síndico'],
+      ['registros_ocupacao', 'Contagem de pessoas nas áreas de uso livre'],
+      ['preferencias_cobranca', 'Dia do vencimento e forma de pagamento do morador'],
+      ['cobrancas', 'Taxa condominial por unidade e competência'],
+      ['pagamentos', 'Pagamentos recebidos, com meio, valor e data'],
+      ['comunicados', 'Avisos publicados pelo síndico'],
+      ['leituras_comunicado', 'Quem já leu cada comunicado'],
+      ['visitantes', 'Registro de visitantes, com a foto do vídeo porteiro'],
+      ['encomendas', 'Encomendas recebidas na portaria'],
+      ['ocorrencias', 'Chamados abertos por moradores, porteiros ou síndico'],
+      ['movimentacoes_veiculo', 'Entradas e saídas do estacionamento'],
+      ['ordens_servico', 'Manutenção aberta e acompanhada pelo síndico'],
+      ['documentos', 'Atas, convenção, regimento e plantas'],
+    ]},
+    { n: '13.2', nome: 'Segurança dos dados', paragrafos: [
+      'As senhas nunca são guardadas em texto puro: o sistema armazena apenas o hash gerado pelo algoritmo bcrypt, que é de mão única. Mesmo com acesso ao banco, não é possível recuperar a senha original.',
+      'O acesso às rotas da API é controlado por token JWT, emitido no login e enviado em toda requisição seguinte. O token carrega o papel do usuário, e cada rota declara qual papel pode acessá-la. Um morador que tente acessar uma rota do síndico recebe erro de permissão, mesmo que altere o código da tela no próprio navegador.',
+      'O sistema também evita revelar informação desnecessária. O erro de login é o mesmo para e-mail inexistente e senha errada, para não permitir descobrir quais e-mails estão cadastrados. Na tela de reservas, a mensagem de conflito informa o horário já ocupado, mas nunca quem reservou, atendendo ao sigilo pedido na seção 6.',
+    ], tabela: null },
+  ],
+};
+
+// ── 14 API REST (nova) ──────────────────────────────────────────────
+const api = {
+  paragrafos: [
+    'A comunicação entre o front-end e o banco de dados acontece por uma API REST, com 78 endpoints distribuídos em onze módulos. Todos os endereços começam com /api/v1, o que permite publicar uma versão 2 no futuro sem quebrar as telas que já usam a versão atual.',
+    'As mensagens de erro são padronizadas e vêm em português, para que a tela possa exibir ao usuário exatamente o que o servidor respondeu, sem precisar traduzir código de erro.',
+    'O FastAPI gera automaticamente uma documentação interativa dos endpoints, acessível em /docs quando a API está no ar. Por ela é possível testar cada rota sem escrever código, o que facilita tanto o desenvolvimento quanto a demonstração do projeto.',
+  ],
+  tabela: [
+    ['Módulo', 'Rotas', 'Responsabilidade'],
+    ['auth', '8', 'Cadastro, confirmação por código, login e recuperação de senha'],
+    ['admin', '12', 'Painel do administrador: condomínios e usuários da plataforma'],
+    ['usuarios', '10', 'Cadastro de porteiros e moradores, aprovação e permissões'],
+    ['condominios', '5', 'Dados do condomínio, unidades e código de acesso'],
+    ['reservas', '10', 'Espaços comuns, agenda sigilosa, reservas e ocupação'],
+    ['portaria', '10', 'Visitantes, encomendas e ocorrências'],
+    ['financeiro', '7', 'Preferência de cobrança, cobranças e pagamentos'],
+    ['comunicados', '4', 'Publicação, leitura e remoção de avisos'],
+    ['veiculos', '4', 'Entradas e saídas do estacionamento e ocupação'],
+    ['manutencao', '5', 'Ordens de serviço e indicadores de custo'],
+    ['documentos', '3', 'Atas, convenção, regimento e plantas'],
+  ],
+};
+
+// ── 15 Testes automatizados (nova) ──────────────────────────────────
+const testes = {
+  paragrafos: [
+    'As regras do sistema são verificadas por uma suíte de 196 casos de teste automatizados, escritos com pytest e executados contra um banco PostgreSQL real, e não contra um banco simulado. Assim, restrições de chave estrangeira e de unicidade também são exercitadas.',
+    'Os testes não conferem apenas se o caminho feliz funciona. Boa parte deles verifica justamente o que o sistema precisa recusar: um morador não pode ver a ocorrência de outro; um porteiro sem a permissão liberada pelo síndico não consegue registrar uma ocorrência; uma reserva que se sobrepõe a outra é recusada; a mensagem de conflito não revela quem reservou; e a senha nunca é gravada em texto puro.',
+    'Cada vez que uma regra nova é escrita, um teste correspondente é adicionado. Isso permite alterar o código com segurança: se uma mudança quebrar uma regra antiga, a suíte acusa antes de o problema chegar à tela.',
+  ],
+  tabela: [
+    ['Arquivo de teste', 'Casos', 'O que cobre'],
+    ['test_auth.py', '28', 'Cadastro, código de confirmação, login e recuperação de senha'],
+    ['test_admin.py', '28', 'Painel do administrador e gestão da plataforma'],
+    ['test_usuarios.py', '28', 'Hierarquia de cadastro, aprovação e permissões do porteiro'],
+    ['test_operacao.py', '32', 'Veículos, ordens de serviço e documentos'],
+    ['test_financeiro.py', '30', 'Cobranças, pagamentos e inadimplência'],
+    ['test_portaria.py', '24', 'Visitantes, encomendas e ocorrências'],
+    ['test_reservas.py', '26', 'Espaços, agenda sigilosa e aprovação de reservas'],
+  ],
+};
+
+// ── 16 Conclusão ────────────────────────────────────────────────────
+const conclusao = [
+  'O projeto SmartCondo: Sistema de Gerenciamento de Condomínios, tem como função primordial resolver as dores recorrentes em condomínios de pequeno a médio porte em Campo Grande – MS, com planos de expansão para o âmbito nacional. As principais problemáticas incluem conflitos entre moradores, inconsistências na gestão financeira e falhas na comunicação eficaz.',
+  'A implementação do SmartCondo é crucial para elevar a qualidade e praticidade na rotina desses condomínios, trazendo fluidez no setor financeiro e possibilitando a execução de ações rotineiras, como a visualização de espaços em uso. O objetivo é facilitar a operação do gerenciamento, eliminando falhas financeiras e reduzindo significativamente intrigas internas. Para isso, o projeto visa atender a todos os usuários de modo completo e se adequar ao cotidiano, garantindo organização nas moradias e serviços.',
+  'O sistema prevê funcionalidades específicas para cada tipo de usuário – administrador, síndico, porteiro e morador. O administrador opera a plataforma, cadastrando os condomínios e criando a conta do síndico de cada um. O síndico poderá gerenciar de forma prática e eficiente, incluindo o gerenciamento financeiro com notificações de pagamento e a visualização remota e sigilosa da locação de espaços. O porteiro terá recursos para notificar entregas, registrar entradas e saídas e utilizar o videoporteiro para confirmar a entrada de convidados com foto ou gravação em tempo real, fomentando a segurança. O morador poderá realizar pagamentos com opções variadas, alugar espaços de forma sigilosa, verificar a ocupação de áreas comuns e receber notificações e confirmações de entregas/convidados.',
+  'Com um prazo de 2 anos, o projeto se baseia na utilização de linguagens e ferramentas robustas e escaláveis, como HTML, CSS e JavaScript no front-end, Python com FastAPI no back-end e PostgreSQL no banco de dados. Adicionalmente, o projeto demonstra um compromisso com a acessibilidade, utilizando VLibras para usuários com deficiência auditiva, e recursos de alteração de tamanho de fonte e mudança de cores (modo claro/escuro) para deficiências visuais, garantindo uma boa experiência e inclusão.',
+  'Até o momento, o sistema conta com as quatro áreas de acesso implementadas e ligadas à API, 19 tabelas em PostgreSQL, 78 endpoints e 196 casos de teste automatizados cobrindo as regras de negócio.',
+  'Em suma, o SmartCondo é um projeto realista, alinhado com as necessidades do mercado e da tecnologia atual, visando transformar a gestão de condomínios de pequeno e médio porte em um processo ágil, prático, seguro e inclusivo.',
+];
+
+// ── 17 Cronograma ───────────────────────────────────────────────────
+const cronograma = [
+  ['Fase', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+  ['1ª Fase', 'Detalhamento de Requisitos e Arquitetura', 'Detalhamento de Requisitos e Arquitetura', 'Protótipos de Telas no Figma', 'Protótipos de Telas no Figma', 'Desenvolvimento Front-end (HTML/CSS)'],
+  ['2ª Fase', 'Desenvolvimento Front-end (HTML/CSS)', 'Desenvolvimento Front-end (JavaScript)', 'Desenvolvimento Back-end (Python)', 'Desenvolvimento Back-end (Python)', 'Integração/Testes Iniciais'],
+  ['3ª Fase', 'Desenvolvimento de Funcionalidades Chave (Pagamento, Reserva)', 'Implementação de Segurança e VLibras/Acessibilidade', 'Testes e Correção de Bugs', 'Treinamento dos Usuários Operacionais (Porteiro/Síndico)', 'Implantação Piloto (Campo Grande - MS)'],
+  ['4ª Fase', 'Teste Piloto e Coleta de Feedback (Síndico/Gerente)', 'Ajustes Finais do Sistema (Pós-Feedback)', 'Lançamento e Suporte Contínuo', 'Avaliação de Expansão Nacional', 'Expansão e Novas Funcionalidades (Início do 2º ano)'],
+];
+
+// ── 18 Referências ──────────────────────────────────────────────────
+const referencias = [
+  'PRESSMAN, Roger S. Engenharia de Software: uma abordagem profissional. 8. ed. Porto Alegre: AMGH, 2016.',
+  'SOMMERVILLE, Ian. Engenharia de Software. 10. ed. São Paulo: Pearson, 2018.',
+  'ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. NBR 14724: informação e documentação — trabalhos acadêmicos — apresentação. Rio de Janeiro: ABNT, 2011.',
+  'BRASIL. Lei nº 13.709, de 14 de agosto de 2018. Lei Geral de Proteção de Dados Pessoais (LGPD). Brasília, DF: Presidência da República, 2018.',
+  'WORLD WIDE WEB CONSORTIUM. Web Content Accessibility Guidelines (WCAG) 2.2. W3C Recommendation, 2023. Disponível em: https://www.w3.org/TR/WCAG22/.',
+  'FASTAPI. FastAPI documentation. Disponível em: https://fastapi.tiangolo.com/.',
+  'THE POSTGRESQL GLOBAL DEVELOPMENT GROUP. PostgreSQL 16 Documentation. Disponível em: https://www.postgresql.org/docs/16/.',
+  'VLIBRAS. Suíte VLibras. Ministério da Gestão e da Inovação em Serviços Públicos. Disponível em: https://www.gov.br/governodigital/pt-br/vlibras.',
+];
+
+module.exports = { acessibilidade, arquitetura, api, testes, conclusao, cronograma, referencias };

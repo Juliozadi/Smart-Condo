@@ -18,7 +18,7 @@
 
 ## 📋 Sobre o Projeto
 
-O **SmartCondo** é um sistema de gestão condominial desenvolvido como projeto integrador da faculdade. A plataforma centraliza em um único lugar todas as atividades relacionadas à administração de um condomínio, oferecendo três perfis de acesso com funcionalidades específicas para cada tipo de usuário.
+O **SmartCondo** é um sistema de gestão condominial desenvolvido como projeto integrador da faculdade. A plataforma centraliza em um único lugar todas as atividades relacionadas à administração de um condomínio, oferecendo quatro perfis de acesso com funcionalidades específicas para cada tipo de usuário.
 
 O projeto tem duas partes. O **front-end** é construído com tecnologias web puras — sem frameworks nem bibliotecas externas — e o **back-end** é uma API REST em Python com PostgreSQL, como define a documentação do projeto (seções 10.4 e 10.5).
 
@@ -51,7 +51,31 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 - **Reservas** — Aprovação ou recusa de reservas
 - **Comunicados** — Criação e envio de comunicados
 - **Manutenção** — Abertura e acompanhamento de ordens de serviço
-- **Perfil** — Edição de dados pessoais
+- **Ocorrências** — Resposta aos chamados de moradores e porteiros
+- **Perfil** — Edição de dados pessoais e troca de senha
+
+### ⭐ Administrador
+- **Dashboard** — Indicadores da plataforma inteira
+- **Condomínios** — Cadastro dos condomínios e do código de acesso de cada um
+- **Usuários** — Criação da conta do síndico e apoio na gestão de porteiros e moradores
+
+> A hierarquia de cadastro: o **administrador** cria o síndico junto com o
+> condomínio, o **síndico** cadastra porteiros e moradores, e o **morador**
+> também pode se cadastrar sozinho com o código do condomínio, ficando
+> pendente de aprovação do síndico.
+
+---
+
+## 📄 Documentação
+
+A documentação do Projeto Integrador I está em
+[`documentacao/`](documentacao/), em formato Word e seguindo a ABNT. O
+arquivo [`ALTERACOES.md`](documentacao/ALTERACOES.md) registra o que mudou
+em relação à versão anterior.
+
+Ao abrir no Word, atualize o sumário (botão direito sobre ele → *Atualizar
+campo* → *Atualizar o índice inteiro*) para que os números de página sejam
+calculados.
 
 ---
 
@@ -98,6 +122,9 @@ SmartCondo/
 │   │   ├── style.css                  # Estilos globais e login
 │   │   └── dashboard.css              # Estilos dos dashboards
 │   ├── js/
+│   │   ├── api.js                     # Cliente da API: token, erros e rotas
+│   │   ├── sessao.js                  # Guarda de rota e dados do cabeçalho
+│   │   ├── admin-ui.js                # Modal, tabelas e formatações
 │   │   ├── validation.js              # Validações e máscaras de input
 │   │   ├── foto.js                    # Captura de foto (vídeo porteiro)
 │   │   └── acessibilidade.js          # Acessibilidade, VLibras e tema
@@ -109,7 +136,7 @@ SmartCondo/
     ├── cadastro/                      # Cadastro de usuários
     │   ├── cadastro.html
     │   ├── morador.html
-    │   └── sindico.html
+    │   └── confirmar_codigo.html
     ├── login/                         # Fluxo de recuperação de senha
     │   ├── esqueci_senha.html
     │   ├── codigo_recuperacao.html
@@ -158,11 +185,11 @@ backend/
 │   ├── services/                      # Regras de negócio
 │   ├── api/routers/                   # Endpoints
 │   └── main.py
-└── tests/                             # 191 testes
+└── tests/                             # 196 casos de teste
 ```
 
-**Total:** 33 páginas HTML, 2 arquivos CSS, 3 arquivos JS, 47 ícones SVG e
-uma API com 79 endpoints.
+**Total:** 37 páginas HTML, 2 arquivos CSS, 6 arquivos JS, 47 ícones SVG e
+uma API com 78 endpoints.
 
 ---
 
@@ -182,11 +209,11 @@ uvicorn app.main:app --reload
 
 Documentação interativa da API em <http://localhost:8000/docs>.
 
-**79 endpoints**, cobrindo os casos de uso e as histórias de usuário da
+**78 endpoints**, cobrindo os casos de uso e as histórias de usuário da
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e
-comunicados. **191 testes** rodando contra PostgreSQL.
+comunicados. **196 casos de teste** rodando contra PostgreSQL.
 
 ---
 
