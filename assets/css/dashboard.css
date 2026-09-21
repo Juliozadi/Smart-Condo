@@ -1888,3 +1888,26 @@ body.tema-escuro .form-erro.sucesso { color: #5fd694; }
   transition: width .3s var(--ease-smooth);
 }
 .ocupacao-nota { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-top: 12px; }
+
+.marca-fixado {
+  display: inline-block; margin-left: 7px; padding: 1px 7px;
+  border-radius: 20px; font-size: 9.5px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .4px;
+  background: rgba(230,162,60,.14); color: #a87200;
+  border: 1px solid rgba(230,162,60,.22);
+}
+body.tema-escuro .marca-fixado { background: rgba(230,162,60,.2); color: #e8bb70; }
+.btn-acao .glifo { width: 14px; height: 14px; opacity: .75; }
+.btn-acao:hover .glifo { opacity: 1; }
+
+/* ── Lista de comunicados do morador ─────────────────────────────── */
+.comunicado-item { cursor: pointer; }
+.comunicado-item.nao-lido .notif-content h5 { font-weight: 800; }
+.comunicado-item:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-glow); }
+.comunicado-topo {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap; margin-bottom: 3px;
+}
+.comunicado-topo .badge { font-size: 10px; }
+.comunicado-autor { font-size: 11.5px; color: var(--muted); font-weight: 600; margin-top: 5px; }
+.filtro-btn { font-family: inherit; cursor: pointer; }
