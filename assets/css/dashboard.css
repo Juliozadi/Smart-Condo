@@ -1795,3 +1795,23 @@ body.tema-escuro .pill-acao.recusar { background: rgba(245,108,108,.16); color: 
   .tabela-status .cols-5 span:nth-child(4) { display: none; }
   .tabela-status .cols-5 span:nth-child(5) { display: block; }
 }
+
+/* ── Tela de reservas do morador ─────────────────────────────────── */
+.space-estado { font-size: 11px; font-weight: 700; margin-top: 6px; }
+.space-estado.manutencao { color: #e6a23c; }
+.space-estado.livre      { color: var(--muted); }
+
+.agenda-aviso { font-size: 12.5px; font-weight: 600; margin-top: 8px; }
+.agenda-aviso.livre   { color: #1e9956; }
+.agenda-aviso.ocupado { color: #c0392b; }
+
+.form-erro { font-size: 13px; font-weight: 600; color: #c0392b; margin-top: 8px; }
+.form-erro.sucesso { color: #1e9956; }
+
+.reserve-motivo { font-size: 11.5px; color: #c0392b; font-weight: 600; margin-top: 3px; }
+
+body.tema-escuro .agenda-aviso.livre { color: #5fd694; }
+body.tema-escuro .agenda-aviso.ocupado,
+body.tema-escuro .form-erro,
+body.tema-escuro .reserve-motivo { color: #f28b7d; }
+body.tema-escuro .form-erro.sucesso { color: #5fd694; }

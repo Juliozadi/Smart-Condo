@@ -30,15 +30,15 @@
     </a>
 
     <div class="dash-greeting">
-      <p class="greeting-sub">Apto 204 — João Silva</p>
+      <p class="greeting-sub" id="hdrUnidade">Carregando…</p>
       <h2 class="greeting-name"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Reservas de Espaços</h2>
       <p class="greeting-condo"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Reserve os espaços comuns do condomínio</p>
     </div>
 
     <div class="stats-row">
-      <div class="stat-card teal"><span class="stat-value">2</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Ativas</span></div>
-      <div class="stat-card amber"><span class="stat-value">1</span><span class="stat-label"> Pendente</span></div>
-      <div class="stat-card blue"><span class="stat-value">5</span><span class="stat-label">Realizadas</span></div>
+      <div class="stat-card teal"><span class="stat-value" id="totAprovadas">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Aprovadas</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totPendentes">—</span><span class="stat-label">Pendentes</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totRealizadas">—</span><span class="stat-label">Realizadas</span></div>
     </div>
 
     <!-- Ocupação em tempo real das áreas comuns — doc, seção 6 -->
@@ -47,74 +47,12 @@
       <span class="ocupacao-pulso" aria-hidden="true"></span>
       Atualizado <span id="ocupacaoQuando">agora mesmo</span> &nbsp;·&nbsp; áreas de uso livre
     </p>
-    <div class="ocupacao-grid" id="ocupacaoGrid" aria-live="polite">
-      <div class="ocupacao-card" data-area="Piscina" data-lotacao="23" data-capacidade="60">
-        <div class="ocupacao-topo">
-          <span class="ocupacao-nome"><img src="../../assets/img/icons/reservas.svg" alt="">Piscina</span>
-          <span class="ocupacao-valor">23</span>
-        </div>
-        <p class="ocupacao-legenda">pessoas no momento · capacidade 60</p>
-        <div class="ocupacao-barra"><span style="width:38%"></span></div>
-      </div>
-      <div class="ocupacao-card cheia" data-area="Academia" data-lotacao="11" data-capacidade="12">
-        <div class="ocupacao-topo">
-          <span class="ocupacao-nome"><img src="../../assets/img/icons/bolt.svg" alt="">Academia</span>
-          <span class="ocupacao-valor">11</span>
-        </div>
-        <p class="ocupacao-legenda">pessoas no momento · capacidade 12</p>
-        <div class="ocupacao-barra"><span style="width:92%"></span></div>
-      </div>
-      <div class="ocupacao-card" data-area="Salão de Jogos" data-lotacao="4" data-capacidade="25">
-        <div class="ocupacao-topo">
-          <span class="ocupacao-nome"><img src="../../assets/img/icons/star.svg" alt="">Salão de Jogos</span>
-          <span class="ocupacao-valor">4</span>
-        </div>
-        <p class="ocupacao-legenda">pessoas no momento · capacidade 25</p>
-        <div class="ocupacao-barra"><span style="width:16%"></span></div>
-      </div>
-      <div class="ocupacao-card vazia" data-area="Playground" data-lotacao="0" data-capacidade="20">
-        <div class="ocupacao-topo">
-          <span class="ocupacao-nome"><img src="../../assets/img/icons/moradores.svg" alt="">Playground</span>
-          <span class="ocupacao-valor">0</span>
-        </div>
-        <p class="ocupacao-legenda">livre no momento · capacidade 20</p>
-        <div class="ocupacao-barra"><span style="width:0%"></span></div>
-      </div>
-    </div>
+    <div class="ocupacao-grid" id="ocupacaoGrid" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoOcupacao">Carregando…</p>
 
-    <p class="section-title"> Espaços Disponíveis</p>
-    <div class="space-grid">
-      <div class="space-card">
-        
-        <h4>Salão de Festas</h4><p>Capacidade: 80 pessoas</p>
-        <p class="avail"> Disponível</p>
-      </div>
-      <div class="space-card">
-        
-        <h4>Churrasqueira 1</h4><p>Área descoberta · 20 pessoas</p>
-        <p class="avail"> Disponível</p>
-      </div>
-      <div class="space-card">
-        
-        <h4>Churrasqueira 2</h4><p>Área coberta · 20 pessoas</p>
-        <p style="font-size:11px;color:#f56c6c;font-weight:700;margin-top:6px;"> Reservada hoje · 14h–21h30</p>
-      </div>
-      <div class="space-card">
-        
-        <h4>Academia</h4><p>Equipamentos completos</p>
-        <p class="avail"> Livre</p>
-      </div>
-      <div class="space-card">
-        
-        <h4>Piscina</h4><p>Adulto e infantil</p>
-        <p style="font-size:11px;color:#e6a23c;font-weight:700;margin-top:6px;"> Manutenção 20/03</p>
-      </div>
-      <div class="space-card">
-        
-        <h4>Salão de Jogos</h4><p>Sinuca, ping-pong e mesas</p>
-        <p class="avail"> Disponível</p>
-      </div>
-    </div>
+    <p class="section-title">Espaços Disponíveis</p>
+    <div class="space-grid" id="gradeEspacos"></div>
+    <p class="estado-lista" id="estadoEspacos">Carregando…</p>
 
     <p class="nota-sigilo">
       <img src="../../assets/img/icons/lock.svg" alt="">
@@ -122,20 +60,14 @@
       horário em que o espaço está ocupado, mas nunca quem reservou.</span>
     </p>
 
-    <p class="section-title"> Solicitar Nova Reserva</p>
+    <p class="section-title">Solicitar Nova Reserva</p>
     <div class="form-card">
-      <h3> Formulário de Reserva</h3>
-      <form action="dashboard.html" onsubmit="return validarReservas()">
+      <h3>Formulário de Reserva</h3>
+      <form id="formReserva" novalidate>
         <div class="form-group">
           <label for="reserv_espacoDesejado">Espaço desejado</label>
           <select id="reserv_espacoDesejado" required>
             <option value="" disabled selected>Selecione o espaço</option>
-            <option>Salão de Festas</option>
-            <option>Churrasqueira 1</option>
-            <option>Churrasqueira 2</option>
-            <option>Academia</option>
-            <option>Piscina</option>
-            <option>Salão de Jogos</option>
           </select>
         </div>
         <div class="form-row">
@@ -144,9 +76,11 @@
         </div>
         <div class="form-row">
           <div class="form-group"><label for="reserv_horarioDeTermino"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Horário de término</label><input id="reserv_horarioDeTermino" type="time" required></div>
-          <div class="form-group"><label for="reserv_noEstimadoDePessoas">Nº estimado de pessoas</label><input id="reserv_noEstimadoDePessoas" type="text" placeholder="Ex: 30" required></div>
+          <div class="form-group"><label for="reserv_noEstimadoDePessoas">Nº estimado de pessoas</label><input id="reserv_noEstimadoDePessoas" type="number" min="1" placeholder="Ex: 30"></div>
         </div>
-        <div class="form-group"><label for="reserv_observacoesOpcional">Observações (opcional)</label><input id="reserv_observacoesOpcional" type="text" placeholder="Decoração, necessidades especiais..."></div>
+        <div class="form-group"><label for="reserv_observacoesOpcional">Observações (opcional)</label><input id="reserv_observacoesOpcional" type="text" placeholder="Decoração, necessidades especiais..." maxlength="500"></div>
+        <p class="agenda-aviso" id="agendaAviso" role="status"></p>
+        <p class="form-erro" id="erroReserva" role="alert"></p>
         <button class="action-btn" type="submit" style="margin-top:8px;">
           Enviar Solicitação
         </button>
@@ -154,86 +88,336 @@
     </div>
 
     <p class="section-title"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Minhas Reservas</p>
-    <div class="reserve-list">
-      <div class="reserve-card">
-        <div class="reserve-date"><div class="day">22</div><div class="month">MAR</div></div>
-        <div class="reserve-info"><h5>Salão de Festas</h5><p><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> 14h – 22h &nbsp;·&nbsp; 50 pessoas</p></div>
-        <span class="badge badge-ok">Aprovada</span>
-      </div>
-      <div class="reserve-card">
-        <div class="reserve-date"><div class="day">29</div><div class="month">MAR</div></div>
-        <div class="reserve-info"><h5>Churrasqueira 2</h5><p><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> 11h – 18h &nbsp;·&nbsp; 20 pessoas</p></div>
-        <span class="badge badge-pending">Pendente</span>
-      </div>
-    </div>
+    <div class="reserve-list" id="minhasReservas"></div>
+    <p class="estado-lista" id="estadoMinhas">Carregando…</p>
 
-    <p class="section-title"> Histórico</p>
-    <div class="data-table">
-      <div class="table-head cols-4"><span>Espaço</span><span>Data</span><span><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Horário</span><span> Status</span></div>
-      <div class="table-row cols-4"><span>Salão de Festas</span><span>15/02</span><span>18h–23h</span><span><span class="badge badge-neutral">Concluída</span></span></div>
-      <div class="table-row cols-4"><span>Churrasqueira 1</span><span>28/01</span><span>12h–18h</span><span><span class="badge badge-neutral">Concluída</span></span></div>
-      <div class="table-row cols-4"><span>Academia</span><span>10/01</span><span>07h–09h</span><span><span class="badge badge-neutral">Concluída</span></span></div>
+    <p class="section-title">Histórico</p>
+    <div class="data-table tabela-status" id="tabelaHistorico">
+      <div class="table-head cols-4"><span>Espaço</span><span>Data</span><span><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Horário</span><span>Status</span></div>
     </div>
+    <p class="estado-lista" id="estadoHistorico"></p>
 
   </main>
 
 <script src="../../assets/js/validation.js"></script>
 <script>
-/* Ocupação em tempo real das áreas comuns — doc, seção 6.
-   Protótipo: os números abaixo são simulados no navegador. Na integração
-   com o back-end, esta função passa a consumir GET /areas/ocupacao e o
-   restante da tela continua igual. */
+/* Reservas do morador: ocupação em tempo real (seção 6), espaços do
+   condomínio, o pedido de reserva e as próprias reservas — tudo pela API.
+   A agenda consultada aqui nunca traz quem reservou, só data e horário
+   ocupados, que é o sigilo exigido pela seção 6. */
 (function() {
-  var grid = document.getElementById('ocupacaoGrid');
-  var quando = document.getElementById('ocupacaoQuando');
-  if (!grid) return;
+  'use strict';
+  var api = window.SmartCondo.api;
+  if (!api.protegerPagina('morador')) return;
 
-  var segundos = 0;
+  function campo(id) { return document.getElementById(id); }
+  var espacos = [];
 
-  function pintar(card, lotacao) {
-    var capacidade = parseInt(card.getAttribute('data-capacidade'), 10) || 1;
-    var pct = Math.round((lotacao / capacidade) * 100);
-
-    card.setAttribute('data-lotacao', lotacao);
-    card.querySelector('.ocupacao-valor').textContent = lotacao;
-    card.querySelector('.ocupacao-barra span').style.width = Math.min(pct, 100) + '%';
-    card.querySelector('.ocupacao-legenda').textContent =
-      (lotacao === 0 ? 'livre no momento' : 'pessoas no momento') + ' · capacidade ' + capacidade;
-
-    card.classList.toggle('cheia', pct >= 80 && lotacao > 0);
-    card.classList.toggle('vazia', lotacao === 0);
+  var MESES = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+  var ROTULO_STATUS = {
+    pendente: 'Pendente', aprovada: 'Aprovada', recusada: 'Recusada',
+    cancelada: 'Cancelada', concluida: 'Concluída'
+  };
+  var CLASSE_STATUS = {
+    pendente: 'badge-pending', aprovada: 'badge-ok', recusada: 'badge-alert',
+    cancelada: 'badge-neutral', concluida: 'badge-blue'
+  };
+  /* AAAA-MM-DD montado à mão: new Date(iso) aplicaria o fuso e poderia
+     mostrar o dia anterior. */
+  function partes(iso) { var p = (iso || '').split('-'); return { a: +p[0], m: +p[1], d: +p[2] }; }
+  function diaMes(iso) { var p = partes(iso); return { dia: ('0' + p.d).slice(-2), mes: MESES[p.m - 1] || '' }; }
+  function dataCurta(iso) { var p = partes(iso); return ('0' + p.d).slice(-2) + '/' + ('0' + p.m).slice(-2); }
+  function hora(h) { return (h || '').slice(0, 5).replace(':', 'h'); }
+  function periodo(r) { return hora(r.hora_inicio) + '–' + hora(r.hora_fim); }
+  function hoje() {
+    var d = new Date();
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
   }
 
-  function atualizar() {
-    grid.querySelectorAll('.ocupacao-card').forEach(function(card) {
-      var atual = parseInt(card.getAttribute('data-lotacao'), 10) || 0;
-      var capacidade = parseInt(card.getAttribute('data-capacidade'), 10) || 1;
-      var novo = atual + (Math.floor(Math.random() * 5) - 2);
-      pintar(card, Math.max(0, Math.min(novo, capacidade)));
-    });
-    segundos = 0;
-    if (quando) quando.textContent = 'agora mesmo';
+  // ── Ocupação em tempo real ──────────────────────────────────────
+  var desdeAtualizacao = 0;
+
+  function cartaoOcupacao(o) {
+    var card = document.createElement('div');
+    card.className = 'ocupacao-card';
+    if (o.percentual >= 80 && o.pessoas > 0) card.classList.add('cheia');
+    if (o.pessoas === 0) card.classList.add('vazia');
+
+    var topo = document.createElement('div');
+    topo.className = 'ocupacao-topo';
+    var nome = document.createElement('span');
+    nome.className = 'ocupacao-nome';
+    nome.textContent = o.espaco_nome;
+    var valor = document.createElement('span');
+    valor.className = 'ocupacao-valor';
+    valor.textContent = o.pessoas;
+    topo.appendChild(nome); topo.appendChild(valor);
+
+    var legenda = document.createElement('p');
+    legenda.className = 'ocupacao-legenda';
+    legenda.textContent = (o.pessoas === 0 ? 'livre no momento' : 'pessoas no momento') +
+      ' · capacidade ' + o.capacidade;
+
+    var barra = document.createElement('div');
+    barra.className = 'ocupacao-barra';
+    var preenchida = document.createElement('span');
+    preenchida.style.width = Math.min(o.percentual, 100) + '%';
+    barra.appendChild(preenchida);
+
+    card.appendChild(topo); card.appendChild(legenda); card.appendChild(barra);
+    return card;
+  }
+
+  function carregarOcupacao() {
+    return api.get('/espacos/ocupacao')
+      .then(function(lista) {
+        var grade = campo('ocupacaoGrid');
+        grade.innerHTML = '';
+        campo('estadoOcupacao').textContent =
+          lista.length ? '' : 'Nenhuma área de uso livre cadastrada.';
+        lista.forEach(function(o) { grade.appendChild(cartaoOcupacao(o)); });
+        desdeAtualizacao = 0;
+        campo('ocupacaoQuando').textContent = 'agora mesmo';
+      })
+      .catch(function(e) { campo('estadoOcupacao').textContent = e.message; });
   }
 
   setInterval(function() {
-    segundos += 10;
-    if (quando) quando.textContent = 'há ' + segundos + 's';
+    desdeAtualizacao += 10;
+    campo('ocupacaoQuando').textContent = 'há ' + desdeAtualizacao + 's';
   }, 10000);
+  setInterval(carregarOcupacao, 60000);
 
-  setInterval(atualizar, 30000);
-})();
-</script>
-<script>
-function validarReservas() {
-  document.querySelectorAll('.erro-validacao').forEach(function(el){el.remove();});
-  var form = document.querySelector('.form-card form');
-  var inputs = form.querySelectorAll('[required]');
-  var valido = true;
-  inputs.forEach(function(inp){
-    if (!inp.value.trim()) { mostrarErro(inp,'Campo obrigatório'); valido = false; }
+  // ── Espaços do condomínio ───────────────────────────────────────
+  function cartaoEspaco(e) {
+    var card = document.createElement('div');
+    card.className = 'space-card';
+    var titulo = document.createElement('h4');
+    titulo.textContent = e.nome;
+    var desc = document.createElement('p');
+    desc.textContent = e.descricao || (e.capacidade ? 'Capacidade: ' + e.capacidade + ' pessoas' : '');
+    var estado = document.createElement('p');
+    if (e.em_manutencao) {
+      estado.className = 'space-estado manutencao';
+      estado.textContent = 'Em manutenção';
+    } else if (!e.reservavel) {
+      estado.className = 'space-estado livre';
+      estado.textContent = 'Uso livre · não precisa reservar';
+    } else {
+      estado.className = 'avail';
+      estado.textContent = 'Disponível para reserva';
+    }
+    card.appendChild(titulo); card.appendChild(desc); card.appendChild(estado);
+    return card;
+  }
+
+  function carregarEspacos() {
+    return api.get('/espacos').then(function(lista) {
+      espacos = lista;
+      var grade = campo('gradeEspacos');
+      grade.innerHTML = '';
+      campo('estadoEspacos').textContent = lista.length ? '' : 'Nenhum espaço cadastrado.';
+      lista.forEach(function(e) { grade.appendChild(cartaoEspaco(e)); });
+
+      var select = campo('reserv_espacoDesejado');
+      lista.filter(function(e) { return e.reservavel && !e.em_manutencao; })
+        .forEach(function(e) {
+          var op = document.createElement('option');
+          op.value = e.id;
+          op.textContent = e.nome + (e.capacidade ? ' (até ' + e.capacidade + ')' : '');
+          select.appendChild(op);
+        });
+    }).catch(function(e) { campo('estadoEspacos').textContent = e.message; });
+  }
+
+  // ── Agenda: mostra se o horário já está ocupado, sem dizer por quem ─
+  function conferirAgenda() {
+    var espacoId = campo('reserv_espacoDesejado').value;
+    var data = campo('reserv_data').value;
+    var aviso = campo('agendaAviso');
+    aviso.textContent = '';
+    aviso.className = 'agenda-aviso';
+    if (!espacoId || !data) return;
+
+    api.get('/espacos/agenda?inicio=' + data + '&fim=' + data + '&espaco_id=' + espacoId)
+      .then(function(lista) {
+        if (!lista.length) {
+          aviso.className = 'agenda-aviso livre';
+          aviso.textContent = 'Nenhuma ocupação neste dia.';
+          return;
+        }
+        aviso.className = 'agenda-aviso ocupado';
+        aviso.textContent = 'Já ocupado neste dia: ' +
+          lista.map(function(o) { return periodo(o); }).join(', ') + '.';
+      })
+      .catch(function() { /* a agenda é um apoio; falhar aqui não trava o pedido */ });
+  }
+
+  // ── Minhas reservas ─────────────────────────────────────────────
+  var ATIVAS = ['pendente', 'aprovada'];
+
+  function cartaoReserva(r) {
+    var card = document.createElement('div');
+    card.className = 'reserve-card';
+
+    var dm = diaMes(r.data);
+    var data = document.createElement('div');
+    data.className = 'reserve-date' + (r.status === 'pendente' ? ' pendente' : '');
+    var dia = document.createElement('div');
+    dia.className = 'day'; dia.textContent = dm.dia;
+    var mes = document.createElement('div');
+    mes.className = 'month'; mes.textContent = dm.mes;
+    data.appendChild(dia); data.appendChild(mes);
+
+    var info = document.createElement('div');
+    info.className = 'reserve-info';
+    var h = document.createElement('h5');
+    h.textContent = r.espaco_nome;
+    var p = document.createElement('p');
+    p.textContent = periodo(r) + (r.pessoas_estimadas ? ' · ' + r.pessoas_estimadas + ' pessoas' : '');
+    info.appendChild(h); info.appendChild(p);
+    if (r.motivo_recusa) {
+      var motivo = document.createElement('p');
+      motivo.className = 'reserve-motivo';
+      motivo.textContent = 'Motivo da recusa: ' + r.motivo_recusa;
+      info.appendChild(motivo);
+    }
+
+    var selo = document.createElement('span');
+    selo.className = 'badge ' + (CLASSE_STATUS[r.status] || 'badge-neutral');
+    selo.textContent = ROTULO_STATUS[r.status] || r.status;
+
+    card.appendChild(data); card.appendChild(info); card.appendChild(selo);
+
+    if (ATIVAS.indexOf(r.status) >= 0) {
+      var cancelar = document.createElement('button');
+      cancelar.type = 'button';
+      cancelar.className = 'pill-acao recusar';
+      cancelar.textContent = 'Cancelar';
+      cancelar.addEventListener('click', function() {
+        if (!confirm('Cancelar a reserva de ' + r.espaco_nome + ' em ' + dataCurta(r.data) + '?')) return;
+        cancelar.disabled = true;
+        api.remover('/espacos/reservas/' + r.id)
+          .then(carregarMinhas)
+          .catch(function(e) { cancelar.disabled = false; alert(e.message); });
+      });
+      card.appendChild(cancelar);
+    }
+    return card;
+  }
+
+  function montarLinhaHistorico(r) {
+    var linha = document.createElement('div');
+    linha.className = 'table-row cols-4';
+    linha.innerHTML = '<span></span><span></span><span></span><span><span class="badge"></span></span>';
+    linha.children[0].textContent = r.espaco_nome;
+    linha.children[1].textContent = dataCurta(r.data);
+    linha.children[2].textContent = periodo(r);
+    var selo = linha.children[3].firstChild;
+    selo.className = 'badge ' + (CLASSE_STATUS[r.status] || 'badge-neutral');
+    selo.textContent = ROTULO_STATUS[r.status] || r.status;
+    return linha;
+  }
+
+  function carregarMinhas() {
+    campo('estadoMinhas').textContent = 'Carregando…';
+    return api.get('/espacos/reservas/minhas')
+      .then(function(lista) {
+        var ativas = lista.filter(function(r) { return ATIVAS.indexOf(r.status) >= 0; });
+        var encerradas = lista.filter(function(r) { return ATIVAS.indexOf(r.status) < 0; });
+
+        campo('totAprovadas').textContent =
+          lista.filter(function(r) { return r.status === 'aprovada'; }).length;
+        campo('totPendentes').textContent =
+          lista.filter(function(r) { return r.status === 'pendente'; }).length;
+        campo('totRealizadas').textContent =
+          lista.filter(function(r) { return r.status === 'concluida'; }).length;
+
+        var caixa = campo('minhasReservas');
+        caixa.innerHTML = '';
+        campo('estadoMinhas').textContent = ativas.length ? '' : 'Você não tem reservas em aberto.';
+        ativas.forEach(function(r) { caixa.appendChild(cartaoReserva(r)); });
+
+        var tabela = campo('tabelaHistorico');
+        var cabecalho = tabela.querySelector('.table-head');
+        tabela.innerHTML = '';
+        tabela.appendChild(cabecalho);
+        campo('estadoHistorico').textContent = encerradas.length ? '' : 'Nenhuma reserva encerrada ainda.';
+        encerradas.forEach(function(r) { tabela.appendChild(montarLinhaHistorico(r)); });
+      })
+      .catch(function(e) { campo('estadoMinhas').textContent = e.message; });
+  }
+
+  // ── Envio do pedido ─────────────────────────────────────────────
+  campo('formReserva').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('erroReserva');
+    erro.textContent = '';
+
+    var espacoId = campo('reserv_espacoDesejado').value;
+    var data = campo('reserv_data').value;
+    var inicio = campo('reserv_horarioDeInicio').value;
+    var fim = campo('reserv_horarioDeTermino').value;
+    if (!espacoId || !data || !inicio || !fim) {
+      erro.textContent = 'Preencha espaço, data e os dois horários.';
+      return;
+    }
+    if (fim <= inicio) {
+      erro.textContent = 'O horário de término precisa ser depois do início.';
+      return;
+    }
+
+    var corpo = {
+      espaco_id: +espacoId,
+      data: data,
+      hora_inicio: inicio,
+      hora_fim: fim
+    };
+    var pessoas = campo('reserv_noEstimadoDePessoas').value;
+    if (pessoas) corpo.pessoas_estimadas = +pessoas;
+    var obs = campo('reserv_observacoesOpcional').value.trim();
+    if (obs) corpo.observacoes = obs;
+
+    var botao = this.querySelector('button[type=submit]');
+    var texto = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = 'Enviando…';
+
+    api.post('/espacos/reservas', corpo)
+      .then(function() {
+        campo('formReserva').reset();
+        campo('agendaAviso').textContent = '';
+        erro.className = 'form-erro sucesso';
+        erro.textContent = 'Pedido enviado. O síndico vai avaliar a reserva.';
+        return carregarMinhas();
+      })
+      .catch(function(e) {
+        erro.className = 'form-erro';
+        erro.textContent = e.message;
+      })
+      .then(function() { botao.disabled = false; botao.textContent = texto; });
   });
-  return valido;
-}
+
+  campo('reserv_data').min = hoje();
+  ['reserv_espacoDesejado', 'reserv_data'].forEach(function(id) {
+    campo(id).addEventListener('change', conferirAgenda);
+  });
+
+  var usuario = api.sessao.usuario();
+  if (usuario) {
+    var cab = document.getElementById('hdrName');
+    if (cab) cab.textContent = usuario.nome;
+    var unidade = usuario.unidade
+      ? (usuario.unidade.bloco && usuario.unidade.bloco !== 'unico'
+          ? usuario.unidade.bloco + ' ' : '') + usuario.unidade.numero + ' — '
+      : '';
+    campo('hdrUnidade').textContent = unidade + usuario.nome;
+  }
+
+  carregarEspacos();
+  carregarOcupacao();
+  carregarMinhas();
+})();
 </script>
 <script src="../../assets/js/sessao.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>
