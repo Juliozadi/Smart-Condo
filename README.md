@@ -219,22 +219,42 @@ comunicados. **196 casos de teste** rodando contra PostgreSQL.
 
 ## 🚀 Como Executar
 
-1. Clone o repositório:
-   ```bash
-   git clone https://github.com/joaovitorarantes86-ui/Smart-Condo.git
-   ```
+O sistema tem três partes no ar ao mesmo tempo: o **banco**, a **API** e o
+**front-end**. O passo a passo completo, com as contas de demonstração,
+está em **[`ACESSOS.md`](ACESSOS.md)**.
 
-2. Abra o arquivo `index.html` no navegador.
+Em resumo:
 
-3. Faça login com uma das senhas abaixo:
+```bash
+git clone https://github.com/joaovitorarantes86-ui/Smart-Condo.git
+cd Smart-Condo
 
-| Perfil | Senha | Dashboard |
-|---|---|---|
-| Morador | `morador` | `pages/morador/dashboard.html` |
-| Porteiro | `porteiro` | `pages/porteiro/dashboard.html` |
-| Síndico | `sindico` | `pages/sindico/dashboard.html` |
+# 1. API (precisa do PostgreSQL rodando)
+cd backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+alembic upgrade head
+python -m app.seed --limpar
+uvicorn app.main:app --reload
 
-> ⚠️ **Atenção:** Este é um protótipo front-end. Não há backend nem banco de dados. Os dados são mockados e as senhas são fixas.
+# 2. Front-end, em outro terminal, na raiz do projeto
+python -m http.server 8080
+```
+
+Abra <http://localhost:8080> e entre com uma das contas de demonstração —
+todas com a senha `smartcondo123`:
+
+| Perfil | E-mail |
+|---|---|
+| Administrador | `admin@smartcondo.com` |
+| Síndico | `sindico@smartcondo.com` |
+| Porteiro | `porteiro@smartcondo.com` |
+| Morador | `morador@smartcondo.com` |
+
+> As telas leem e gravam pela API — **sem a API no ar o login não
+> funciona**. Se aparecer *"Não foi possível falar com o servidor"*, é
+> isso. Veja [`ACESSOS.md`](ACESSOS.md).
 
 ---
 
@@ -245,7 +265,7 @@ comunicados. **196 casos de teste** rodando contra PostgreSQL.
 - [x] Banco de dados real (PostgreSQL)
 - [ ] Envio real de e-mail e SMS (a interface já existe; falta o provedor)
 - [ ] Upload das fotos do vídeo porteiro (a API guarda a URL)
-- [ ] Integrar as telas do front-end à API
+- [x] Integrar as telas do front-end à API
 - [ ] Chat e chamada de voz com o porteiro (Node.js, seção 11.5.2)
 - [ ] Notificações push
 - [ ] Painel de gráficos com dados dinâmicos

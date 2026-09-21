@@ -34,7 +34,13 @@ class Settings(BaseSettings):
     CODIGO_VERIFICACAO_EXPIRA_MIN: int = 15
 
     # ── CORS ─────────────────────────────────────────────────────────
-    CORS_ORIGINS: list[str] = ["http://localhost:8099", "http://127.0.0.1:8099"]
+    # O front-end é servido de qualquer porta local (o python -m
+    # http.server, o Live Server do VS Code, etc.), então a origem é
+    # liberada por expressão em vez de uma lista fixa de portas — senão
+    # o navegador bloqueia o login com "não foi possível falar com o
+    # servidor". Em produção, aponte CORS_ORIGINS para o domínio real.
+    CORS_ORIGINS: list[str] = []
+    CORS_ORIGIN_REGEX: str = r"https?://(localhost|127\.0\.0\.1)(:\d+)?"
 
 
 @lru_cache
