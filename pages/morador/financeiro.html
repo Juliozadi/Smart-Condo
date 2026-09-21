@@ -30,52 +30,33 @@
     </a>
 
     <div class="balance-card">
-      <p class="balance-label">Situação da Unidade — Apto 204</p>
-      <p class="balance-value">R$ 320,00</p>
-      <p class="balance-sub">Em aberto referente a março/2025</p>
-      <div class="balance-pills">
-        <span class="balance-pill"> Vence em 27/03</span>
-        <span class="balance-pill"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Cond. das Palmeiras</span>
-      </div>
+      <p class="balance-label" id="balanceLabel">Situação da unidade</p>
+      <p class="balance-value" id="balanceValor">—</p>
+      <p class="balance-sub" id="balanceSub">Carregando…</p>
+      <div class="balance-pills" id="balancePills"></div>
     </div>
 
-    <div class="alert-box warning">
+    <div class="alert-box warning" id="avisoVencimento" hidden>
       <img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt="">
-      <span>Seu boleto de <strong>março/2025</strong> vence em 9 dias. Clique em "Ver Boleto" para pagar.</span>
+      <span id="textoVencimento"></span>
     </div>
 
     <div class="stats-row">
-      <div class="stat-card amber"><span class="stat-value">R$320</span><span class="stat-label"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">A pagar</span></div>
-      <div class="stat-card teal"><span class="stat-value">12</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Pagamentos</span></div>
-      <div class="stat-card blue"><span class="stat-value">0</span><span class="stat-label"><img src="../../assets/img/icons/xmark.svg" width="16" height="16" alt="">Em atraso</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totAPagar">—</span><span class="stat-label"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">A pagar</span></div>
+      <div class="stat-card teal"><span class="stat-value" id="totPagas">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Pagas</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totAtraso">—</span><span class="stat-label"><img src="../../assets/img/icons/xmark.svg" width="16" height="16" alt="">Em atraso</span></div>
     </div>
 
-    <p class="section-title"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt=""> Boleto em Aberto</p>
-    <div class="form-card" style="border-left:3px solid #e6a23c;">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
-        <div>
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-            <div class="card-icon icon-yellow" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;">
-              <img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt="">
-            </div>
-            <div>
-              <p style="font-size:15px;font-weight:700;color:var(--text);">Taxa de Condomínio — Março 2025</p>
-              <p style="font-size:12px;color:var(--muted);">Referência: 03/2025 &nbsp;·&nbsp; Apto 204</p>
-            </div>
-          </div>
-          <p style="font-size:13px;color:var(--text-2);">Vencimento: <strong>27/03/2025</strong> &nbsp;·&nbsp; Valor: <strong style="color:#c88b1a;">R$ 320,00</strong></p>
-        </div>
-        <a href="#" class="action-btn" style="width:auto;padding:12px 22px;font-size:14px;margin:0;">
-           Ver Boleto
-        </a>
-      </div>
-    </div>
+    <p class="section-title"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt=""> Cobranças em Aberto</p>
+    <div class="list-items" id="listaAbertas"></div>
+    <p class="estado-lista" id="estadoAbertas">Carregando…</p>
+    <p class="form-erro" id="erroPagamento" role="alert"></p>
 
     <!-- Formas de pagamento e data da cobrança — doc, seção 6 -->
     <p class="section-title"><img src="../../assets/img/icons/financeiro.svg" width="16" height="16" alt=""> Como Você Quer Pagar</p>
     <div class="form-card">
       <h3>Formas de pagamento disponíveis</h3>
-      <form onsubmit="return salvarPreferenciaPagamento(event)">
+      <form id="formPreferencia" novalidate>
         <div class="pagamento-grid">
           <label class="pagamento-opcao">
             <input type="radio" name="forma_pagamento" value="pix" checked>
@@ -111,7 +92,8 @@
               <option value="10" selected>Todo dia 10</option>
               <option value="15">Todo dia 15</option>
               <option value="20">Todo dia 20</option>
-              <option value="27">Todo dia 27</option>
+              <option value="25">Todo dia 25</option>
+              <option value="28">Todo dia 28</option>
             </select>
           </div>
           <p class="cobranca-nota">
@@ -125,71 +107,255 @@
       </form>
     </div>
 
-    <p class="section-title"> Histórico de Pagamentos</p>
-    <div class="data-table">
-      <div class="table-head cols-4"><span>Referência</span><span>Vencimento</span><span>Valor</span><span> Status</span></div>
-      <div class="table-row cols-4"><span>Fevereiro/2025</span><span>10/02/2025</span><span>R$ 320,00</span><span><span class="badge badge-ok">Pago</span></span></div>
-      <div class="table-row cols-4"><span>Janeiro/2025</span><span>10/01/2025</span><span>R$ 320,00</span><span><span class="badge badge-ok">Pago</span></span></div>
-      <div class="table-row cols-4"><span>Dezembro/2024</span><span>10/12/2024</span><span>R$ 320,00</span><span><span class="badge badge-ok">Pago</span></span></div>
-      <div class="table-row cols-4"><span>Novembro/2024</span><span>10/11/2024</span><span>R$ 320,00</span><span><span class="badge badge-ok">Pago</span></span></div>
-      <div class="table-row cols-4"><span>Outubro/2024</span><span>10/10/2024</span><span>R$ 310,00</span><span><span class="badge badge-ok">Pago</span></span></div>
-      <div class="table-row cols-4"><span>Setembro/2024</span><span>10/09/2024</span><span>R$ 310,00</span><span><span class="badge badge-ok">Pago</span></span></div>
-      <div class="table-row cols-4"><span>Agosto/2024</span><span>10/08/2024</span><span>R$ 310,00</span><span><span class="badge badge-ok">Pago</span></span></div>
-      <div class="table-row cols-4"><span>Julho/2024</span><span>10/07/2024</span><span>R$ 295,00</span><span><span class="badge badge-ok">Pago</span></span></div>
+    <p class="section-title">Histórico de Cobranças</p>
+    <div class="data-table tabela-status" id="tabelaHistorico">
+      <div class="table-head cols-4"><span>Referência</span><span>Vencimento</span><span>Valor</span><span>Situação</span></div>
     </div>
-
-    <p class="section-title"> Composição da Taxa — Março 2025</p>
-    <div class="data-table">
-      <div class="table-head cols-3"><span>Item</span><span> Tipo</span><span>Valor</span></div>
-      <div class="table-row cols-3"><span>Fundo de reserva</span><span>Mensal</span><span>R$ 80,00</span></div>
-      <div class="table-row cols-3"><span>Segurança / portaria</span><span>Mensal</span><span>R$ 90,00</span></div>
-      <div class="table-row cols-3"><span>Limpeza e manutenção</span><span>Mensal</span><span>R$ 70,00</span></div>
-      <div class="table-row cols-3"><span>Água e gás (rateio)</span><span>Consumo</span><span>R$ 55,00</span></div>
-      <div class="table-row cols-3"><span>Energia áreas comuns</span><span>Consumo</span><span>R$ 25,00</span></div>
-      <div class="table-row cols-3" style="font-weight:700;background:var(--surface-2);">
-        <span>Total</span><span>—</span><span style="color:var(--primary);">R$ 320,00</span>
-      </div>
-    </div>
-
-    <a href="#" class="action-btn outline">
-      Baixar Comprovante (PDF)
-    </a>
+    <p class="estado-lista" id="estadoHistorico"></p>
 
   </main>
 
 <script src="../../assets/js/validation.js"></script>
 <script>
-/* Preferência de pagamento — doc, seção 6.
-   Protótipo: guarda no localStorage. Na integração vira
-   PUT /moradores/me/preferencia-cobranca. */
-function salvarPreferenciaPagamento(e) {
-  e.preventDefault();
-  var forma = document.querySelector('input[name="forma_pagamento"]:checked');
-  var dia = document.getElementById('diaCobranca');
-  var status = document.getElementById('pagamentoStatus');
-
-  var pref = { forma: forma ? forma.value : 'pix', dia: dia ? dia.value : '10' };
-  try { localStorage.setItem('smartcondo_pref_cobranca', JSON.stringify(pref)); } catch (_) {}
-
-  var nomes = { pix: 'Pix', boleto: 'Boleto bancário',
-                debito_automatico: 'Débito automático', cartao: 'Cartão de crédito' };
-  if (status) {
-    status.textContent = 'Preferência salva: ' + (nomes[pref.forma] || pref.forma) +
-                         ', cobrança todo dia ' + pref.dia + '.';
-  }
-  return false;
-}
-
-// Restaura a escolha anterior ao abrir a tela
+/* Financeiro do morador (documentação, seção 6): as cobranças da unidade,
+   o pagamento pela forma escolhida e a preferência de dia e meio de
+   pagamento, que é o que o síndico usa ao gerar a cobrança do mês. */
 (function() {
-  try {
-    var pref = JSON.parse(localStorage.getItem('smartcondo_pref_cobranca'));
-    if (!pref) return;
-    var radio = document.querySelector('input[name="forma_pagamento"][value="' + pref.forma + '"]');
-    if (radio) radio.checked = true;
-    var dia = document.getElementById('diaCobranca');
-    if (dia && pref.dia) dia.value = pref.dia;
-  } catch (_) {}
+  'use strict';
+  var api = window.SmartCondo.api;
+  var usuario = api.protegerPagina('morador');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+  var cobrancas = [];
+
+  var ROTULO_STATUS = {
+    aberta: 'Aberta', vencida: 'Vencida', paga: 'Paga', cancelada: 'Cancelada'
+  };
+  var CLASSE_STATUS = {
+    aberta: 'badge-pending', vencida: 'badge-alert',
+    paga: 'badge-ok', cancelada: 'badge-neutral'
+  };
+  var ROTULO_FORMA = {
+    pix: 'Pix', boleto: 'Boleto bancário',
+    debito_automatico: 'Débito automático', cartao: 'Cartão de crédito'
+  };
+  var MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+               'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  function dinheiro(valor) {
+    return 'R$ ' + Number(valor).toLocaleString('pt-BR', {
+      minimumFractionDigits: 2, maximumFractionDigits: 2
+    });
+  }
+  function partes(iso) { var p = (iso || '').split('-'); return { a: +p[0], m: +p[1], d: +p[2] }; }
+  function dataCurta(iso) {
+    var p = partes(iso);
+    return ('0' + p.d).slice(-2) + '/' + ('0' + p.m).slice(-2) + '/' + p.a;
+  }
+  function competenciaLonga(iso) {
+    var p = partes(iso);
+    return (MESES[p.m - 1] || '') + '/' + p.a;
+  }
+  function diasAte(iso) {
+    var p = partes(iso);
+    var alvo = new Date(p.a, p.m - 1, p.d).setHours(0, 0, 0, 0);
+    return Math.round((alvo - new Date().setHours(0, 0, 0, 0)) / 86400000);
+  }
+  function falta(c) { return Number(c.valor) - Number(c.total_pago || 0); }
+
+  function formaEscolhida() {
+    var marcada = document.querySelector('input[name="forma_pagamento"]:checked');
+    return marcada ? marcada.value : 'pix';
+  }
+
+  function cartaoCobranca(c) {
+    var item = document.createElement('div');
+    item.className = 'list-item';
+
+    var icone = document.createElement('div');
+    icone.className = 'card-icon ' +
+      (c.status === 'vencida' ? 'icon-red' : 'icon-yellow') + ' icone-volume';
+    var glifo = document.createElement('span');
+    glifo.className = 'glifo';
+    glifo.style.setProperty('--icone', 'url(../../assets/img/icons/file-invoice-dollar.svg)');
+    icone.appendChild(glifo);
+
+    var info = document.createElement('div');
+    info.className = 'list-info';
+    var h = document.createElement('h5');
+    h.textContent = c.descricao + ' — ' + competenciaLonga(c.competencia);
+    var p = document.createElement('p');
+    var dias = diasAte(c.vencimento);
+    var prazo = dias < 0 ? 'vencido há ' + (-dias) + (dias === -1 ? ' dia' : ' dias')
+              : dias === 0 ? 'vence hoje'
+              : 'vence em ' + dias + (dias === 1 ? ' dia' : ' dias');
+    p.textContent = 'Vencimento ' + dataCurta(c.vencimento) + ' · ' + prazo +
+      ' · ' + dinheiro(falta(c)) + (Number(c.total_pago) > 0 ? ' (parcial já pago)' : '');
+    info.appendChild(h);
+    info.appendChild(p);
+
+    var pagar = document.createElement('button');
+    pagar.type = 'button';
+    pagar.className = 'action-btn';
+    pagar.style.cssText = 'width:auto;margin:0;padding:10px 18px;font-size:13px;';
+    pagar.textContent = 'Pagar ' + dinheiro(falta(c));
+    pagar.addEventListener('click', function() {
+      var forma = formaEscolhida();
+      if (!confirm('Registrar o pagamento de ' + dinheiro(falta(c)) +
+                   ' por ' + ROTULO_FORMA[forma] + '?')) return;
+      pagar.disabled = true;
+      var erro = campo('erroPagamento');
+      erro.className = 'form-erro';
+      erro.textContent = '';
+      api.post('/financeiro/cobrancas/' + c.id + '/pagamentos',
+               { valor: falta(c), forma: forma })
+        .then(function() {
+          erro.className = 'form-erro sucesso';
+          erro.textContent = 'Pagamento registrado por ' + ROTULO_FORMA[forma] +
+            '. O síndico foi avisado.';
+          return carregar();
+        })
+        .catch(function(e) { pagar.disabled = false; erro.textContent = e.message; });
+    });
+
+    var selo = document.createElement('span');
+    selo.className = 'badge ' + (CLASSE_STATUS[c.status] || 'badge-neutral');
+    selo.textContent = ROTULO_STATUS[c.status] || c.status;
+
+    item.appendChild(icone);
+    item.appendChild(info);
+    item.appendChild(pagar);
+    item.appendChild(selo);
+    return item;
+  }
+
+  function montarLinha(c) {
+    var linha = document.createElement('div');
+    linha.className = 'table-row cols-4';
+    linha.innerHTML = '<span></span><span></span><span></span><span><span class="badge"></span></span>';
+    linha.children[0].textContent = competenciaLonga(c.competencia);
+    linha.children[1].textContent = dataCurta(c.vencimento);
+    linha.children[2].textContent = dinheiro(c.valor);
+    var selo = linha.children[3].firstChild;
+    selo.className = 'badge ' + (CLASSE_STATUS[c.status] || 'badge-neutral');
+    selo.textContent = ROTULO_STATUS[c.status] || c.status;
+    return linha;
+  }
+
+  function carregar() {
+    campo('estadoAbertas').textContent = 'Carregando…';
+    return api.get('/financeiro/cobrancas')
+      .then(function(lista) {
+        cobrancas = lista.slice().sort(function(a, b) {
+          return a.vencimento < b.vencimento ? 1 : -1;
+        });
+
+        var abertas = cobrancas.filter(function(c) {
+          return c.status === 'aberta' || c.status === 'vencida';
+        });
+        var devendo = abertas.reduce(function(soma, c) { return soma + falta(c); }, 0);
+        var vencidas = abertas.filter(function(c) { return c.status === 'vencida'; });
+
+        campo('balanceValor').textContent = devendo > 0 ? dinheiro(devendo) : 'Em dia';
+        campo('totAPagar').textContent = devendo > 0 ? dinheiro(devendo) : 'R$ 0,00';
+        campo('totPagas').textContent =
+          cobrancas.filter(function(c) { return c.status === 'paga'; }).length;
+        campo('totAtraso').textContent = vencidas.length;
+
+        var pills = campo('balancePills');
+        pills.innerHTML = '';
+        if (abertas.length) {
+          var proxima = abertas.reduce(function(menor, c) {
+            return c.vencimento < menor.vencimento ? c : menor;
+          });
+          campo('balanceSub').textContent =
+            abertas.length + (abertas.length === 1 ? ' cobrança em aberto' : ' cobranças em aberto');
+          var pill = document.createElement('span');
+          pill.className = 'balance-pill';
+          pill.textContent = 'Próximo vencimento: ' + dataCurta(proxima.vencimento);
+          pills.appendChild(pill);
+
+          var dias = diasAte(proxima.vencimento);
+          campo('avisoVencimento').hidden = false;
+          campo('textoVencimento').textContent = dias < 0
+            ? 'Você tem ' + vencidas.length + (vencidas.length === 1 ? ' cobrança vencida.' : ' cobranças vencidas.')
+            : 'Sua cobrança de ' + competenciaLonga(proxima.competencia) +
+              (dias === 0 ? ' vence hoje.' : ' vence em ' + dias + (dias === 1 ? ' dia.' : ' dias.'));
+        } else {
+          campo('balanceSub').textContent = 'Nenhuma cobrança em aberto.';
+          campo('avisoVencimento').hidden = true;
+        }
+
+        var caixa = campo('listaAbertas');
+        caixa.innerHTML = '';
+        campo('estadoAbertas').textContent =
+          abertas.length ? '' : 'Nenhuma cobrança em aberto. Tudo em dia.';
+        abertas.forEach(function(c) { caixa.appendChild(cartaoCobranca(c)); });
+
+        var tabela = campo('tabelaHistorico');
+        var cabecalho = tabela.querySelector('.table-head');
+        tabela.innerHTML = '';
+        tabela.appendChild(cabecalho);
+        campo('estadoHistorico').textContent =
+          cobrancas.length ? '' : 'Nenhuma cobrança registrada ainda.';
+        cobrancas.forEach(function(c) { tabela.appendChild(montarLinha(c)); });
+      })
+      .catch(function(e) {
+        campo('estadoAbertas').textContent = e.message;
+        campo('estadoHistorico').textContent = '';
+      });
+  }
+
+  function carregarPreferencia() {
+    return api.get('/financeiro/preferencia').then(function(p) {
+      var opcao = document.querySelector(
+        'input[name="forma_pagamento"][value="' + p.forma_preferida + '"]');
+      if (opcao) opcao.checked = true;
+      var dia = campo('diaCobranca');
+      var existe = Array.prototype.some.call(dia.options, function(o) {
+        return +o.value === p.dia_vencimento;
+      });
+      if (!existe) {
+        var nova = document.createElement('option');
+        nova.value = p.dia_vencimento;
+        nova.textContent = 'Todo dia ' + p.dia_vencimento;
+        dia.appendChild(nova);
+      }
+      dia.value = p.dia_vencimento;
+    }).catch(function() { /* sem preferência gravada, ficam os padrões da tela */ });
+  }
+
+  campo('formPreferencia').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var status = campo('pagamentoStatus');
+    var botao = this.querySelector('button[type=submit]');
+    var rotulo = botao.textContent;
+    botao.disabled = true;
+    status.textContent = 'Salvando…';
+
+    api.put('/financeiro/preferencia', {
+      dia_vencimento: +campo('diaCobranca').value,
+      forma_preferida: formaEscolhida()
+    })
+      .then(function(p) {
+        status.textContent = 'Preferência salva: ' + ROTULO_FORMA[p.forma_preferida] +
+          ', cobrança todo dia ' + p.dia_vencimento + '.';
+      })
+      .catch(function(e) { status.textContent = e.message; })
+      .then(function() { botao.disabled = false; botao.textContent = rotulo; });
+  });
+
+  var unidade = usuario.unidade
+    ? (usuario.unidade.bloco && usuario.unidade.bloco !== 'unico'
+        ? usuario.unidade.bloco + ' ' : '') + usuario.unidade.numero
+    : null;
+  campo('balanceLabel').textContent =
+    'Situação da unidade' + (unidade ? ' — Apto ' + unidade : '');
+  var nomeTopo = document.getElementById('hdrName');
+  if (nomeTopo) nomeTopo.textContent = usuario.nome;
+
+  carregarPreferencia().then(carregar, carregar);
 })();
 </script>
 <script src="../../assets/js/sessao.js"></script>
