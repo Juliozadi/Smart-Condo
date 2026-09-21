@@ -596,15 +596,18 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
   background: linear-gradient(180deg, #eaf3f5, #ddeaed);
   padding: 12px 18px;
   display: grid;
+  column-gap: 12px;
   font-size: 10.5px; font-weight: 800; color: #2a3d48;
   text-transform: uppercase; letter-spacing: .7px;
   border-bottom: 1px solid var(--border);
 }
+.table-head > span, .table-row > span { min-width: 0; }
 .table-head img { width: 12px; height: 12px; vertical-align: middle; margin-right: 3px; display: inline-block; }
 
 .table-row {
   padding: 14px 18px;
   display: grid;
+  column-gap: 12px;
   font-size: 13.5px; font-weight: 500;
   border-top: 1px solid var(--border-soft);
   align-items: center; transition: background .15s; color: var(--text);
@@ -725,6 +728,26 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
   }
   .history-table .table-head {
     grid-template-columns: 2fr 1fr 1fr;
+  }
+
+  /* Em 360px o padding de 18px e a ausencia de gap faziam as colunas
+     se encostarem ("R$55.200R$52.100PDF"). Aqui o respiro lateral
+     diminui, entra um gap entre colunas e as proporcoes sao refeitas
+     para que tudo caiba sem rolagem horizontal. */
+  .table-head, .table-row {
+    padding-left: 12px; padding-right: 12px;
+    column-gap: 8px;
+  }
+  .table-head { font-size: 9px; letter-spacing: .3px; }
+  .table-row { font-size: 12px; }
+  .data-table .cols-3 { grid-template-columns: 1.6fr 1fr 1fr; }
+  .data-table .cols-4 { grid-template-columns: 1.2fr 1fr 1.25fr .7fr; }
+  /* Um selo mais largo que a coluna invadia a celula vizinha. */
+  .data-table .badge {
+    font-size: 9.5px; padding: 3px 7px;
+    display: inline-block; max-width: 100%;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    vertical-align: middle;
   }
 }
 
@@ -929,9 +952,17 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
   .cols-5         { grid-template-columns: 2fr 1fr 1fr; }
   .cols-5 span:nth-child(4),
   .cols-5 span:nth-child(5) { display: none; }
-  .cols-6         { grid-template-columns: 1.6fr .9fr .9fr .7fr; }
+  /* A coluna de acoes recebe uma largura fixa: com fr ela encolhia e
+     os dois botoes quebravam de linha, deixando a linha altissima. */
+  .cols-6         { grid-template-columns: minmax(0,1.4fr) minmax(0,.8fr) minmax(0,.8fr) 68px; }
   .cols-6 span:nth-child(3),
   .cols-6 span:nth-child(4) { display: none; }
+
+  /* Os botoes de acao encolhiam abaixo de 24px por serem itens flex
+     dentro de uma coluna estreita; aqui eles mantem o tamanho e a
+     linha quebra quando nao couberem lado a lado. */
+  .acoes-linha { gap: 4px; }
+  .btn-acao { width: 30px; height: 30px; flex-shrink: 0; }
 }
 /* ═══════════════════════════════════════════
    MULTI-STEP CADASTRO — CSS :target approach
@@ -1551,7 +1582,7 @@ body:has(.step-page:target) .step-page.default-step {
 .acoes-linha { display: flex; gap: 6px; justify-content: flex-end; }
 .btn-acao {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
+  width: 30px; height: 30px; flex-shrink: 0; border-radius: 8px; cursor: pointer;
   background: var(--surface-2); border: 1px solid var(--border);
   transition: all .18s var(--ease-smooth);
 }
@@ -1608,7 +1639,11 @@ body:has(.step-page:target) .step-page.default-step {
   text-align: center; color: var(--muted); font-size: 13.5px;
   font-weight: 600; padding: 28px 16px;
 }
-.lista-email { font-size: 11.5px; color: var(--muted); font-weight: 500; }
+.lista-email {
+  font-size: 11.5px; color: var(--muted); font-weight: 500;
+  display: block; max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
 /* ═══════════════════════════════════════════
    RESPONSIVIDADE NO CELULAR — correções
