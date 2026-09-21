@@ -1,0 +1,140 @@
+# Roda a suíte a cada push e a cada pull request, contra um PostgreSQL
+# de verdade — é como os testes rodam na máquina de quem desenvolve, e
+# o projeto usa recursos que o SQLite não tem (ENUM, TIMESTAMPTZ).
+name: Testes
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  backend:
+    name: Back-end (pytest)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: smartcondo
+          POSTGRES_PASSWORD: smartcondo
+          POSTGRES_DB: smartcondo_test
+        ports: ['5432:5432']
+        # Sem isto os testes começam antes do banco aceitar conexão.
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Instalar dependências
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Rodar os testes
+        working-directory: backend
+        env:
+          # O conftest aceita outro banco por TEST_DATABASE_URL, desde que
+          # o nome contenha "test".
+          TEST_DATABASE_URL: postgresql+psycopg://smartcondo:smartcondo@localhost:5432/smartcondo_test
+          SECRET_KEY: chave-de-teste-suficientemente-longa-para-o-ci
+          BCRYPT_ROUNDS: '4'
+        run: pytest -q
+
+  migracoes:
+    name: Migrações (ida e volta)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: smartcondo
+          POSTGRES_PASSWORD: smartcondo
+          POSTGRES_DB: smartcondo
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Instalar dependências
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Subir, popular, descer e subir de novo
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+psycopg://smartcondo:smartcondo@localhost:5432/smartcondo
+          SECRET_KEY: chave-de-teste-suficientemente-longa-para-o-ci
+          BCRYPT_ROUNDS: '4'
+        run: |
+          alembic upgrade head
+          # Popula antes de descer: é com a tabela cheia que uma migração
+          # mal escrita quebra, não com ela vazia.
+          python -m app.seed --limpar
+          alembic downgrade base
+          alembic upgrade head
+
+      - name: Conferir que não falta migração
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+psycopg://smartcondo:smartcondo@localhost:5432/smartcondo
+          SECRET_KEY: chave-de-teste-suficientemente-longa-para-o-ci
+        run: alembic check
+
+  scripts-sql:
+    name: Scripts de banco/
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: smartcondo
+          POSTGRES_PASSWORD: smartcondo
+          POSTGRES_DB: smartcondo_sql
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Executar os dois scripts num banco do zero
+        env:
+          PGPASSWORD: smartcondo
+        # Os scripts são mantidos à mão e é fácil esquecer de acompanhar
+        # uma migração; aqui eles têm que rodar de verdade.
+        run: |
+          psql -h localhost -U smartcondo -d smartcondo_sql -v ON_ERROR_STOP=1 -q \
+            -f banco/01_criar_tabelas.sql
+          psql -h localhost -U smartcondo -d smartcondo_sql -v ON_ERROR_STOP=1 -q \
+            -f banco/02_carga_dados.sql

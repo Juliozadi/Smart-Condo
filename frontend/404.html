@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Página não encontrada</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/api.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    .erro-area{max-width:460px;margin:0 auto;text-align:center;}
+    .erro-codigo{font-size:76px;font-weight:800;line-height:1;color:var(--primary-texto);letter-spacing:-3px;margin-bottom:4px;}
+    .erro-area h2{font-size:24px;margin-bottom:8px;}
+    .erro-acoes{display:flex;flex-direction:column;gap:10px;margin-top:26px;}
+    .erro-acoes .login-btn{width:100%;}
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header class="logo-area">
+      <img src="assets/img/logo.png" alt="Logo SmartCondo" class="logo">
+      <div class="logo-text">
+        <h1>Smart Condo</h1>
+        <p>Gestão de Condomínios</p>
+      </div>
+    </header>
+
+    <section class="erro-area">
+      <p class="erro-codigo" aria-hidden="true">404</p>
+      <h2>Página não encontrada</h2>
+      <p class="subtitle">O endereço que você abriu não existe, ou a página
+      foi movida. Se você chegou aqui por um link do próprio sistema, avise
+      a administração do condomínio.</p>
+
+      <div class="erro-acoes">
+        <!-- O destino depende de ter sessão: quem está logado volta para o
+             painel do próprio perfil, quem não está volta para o login. -->
+        <a href="index.html" class="login-btn" id="btnVoltar">Voltar ao início</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+  (function() {
+    'use strict';
+    var api = window.SmartCondo && window.SmartCondo.api;
+    if (!api || !api.sessao.ativa()) return;
+    var usuario = api.sessao.usuario();
+    if (!usuario || !usuario.papel) return;
+    var botao = document.getElementById('btnVoltar');
+    botao.href = api.painelDoPapel(usuario.papel);
+    botao.textContent = 'Voltar ao meu painel';
+  })();
+  </script>
+  <script src="assets/js/acessibilidade.js"></script>
+</body>
+</html>

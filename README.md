@@ -10,7 +10,7 @@
     <img src="https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff" alt="Python">
     <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=fff" alt="FastAPI">
     <img src="https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=fff" alt="PostgreSQL">
-    <img src="https://img.shields.io/badge/licença-MIT-blue" alt="License">
+    <img src="https://github.com/Juliozadi/Smart-Condo/actions/workflows/testes.yml/badge.svg" alt="Testes">
   </p>
 </div>
 
@@ -131,6 +131,7 @@ Cada pasta tem o seu próprio README com as instruções específicas.
 ```
 frontend/
 ├── index.html                         # Página de login
+├── 404.html                           # Endereço inexistente
 ├── assets/
 │   ├── css/
 │   │   ├── style.css                  # Estilos globais e login
@@ -147,6 +148,7 @@ frontend/
 │       ├── acessibilidade.png
 │       └── icons/                     # 47 ícones SVG
 └── pages/
+    ├── legal/                         # Termos de uso e privacidade
     ├── cadastro/                      # Cadastro de usuários (3 páginas)
     ├── login/                         # Recuperação de senha (3 páginas)
     ├── morador/                       # Módulo do morador (8 páginas)
@@ -168,10 +170,10 @@ backend/
 │   ├── api/routers/                   # Endpoints
 │   ├── seed.py                        # Dados de demonstração
 │   └── main.py
-└── tests/                             # 196 casos de teste
+└── tests/                             # 203 casos de teste
 ```
 
-**Total:** 38 páginas HTML, 2 arquivos CSS, 6 arquivos JS, 47 ícones SVG e
+**Total:** 41 páginas HTML, 2 arquivos CSS, 6 arquivos JS, 47 ícones SVG e
 uma API com 78 endpoints.
 
 ---
@@ -196,7 +198,7 @@ Documentação interativa da API em <http://localhost:8000/docs>.
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e
-comunicados. **196 casos de teste** rodando contra PostgreSQL.
+comunicados. **203 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
 
 ---
 
