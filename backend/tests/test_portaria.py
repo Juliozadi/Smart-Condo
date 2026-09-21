@@ -23,7 +23,7 @@ def cenario(cliente, db):
     _, tok_bruno = cadastrar_morador(
         cliente, tok_sindico, cond, email="bruno@exemplo.com", cpf=CPFS[3], unidade="301"
     )
-    _, tok_porteiro = cadastrar_porteiro(cliente, tok_sindico, cond["id"], cpf=CPFS[2])
+    _, tok_porteiro = cadastrar_porteiro(cliente, tok_sindico, cond, cpf=CPFS[2])
 
     unidades = cliente.get("/api/v1/condominios/meu/unidades", headers=cab(tok_sindico)).json()
     u204 = next(u for u in unidades if u["numero"] == "204")
@@ -157,7 +157,7 @@ def test_saida_so_apos_a_entrada(cliente, cenario):
 def test_porteiro_sem_permissao_nao_registra_visitante(cliente, cenario):
     """Documentação, seção 9: vale o que o síndico liberou."""
     porteiro_id, tok = cadastrar_porteiro(
-        cliente, cenario["sindico"], cenario["cond"]["id"],
+        cliente, cenario["sindico"], cenario["cond"],
         email="limitado@exemplo.com", cpf=CPFS[4],
         permissoes={
             "registrar_visitantes": False, "registrar_encomendas": True,
@@ -175,7 +175,7 @@ def test_porteiro_sem_permissao_nao_registra_visitante(cliente, cenario):
 
 def test_permissao_revogada_passa_a_valer(cliente, cenario):
     porteiro_id, tok = cadastrar_porteiro(
-        cliente, cenario["sindico"], cenario["cond"]["id"],
+        cliente, cenario["sindico"], cenario["cond"],
         email="revog@exemplo.com", cpf=CPFS[5],
     )
     assert registrar_visitante(cliente, tok, cenario["u204"]).status_code == 201
@@ -308,7 +308,7 @@ def test_morador_so_ve_as_proprias_ocorrencias(cliente, cenario):
 
 def test_porteiro_sem_permissao_nao_abre_ocorrencia(cliente, cenario):
     _, tok = cadastrar_porteiro(
-        cliente, cenario["sindico"], cenario["cond"]["id"],
+        cliente, cenario["sindico"], cenario["cond"],
         email="semocr@exemplo.com", cpf=CPFS[4],
         permissoes={
             "registrar_visitantes": True, "registrar_encomendas": True,

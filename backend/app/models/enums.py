@@ -94,3 +94,39 @@ class CategoriaComunicado(str, enum.Enum):
     SEGURANCA = "seguranca"
     EVENTO = "evento"
     URGENTE = "urgente"
+
+
+class TipoMovimentacao(str, enum.Enum):
+    """Documentação, seção 8: o porteiro registra entradas e saídas."""
+    ENTRADA = "entrada"
+    SAIDA = "saida"
+
+
+class CategoriaVeiculo(str, enum.Enum):
+    MORADOR = "morador"
+    VISITANTE = "visitante"
+    PRESTADOR = "prestador"
+
+
+class PrioridadeOrdemServico(str, enum.Enum):
+    BAIXA = "baixa"
+    MEDIA = "media"
+    ALTA = "alta"
+    URGENTE = "urgente"
+
+
+class StatusOrdemServico(str, enum.Enum):
+    ABERTA = "aberta"
+    EM_ANDAMENTO = "em_andamento"
+    CONCLUIDA = "concluida"
+    CANCELADA = "cancelada"
+
+
+class CategoriaDocumento(str, enum.Enum):
+    """Documentação, seção 11.6: atas, convenção e regimento interno."""
+    CONVENCAO = "convencao"
+    REGIMENTO = "regimento"
+    ATA = "ata"
+    PLANTA = "planta"
+    PRESTACAO_CONTAS = "prestacao_contas"
+    OUTRO = "outro"

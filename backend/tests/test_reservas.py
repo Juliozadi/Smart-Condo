@@ -24,7 +24,7 @@ def cenario(cliente, db):
     _, tok_b = cadastrar_morador(
         cliente, tok_sindico, cond, email="bruno@exemplo.com", cpf=CPFS[3], unidade="301"
     )
-    _, tok_porteiro = cadastrar_porteiro(cliente, tok_sindico, cond["id"], cpf=CPFS[2])
+    _, tok_porteiro = cadastrar_porteiro(cliente, tok_sindico, cond, cpf=CPFS[2])
 
     salao = criar_espaco(cliente, tok_sindico, nome="Salão de Festas", capacidade=80)
     piscina = criar_espaco(

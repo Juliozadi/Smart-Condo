@@ -153,16 +153,16 @@ backend/
 ├── alembic/                           # Migrações do banco
 ├── app/
 │   ├── core/                          # Configuração, banco e segurança
-│   ├── models/                        # 16 tabelas
+│   ├── models/                        # 19 tabelas
 │   ├── schemas/                       # Entrada e saída da API
 │   ├── services/                      # Regras de negócio
 │   ├── api/routers/                   # Endpoints
 │   └── main.py
-└── tests/                             # 120 testes
+└── tests/                             # 191 testes
 ```
 
 **Total:** 33 páginas HTML, 2 arquivos CSS, 3 arquivos JS, 47 ícones SVG e
-uma API com 55 endpoints.
+uma API com 79 endpoints.
 
 ---
 
@@ -182,11 +182,11 @@ uvicorn app.main:app --reload
 
 Documentação interativa da API em <http://localhost:8000/docs>.
 
-**55 endpoints**, cobrindo os casos de uso e as histórias de usuário da
+**79 endpoints**, cobrindo os casos de uso e as histórias de usuário da
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e
-comunicados. **120 testes** rodando contra PostgreSQL.
+comunicados. **191 testes** rodando contra PostgreSQL.
 
 ---
 
