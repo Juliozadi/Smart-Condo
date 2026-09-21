@@ -8,7 +8,7 @@
   <script src="../../assets/js/api.js"></script><link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
-<body class="dashboard-body layout-mobile">
+<body class="dashboard-body layout-desktop">
   <header class="app-bar"><div class="app-bar-inner wide">
     <a href="../../index.html" class="app-bar-brand"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
     <div class="app-bar-right"><a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role">Síndico</span></a><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
@@ -21,40 +21,193 @@
       <p class="greeting-condo"> Gerencie os agendamentos dos espaços comuns</p>
     </div>
     <div class="stats-row">
-      <div class="stat-card amber"><span class="stat-value">3</span><span class="stat-label"> Pendentes</span></div>
-      <div class="stat-card teal"><span class="stat-value">8</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Aprovadas</span></div>
-      <div class="stat-card blue"><span class="stat-value">22</span><span class="stat-label">Este mês</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totPendentesR">—</span><span class="stat-label">Pendentes</span></div>
+      <div class="stat-card teal"><span class="stat-value" id="totAprovadas">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Aprovadas</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totMes">—</span><span class="stat-label">Este mês</span></div>
     </div>
-    <p class="section-title"> Aguardando Aprovação</p>
-    <div class="list-items">
-      <div class="list-item">
-        <div class="reserve-date" style="min-width:52px;background:linear-gradient(135deg,#e6a23c,#c88b1a);box-shadow:0 4px 12px rgba(230,162,60,.3);border-radius:12px;padding:10px 12px;text-align:center;flex-shrink:0;color:white;"><div class="day">29</div><div class="month">MAR</div></div>
-        <div class="list-info"><h5>Carlos Mendes — Apto 308</h5><p>Salão de Festas · 18h–23h · 60 pessoas</p></div>
-        <div style="display:flex;gap:8px;flex-shrink:0;">
-          <a href="#" style="padding:7px 12px;border-radius:20px;background:rgba(50,200,113,.1);color:#1e9956;font-size:12px;font-weight:700;text-decoration:none;border:1px solid rgba(50,200,113,.2);"><img src="../../assets/img/icons/check.svg" width="16" height="16" alt=""> Aprovar</a>
-          <a href="#" style="padding:7px 12px;border-radius:20px;background:rgba(245,108,108,.1);color:#c0392b;font-size:12px;font-weight:700;text-decoration:none;border:1px solid rgba(245,108,108,.2);"><img src="../../assets/img/icons/xmark.svg" width="16" height="16" alt=""> Recusar</a>
-        </div>
-      </div>
-      <div class="list-item">
-        <div class="reserve-date" style="min-width:52px;background:linear-gradient(135deg,#e6a23c,#c88b1a);box-shadow:0 4px 12px rgba(230,162,60,.3);border-radius:12px;padding:10px 12px;text-align:center;flex-shrink:0;color:white;"><div class="day">05</div><div class="month">ABR</div></div>
-        <div class="list-info"><h5>Fernanda Luz — Apto 115</h5><p>Churrasqueira 1 · 11h–17h · 15 pessoas</p></div>
-        <div style="display:flex;gap:8px;flex-shrink:0;">
-          <a href="#" style="padding:7px 12px;border-radius:20px;background:rgba(50,200,113,.1);color:#1e9956;font-size:12px;font-weight:700;text-decoration:none;border:1px solid rgba(50,200,113,.2);"><img src="../../assets/img/icons/check.svg" width="16" height="16" alt=""> Aprovar</a>
-          <a href="#" style="padding:7px 12px;border-radius:20px;background:rgba(245,108,108,.1);color:#c0392b;font-size:12px;font-weight:700;text-decoration:none;border:1px solid rgba(245,108,108,.2);"><img src="../../assets/img/icons/xmark.svg" width="16" height="16" alt=""> Recusar</a>
-        </div>
-      </div>
+
+    <div id="blocoPendentes">
+      <p class="section-title">Aguardando Aprovação</p>
+      <div class="list-items" id="listaPendentes"></div>
     </div>
-    <p class="section-title"> Todas as Reservas do Mês</p>
-    <div class="data-table">
+    <p class="estado-lista" id="estadoPendentes">Carregando…</p>
+
+    <p class="section-title">Todas as Reservas</p>
+    <div class="barra-acoes">
+      <select id="filtroStatus" aria-label="Filtrar por status">
+        <option value="">Todos os status</option>
+        <option value="pendente">Pendente</option>
+        <option value="aprovada">Aprovada</option>
+        <option value="recusada">Recusada</option>
+        <option value="cancelada">Cancelada</option>
+        <option value="concluida">Concluída</option>
+      </select>
+    </div>
+    <div class="data-table" id="tabelaReservas">
       <div class="table-head cols-4"><span><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Morador</span><span>Espaço</span><span>Data</span><span>Status</span></div>
-      <div class="table-row cols-4"><span>João Silva — Apto 204</span><span>Salão de Festas</span><span>22/03 · 14h–22h</span><span><span class="badge badge-ok">Aprovada</span></span></div>
-      <div class="table-row cols-4"><span>Maria Santos — Apto 115</span><span>Churrasqueira 1</span><span>23/03 · 11h–18h</span><span><span class="badge badge-ok">Aprovada</span></span></div>
-      <div class="table-row cols-4"><span>João Silva — Apto 204</span><span>Churrasqueira 2</span><span>29/03 · 11h–18h</span><span><span class="badge badge-pending">Pendente</span></span></div>
-      <div class="table-row cols-4"><span>Carlos Mendes — Apto 308</span><span>Salão de Festas</span><span>29/03 · 18h–23h</span><span><span class="badge badge-pending">Pendente</span></span></div>
     </div>
+    <p class="estado-lista" id="estadoTabela"></p>
   </main>
 
 <script src="../../assets/js/validation.js"></script>
+<script src="../../assets/js/admin-ui.js"></script>
+<script>
+/* Gestão de reservas do síndico (documentação, seção 11.5.3): a fila de
+   aprovação e a lista completa vêm da API, e aprovar ou recusar grava
+   de verdade. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api, ui = window.SmartCondo.ui;
+  if (!api.protegerPagina('sindico')) return;
+
+  function campo(id) { return document.getElementById(id); }
+  var reservas = [];
+
+  var MESES = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+  var ROTULO_STATUS = {
+    pendente: 'Pendente', aprovada: 'Aprovada', recusada: 'Recusada',
+    cancelada: 'Cancelada', concluida: 'Concluída'
+  };
+  var CLASSE_STATUS = {
+    pendente: 'badge-pending', aprovada: 'badge-ok', recusada: 'badge-alert',
+    cancelada: 'badge-neutral', concluida: 'badge-blue'
+  };
+
+  /* A data vem como AAAA-MM-DD; montar com new Date(iso) puxaria o fuso
+     e poderia mostrar o dia anterior. */
+  function partesData(iso) {
+    var p = (iso || '').split('-');
+    return { ano: +p[0], mes: +p[1], dia: +p[2] };
+  }
+  function diaMes(iso) {
+    var d = partesData(iso);
+    return { dia: ('0' + d.dia).slice(-2), mes: MESES[d.mes - 1] || '' };
+  }
+  function dataCurta(iso) {
+    var d = partesData(iso);
+    return ('0' + d.dia).slice(-2) + '/' + ('0' + d.mes).slice(-2);
+  }
+  function hora(h) { return (h || '').slice(0, 5).replace(':', 'h'); }
+  function periodo(r) { return hora(r.hora_inicio) + '–' + hora(r.hora_fim); }
+
+  function quem(r) {
+    return r.morador_nome + (r.unidade ? ' — ' + r.unidade : '');
+  }
+
+  function cartaoPendente(r) {
+    var item = document.createElement('div');
+    item.className = 'list-item';
+
+    var dm = diaMes(r.data);
+    var data = document.createElement('div');
+    data.className = 'reserve-date pendente';
+    var dia = document.createElement('div');
+    dia.className = 'day'; dia.textContent = dm.dia;
+    var mes = document.createElement('div');
+    mes.className = 'month'; mes.textContent = dm.mes;
+    data.appendChild(dia); data.appendChild(mes);
+
+    var info = document.createElement('div');
+    info.className = 'list-info';
+    var h = document.createElement('h5');
+    h.textContent = quem(r);
+    var sub = document.createElement('p');
+    sub.textContent = r.espaco_nome + ' · ' + periodo(r) +
+      (r.pessoas_estimadas ? ' · ' + r.pessoas_estimadas + ' pessoas' : '');
+    info.appendChild(h); info.appendChild(sub);
+
+    var acoes = document.createElement('div');
+    acoes.className = 'acoes-aprovacao';
+    var sim = document.createElement('button');
+    sim.type = 'button'; sim.className = 'pill-acao aprovar'; sim.textContent = 'Aprovar';
+    var nao = document.createElement('button');
+    nao.type = 'button'; nao.className = 'pill-acao recusar'; nao.textContent = 'Recusar';
+    acoes.appendChild(sim); acoes.appendChild(nao);
+
+    function decidir(aprovada, motivo) {
+      sim.disabled = nao.disabled = true;
+      api.post('/espacos/reservas/' + r.id + '/avaliacao',
+               { aprovada: aprovada, motivo: motivo || null })
+        .then(carregar)
+        .catch(function(e) { sim.disabled = nao.disabled = false; alert(e.message); });
+    }
+    sim.addEventListener('click', function() { decidir(true, null); });
+    nao.addEventListener('click', function() {
+      var motivo = prompt('Motivo da recusa (o morador verá esta mensagem):', '');
+      if (motivo === null) return;
+      decidir(false, motivo.trim() || null);
+    });
+
+    item.appendChild(data);
+    item.appendChild(info);
+    item.appendChild(acoes);
+    return item;
+  }
+
+  function montarLinha(r) {
+    var linha = document.createElement('div');
+    linha.className = 'table-row cols-4';
+    linha.innerHTML = '<span></span><span></span><span></span><span><span class="badge"></span></span>';
+    linha.children[0].textContent = quem(r);
+    linha.children[1].textContent = r.espaco_nome;
+    linha.children[2].textContent = dataCurta(r.data) + ' · ' + periodo(r);
+    var selo = linha.children[3].firstChild;
+    selo.className = 'badge ' + (CLASSE_STATUS[r.status] || 'badge-neutral');
+    selo.textContent = ROTULO_STATUS[r.status] || r.status;
+    if (r.motivo_recusa) linha.title = 'Motivo: ' + r.motivo_recusa;
+    return linha;
+  }
+
+  function aplicarFiltro() {
+    var status = campo('filtroStatus').value;
+    var lista = status ? reservas.filter(function(r) { return r.status === status; }) : reservas;
+    var tabela = campo('tabelaReservas');
+    ui.limparTabela(tabela);
+    campo('estadoTabela').textContent = lista.length ? '' :
+      (reservas.length ? 'Nenhuma reserva com esse status.' : 'Nenhuma reserva registrada ainda.');
+    lista.forEach(function(r) { tabela.appendChild(montarLinha(r)); });
+  }
+
+  function carregar() {
+    campo('estadoPendentes').textContent = 'Carregando…';
+    return api.get('/espacos/reservas')
+      .then(function(lista) {
+        reservas = lista;
+        var pendentes = lista.filter(function(r) { return r.status === 'pendente'; });
+        var hoje = new Date();
+        var mesAtual = hoje.getFullYear() + '-' + ('0' + (hoje.getMonth() + 1)).slice(-2);
+
+        campo('totPendentesR').textContent = pendentes.length;
+        campo('totAprovadas').textContent =
+          lista.filter(function(r) { return r.status === 'aprovada'; }).length;
+        campo('totMes').textContent =
+          lista.filter(function(r) { return (r.data || '').indexOf(mesAtual) === 0; }).length;
+
+        campo('blocoPendentes').hidden = !pendentes.length;
+        var caixa = campo('listaPendentes');
+        caixa.innerHTML = '';
+        pendentes.forEach(function(r) { caixa.appendChild(cartaoPendente(r)); });
+        campo('estadoPendentes').textContent =
+          pendentes.length ? '' : 'Nenhuma reserva aguardando aprovação.';
+
+        aplicarFiltro();
+      })
+      .catch(function(e) {
+        campo('estadoPendentes').textContent = e.message;
+        campo('estadoTabela').textContent = '';
+      });
+  }
+
+  campo('filtroStatus').addEventListener('change', aplicarFiltro);
+
+  var usuario = api.sessao.usuario();
+  var cabecalho = campo('hdrName');
+  if (usuario && cabecalho) cabecalho.textContent = usuario.nome;
+
+  carregar();
+})();
+</script>
+
 <script src="../../assets/js/sessao.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>
 </body></html>

@@ -1763,3 +1763,35 @@ body.tema-escuro .pill-acao.recusar { background: rgba(245,108,108,.16); color: 
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px;
 }
 .permissoes-aviso { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+
+/* Reserva ainda sem decisão do síndico: o bloco da data fica âmbar. */
+.reserve-date.pendente {
+  background: linear-gradient(135deg, #e6a23c, #c88b1a);
+  box-shadow: 0 4px 12px rgba(230,162,60,.3);
+}
+
+/* ── Telas do síndico no layout de computador, vistas no celular ──
+   Sem o teto que o layout-mobile impunha, as grades de quatro colunas
+   e os botões com largura mínima estouravam a tela a 360px. */
+@media (max-width: 640px) {
+  .layout-desktop .dash-grid,
+  .layout-desktop .dash-grid-sq { grid-template-columns: 1fr; }
+  /* minmax(0,...) permite que a coluna fique menor que o conteudo; sem
+     isso um valor como "R$18.400" a 32px fixava a coluna em 169px e
+     duas delas nao cabiam em 360px. */
+  .admin-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .stats-row   { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .admin-stat, .stat-card { padding: 16px 12px; min-width: 0; }
+  .admin-stat .stat-value, .stat-card .stat-value { font-size: 23px; }
+  .dash-grid .action-btn,
+  .dash-grid .btn-novo { min-width: 0; }
+}
+
+/* Tabela cujo status precisa sobreviver ao corte de colunas no celular:
+   saem as colunas do meio e a última (o status) permanece. */
+@media (max-width: 640px) {
+  .tabela-status .cols-5 { grid-template-columns: 1.5fr .9fr 1.1fr; }
+  .tabela-status .cols-5 span:nth-child(3),
+  .tabela-status .cols-5 span:nth-child(4) { display: none; }
+  .tabela-status .cols-5 span:nth-child(5) { display: block; }
+}
