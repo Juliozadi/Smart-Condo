@@ -673,7 +673,7 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
   border-left: 3px solid var(--primary);
 }
 .history-table .table-row.status-dentro span:first-child strong {
-  color: var(--primary);
+  color: var(--primary-texto);
 }
 .history-table .table-row span:first-child strong {
   font-size: 14px;
@@ -877,7 +877,7 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
 .layout-mobile .tab-bar a img { width: 18px; height: 18px; }
 
 .layout-mobile .tab-bar a.active {
-  color: var(--primary);
+  color: var(--primary-texto);
 }
 
 .layout-mobile .tab-bar a.active i,
@@ -1480,11 +1480,11 @@ body:has(.step-page:target) .step-page.default-step {
 }
 .contato-btn img { width: 12px; height: 12px; }
 .contato-btn:hover {
-  background: var(--primary-light); color: var(--primary); border-color: var(--primary);
+  background: var(--primary-light); color: var(--primary-texto); border-color: var(--primary);
 }
 .contato-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-glow); }
 .contato-status {
-  font-size: 12.5px; font-weight: 600; color: var(--primary);
+  font-size: 12.5px; font-weight: 600; color: var(--primary-texto);
   min-height: 18px; margin: -10px 0 18px;
 }
 @media (max-width: 560px) {

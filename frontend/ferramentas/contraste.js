@@ -129,9 +129,17 @@ async function entrar(papel) {
   const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   const achados = [];
 
+  // Duas larguras: o layout mobile troca de componentes (barra de abas
+  // no rodapé, cartões empilhados), então tem texto que só existe lá.
+  const LARGURAS = [
+    { nome: 'desktop', viewport: { width: 1280, height: 900 } },
+    { nome: 'celular', viewport: { width: 360, height: 780 } },
+  ];
+
+  for (const largura of LARGURAS) {
   for (const tema of ['claro', 'escuro']) {
     for (const { url, papel } of paginas) {
-      const ctx = await nav.newContext();
+      const ctx = await nav.newContext({ viewport: largura.viewport });
       const sessao = tokens[papel];
       await ctx.addInitScript(([s, t]) => {
         if (s) {
@@ -145,12 +153,13 @@ async function entrar(papel) {
         await p.goto(ORIGEM + url, { waitUntil: 'domcontentloaded', timeout: 20000 });
         await p.waitForTimeout(1200);
         const falhas = await p.evaluate(medir);
-        for (const f of falhas) achados.push({ tema, url, ...f });
+        for (const f of falhas) achados.push({ tema, largura: largura.nome, url, ...f });
       } catch (e) {
-        console.error('ERRO', url, tema, e.message.slice(0, 60));
+        console.error('ERRO', url, tema, largura.nome, e.message.slice(0, 60));
       }
       await ctx.close();
     }
+  }
   }
   await nav.close();
   const saida = path.join(__dirname, 'contraste-achados.json');
@@ -163,7 +172,7 @@ async function entrar(papel) {
   console.log(achados.length + ' falhas (detalhe em ' + saida + '):\n');
   const porCausa = new Map();
   for (const a of achados) {
-    const chave = a.tema + ' | ' + a.cor + ' sobre ' + a.fundo;
+    const chave = a.tema + '/' + a.largura + ' | ' + a.cor + ' sobre ' + a.fundo;
     if (!porCausa.has(chave)) porCausa.set(chave, { n: 0, razao: a.razao, onde: a.seletor });
     porCausa.get(chave).n++;
   }
