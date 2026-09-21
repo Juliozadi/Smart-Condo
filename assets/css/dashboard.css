@@ -1864,3 +1864,5 @@ body.tema-escuro .form-erro.sucesso { color: #5fd694; }
   -webkit-mask: var(--icone) center / contain no-repeat;
           mask: var(--icone) center / contain no-repeat;
 }
+
+.icone-volume { width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; }

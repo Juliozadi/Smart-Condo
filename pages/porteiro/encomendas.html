@@ -38,26 +38,21 @@
     </div>
 
     <div class="stats-row">
-      <div class="stat-card amber"><span class="stat-value">7</span><span class="stat-label">Aguardando</span></div>
-      <div class="stat-card blue"><span class="stat-value">3</span><span class="stat-label"><img src="../../assets/img/icons/box-open.svg" width="16" height="16" alt="">Recebidas</span></div>
-      <div class="stat-card red"><span class="stat-value">2</span><span class="stat-label"><img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt="">Atrasadas</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totAguardando">—</span><span class="stat-label">Aguardando</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totHoje">—</span><span class="stat-label"><img src="../../assets/img/icons/box-open.svg" width="16" height="16" alt="">Recebidas hoje</span></div>
+      <div class="stat-card red"><span class="stat-value" id="totAtrasadas">—</span><span class="stat-label"><img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt="">Há 3 dias ou mais</span></div>
     </div>
 
     <!-- Registrar nova encomenda -->
     <p class="section-title"> Registrar Nova Encomenda</p>
     <div class="form-card">
       <h3><img src="../../assets/img/icons/box.svg" width="16" height="16" alt=""> Dados da Encomenda</h3>
-      <form action="dashboard.html">
+      <form id="formEncomenda" novalidate>
         <div class="form-row">
           <div class="form-group">
             <label for="encome_destinatarioApartamento"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Destinatário — Apartamento</label>
             <select id="encome_destinatarioApartamento" required>
               <option value="" disabled selected>Selecione o apto</option>
-              <option>Apto 101</option><option>Apto 102</option><option>Apto 103</option>
-              <option>Apto 201</option><option>Apto 202</option><option>Apto 203</option><option>Apto 204</option>
-              <option>Apto 301</option><option>Apto 302</option><option>Apto 303</option>
-              <option>Apto 401</option><option>Apto 402</option><option>Apto 410</option>
-              <option>Apto 501</option><option>Apto 502</option>
             </select>
           </div>
           <div class="form-group">
@@ -85,12 +80,8 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="encome_dataEHoraDeRecebimento"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Data e hora de recebimento</label>
-            <input id="encome_dataEHoraDeRecebimento" type="datetime-local" required>
-          </div>
-          <div class="form-group">
             <label for="encome_observacoes">Observações</label>
-            <input id="encome_observacoes" type="text" placeholder="Frágil, refrigerado, urgente...">
+            <input id="encome_observacoes" type="text" maxlength="500" placeholder="Frágil, refrigerado, urgente...">
           </div>
         </div>
         <!-- Foto da encomenda — doc, seção 6 -->
@@ -106,6 +97,7 @@
           com a foto do volume e o código de rastreio.</span>
         </p>
 
+        <p class="form-erro" id="erroEncomenda" role="alert"></p>
         <button class="action-btn" type="submit" style="margin-top:4px;">
           Registrar Recebimento
         </button>
@@ -114,86 +106,21 @@
 
     <!-- Encomendas aguardando -->
     <p class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Aguardando Retirada</p>
-    <div class="list-items">
+    <div class="list-items" id="listaAguardando"></div>
+    <p class="estado-lista" id="estadoAguardando">Carregando…</p>
 
-      <div class="list-item">
-        <div class="card-icon icon-yellow" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;"><img src="../../assets/img/icons/box.svg" width="16" height="16" alt=""></div>
-        <div class="list-info">
-          <h5>Apto 204 — João Silva</h5>
-          <p>Amazon · Caixa média · Recebida 17/03 às 08h30 · Código: BR789012345</p>
-        </div>
-        <span class="badge badge-pending">1 dia</span>
-      </div>
-
-      <div class="list-item">
-        <div class="card-icon icon-teal" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;"><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt=""></div>
-        <div class="list-info">
-          <h5>Apto 110 — Maria Santos</h5>
-          <p>Correios · Envelope · Recebida 16/03 às 14h10</p>
-        </div>
-        <span class="badge badge-pending">2 dias</span>
-      </div>
-
-      <div class="list-item">
-        <div class="card-icon icon-blue" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;"><img src="../../assets/img/icons/box-open.svg" width="16" height="16" alt=""></div>
-        <div class="list-info">
-          <h5>Apto 312 — Carlos Mendes</h5>
-          <p>Shopee · Caixa grande · Recebida 15/03 às 11h50</p>
-        </div>
-        <span class="badge badge-alert">3 dias</span>
-      </div>
-
-      <div class="list-item">
-        <div class="card-icon icon-red" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;"><img src="../../assets/img/icons/circle-exclamation.svg" alt=""></div>
-        <div class="list-info">
-          <h5>Apto 201 — Ana Ribeiro</h5>
-          <p>iFood · Alimento perecível — ⚠️ REQUER ATENÇÃO IMEDIATA</p>
-        </div>
-        <span class="badge badge-alert">Perecível</span>
-      </div>
-
-    </div>
-
-    <!-- Confirmar retirada -->
-    <p class="section-title"><img src="../../assets/img/icons/check.svg" width="16" height="16" alt="">Confirmar Retirada</p>
-    <div class="form-card">
-      <h3> Registro de Retirada</h3>
-      <form action="dashboard.html">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="encome_apartamento"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Apartamento</label>
-            <select id="encome_apartamento" required><option value="" disabled selected>Selecione o apto</option>
-              <option>Apto 204</option><option>Apto 110</option><option>Apto 312</option><option>Apto 201</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="encome_nomeDeQuemRetirou">Nome de quem retirou</label>
-            <input id="encome_nomeDeQuemRetirou" type="text" placeholder="Nome do morador ou autorizado" required>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="encome_documento"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">Documento</label>
-            <input id="encome_documento" type="text" placeholder="CPF ou RG" required>
-          </div>
-          <div class="form-group">
-            <label for="encome_horarioDeRetirada"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Horário de retirada</label>
-            <input id="encome_horarioDeRetirada" type="time" required>
-          </div>
-        </div>
-        <button class="action-btn" type="submit" style="background:linear-gradient(135deg,#32c871,#1e9956);box-shadow:0 2px 6px rgba(50,200,113,.25),0 6px 16px rgba(50,200,113,.18);margin-top:4px;">
-          <img src="../../assets/img/icons/check.svg" width="16" height="16" alt="">Confirmar Retirada
-        </button>
-      </form>
-    </div>
+    <p class="aviso-notificacao">
+      <img src="../../assets/img/icons/bullhorn.svg" alt="">
+      <span>Quem confirma a retirada é o próprio morador, pelo painel dele. Assim que
+      ele responder, a encomenda sai desta lista e entra no histórico.</span>
+    </p>
 
     <!-- Histórico do dia -->
-    <p class="section-title"> Retiradas de Hoje</p>
-    <div class="data-table">
-      <div class="table-head cols-4"><span><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Apto / Morador</span><span>Remetente</span><span><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Retirada</span><span><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Por quem</span></div>
-      <div class="table-row cols-4"><span>Apto 103 — Pedro Lima</span><span>Mercado Livre</span><span>08h45</span><span>Pedro Lima</span></div>
-      <div class="table-row cols-4"><span>Apto 405 — Sandra Costa</span><span>Correios</span><span>10h20</span><span>Sandra Costa</span></div>
+    <p class="section-title">Movimento de Hoje</p>
+    <div class="data-table tabela-status" id="tabelaHistorico">
+      <div class="table-head cols-5"><span><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Apto</span><span>Remetente</span><span>Volume</span><span><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Recebida</span><span>Situação</span></div>
     </div>
+    <p class="estado-lista" id="estadoHistorico"></p>
 
   </main>
 
@@ -201,22 +128,204 @@
   <script src="../../assets/js/foto.js"></script>
 <script src="../../assets/js/validation.js"></script>
   <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.form-card form').forEach(function(form) {
-      form.addEventListener('submit', function(e) {
-        var inputs = this.querySelectorAll('input[required], select[required]');
-        var valido = true;
-        document.querySelectorAll('.erro-validacao').forEach(function(el) { el.remove(); });
-        inputs.forEach(function(inp) {
-          if (!inp.value.trim()) {
-            mostrarErro(inp, 'Campo obrigatório');
-            valido = false;
-          }
+  /* Encomendas (documentação, seção 6): o porteiro registra o volume e o
+     morador recebe a notificação; a confirmação da retirada é dele, no
+     painel do morador, e por isso não existe aqui. */
+  (function() {
+    'use strict';
+    var api = window.SmartCondo.api;
+    var usuario = api.protegerPagina('porteiro');
+    if (!usuario) return;
+
+    function campo(id) { return document.getElementById(id); }
+
+    var ROTULO_STATUS = {
+      aguardando_retirada: 'Aguardando', retirada: 'Retirada', recusada: 'Recusada'
+    };
+    var CLASSE_STATUS = {
+      aguardando_retirada: 'badge-pending', retirada: 'badge-ok', recusada: 'badge-alert'
+    };
+    var ICONE_VOLUME = [
+      [/envelope|documento/i, ['icon-teal', 'envelope.svg']],
+      [/aliment|perec/i,      ['icon-red', 'circle-exclamation.svg']],
+      [/grande/i,             ['icon-blue', 'box-open.svg']]
+    ];
+    function visualDoVolume(tipo) {
+      for (var i = 0; i < ICONE_VOLUME.length; i++) {
+        if (ICONE_VOLUME[i][0].test(tipo || '')) return ICONE_VOLUME[i][1];
+      }
+      return ['icon-yellow', 'box.svg'];
+    }
+
+    function horaCurta(iso) {
+      var d = new Date(iso);
+      if (isNaN(d)) return '—';
+      return ('0' + d.getHours()).slice(-2) + 'h' + ('0' + d.getMinutes()).slice(-2);
+    }
+    function dataHora(iso) {
+      var d = new Date(iso);
+      if (isNaN(d)) return '';
+      return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) +
+             ' às ' + horaCurta(iso);
+    }
+    function diasParados(iso) {
+      var d = new Date(iso);
+      if (isNaN(d)) return 0;
+      return Math.floor((Date.now() - d.getTime()) / 86400000);
+    }
+    function ehDeHoje(iso) {
+      var d = new Date(iso), h = new Date();
+      return d.getFullYear() === h.getFullYear() && d.getMonth() === h.getMonth()
+             && d.getDate() === h.getDate();
+    }
+
+    function cartao(e) {
+      var item = document.createElement('div');
+      item.className = 'list-item';
+
+      var visual = visualDoVolume(e.tipo_volume);
+      var icone = document.createElement('div');
+      icone.className = 'card-icon ' + visual[0] + ' icone-volume';
+      var glifo = document.createElement('span');
+      glifo.className = 'glifo';
+      glifo.style.setProperty('--icone', 'url(../../assets/img/icons/' + visual[1] + ')');
+      icone.appendChild(glifo);
+
+      var info = document.createElement('div');
+      info.className = 'list-info';
+      var h = document.createElement('h5');
+      h.textContent = 'Apto ' + (e.unidade || '—');
+      var p = document.createElement('p');
+      var partes = [e.remetente, e.tipo_volume, 'Recebida ' + dataHora(e.recebida_em)];
+      if (e.codigo_rastreio) partes.push('Código: ' + e.codigo_rastreio);
+      if (e.observacoes) partes.push(e.observacoes);
+      p.textContent = partes.join(' · ');
+      info.appendChild(h);
+      info.appendChild(p);
+
+      var dias = diasParados(e.recebida_em);
+      var selo = document.createElement('span');
+      selo.className = 'badge ' + (dias >= 3 ? 'badge-alert' : 'badge-pending');
+      selo.textContent = dias === 0 ? 'Hoje' : (dias === 1 ? '1 dia' : dias + ' dias');
+
+      item.appendChild(icone);
+      item.appendChild(info);
+      item.appendChild(selo);
+      return item;
+    }
+
+    function montarLinha(e) {
+      var linha = document.createElement('div');
+      linha.className = 'table-row cols-5';
+      linha.innerHTML =
+        '<span><strong></strong></span><span></span><span></span><span></span>' +
+        '<span><span class="badge"></span></span>';
+      linha.children[0].firstChild.textContent = e.unidade || '—';
+      linha.children[1].textContent = e.remetente;
+      linha.children[2].textContent = e.tipo_volume;
+      linha.children[3].textContent = horaCurta(e.recebida_em);
+      var selo = linha.children[4].firstChild;
+      selo.className = 'badge ' + (CLASSE_STATUS[e.status] || 'badge-neutral');
+      selo.textContent = ROTULO_STATUS[e.status] || e.status;
+      return linha;
+    }
+
+    function carregar() {
+      campo('estadoAguardando').textContent = 'Carregando…';
+      return api.get('/portaria/encomendas')
+        .then(function(lista) {
+          var aguardando = lista.filter(function(e) {
+            return e.status === 'aguardando_retirada';
+          });
+          var deHoje = lista.filter(function(e) { return ehDeHoje(e.recebida_em); });
+
+          campo('totAguardando').textContent = aguardando.length;
+          campo('totHoje').textContent = deHoje.length;
+          campo('totAtrasadas').textContent =
+            aguardando.filter(function(e) { return diasParados(e.recebida_em) >= 3; }).length;
+
+          var caixa = campo('listaAguardando');
+          caixa.innerHTML = '';
+          campo('estadoAguardando').textContent =
+            aguardando.length ? '' : 'Nenhuma encomenda aguardando retirada.';
+          aguardando.forEach(function(e) { caixa.appendChild(cartao(e)); });
+
+          var tabela = campo('tabelaHistorico');
+          var cabecalho = tabela.querySelector('.table-head');
+          tabela.innerHTML = '';
+          tabela.appendChild(cabecalho);
+          campo('estadoHistorico').textContent = deHoje.length ? '' : 'Nenhum movimento hoje.';
+          deHoje.forEach(function(e) { tabela.appendChild(montarLinha(e)); });
+        })
+        .catch(function(e) {
+          campo('estadoAguardando').textContent = e.message;
+          campo('estadoHistorico').textContent = '';
         });
-        if (!valido) e.preventDefault();
+    }
+
+    function carregarUnidades() {
+      return api.get('/condominios/meu/unidades').then(function(lista) {
+        var select = campo('encome_destinatarioApartamento');
+        lista.forEach(function(u) {
+          var op = document.createElement('option');
+          op.value = u.id;
+          op.textContent = (u.bloco && u.bloco !== 'unico' ? u.bloco + ' ' : '') + u.numero;
+          select.appendChild(op);
+        });
       });
+    }
+
+    campo('formEncomenda').addEventListener('submit', function(evento) {
+      evento.preventDefault();
+      var erro = campo('erroEncomenda');
+      erro.className = 'form-erro';
+      erro.textContent = '';
+
+      var unidadeId = campo('encome_destinatarioApartamento').value;
+      var remetente = campo('encome_remetenteTransportadora').value;
+      var volume = campo('encome_tipoDeVolume').value;
+      if (!unidadeId || !remetente || !volume) {
+        erro.textContent = 'Escolha o apartamento, o remetente e o tipo de volume.';
+        return;
+      }
+
+      var corpo = {
+        unidade_id: +unidadeId,
+        remetente: remetente,
+        tipo_volume: volume
+      };
+      var rastreio = campo('encome_codigoDeRastreio').value.trim().toUpperCase();
+      if (rastreio) corpo.codigo_rastreio = rastreio;
+      var obs = campo('encome_observacoes').value.trim();
+      if (obs) corpo.observacoes = obs;
+      // Data URL da foto não cabe nos 500 caracteres do campo; só um
+      // endereço curto é repassado enquanto não houver envio de arquivo.
+      var foto = document.querySelector('.captura-valor');
+      if (foto && foto.value && foto.value.length <= 500) corpo.foto_url = foto.value;
+
+      var botao = this.querySelector('button[type=submit]');
+      var texto = botao.textContent;
+      botao.disabled = true;
+      botao.textContent = 'Registrando…';
+
+      api.post('/portaria/encomendas', corpo)
+        .then(function() {
+          campo('formEncomenda').reset();
+          erro.className = 'form-erro sucesso';
+          erro.textContent = 'Encomenda registrada. O morador foi notificado.';
+          return carregar();
+        })
+        .catch(function(e) { erro.textContent = e.message; })
+        .then(function() { botao.disabled = false; botao.textContent = texto; });
     });
-  });
+
+    var cabecalho = document.querySelector('.greeting-sub');
+    if (cabecalho) cabecalho.textContent = usuario.nome + ' — Portaria';
+    var nomeTopo = document.getElementById('hdrName');
+    if (nomeTopo) nomeTopo.textContent = usuario.nome;
+
+    carregarUnidades().then(carregar, carregar);
+  })();
   </script>
 <script src="../../assets/js/sessao.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>
