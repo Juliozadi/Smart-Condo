@@ -143,12 +143,21 @@
   function competencia(iso) { var p = partes(iso); return p.m + '/' + p.a; }
   function hora(h) { return (h || '').slice(0, 5).replace(':', 'h'); }
 
-  var pendencias = [];
+  /* As três cargas correm em paralelo e cada uma anota a sua pendência
+     quando a resposta chega. Guardar por chave, e não empilhar, mantém
+     a frase sempre na mesma ordem — senão o mesmo dado aparecia numa
+     ordem diferente a cada carregamento, conforme qual requisição
+     respondesse primeiro. */
+  var ORDEM_PENDENCIAS = ['cadastros', 'reservas', 'inadimplencia'];
+  var pendencias = {};
 
-  function anotarPendencia(texto) {
-    pendencias.push(texto);
+  function anotarPendencia(chave, texto) {
+    pendencias[chave] = texto;
+    var frase = ORDEM_PENDENCIAS
+      .filter(function(c) { return pendencias[c]; })
+      .map(function(c) { return pendencias[c]; });
     campo('avisoPendencias').hidden = false;
-    campo('textoPendencias').textContent = pendencias.join(' · ') + '.';
+    campo('textoPendencias').textContent = frase.join(' · ') + '.';
   }
 
   function carregarMoradores() {
@@ -157,7 +166,7 @@
       campo('totMoradores').textContent = ativos.length;
       var aguardando = lista.filter(function(u) { return u.status === 'aguardando_aprovacao'; });
       if (aguardando.length) {
-        anotarPendencia(aguardando.length +
+        anotarPendencia('cadastros', aguardando.length +
           (aguardando.length === 1 ? ' cadastro aguardando aprovação' : ' cadastros aguardando aprovação'));
       }
     }).catch(function() { campo('totMoradores').textContent = '—'; });
@@ -174,7 +183,7 @@
       campo('finVencido').textContent = dinheiro(resumo.total_vencido);
       campo('totInadimplentes').textContent = resumo.unidades_inadimplentes;
       if (resumo.unidades_inadimplentes) {
-        anotarPendencia(resumo.unidades_inadimplentes +
+        anotarPendencia('inadimplencia', resumo.unidades_inadimplentes +
           (resumo.unidades_inadimplentes === 1 ? ' unidade em atraso' : ' unidades em atraso'));
       }
 
@@ -202,7 +211,7 @@
       var pendentes = lista.filter(function(r) { return r.status === 'pendente'; });
       campo('totReservas').textContent = pendentes.length;
       if (pendentes.length) {
-        anotarPendencia(pendentes.length +
+        anotarPendencia('reservas', pendentes.length +
           (pendentes.length === 1 ? ' reserva aguardando aprovação' : ' reservas aguardando aprovação'));
       }
 
