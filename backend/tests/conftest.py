@@ -11,10 +11,21 @@ import pytest
 
 # Definido antes de importar a aplicação, porque as settings são lidas na
 # importação do módulo de configuração.
-os.environ.setdefault(
-    "DATABASE_URL",
+#
+# A URL é FORÇADA, não um valor padrão. Com setdefault, quem tivesse
+# DATABASE_URL exportada no terminal rodaria a suíte contra o próprio
+# banco — e a primeira coisa que ela faz é DROP SCHEMA public CASCADE.
+# Para apontar para outro banco de teste, use TEST_DATABASE_URL.
+URL_DO_TESTE = os.environ.get(
+    "TEST_DATABASE_URL",
     "postgresql+psycopg://smartcondo:smartcondo@127.0.0.1:5432/smartcondo_test",
 )
+if "test" not in URL_DO_TESTE.rsplit("/", 1)[-1]:
+    raise SystemExit(
+        "Recusando rodar: o nome do banco em TEST_DATABASE_URL precisa "
+        f"conter 'test', senão a suíte apaga o schema dele.\n  {URL_DO_TESTE}"
+    )
+os.environ["DATABASE_URL"] = URL_DO_TESTE
 os.environ.setdefault("SECRET_KEY", "chave-de-teste-suficientemente-longa")
 os.environ.setdefault("DEBUG", "true")
 # Custo minimo do bcrypt: os testes exercitam a regra, nao a forca do hash.

@@ -11,6 +11,8 @@ Documentação:
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -303,6 +305,12 @@ def aprovar_usuario(
         )
 
     usuario.status = StatusUsuario.ATIVO if dados.aprovado else StatusUsuario.RECUSADO
+    # Fica o registro de quem decidiu e quando, como em reservas e
+    # ocorrências. O motivo só faz sentido na recusa; aprovar limpa o
+    # que tiver sobrado de uma recusa anterior.
+    usuario.avaliado_por_id = sindico.id
+    usuario.avaliado_em = datetime.now(timezone.utc)
+    usuario.motivo_recusa = None if dados.aprovado else dados.motivo
     db.commit()
     db.refresh(usuario)
     return usuario

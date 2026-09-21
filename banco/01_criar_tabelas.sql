@@ -232,6 +232,11 @@ CREATE TABLE usuarios (
     unidade_id integer,
     tipo_ocupacao tipo_ocupacao,
     foto_url character varying(500),
+    avaliado_por_id integer,
+    avaliado_em timestamp with time zone,
+    motivo_recusa text,
+    tentativas_login integer NOT NULL,
+    bloqueado_ate timestamp with time zone,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -766,6 +771,9 @@ ALTER TABLE ONLY usuarios
 
 ALTER TABLE ONLY usuarios
     ADD CONSTRAINT usuarios_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY usuarios
+    ADD CONSTRAINT fk_usuarios_avaliado_por_id_usuarios FOREIGN KEY (avaliado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY visitantes
     ADD CONSTRAINT visitantes_confirmado_por_id_fkey FOREIGN KEY (confirmado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;

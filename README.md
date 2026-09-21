@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/img/logo.png" alt="SmartCondo Logo" width="80">
+  <img src="frontend/assets/img/logo.png" alt="SmartCondo Logo" width="80">
   <h1 align="center">SmartCondo</h1>
   <p align="center"><strong>Sistema de Gestão de Condomínios</strong></p>
   <p align="center">
@@ -10,7 +10,7 @@
     <img src="https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff" alt="Python">
     <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=fff" alt="FastAPI">
     <img src="https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=fff" alt="PostgreSQL">
-    <img src="https://img.shields.io/badge/licença-MIT-blue" alt="License">
+    <img src="https://github.com/Juliozadi/Smart-Condo/actions/workflows/testes.yml/badge.svg" alt="Testes">
   </p>
 </div>
 
@@ -116,7 +116,22 @@ O **front-end** não usa frameworks, build tools nem dependências externas: ape
 
 ```
 SmartCondo/
+├── frontend/                          # Interface (HTML, CSS e JS puros)
+├── backend/                           # API REST em FastAPI
+├── banco/                             # Scripts SQL para o pgAdmin
+├── documentacao/                      # Documento ABNT do Projeto Integrador
+├── ACESSOS.md                         # Contas de demonstração e como subir
+└── README.md
+```
+
+Cada pasta tem o seu próprio README com as instruções específicas.
+
+### `frontend/`
+
+```
+frontend/
 ├── index.html                         # Página de login
+├── 404.html                           # Endereço inexistente
 ├── assets/
 │   ├── css/
 │   │   ├── style.css                  # Estilos globais e login
@@ -133,47 +148,16 @@ SmartCondo/
 │       ├── acessibilidade.png
 │       └── icons/                     # 47 ícones SVG
 └── pages/
-    ├── cadastro/                      # Cadastro de usuários
-    │   ├── cadastro.html
-    │   ├── morador.html
-    │   └── confirmar_codigo.html
-    ├── login/                         # Fluxo de recuperação de senha
-    │   ├── esqueci_senha.html
-    │   ├── codigo_recuperacao.html
-    │   └── nova_senha.html
-    ├── morador/                       # Módulo do morador (7 páginas)
-    │   ├── dashboard.html
-    │   ├── reservas.html
-    │   ├── financeiro.html
-    │   ├── comunicados.html
-    │   ├── documentos.html
-    │   ├── ocorrencias.html
-    │   ├── perfil.html
-    │   └── aguardando_aprovacao.html
-    ├── porteiro/                      # Módulo do porteiro (6 páginas)
-    │   ├── dashboard.html
-    │   ├── visitantes.html
-    │   ├── encomendas.html
-    │   ├── veiculos.html
-    │   ├── ocorrencias.html
-    │   ├── perfil.html
-    │   └── aguardando_aprovacao.html
-    └── sindico/                       # Módulo do síndico (11 páginas)
-        ├── dashboard.html
-        ├── financeiro.html
-        ├── moradores.html
-        ├── porteiros.html
-        ├── reservas.html
-        ├── comunicados.html
-        ├── manutencao.html
-        ├── perfil.html
-        ├── cadastro_privado.html
-        ├── cadastrar_porteiro.html
-        └── aguardando_aprovacao.html
+    ├── legal/                         # Termos de uso e privacidade
+    ├── cadastro/                      # Cadastro de usuários (3 páginas)
+    ├── login/                         # Recuperação de senha (3 páginas)
+    ├── morador/                       # Módulo do morador (8 páginas)
+    ├── porteiro/                      # Módulo do porteiro (7 páginas)
+    ├── sindico/                       # Módulo do síndico (13 páginas)
+    └── admin/                         # Módulo do administrador (3 páginas)
 ```
 
-
-E o back-end:
+### `backend/`
 
 ```
 backend/
@@ -184,11 +168,12 @@ backend/
 │   ├── schemas/                       # Entrada e saída da API
 │   ├── services/                      # Regras de negócio
 │   ├── api/routers/                   # Endpoints
+│   ├── seed.py                        # Dados de demonstração
 │   └── main.py
-└── tests/                             # 196 casos de teste
+└── tests/                             # 203 casos de teste
 ```
 
-**Total:** 37 páginas HTML, 2 arquivos CSS, 6 arquivos JS, 47 ícones SVG e
+**Total:** 41 páginas HTML, 2 arquivos CSS, 6 arquivos JS, 47 ícones SVG e
 uma API com 78 endpoints.
 
 ---
@@ -213,28 +198,49 @@ Documentação interativa da API em <http://localhost:8000/docs>.
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e
-comunicados. **196 casos de teste** rodando contra PostgreSQL.
+comunicados. **203 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
 
 ---
 
 ## 🚀 Como Executar
 
-1. Clone o repositório:
-   ```bash
-   git clone https://github.com/joaovitorarantes86-ui/Smart-Condo.git
-   ```
+O sistema tem três partes no ar ao mesmo tempo: o **banco**, a **API** e o
+**front-end**. O passo a passo completo, com as contas de demonstração,
+está em **[`ACESSOS.md`](ACESSOS.md)**.
 
-2. Abra o arquivo `index.html` no navegador.
+Em resumo:
 
-3. Faça login com uma das senhas abaixo:
+```bash
+git clone https://github.com/Juliozadi/Smart-Condo.git
+cd Smart-Condo
 
-| Perfil | Senha | Dashboard |
-|---|---|---|
-| Morador | `morador` | `pages/morador/dashboard.html` |
-| Porteiro | `porteiro` | `pages/porteiro/dashboard.html` |
-| Síndico | `sindico` | `pages/sindico/dashboard.html` |
+# 1. API (precisa do PostgreSQL rodando)
+cd backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+alembic upgrade head
+python -m app.seed --limpar
+uvicorn app.main:app --reload
 
-> ⚠️ **Atenção:** Este é um protótipo front-end. Não há backend nem banco de dados. Os dados são mockados e as senhas são fixas.
+# 2. Front-end, em outro terminal, na pasta frontend/
+cd frontend
+python -m http.server 8080
+```
+
+Abra <http://localhost:8080> e entre com uma das contas de demonstração —
+todas com a senha `smartcondo123`:
+
+| Perfil | E-mail |
+|---|---|
+| Administrador | `admin@smartcondo.com` |
+| Síndico | `sindico@smartcondo.com` |
+| Porteiro | `porteiro@smartcondo.com` |
+| Morador | `morador@smartcondo.com` |
+
+> As telas leem e gravam pela API — **sem a API no ar o login não
+> funciona**. Se aparecer *"Não foi possível falar com o servidor"*, é
+> isso. Veja [`ACESSOS.md`](ACESSOS.md).
 
 ---
 
@@ -245,7 +251,7 @@ comunicados. **196 casos de teste** rodando contra PostgreSQL.
 - [x] Banco de dados real (PostgreSQL)
 - [ ] Envio real de e-mail e SMS (a interface já existe; falta o provedor)
 - [ ] Upload das fotos do vídeo porteiro (a API guarda a URL)
-- [ ] Integrar as telas do front-end à API
+- [x] Integrar as telas do front-end à API
 - [ ] Chat e chamada de voz com o porteiro (Node.js, seção 11.5.2)
 - [ ] Notificações push
 - [ ] Painel de gráficos com dados dinâmicos

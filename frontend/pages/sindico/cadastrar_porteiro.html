@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Cadastrar Porteiro</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-desktop">
+
+  <header class="app-bar">
+    <div class="app-bar-inner wide">
+      <a href="../../index.html" class="app-bar-brand">
+        <img src="../../assets/img/logo.png" alt="Logo SmartCondo" class="logo" style="width:34px;height:34px;border-radius:9px;">
+        <span class="brand-name">Smart<strong>Condo</strong></span>
+      </a>
+      <div class="app-bar-right">
+        <a href="perfil.html" class="profile-link" style="background:rgba(145,100,250,.1);border:1px solid rgba(145,100,250,.25);color:var(--roxo);"><span class="profile-avatar" style="background:#f0e6ff;"><img src="../../assets/img/icons/star.svg" width="16" height="16" alt=""></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role" style="color:var(--roxo);">Síndico</span></a>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-wrapper wide">
+
+    <a href="porteiros.html" class="dash-back">
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Gestão de Porteiros
+    </a>
+
+    <!-- Banner -->
+    <div class="dash-greeting" style="background:linear-gradient(130deg,#1a5fa8 0%,#1560aa 40%,#134d8e 100%);">
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h2 class="greeting-name">Cadastrar Novo Porteiro</h2>
+      <div class="greeting-stat-row">
+        <div class="greeting-stat"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Residencial das Palmeiras</div>
+        <div class="greeting-stat"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt=""> Apenas o síndico pode cadastrar porteiros</div>
+      </div>
+    </div>
+
+    <!-- Info box -->
+    <div class="alert-box" style="margin-bottom:20px;">
+      
+      <span>Ao concluir o cadastro, o porteiro receberá um <strong>e-mail automático</strong> com as credenciais de acesso e instruções para o primeiro login.</span>
+    </div>
+
+    <!-- ══ FORMULÁRIO COMPLETO ══ -->
+    <form id="formPorteiro" novalidate>
+
+      <!-- SEÇÃO 1: Dados Pessoais -->
+      <div class="form-card" style="margin-bottom:16px;">
+        <h3><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt=""> Dados Pessoais</h3>
+        <div class="form-row">
+          <div class="form-group"><label for="pNome"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Nome completo *</label><input type="text" id="pNome" placeholder="Nome completo do porteiro" required></div>
+          <div class="form-group"><label for="pCpf">CPF *</label><input type="text" id="pCpf" placeholder="000.000.000-00" class="mask-cpf" required maxlength="14"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="cadast_rg"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">RG *</label><input id="cadast_rg" type="text" placeholder="00.000.000-0" required></div>
+          <div class="form-group"><label for="pNascimento">Data de nascimento *</label><input type="date" id="pNascimento" required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="pEmail"><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">E-mail *</label><input type="email" id="pEmail" placeholder="email@exemplo.com" required></div>
+          <div class="form-group"><label for="pTelefone">Celular *</label><input type="tel" id="pTelefone" placeholder="(00) 90000-0000" class="mask-tel" required></div>
+        </div>
+        <div class="form-group"><label for="cadast_enderecoResidencial">Endereço residencial</label><input id="cadast_enderecoResidencial" type="text" placeholder="Rua, número, bairro, cidade/UF"></div>
+      </div>
+
+      <!-- SEÇÃO 2: Dados Profissionais -->
+      <div class="form-card" style="margin-bottom:16px;">
+        <h3><img src="../../assets/img/icons/briefcase.svg" width="16" height="16" alt=""> Dados Profissionais</h3>
+        <div class="form-row">
+          <div class="form-group"><label for="cadast_turnoDeTrabalho"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Turno de trabalho *</label>
+            <select id="cadast_turnoDeTrabalho" required>
+              <option value="" disabled selected>Selecione o turno</option>
+              <option>Manhã — 07h às 15h</option>
+              <option>Tarde — 15h às 23h</option>
+              <option>Noite — 23h às 07h</option>
+              <option>Diarista / Especial</option>
+            </select>
+          </div>
+          <div class="form-group"><label for="cadast_tipoDeContrato"><img src="../../assets/img/icons/file-contract.svg" width="16" height="16" alt="">Tipo de contrato *</label>
+            <select id="cadast_tipoDeContrato" required>
+              <option value="" disabled selected>Selecione</option>
+              <option>CLT — Funcionário fixo</option>
+              <option>Terceirizado</option>
+              <option>Autônomo</option>
+              <option>Temporário</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="cadast_dataDeInicio">Data de início *</label><input id="cadast_dataDeInicio" type="date" required></div>
+          <div class="form-group"><label for="cadast_localDeAtuacao">Local de atuação *</label>
+            <select id="cadast_localDeAtuacao" required>
+              <option value="" disabled selected>Selecione</option>
+              <option>Portaria Principal</option>
+              <option>Portaria Secundária</option>
+              <option>Portaria de Serviço</option>
+              <option>Único acesso</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="cadast_nisPis">NIS / PIS *</label><input id="cadast_nisPis" type="text" placeholder="000.00000.00-0" required></div>
+          <div class="form-group"><label for="cadast_noCtps">Nº CTPS</label><input id="cadast_noCtps" type="text" placeholder="Série e número"></div>
+        </div>
+        <div class="form-group"><label for="cadast_observacoesInternas"><img src="../../assets/img/icons/pen.svg" width="16" height="16" alt="">Observações internas</label>
+          <textarea id="cadast_observacoesInternas" placeholder="Notas sobre o porteiro (visíveis apenas para o síndico)..." style="width:100%;min-height:70px;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);resize:vertical;outline:none;transition:.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 3: Acesso ao Sistema (síndico define as credenciais) -->
+      <div class="form-card" style="margin-bottom:16px;">
+        <h3> Credenciais de Acesso</h3>
+
+        <div style="background:linear-gradient(135deg,var(--primary-light),#d5f4f1);border:1px solid rgba(7,158,146,.2);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px;">
+          
+          <div style="font-size:13px;color:var(--primary-texto);font-weight:500;line-height:1.55;">
+            Defina uma <strong>senha de acesso</strong> e entregue ao porteiro. Ele pode trocá-la depois pelo próprio perfil.
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="pEmailEspelho"><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">E-mail de acesso</label>
+            <input type="text" id="pEmailEspelho" disabled placeholder="O e-mail informado acima" style="opacity:.75;">
+            <span style="font-size:11px;color:var(--muted);margin-top:4px;display:block;font-weight:500;">O porteiro entra com o mesmo e-mail dos dados pessoais</span>
+          </div>
+          <div class="form-group"><label for="pSenha">Senha de acesso *</label>
+            <input type="text" id="pSenha" placeholder="Mínimo 8 caracteres" required minlength="8" maxlength="72" style="font-family:monospace;letter-spacing:1px;">
+            <span style="font-size:11px;color:var(--muted);margin-top:4px;display:block;font-weight:500;">Ao menos uma letra e um número ou símbolo</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 4: Documentos -->
+      <div class="form-card" style="margin-bottom:16px;">
+        <h3><img src="../../assets/img/icons/folder-open.svg" width="16" height="16" alt=""> Documentos do Porteiro</h3>
+
+        <div style="background:linear-gradient(135deg,#fff5f5,#fee2e2);border:1.5px solid rgba(245,108,108,.25);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px;">
+          <img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt="">
+          <p style="font-size:13px;color:var(--erro);font-weight:500;line-height:1.55;">Como síndico, você é responsável por verificar os documentos do porteiro antes de cadastrá-lo, incluindo a <strong>Certidão de Antecedentes Criminais</strong>.</p>
+        </div>
+
+        <label class="doc-upload" for="dp-rg-s"><div class="doc-upload-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" fill="var(--primary)" style="width:20px;height:20px;"><path d="M528 32H48C21.5 32 0 53.5 0 80v352c0 26.5 21.5 48 48 48h480c26.5 0 48-21.5 48-48V80c0-26.5-21.5-48-48-48zm0 400H48V80h480v352zM208 256c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm-32 32h64c17.7 0 32 14.3 32 32v8c0 8.8-7.2 16-16 16H160c-8.8 0-16-7.2-16-16v-8c0-17.7 14.3-32 32-32zm240-96h-64c-8.8 0-16-7.2-16-16s7.2-16 16-16h64c8.8 0 16 7.2 16 16s-7.2 16-16 16zm-128 0c-8.8 0-16-7.2-16-16s7.2-16 16-16 16 7.2 16 16-7.2 16-16 16zm128 64h-64c-8.8 0-16-7.2-16-16s7.2-16 16-16h64c8.8 0 16 7.2 16 16s-7.2 16-16 16zm-128 0c-8.8 0-16-7.2-16-16s7.2-16 16-16 16 7.2 16 16-7.2 16-16 16z"/></svg></div><div class="doc-upload-text"><strong>RG ou CNH (frente e verso)</strong><span>Documento de identidade com foto</span></div><span class="doc-upload-badge req">Obrigatório</span></label>
+        <input type="file" id="dp-rg-s" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" required>
+
+        <label class="doc-upload" for="dp-antec-s"><div class="doc-upload-icon red"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="#e04040" style="width:20px;height:20px;"><path d="M466.5 83.7l-192-80c-5.3-2.2-11.7-2.2-17 0l-192 80C37.7 92.8 16 123.8 16 160v56c0 139.4 98.4 243.8 228.9 260.7 6.1 .8 12.1 .8 18.2 0C393.6 459.8 496 355.4 496 216v-56c0-36.2-21.7-67.2-29.5-76.3zM224 152c0-13.3 10.7-24 24-24s24 10.7 24 24v64c0 13.3-10.7 24-24 24s-24-10.7-24-24V152zm24 144c11 0 20 9 20 20s-9 20-20 20-20-9-20-20 9-20 20-20z"/></svg></div><div class="doc-upload-text"><strong>Certidão de Antecedentes Criminais</strong><span>Estadual e Federal · Máx. 90 dias de emissão</span></div><span class="doc-upload-badge req">Obrigatório</span></label>
+        <input type="file" id="dp-antec-s" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" required>
+
+        <label class="doc-upload" for="dp-nis-s"><div class="doc-upload-icon blue"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" fill="#2172c8" style="width:20px;height:20px;"><path d="M528 32H48C21.5 32 0 53.5 0 80v16h576V80c0-26.5-21.5-48-48-48zM0 432c0 26.5 21.5 48 48 48h480c26.5 0 48-21.5 48-48V128H0v304zm352-152c0-4.4 3.6-8 8-8h80c4.4 0 8 3.6 8 8v16c0 4.4-3.6 8-8 8h-80c-4.4 0-8-3.6-8-8v-16zm-160 0c0-4.4 3.6-8 8-8h80c4.4 0 8 3.6 8 8v16c0 4.4-3.6 8-8 8h-80c-4.4 0-8-3.6-8-8v-16zm-72 64c0-4.4 3.6-8 8-8h176c4.4 0 8 3.6 8 8v16c0 4.4-3.6 8-8 8H128c-4.4 0-8-3.6-8-8v-16zM72 208h96c13.3 0 24 10.7 24 24v48c0 13.3-10.7 24-24 24H72c-13.3 0-24-10.7-24-24v-48c0-13.3 10.7-24 24-24z"/></svg></div><div class="doc-upload-text"><strong>Cartão NIS / PIS</strong><span>Necessário para registro em folha de pagamento</span></div><span class="doc-upload-badge req">Obrigatório</span></label>
+        <input type="file" id="dp-nis-s" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" required>
+
+        <label class="doc-upload" for="dp-ctps-s"><div class="doc-upload-icon amber"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" fill="#c88b1a" style="width:20px;height:20px;"><path d="M96 0C78.3 0 64 14.3 64 32v96h64V32c0-17.7-14.3-32-32-32zM288 0c-17.7 0-32 14.3-32 32v96h64V32c0-17.7-14.3-32-32-32zM32 160c-17.7 0-32 14.3-32 32s14.3 32 32 32v32c0 77.4 55 142 128 156.8V480c0 17.7 14.3 32 32 32h192c17.7 0 32-14.3 32-32v-67.2C329 398 384 333.4 384 256V224c17.7 0 32-14.3 32-32s-14.3-32-32-32H32z"/></svg></div><div class="doc-upload-text"><strong>Carteira de Trabalho (CTPS)</strong><span>Frente ou extrato digital</span></div><span class="doc-upload-badge opt">Opcional</span></label>
+        <input type="file" id="dp-ctps-s" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
+      </div>
+
+      <!-- SEÇÃO 5: Permissões -->
+      <div class="form-card" style="margin-bottom:20px;">
+        <h3> Permissões de Acesso</h3>
+
+        <p style="font-size:13px;color:var(--text-2);margin-bottom:14px;font-weight:500;">Selecione o que este porteiro poderá acessar no sistema:</p>
+
+        <div style="display:flex;flex-direction:column;gap:0;">
+          <div class="toggle-row">
+            <div class="toggle-info"><strong><img src="../../assets/img/icons/person-walking-arrow-right.svg" width="16" height="16" alt="">Registrar visitantes</strong><span>Controle de entrada e saída</span></div>
+            <div class="toggle-switch"><input type="checkbox" id="perm-vis" checked><label for="perm-vis" ></label></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><strong><img src="../../assets/img/icons/box-archive.svg" width="16" height="16" alt="">Gerenciar encomendas</strong><span>Recebimento e entrega de pacotes</span></div>
+            <div class="toggle-switch"><input type="checkbox" id="perm-enc" checked><label for="perm-enc" ></label></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><strong><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Controle de veículos</strong><span>Entrada e saída no estacionamento</span></div>
+            <div class="toggle-switch"><input type="checkbox" id="perm-vei" checked><label for="perm-vei" ></label></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><strong><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt="">Registrar ocorrências</strong><span>Incidentes e irregularidades</span></div>
+            <div class="toggle-switch"><input type="checkbox" id="perm-ocr" checked><label for="perm-ocr" ></label></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info"><strong><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt="">Dados financeiros</strong><span>Restrito — apenas síndico pode acessar</span></div>
+            <div class="toggle-switch">
+              <input type="checkbox" id="perm-fin" disabled>
+              <label for="perm-fin"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confirmação -->
+      <div class="terms-check">
+        <input id="cadast_aceiteConfirmoQueReviseiTodosOsDoc" aria-labelledby="cadast_aceiteConfirmoQueReviseiTodosOsDoc_txt" type="checkbox" required>
+        <span id="cadast_aceiteConfirmoQueReviseiTodosOsDoc_txt">Confirmo que revisei todos os documentos do porteiro, incluindo a Certidão de Antecedentes Criminais, e autorizo o cadastro deste funcionário no sistema.</span>
+      </div>
+
+      <button type="submit" class="action-btn" style="margin-top:22px;">
+        Cadastrar Porteiro
+      </button>
+
+    </form>
+
+    <div class="info-card" style="margin-top:14px;">
+      <img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">
+      <p>O porteiro receberá um e-mail em até <strong>5 minutos</strong> com as credenciais de acesso e as instruções para o primeiro login.</p>
+    </div>
+
+  </main>
+
+
+<script src="../../assets/js/validation.js"></script>
+<script>
+function validarCampoPorteiro(input) {
+  limparErro(input);
+  var name = input.getAttribute('name') || input.placeholder || input.id;
+  if (input.hasAttribute('required') && !input.value.trim() && input.type !== 'checkbox') {
+    if (input.value.trim() === '') { mostrarErro(input, 'Campo obrigatório'); return false; }
+  }
+  if (input.classList.contains('mask-cpf') && input.value.trim() && !validarCPF(input.value)) {
+    mostrarErro(input, 'CPF inválido'); return false;
+  }
+  if (input.type === 'email' && input.value.trim() && !validarEmail(input.value)) {
+    mostrarErro(input, 'E-mail inválido'); return false;
+  }
+  if (input.classList.contains('mask-tel') && input.value.trim() && !validarTelefone(input.value)) {
+    mostrarErro(input, 'Telefone inválido'); return false;
+  }
+  return true;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('form input, form select, form textarea').forEach(function(el) {
+    el.addEventListener('blur', function() { validarCampoPorteiro(this); });
+    el.addEventListener('input', function() { if (this.style.borderColor) { limparErro(this); } });
+  });
+});
+
+/* Cadastro do porteiro pelo síndico.
+
+   Os campos vão pelos ids, e não pelo placeholder: buscar por texto quebra
+   assim que alguém reescreve o rótulo. Os dados trabalhistas (RG, NIS,
+   turno, contrato) são conferidos na tela, mas ainda não têm lugar na API —
+   entram quando o cadastro funcional for modelado. */
+function campoP(id) { return document.getElementById(id); }
+
+function validarCadastroPorteiro() {
+  limparTodosErros(document.querySelector('form'));
+  var valido = true;
+
+  var nome = campoP('pNome');
+  var cpf = campoP('pCpf');
+  var dataNasc = campoP('pNascimento');
+  var email = campoP('pEmail');
+  var celular = campoP('pTelefone');
+  var senha = campoP('pSenha');
+
+  var rg = document.querySelector('input[placeholder="00.000.000-0"]');
+  var nis = document.querySelector('input[placeholder="000.00000.00-0"]');
+  var selects = document.querySelectorAll('.form-card select');
+  var turno = selects[0], contrato = selects[1], local = selects[2];
+  var dataInicio = document.querySelectorAll('input[type="date"]')[1];
+
+  if (!nome.value.trim()) { mostrarErro(nome, 'Informe o nome completo'); valido = false; }
+  if (!cpf.value.trim()) { mostrarErro(cpf, 'Informe o CPF'); valido = false; }
+  else if (!validarCPF(cpf.value)) { mostrarErro(cpf, 'CPF inválido'); valido = false; }
+  if (rg && !rg.value.trim()) { mostrarErro(rg, 'Informe o RG'); valido = false; }
+  if (!dataNasc.value) { mostrarErro(dataNasc, 'Informe a data de nascimento'); valido = false; }
+  if (!email.value.trim()) { mostrarErro(email, 'Informe o e-mail'); valido = false; }
+  else if (!validarEmail(email.value)) { mostrarErro(email, 'E-mail inválido'); valido = false; }
+  if (!celular.value.trim()) { mostrarErro(celular, 'Informe o celular'); valido = false; }
+  else if (!validarTelefone(celular.value)) { mostrarErro(celular, 'Telefone inválido'); valido = false; }
+
+  if (turno && !turno.value) { mostrarErro(turno, 'Selecione o turno'); valido = false; }
+  if (contrato && !contrato.value) { mostrarErro(contrato, 'Selecione o contrato'); valido = false; }
+  if (dataInicio && !dataInicio.value) { mostrarErro(dataInicio, 'Informe a data de início'); valido = false; }
+  if (local && !local.value) { mostrarErro(local, 'Selecione o local'); valido = false; }
+  if (nis && !nis.value.trim()) { mostrarErro(nis, 'Informe o NIS/PIS'); valido = false; }
+
+  // As mesmas regras que a API cobra.
+  if (!senha.value) { mostrarErro(senha, 'Defina a senha de acesso'); valido = false; }
+  else if (senha.value.length < 8) { mostrarErro(senha, 'Mínimo 8 caracteres'); valido = false; }
+  else if (!/[a-zA-Z]/.test(senha.value)) { mostrarErro(senha, 'Use ao menos uma letra'); valido = false; }
+  else if (!/[0-9]/.test(senha.value) && !/[^a-zA-Z0-9]/.test(senha.value)) {
+    mostrarErro(senha, 'Use ao menos um número ou símbolo'); valido = false;
+  }
+
+  ['dp-rg-s', 'dp-antec-s', 'dp-nis-s'].forEach(function(id) {
+    var arquivo = document.getElementById(id);
+    if (arquivo && !arquivo.files.length) {
+      var rotulo = document.querySelector('label[for="' + id + '"]');
+      if (rotulo) { rotulo.style.borderColor = '#e74c3c'; valido = false; }
+    }
+  });
+
+  var termos = document.querySelector('.terms-check input[type="checkbox"]');
+  if (termos && !termos.checked) { mostrarErro(termos, 'Confirme a autorização'); valido = false; }
+
+  if (!valido) alert('Corrija os campos destacados antes de cadastrar.');
+  return valido;
+}
+
+/* O e-mail de acesso é o mesmo dos dados pessoais; o campo espelhado
+   existe só para deixar isso explícito na tela. */
+document.addEventListener('DOMContentLoaded', function() {
+  var email = campoP('pEmail');
+  var espelho = campoP('pEmailEspelho');
+  if (email && espelho) {
+    email.addEventListener('input', function() { espelho.value = this.value; });
+  }
+});
+
+document.getElementById('formPorteiro').addEventListener('submit', function(e) {
+  e.preventDefault();
+  if (!validarCadastroPorteiro()) return;
+
+  var botao = this.querySelector('button[type=submit]');
+  var textoOriginal = botao.innerHTML;
+  botao.disabled = true;
+  botao.innerHTML = 'Cadastrando...';
+
+  function falhar(mensagem, elemento) {
+    botao.disabled = false;
+    botao.innerHTML = textoOriginal;
+    if (elemento) mostrarErro(elemento, mensagem);
+    else alert(mensagem);
+  }
+
+  var corpo = {
+    nome: campoP('pNome').value.trim(),
+    email: campoP('pEmail').value.trim(),
+    cpf: campoP('pCpf').value,
+    telefone: campoP('pTelefone').value,
+    senha: campoP('pSenha').value,
+    papel: 'porteiro'
+  };
+  if (campoP('pNascimento').value) corpo.data_nascimento = campoP('pNascimento').value;
+
+  SmartCondo.api.post('/usuarios', corpo)
+    .then(function(porteiro) {
+      // As permissões só podem ser definidas depois que o porteiro existe.
+      return SmartCondo.api.put('/usuarios/porteiros/' + porteiro.id + '/permissoes', {
+        registrar_visitantes: document.getElementById('perm-vis').checked,
+        registrar_encomendas: document.getElementById('perm-enc').checked,
+        registrar_veiculos: document.getElementById('perm-vei').checked,
+        registrar_ocorrencias: document.getElementById('perm-ocr').checked,
+        acessar_financeiro: false
+      });
+    })
+    .then(function() { window.location.href = 'porteiros.html?cadastro=ok'; })
+    .catch(function(erro) {
+      if (/CPF/.test(erro.message)) return falhar(erro.message, campoP('pCpf'));
+      if (/e-mail/i.test(erro.message)) return falhar(erro.message, campoP('pEmail'));
+      falhar(erro.message);
+    });
+});
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

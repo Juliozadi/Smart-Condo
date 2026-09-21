@@ -203,6 +203,62 @@ def test_morador_recusado_nao_loga(cliente, sindico, condominio):
     assert r.status_code == 403
 
 
+def test_recusa_guarda_quem_avaliou_quando_e_o_motivo(
+    cliente, db, sindico, condominio
+):
+    """A recusa tem que deixar rastro, como reservas e ocorrências deixam.
+
+    Sem isto não há como responder "quem recusou e por quê" — e o motivo
+    já vinha no corpo da requisição, só não era gravado.
+    """
+    from app.models.usuario import Usuario
+
+    usuario_id, _ = cadastrar_morador(
+        cliente, sindico, condominio, email="rastro@exemplo.com",
+        cpf=CPFS[2], aprovar=False,
+    )
+    eu = cliente.get("/api/v1/auth/eu", headers=cab(sindico)).json()
+
+    r = cliente.post(
+        f"/api/v1/usuarios/{usuario_id}/aprovacao",
+        json={"aprovado": False, "motivo": "CPF não confere com o contrato"},
+        headers=cab(sindico),
+    )
+    assert r.status_code == 200
+
+    db.expire_all()
+    avaliado = db.get(Usuario, usuario_id)
+    assert avaliado.avaliado_por_id == eu["id"]
+    assert avaliado.avaliado_em is not None
+    assert avaliado.motivo_recusa == "CPF não confere com o contrato"
+
+
+def test_aprovacao_guarda_autoria_e_nao_guarda_motivo(
+    cliente, db, sindico, condominio
+):
+    """Aprovar registra quem e quando; motivo só faz sentido na recusa."""
+    from app.models.usuario import Usuario
+
+    usuario_id, _ = cadastrar_morador(
+        cliente, sindico, condominio, email="aprovado@exemplo.com",
+        cpf=CPFS[3], aprovar=False,
+    )
+    eu = cliente.get("/api/v1/auth/eu", headers=cab(sindico)).json()
+
+    r = cliente.post(
+        f"/api/v1/usuarios/{usuario_id}/aprovacao",
+        json={"aprovado": True, "motivo": "isto deve ser ignorado"},
+        headers=cab(sindico),
+    )
+    assert r.status_code == 200
+
+    db.expire_all()
+    avaliado = db.get(Usuario, usuario_id)
+    assert avaliado.avaliado_por_id == eu["id"]
+    assert avaliado.avaliado_em is not None
+    assert avaliado.motivo_recusa is None
+
+
 def test_sindico_nao_avalia_o_proprio_cadastro(cliente, sindico, condominio):
     eu = cliente.get("/api/v1/auth/eu", headers=cab(sindico)).json()
     r = cliente.post(

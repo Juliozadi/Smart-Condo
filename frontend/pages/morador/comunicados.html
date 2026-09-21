@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Comunicados</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    .filtro-btn {
+      display:inline-flex;align-items:center;gap:5px;padding:7px 14px;
+      border-radius:20px;font-size:12px;font-weight:700;text-decoration:none;
+      border:1.5px solid var(--border);
+      background:var(--surface);color:var(--muted);
+      transition:all .2s;cursor:pointer;
+    }
+    .filtro-btn:hover { border-color:var(--primary-texto);color:var(--primary-texto); }
+    .filtro-btn.ativo {
+      background:var(--primary-botao);color:var(--sobre-primary);border-color:var(--primary-botao);
+    }
+    .filtro-btn.ativo:hover { opacity:.9; }
+    .comunicado-item.escondido { display:none !important; }
+  </style>
+</head>
+<body class="dashboard-body layout-mobile">
+
+  <header class="app-bar">
+    <div class="app-bar-inner">
+      <a href="../../index.html" class="app-bar-brand">
+        <img src="../../assets/img/logo.png" alt="SmartCondo" class="logo-sm">
+        <span class="brand-name">Smart<strong>Condo</strong></span>
+      </a>
+      <div class="app-bar-right">
+        <a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/user.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">João Silva</span><span class="profile-role">Morador</span></a>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-wrapper">
+
+    <a href="dashboard.html" class="dash-back">
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Morador
+    </a>
+
+    <div class="dash-greeting">
+      <p class="greeting-sub">Fique por dentro das novidades</p>
+      <h2 class="greeting-name"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt="">Comunicados</h2>
+      <p class="greeting-condo">Residencial das Palmeiras</p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card blue"><span class="stat-value" id="totNaoLidos">—</span><span class="stat-label"><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">Não lidos</span></div>
+      <div class="stat-card teal"><span class="stat-value" id="totMes">—</span><span class="stat-label">Mês</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totFixados">—</span><span class="stat-label">Fixados</span></div>
+    </div>
+
+    <!-- Filtros de categoria -->
+    <div class="filtro-row" id="filtros" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+      <button type="button" class="filtro-btn ativo" data-filter="todos">Todos</button>
+      <button type="button" class="filtro-btn" data-filter="nao_lidos">Não lidos</button>
+      <button type="button" class="filtro-btn" data-filter="manutencao">Manutenção</button>
+      <button type="button" class="filtro-btn" data-filter="evento">Assembleias</button>
+      <button type="button" class="filtro-btn" data-filter="urgente">Urgente</button>
+      <button type="button" class="filtro-btn" data-filter="financeiro">Financeiro</button>
+    </div>
+
+    <p class="section-title"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt=""> Comunicados</p>
+    <div class="notif-list" id="listaComunicados"></div>
+    <p class="estado-lista" id="estadoLista">Carregando…</p>
+
+  </main>
+
+
+<script src="../../assets/js/validation.js"></script>
+<script>
+/* Comunicados do morador: lista o que o síndico publicou e marca como
+   lido ao abrir. O ponto colorido some quando a leitura é registrada. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api;
+  var usuario = api.protegerPagina('morador');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+  var comunicados = [];
+  var filtro = 'todos';
+
+  var ROTULO_CATEGORIA = {
+    geral: 'Informativo', manutencao: 'Manutenção', financeiro: 'Financeiro',
+    seguranca: 'Segurança', evento: 'Assembleia', urgente: 'Urgente'
+  };
+  var CLASSE_CATEGORIA = {
+    geral: 'badge-ok', manutencao: 'badge-pending', financeiro: 'badge-blue',
+    seguranca: 'badge-blue', evento: 'badge-blue', urgente: 'badge-alert'
+  };
+
+  function quando(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    var dias = Math.floor((new Date().setHours(0,0,0,0) - new Date(iso).setHours(0,0,0,0)) / 86400000);
+    if (dias <= 0) {
+      return 'Hoje, ' + ('0' + d.getHours()).slice(-2) + 'h' + ('0' + d.getMinutes()).slice(-2);
+    }
+    if (dias === 1) return 'Ontem';
+    return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2);
+  }
+  function desteMes(iso) {
+    var d = new Date(iso), h = new Date();
+    return d.getMonth() === h.getMonth() && d.getFullYear() === h.getFullYear();
+  }
+
+  function cartao(c) {
+    var item = document.createElement('div');
+    item.className = 'notif-item comunicado-item' + (c.lido ? '' : ' nao-lido');
+    item.setAttribute('role', 'button');
+    item.tabIndex = 0;
+
+    var ponto = document.createElement('div');
+    ponto.className = 'notif-dot' + (c.lido ? ' read' : (c.categoria === 'urgente' ? '' : ' amber'));
+
+    var corpo = document.createElement('div');
+    corpo.className = 'notif-content';
+    var topo = document.createElement('div');
+    topo.className = 'comunicado-topo';
+    var h = document.createElement('h5');
+    h.textContent = c.titulo;
+    var selo = document.createElement('span');
+    selo.className = 'badge ' + (CLASSE_CATEGORIA[c.categoria] || 'badge-neutral');
+    selo.textContent = ROTULO_CATEGORIA[c.categoria] || c.categoria;
+    topo.appendChild(h);
+    topo.appendChild(selo);
+    if (c.fixado) {
+      var marca = document.createElement('span');
+      marca.className = 'marca-fixado';
+      marca.textContent = 'fixado';
+      topo.appendChild(marca);
+    }
+    var texto = document.createElement('p');
+    texto.textContent = c.conteudo;
+    var autor = document.createElement('p');
+    autor.className = 'comunicado-autor';
+    autor.textContent = c.autor_nome;
+    corpo.appendChild(topo);
+    corpo.appendChild(texto);
+    corpo.appendChild(autor);
+
+    var data = document.createElement('span');
+    data.className = 'notif-time';
+    data.textContent = quando(c.publicado_em);
+
+    function marcarLido() {
+      if (c.lido) return;
+      api.post('/comunicados/' + c.id + '/leitura')
+        .then(function() {
+          c.lido = true;
+          ponto.className = 'notif-dot read';
+          item.classList.remove('nao-lido');
+          atualizarContadores();
+        })
+        .catch(function() { /* a leitura é um detalhe; não atrapalha a tela */ });
+    }
+    item.addEventListener('click', marcarLido);
+    item.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); marcarLido(); }
+    });
+
+    item.appendChild(ponto);
+    item.appendChild(corpo);
+    item.appendChild(data);
+    return item;
+  }
+
+  function atualizarContadores() {
+    campo('totNaoLidos').textContent =
+      comunicados.filter(function(c) { return !c.lido; }).length;
+    campo('totMes').textContent =
+      comunicados.filter(function(c) { return desteMes(c.publicado_em); }).length;
+    campo('totFixados').textContent =
+      comunicados.filter(function(c) { return c.fixado; }).length;
+  }
+
+  function desenhar() {
+    var lista = comunicados.filter(function(c) {
+      if (filtro === 'todos') return true;
+      if (filtro === 'nao_lidos') return !c.lido;
+      return c.categoria === filtro;
+    });
+    var caixa = campo('listaComunicados');
+    caixa.innerHTML = '';
+    campo('estadoLista').textContent = lista.length ? '' :
+      (comunicados.length ? 'Nenhum comunicado nesta categoria.'
+                          : 'Nenhum comunicado publicado ainda.');
+    lista.forEach(function(c) { caixa.appendChild(cartao(c)); });
+  }
+
+  function carregar() {
+    campo('estadoLista').textContent = 'Carregando…';
+    return api.get('/comunicados')
+      .then(function(lista) {
+        comunicados = lista;
+        atualizarContadores();
+        desenhar();
+      })
+      .catch(function(e) { campo('estadoLista').textContent = e.message; });
+  }
+
+  campo('filtros').addEventListener('click', function(e) {
+    var botao = e.target.closest('.filtro-btn');
+    if (!botao) return;
+    filtro = botao.getAttribute('data-filter');
+    campo('filtros').querySelectorAll('.filtro-btn').forEach(function(b) {
+      b.classList.toggle('ativo', b === botao);
+    });
+    desenhar();
+  });
+
+  campo('hdrName').textContent = usuario.nome;
+  api.get('/condominios/meu')
+    .then(function(c) { document.querySelector('.greeting-condo').textContent = c.nome; })
+    .catch(function() {});
+
+  carregar();
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

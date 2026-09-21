@@ -133,6 +133,12 @@ class UsuarioSaida(SchemaBase):
     foto_url: str | None = None
     criado_em: datetime
 
+    # Quem avaliou o cadastro, quando e — na recusa — por quê. O síndico
+    # e o administrador precisam disso na fila de aprovação; o próprio
+    # usuário recusado precisa saber o motivo.
+    avaliado_em: datetime | None = None
+    motivo_recusa: str | None = None
+
 
 class PerfilSaida(UsuarioSaida):
     """O que o usuário vê do próprio cadastro.

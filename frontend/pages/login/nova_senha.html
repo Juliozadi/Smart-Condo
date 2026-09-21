@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Nova Senha</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body>
+  <main class="container">
+    <header class="logo-area">
+      <img src="../../assets/img/logo.png" alt="Logo SmartCondo" class="logo">
+      <div class="logo-text">
+        <h1>Smart Condo</h1>
+        <p>Gestão de Condomínios</p>
+      </div>
+    </header>
+    <h2>Crie uma nova senha</h2>
+    <p class="subtitle">Sua nova senha precisa ser diferente da anterior.</p>
+
+    <form id="formNovaSenha" novalidate>
+      <div class="input-box">
+        <img src="../../assets/img/icons/lock.svg" width="16" height="16" alt="">
+        <input type="password" id="novaSenha" placeholder="Nova senha" required autocomplete="new-password" aria-label="Nova senha">
+      </div>
+      <div class="input-box">
+        <img src="../../assets/img/icons/lock.svg" width="16" height="16" alt="">
+        <input type="password" id="confirmarSenha" placeholder="Confirmar nova senha" required autocomplete="new-password" aria-label="Confirmar nova senha">
+      </div>
+
+      <div style="background:var(--surface-2);border-radius:var(--radius-xs);padding:12px 14px;margin-bottom:18px;font-size:12px;color:var(--muted);text-align:left;">
+        <div class="regra-senha" data-regra="1" style="display:flex;align-items:center;gap:7px;margin-bottom:5px;font-weight:600;">
+           <img src="../../assets/img/icons/check.svg" width="16" height="16" alt="">Mínimo 8 caracteres
+        </div>
+        <div class="regra-senha" data-regra="2" style="display:flex;align-items:center;gap:7px;margin-bottom:5px;font-weight:600;">
+           <img src="../../assets/img/icons/check.svg" width="16" height="16" alt="">Ao menos uma letra
+        </div>
+        <div class="regra-senha" data-regra="3" style="display:flex;align-items:center;gap:7px;font-weight:600;">
+           <img src="../../assets/img/icons/check.svg" width="16" height="16" alt="">Ao menos um número ou símbolo
+        </div>
+      </div>
+
+      <button class="login-btn" type="submit">
+        <img src="../../assets/img/icons/floppy-disk.svg" width="16" height="16" alt="">Salvar nova senha
+      </button>
+    </form>
+
+    <a href="../../index.html" class="back-link">
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar para o login
+    </a>
+  </main>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelector('form').addEventListener('submit', function(e) {
+        var senha = document.querySelector('input[type="password"]');
+        var confirmar = document.querySelectorAll('input[type="password"]')[1];
+        document.querySelectorAll('.erro-validacao').forEach(function(el) { el.remove(); });
+        var valido = true;
+        if (!senha.value.trim()) {
+          mostrarErro(senha, 'Informe a nova senha');
+          valido = false;
+        } else if (senha.value.trim().length < 6) {
+          mostrarErro(senha, 'A senha deve ter no mínimo 6 caracteres');
+          valido = false;
+        }
+        if (!confirmar.value.trim()) {
+          mostrarErro(confirmar, 'Confirme a nova senha');
+          valido = false;
+        } else if (confirmar.value.trim().length < 6) {
+          mostrarErro(confirmar, 'A senha deve ter no mínimo 6 caracteres');
+          valido = false;
+        }
+        if (valido && senha.value.trim() !== confirmar.value.trim()) {
+          mostrarErro(confirmar, 'As senhas não coincidem');
+          valido = false;
+        }
+        if (!valido) e.preventDefault();
+      });
+    });
+  </script>
+  <script src="../../assets/js/validation.js"></script>
+  <style>
+  /* Regras ainda não atendidas ficam apagadas; ao cumprir, acendem. */
+  .regra-senha { opacity: .5; transition: opacity .2s, color .2s; }
+  .regra-senha.ok { opacity: 1; color: var(--primary-texto); }
+</style>
+<script>
+/* Redefinição da senha — doc, seção 9 ("Esqueci minha senha").
+   O e-mail e o código vêm das etapas anteriores; o código só é conferido
+   agora, porque é a API que valida os dois juntos. */
+(function() {
+  var email = null, codigo = null;
+  try {
+    email = sessionStorage.getItem('smartcondo_email_recuperacao');
+    codigo = sessionStorage.getItem('smartcondo_codigo_recuperacao');
+  } catch (_) {}
+
+  if (!email || !codigo) {
+    window.location.replace('esqueci_senha.html');
+    return;
+  }
+
+  var campoSenha = document.getElementById('novaSenha');
+  var campoConfirma = document.getElementById('confirmarSenha');
+
+  // As mesmas regras que o servidor cobra (app/schemas/comuns.py).
+  function avaliar(senha) {
+    return {
+      1: senha.length >= 8,
+      2: /[a-zA-Z]/.test(senha),
+      3: /[0-9]/.test(senha) || /[^a-zA-Z0-9]/.test(senha)
+    };
+  }
+
+  campoSenha.addEventListener('input', function() {
+    var regras = avaliar(this.value);
+    document.querySelectorAll('.regra-senha').forEach(function(el) {
+      el.classList.toggle('ok', !!regras[el.getAttribute('data-regra')]);
+    });
+  });
+
+  document.getElementById('formNovaSenha').addEventListener('submit', function(e) {
+    e.preventDefault();
+    document.querySelectorAll('.erro-validacao').forEach(function(el) { el.remove(); });
+
+    var senha = campoSenha.value;
+    var confirma = campoConfirma.value;
+    var regras = avaliar(senha);
+
+    if (!regras[1]) { mostrarErro(campoSenha, 'A senha precisa ter ao menos 8 caracteres'); return; }
+    if (!regras[2]) { mostrarErro(campoSenha, 'A senha precisa ter ao menos uma letra'); return; }
+    if (!regras[3]) { mostrarErro(campoSenha, 'A senha precisa ter ao menos um número ou símbolo'); return; }
+    if (senha !== confirma) { mostrarErro(campoConfirma, 'As senhas não conferem'); return; }
+
+    var botao = this.querySelector('button[type=submit]');
+    var textoOriginal = botao.innerHTML;
+    botao.disabled = true;
+    botao.innerHTML = 'Salvando...';
+
+    SmartCondo.api.post('/auth/senha/redefinir', {
+      email: email, codigo: codigo, nova_senha: senha, confirmacao_senha: confirma
+    }, { semToken: true })
+      .then(function() {
+        try {
+          sessionStorage.removeItem('smartcondo_email_recuperacao');
+          sessionStorage.removeItem('smartcondo_codigo_recuperacao');
+        } catch (_) {}
+        window.location.href = '../../index.html?senha=redefinida';
+      })
+      .catch(function(erro) {
+        botao.disabled = false;
+        botao.innerHTML = textoOriginal;
+
+        // Código errado ou vencido: manda de volta para reinformar.
+        if (/[Cc]ódigo/.test(erro.message)) {
+          try { sessionStorage.removeItem('smartcondo_codigo_recuperacao'); } catch (_) {}
+          mostrarErro(campoSenha, erro.message + ' Você será levado de volta.');
+          setTimeout(function() { window.location.href = 'codigo_recuperacao.html'; }, 2200);
+          return;
+        }
+        mostrarErro(campoSenha, erro.message);
+      });
+  });
+})();
+</script>
+<script src="../../assets/js/acessibilidade.js"></script>
+
+</body>
+</html>

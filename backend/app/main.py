@@ -37,9 +37,16 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+# Com DEBUG ligado o index.html aberto direto do disco (file://) também
+# é aceito: o navegador manda a origem "null" nesse caso.
+_origens = list(settings.CORS_ORIGINS)
+if settings.DEBUG:
+    _origens.append("null")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=_origens,
+    allow_origin_regex=settings.CORS_ORIGIN_REGEX or None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

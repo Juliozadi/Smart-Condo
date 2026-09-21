@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Registrar Ocorrência</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-desktop">
+
+  <header class="app-bar">
+    <div class="app-bar-inner">
+      <a href="../../index.html" class="app-bar-brand">
+        <img src="../../assets/img/logo.png" alt="SmartCondo" class="logo-sm">
+        <span class="brand-name">Smart<strong>Condo</strong></span>
+      </a>
+      <div class="app-bar-right">
+        <a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/shield-halved.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Carlos Pereira</span><span class="profile-role">Porteiro</span></a>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-wrapper">
+
+    <a href="dashboard.html" class="dash-back">
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Porteiro
+    </a>
+
+    <div class="dash-greeting">
+      <p class="greeting-sub"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Turno 07h – 15h · Carlos Pereira</p>
+      <h2 class="greeting-name">Registrar Ocorrência</h2>
+      <p class="greeting-condo">Documente incidentes e irregularidades</p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card red"><span class="stat-value" id="totAbertas">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt="">Abertas</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totSemana">—</span><span class="stat-label">Semana</span></div>
+      <div class="stat-card teal"><span class="stat-value" id="totMes">—</span><span class="stat-label">Mês</span></div>
+    </div>
+
+    <!-- Formulário -->
+    <p class="section-title"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt=""> Nova Ocorrência</p>
+    <div class="form-card">
+      <h3><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt=""> Dados da Ocorrência</h3>
+      <form id="formOcorrencia" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="ocorre_tipoDeOcorrencia">Tipo de ocorrência</label>
+            <select id="ocorre_tipoDeOcorrencia" required>
+              <option value="" disabled selected>Selecione</option>
+              <option value="seguranca">Entrada não autorizada</option>
+              <option value="convivencia">Barulho excessivo</option>
+              <option value="patrimonio">Dano ao patrimônio</option>
+              <option value="convivencia">Briga / Conflito entre moradores</option>
+              <option value="seguranca">Acidente nas dependências</option>
+              <option value="seguranca">Tentativa de furto</option>
+              <option value="convivencia">Abandono de animal</option>
+              <option value="convivencia">Descumprimento de regras</option>
+              <option value="geral">Outro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="ocorre_grauDeUrgencia">Grau de urgência</label>
+            <select id="ocorre_grauDeUrgencia" required>
+              <option value="" disabled selected>Selecione</option>
+              <option value="urgente">Urgente — acionar síndico imediatamente</option>
+              <option value="alta">Alta — comunicar no turno</option>
+              <option value="normal" selected>Normal — registrar e arquivar</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="ocorre_localDaOcorrencia">Local da ocorrência</label>
+            <select id="ocorre_localDaOcorrencia" required>
+              <option value="" disabled selected>Selecione</option>
+              <option>Portaria</option>
+              <option>Estacionamento</option>
+              <option>Área de lazer</option>
+              <option>Corredor / Circulação</option>
+              <option>Elevador</option>
+              <option>Entrada / Saída principal</option>
+              <option>Apartamento específico</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="ocorre_apartamentoEnvolvido"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Apartamento envolvido</label>
+            <select id="ocorre_apartamentoEnvolvido">
+              <option value="" selected>Não aplicável</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="ocorre_assunto">Assunto</label>
+          <input id="ocorre_assunto" type="text" required minlength="3" maxlength="180" placeholder="Resuma em uma linha o que aconteceu" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;">
+        </div>
+        <div class="form-group">
+          <label for="ocorre_descricaoCompleta">Descrição completa</label>
+          <textarea id="ocorre_descricaoCompleta" placeholder="Descreva detalhadamente o que ocorreu: quem estava envolvido, o que foi feito, quais medidas foram tomadas..." style="min-height:120px;width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);resize:vertical;outline:none;" required></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="ocorre_testemunhas">Testemunhas</label>
+            <input id="ocorre_testemunhas" type="text" placeholder="Nomes de quem presenciou">
+          </div>
+          <div class="form-group">
+            <label for="ocorre_providenciaTomada">Providência tomada</label>
+            <select id="ocorre_providenciaTomada" required>
+              <option value="" disabled selected>Selecione</option>
+              <option>Apenas registrado</option>
+              <option>Síndico foi notificado</option>
+              <option>Polícia foi acionada</option>
+              <option>SAMU foi acionado</option>
+              <option>Morador foi advertido</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Evidências fotográficas <span style="font-size:11px;color:var(--muted);font-weight:400;">(opcional)</span></label>
+          <label style="display:flex;align-items:center;gap:12px;padding:14px;border:2px dashed var(--border);border-radius:var(--radius-xs);cursor:pointer;background:var(--surface-2);" for="ocorr-p-foto">
+            <img src="../../assets/img/icons/camera.svg" width="16" height="16" alt="">
+            <div><p style="font-size:13px;color:var(--muted);font-weight:500;">Anexar imagem ou arquivo</p><p style="font-size:11px;color:var(--placeholder);">JPG, PNG, PDF · Máx. 10 MB</p></div>
+          </label>
+          <input type="file" id="ocorr-p-foto" accept="image/*,.pdf" style="display:none;">
+        </div>
+        <p class="form-erro" id="erroOcorrencia" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;">
+          Registrar Ocorrência
+        </button>
+      </form>
+    </div>
+
+    <!-- Ocorrências abertas -->
+    <p class="section-title"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt=""> Ocorrências em Aberto</p>
+    <div class="list-items" id="listaAbertas"></div>
+    <p class="estado-lista" id="estadoAbertas">Carregando…</p>
+
+    <!-- Histórico -->
+    <p class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Histórico do Condomínio</p>
+    <div class="data-table tabela-status" id="tabelaHistorico">
+      <div class="table-head cols-4"><span><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt="">Assunto</span><span>Local</span><span>Data</span><span>Status</span></div>
+    </div>
+    <p class="estado-lista" id="estadoHistorico"></p>
+
+  </main>
+
+
+  <script src="../../assets/js/validation.js"></script>
+  <script>
+  /* Ocorrências pelo lado da portaria (documentação, seções 8 e 9). O
+     síndico precisa ter liberado "Registrar ocorrências" no painel de
+     permissões; sem isso a API recusa e a tela explica o motivo. */
+  (function() {
+    'use strict';
+    var api = window.SmartCondo.api;
+    var usuario = api.protegerPagina('porteiro');
+    if (!usuario) return;
+
+    function campo(id) { return document.getElementById(id); }
+
+    var ROTULO_STATUS = {
+      aberta: 'Aberta', em_analise: 'Em análise',
+      resolvida: 'Resolvida', arquivada: 'Arquivada'
+    };
+    var CLASSE_STATUS = {
+      aberta: 'badge-alert', em_analise: 'badge-blue',
+      resolvida: 'badge-ok', arquivada: 'badge-neutral'
+    };
+    var ROTULO_PRIORIDADE = {
+      urgente: 'Urgente', alta: 'Alta', normal: 'Normal', baixa: 'Baixa'
+    };
+    var ICONE_PRIORIDADE = {
+      urgente: ['icon-red', 'triangle-exclamation.svg'],
+      alta:    ['icon-yellow', 'circle-exclamation.svg'],
+      normal:  ['icon-teal', 'circle-exclamation.svg'],
+      baixa:   ['icon-blue', 'circle-exclamation.svg']
+    };
+
+    function dataCurta(iso) {
+      var d = new Date(iso);
+      if (isNaN(d)) return '';
+      return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2);
+    }
+    function diasAtras(iso, dias) {
+      return (Date.now() - new Date(iso).getTime()) <= dias * 86400000;
+    }
+
+    function cartao(o) {
+      var item = document.createElement('div');
+      item.className = 'list-item';
+
+      var visual = ICONE_PRIORIDADE[o.prioridade] || ICONE_PRIORIDADE.normal;
+      var icone = document.createElement('div');
+      icone.className = 'card-icon ' + visual[0] + ' icone-volume';
+      var glifo = document.createElement('span');
+      glifo.className = 'glifo';
+      glifo.style.setProperty('--icone', 'url(../../assets/img/icons/' + visual[1] + ')');
+      icone.appendChild(glifo);
+
+      var info = document.createElement('div');
+      info.className = 'list-info';
+      var h = document.createElement('h5');
+      h.textContent = o.titulo + (o.local ? ' — ' + o.local : '');
+      var p = document.createElement('p');
+      p.textContent = o.descricao;
+      var quem = document.createElement('p');
+      quem.className = 'ocorrencia-descricao';
+      quem.textContent = 'Aberta por ' + o.aberta_por_nome +
+        (o.unidade ? ' (Apto ' + o.unidade + ')' : '') + ' em ' + dataCurta(o.criado_em);
+      info.appendChild(h); info.appendChild(p); info.appendChild(quem);
+
+      var selo = document.createElement('span');
+      selo.className = 'badge ' + (CLASSE_STATUS[o.status] || 'badge-neutral');
+      selo.textContent = o.prioridade === 'urgente'
+        ? 'Urgente' : (ROTULO_STATUS[o.status] || o.status);
+      if (o.prioridade === 'urgente') selo.className = 'badge badge-alert';
+
+      item.appendChild(icone);
+      item.appendChild(info);
+      item.appendChild(selo);
+      return item;
+    }
+
+    function montarLinha(o) {
+      var linha = document.createElement('div');
+      linha.className = 'table-row cols-4';
+      linha.innerHTML = '<span></span><span></span><span></span><span><span class="badge"></span></span>';
+      linha.children[0].textContent = o.titulo;
+      linha.children[1].textContent = o.local || '—';
+      linha.children[2].textContent = dataCurta(o.criado_em);
+      var selo = linha.children[3].firstChild;
+      selo.className = 'badge ' + (CLASSE_STATUS[o.status] || 'badge-neutral');
+      selo.textContent = ROTULO_STATUS[o.status] || o.status;
+      linha.title = (ROTULO_PRIORIDADE[o.prioridade] || '') +
+        (o.resposta ? ' · Resposta: ' + o.resposta : '');
+      return linha;
+    }
+
+    function carregar() {
+      campo('estadoAbertas').textContent = 'Carregando…';
+      return api.get('/portaria/ocorrencias')
+        .then(function(lista) {
+          var abertas = lista.filter(function(o) {
+            return o.status === 'aberta' || o.status === 'em_analise';
+          });
+
+          campo('totAbertas').textContent = abertas.length;
+          campo('totSemana').textContent =
+            lista.filter(function(o) { return diasAtras(o.criado_em, 7); }).length;
+          campo('totMes').textContent =
+            lista.filter(function(o) { return diasAtras(o.criado_em, 30); }).length;
+
+          var caixa = campo('listaAbertas');
+          caixa.innerHTML = '';
+          campo('estadoAbertas').textContent =
+            abertas.length ? '' : 'Nenhuma ocorrência em aberto.';
+          abertas.forEach(function(o) { caixa.appendChild(cartao(o)); });
+
+          var tabela = campo('tabelaHistorico');
+          var cabecalho = tabela.querySelector('.table-head');
+          tabela.innerHTML = '';
+          tabela.appendChild(cabecalho);
+          campo('estadoHistorico').textContent =
+            lista.length ? '' : 'Nenhuma ocorrência registrada.';
+          lista.forEach(function(o) { tabela.appendChild(montarLinha(o)); });
+        })
+        .catch(function(e) {
+          campo('estadoAbertas').textContent = e.message;
+          campo('estadoHistorico').textContent = '';
+        });
+    }
+
+    function carregarUnidades() {
+      return api.get('/condominios/meu/unidades').then(function(lista) {
+        var select = campo('ocorre_apartamentoEnvolvido');
+        lista.forEach(function(u) {
+          var op = document.createElement('option');
+          op.value = (u.bloco && u.bloco !== 'unico' ? u.bloco + ' ' : '') + u.numero;
+          op.textContent = 'Apto ' + op.value;
+          select.appendChild(op);
+        });
+      }).catch(function() { /* sem unidades, o campo fica só com "não aplicável" */ });
+    }
+
+    campo('formOcorrencia').addEventListener('submit', function(evento) {
+      evento.preventDefault();
+      var erro = campo('erroOcorrencia');
+      erro.className = 'form-erro';
+      erro.textContent = '';
+
+      var categoria = campo('ocorre_tipoDeOcorrencia').value;
+      var assunto = campo('ocorre_assunto').value.trim();
+      var descricao = campo('ocorre_descricaoCompleta').value.trim();
+      var local = campo('ocorre_localDaOcorrencia').value;
+      var apto = campo('ocorre_apartamentoEnvolvido').value;
+      var providencia = campo('ocorre_providenciaTomada').value;
+      var testemunhas = campo('ocorre_testemunhas').value.trim();
+
+      if (!categoria || !local || !providencia) {
+        erro.textContent = 'Escolha o tipo, o local e a providência tomada.';
+        return;
+      }
+      if (assunto.length < 3) {
+        erro.textContent = 'Escreva um assunto com pelo menos 3 caracteres.';
+        return;
+      }
+      if (descricao.length < 5) {
+        erro.textContent = 'Descreva a ocorrência com um pouco mais de detalhe.';
+        return;
+      }
+
+      // Providência e testemunhas não são campos da ocorrência no banco;
+      // entram no fim da descrição para não se perderem no registro.
+      var texto = descricao + '\n\nProvidência: ' + providencia;
+      if (testemunhas) texto += '\nTestemunhas: ' + testemunhas;
+
+      var corpo = {
+        titulo: assunto,
+        descricao: texto,
+        categoria: categoria,
+        local: apto ? local + ' · Apto ' + apto : local,
+        prioridade: campo('ocorre_grauDeUrgencia').value || 'normal'
+      };
+
+      var botao = this.querySelector('button[type=submit]');
+      var rotulo = botao.textContent;
+      botao.disabled = true;
+      botao.textContent = 'Registrando…';
+
+      api.post('/portaria/ocorrencias', corpo)
+        .then(function() {
+          campo('formOcorrencia').reset();
+          erro.className = 'form-erro sucesso';
+          erro.textContent = 'Ocorrência registrada. O síndico vai acompanhar.';
+          return carregar();
+        })
+        .catch(function(e) { erro.textContent = e.message; })
+        .then(function() { botao.disabled = false; botao.textContent = rotulo; });
+    });
+
+    var cabecalho = document.querySelector('.greeting-sub');
+    if (cabecalho) cabecalho.textContent = usuario.nome + ' — Portaria';
+    var nomeTopo = document.getElementById('hdrName');
+    if (nomeTopo) nomeTopo.textContent = usuario.nome;
+
+    carregarUnidades().then(carregar, carregar);
+  })();
+  </script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

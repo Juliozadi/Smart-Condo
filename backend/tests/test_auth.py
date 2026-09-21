@@ -360,3 +360,95 @@ def test_saude(cliente):
     r = cliente.get("/api/v1/saude")
     assert r.status_code == 200
     assert r.json()["status"] == "ok"
+
+
+# ── Limite de tentativas de login ────────────────────────────────────
+def test_senha_errada_repetida_tranca_a_conta(cliente, cenario):
+    """Sem limite, adivinhar a senha é só questão de tempo."""
+    from app.core.config import settings
+
+    corpo = {"email": "sindico@exemplo.com", "senha": "senha-errada"}
+    for _ in range(settings.MAX_TENTATIVAS_LOGIN):
+        r = cliente.post("/api/v1/auth/login", json=corpo)
+        assert r.status_code == 401
+
+    # A seguinte já bate na trava, e a mensagem diz quanto falta.
+    r = cliente.post("/api/v1/auth/login", json=corpo)
+    assert r.status_code == 429
+    assert "minuto" in r.json()["detalhe"]
+
+
+def test_conta_trancada_recusa_ate_a_senha_certa(cliente, cenario):
+    """Enquanto está trancada, nem a senha correta entra."""
+    from app.core.config import settings
+
+    for _ in range(settings.MAX_TENTATIVAS_LOGIN):
+        cliente.post(
+            "/api/v1/auth/login",
+            json={"email": "sindico@exemplo.com", "senha": "senha-errada"},
+        )
+    r = cliente.post(
+        "/api/v1/auth/login",
+        json={"email": "sindico@exemplo.com", "senha": "senhaforte123"},
+    )
+    assert r.status_code == 429
+
+
+def test_acertar_a_senha_zera_o_contador(cliente, db, cenario):
+    """Quem erra e depois acerta não fica com tentativa acumulada."""
+    from app.models.usuario import Usuario
+    from sqlalchemy import select
+
+    for _ in range(2):
+        cliente.post(
+            "/api/v1/auth/login",
+            json={"email": "sindico@exemplo.com", "senha": "senha-errada"},
+        )
+    db.expire_all()
+    u = db.scalar(select(Usuario).where(Usuario.email == "sindico@exemplo.com"))
+    assert u.tentativas_login == 2
+
+    r = cliente.post(
+        "/api/v1/auth/login",
+        json={"email": "sindico@exemplo.com", "senha": "senhaforte123"},
+    )
+    assert r.status_code == 200
+
+    db.expire_all()
+    u = db.scalar(select(Usuario).where(Usuario.email == "sindico@exemplo.com"))
+    assert u.tentativas_login == 0
+    assert u.bloqueado_ate is None
+
+
+def test_bloqueio_vencido_deixa_entrar_de_novo(cliente, db, cenario):
+    """O bloqueio é temporário: vencido, a senha certa volta a valer."""
+    from datetime import datetime, timedelta, timezone
+
+    from app.models.usuario import Usuario
+    from sqlalchemy import select
+
+    u = db.scalar(select(Usuario).where(Usuario.email == "sindico@exemplo.com"))
+    u.bloqueado_ate = datetime.now(timezone.utc) - timedelta(minutes=1)
+    db.commit()
+
+    r = cliente.post(
+        "/api/v1/auth/login",
+        json={"email": "sindico@exemplo.com", "senha": "senhaforte123"},
+    )
+    assert r.status_code == 200
+
+    db.expire_all()
+    u = db.scalar(select(Usuario).where(Usuario.email == "sindico@exemplo.com"))
+    assert u.bloqueado_ate is None
+
+
+def test_email_inexistente_nao_tranca_nada(cliente, cenario):
+    """Sem conta não há o que contar — e a resposta continua 401."""
+    from app.core.config import settings
+
+    for _ in range(settings.MAX_TENTATIVAS_LOGIN + 2):
+        r = cliente.post(
+            "/api/v1/auth/login",
+            json={"email": "ninguem@exemplo.com", "senha": "qualquer-coisa"},
+        )
+        assert r.status_code == 401
