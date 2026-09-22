@@ -112,8 +112,14 @@ def validar_codigo(
     expira_em = registro.expira_em
     if expira_em.tzinfo is None:
         expira_em = expira_em.replace(tzinfo=timezone.utc)
+    # Os três casos abaixo gravam ANTES de levantar a exceção. Sem o
+    # commit, a requisição falha, o SQLAlchemy desfaz a sessão e a
+    # contagem volta a zero — o limite de tentativas nunca fecharia e
+    # o código de seis dígitos poderia ser descoberto por força bruta.
+    # Quem chama só commita no caminho de sucesso.
     if expira_em < _agora():
         registro.consumido_em = _agora()
+        db.commit()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="O código expirou. Solicite um novo.",
@@ -121,6 +127,7 @@ def validar_codigo(
 
     if registro.tentativas >= MAX_TENTATIVAS_CODIGO:
         registro.consumido_em = _agora()
+        db.commit()
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Muitas tentativas. Solicite um novo código.",
@@ -128,6 +135,7 @@ def validar_codigo(
 
     if not conferir_codigo(codigo_informado, registro.codigo_hash):
         registro.tentativas += 1
+        db.commit()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Código incorreto.",

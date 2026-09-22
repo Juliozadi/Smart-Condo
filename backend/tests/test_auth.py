@@ -452,3 +452,75 @@ def test_email_inexistente_nao_tranca_nada(cliente, cenario):
             json={"email": "ninguem@exemplo.com", "senha": "qualquer-coisa"},
         )
         assert r.status_code == 401
+
+
+# ── Força bruta no código de verificação ─────────────────────────────
+def test_codigo_de_recuperacao_trava_depois_de_cinco_erros(cliente, cenario):
+    """O contador precisa sobreviver à requisição que falhou.
+
+    O incremento acontece e logo depois a rota levanta exceção. Sem um
+    commit antes do raise, a sessão é desfeita, a contagem volta a zero
+    e o limite nunca fecha — os seis dígitos ficariam abertos à força
+    bruta, que é tomada de conta.
+    """
+    from app.services.auth import MAX_TENTATIVAS_CODIGO
+
+    cliente.post("/api/v1/auth/senha/recuperar", json={"email": "sindico@exemplo.com"})
+
+    for _ in range(MAX_TENTATIVAS_CODIGO):
+        r = cliente.post(
+            "/api/v1/auth/senha/redefinir",
+            json={"email": "sindico@exemplo.com", "codigo": "000000",
+                  "nova_senha": "outrasenha123", "confirmacao_senha": "outrasenha123"},
+        )
+        assert r.status_code == 400
+
+    r = cliente.post(
+        "/api/v1/auth/senha/redefinir",
+        json={"email": "sindico@exemplo.com", "codigo": "000000",
+              "nova_senha": "outrasenha123", "confirmacao_senha": "outrasenha123"},
+    )
+    assert r.status_code == 429
+
+
+def test_tentativa_errada_fica_gravada(cliente, db, cenario):
+    """A contagem precisa estar no banco, não só na sessão da requisição."""
+    from app.models.usuario import CodigoVerificacao
+    from sqlalchemy import select
+
+    cliente.post("/api/v1/auth/senha/recuperar", json={"email": "sindico@exemplo.com"})
+    cliente.post(
+        "/api/v1/auth/senha/redefinir",
+        json={"email": "sindico@exemplo.com", "codigo": "000000",
+              "nova_senha": "outrasenha123", "confirmacao_senha": "outrasenha123"},
+    )
+
+    db.expire_all()
+    registro = db.scalar(
+        select(CodigoVerificacao).order_by(CodigoVerificacao.id.desc())
+    )
+    assert registro.tentativas == 1
+
+
+def test_codigo_expirado_e_queimado(cliente, db, cenario):
+    """Código vencido não pode continuar pendente para novas tentativas."""
+    from datetime import datetime, timedelta, timezone
+
+    from app.models.usuario import CodigoVerificacao
+    from sqlalchemy import select
+
+    cliente.post("/api/v1/auth/senha/recuperar", json={"email": "sindico@exemplo.com"})
+    registro = db.scalar(select(CodigoVerificacao).order_by(CodigoVerificacao.id.desc()))
+    registro.expira_em = datetime.now(timezone.utc) - timedelta(minutes=1)
+    db.commit()
+
+    r = cliente.post(
+        "/api/v1/auth/senha/redefinir",
+        json={"email": "sindico@exemplo.com", "codigo": "000000",
+              "nova_senha": "outrasenha123", "confirmacao_senha": "outrasenha123"},
+    )
+    assert r.status_code == 400
+
+    db.expire_all()
+    registro = db.scalar(select(CodigoVerificacao).order_by(CodigoVerificacao.id.desc()))
+    assert registro.consumido_em is not None
