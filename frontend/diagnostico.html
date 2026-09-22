@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Diagnóstico</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/api.js"></script>
+  <style>
+    .diag{max-width:720px;margin:0 auto;text-align:left;}
+    .diag h2{margin-bottom:6px;}
+    .passo{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;
+      border:1px solid var(--border-soft);border-radius:var(--radius-sm);
+      margin-bottom:10px;background:var(--surface);}
+    .marca{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;
+      align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;
+      background:var(--muted);}
+    .passo.ok    .marca{background:var(--sucesso);}
+    .passo.falha .marca{background:var(--erro);}
+    .passo.aviso .marca{background:var(--aviso);}
+    .passo-txt{flex:1;min-width:0;}
+    .passo-txt b{display:block;font-size:14px;color:var(--text);margin-bottom:2px;}
+    .passo-txt span{font-size:13px;color:var(--text-2);line-height:1.55;}
+    .conserto{margin-top:8px;padding:10px 12px;background:var(--surface-2);
+      border-radius:var(--radius-xs);border-left:3px solid var(--aviso);}
+    .conserto b{font-size:13px;}
+    code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;}
+    pre{background:var(--surface-2);border:1px solid var(--border-soft);
+      border-radius:var(--radius-xs);padding:10px 12px;overflow-x:auto;margin-top:6px;
+      color:var(--text-2);white-space:pre-wrap;word-break:break-word;}
+    .resumo{padding:16px 18px;border-radius:var(--radius-sm);margin-bottom:20px;font-size:14px;
+      font-weight:600;line-height:1.55;}
+    .resumo.ok{background:rgba(30,200,113,.12);color:var(--sucesso);border:1px solid rgba(30,200,113,.3);}
+    .resumo.falha{background:rgba(245,108,108,.12);color:var(--erro);border:1px solid rgba(245,108,108,.3);}
+    .info{font-size:12.5px;color:var(--muted);margin-bottom:18px;}
+    .info code{background:var(--surface-2);padding:2px 6px;border-radius:4px;}
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header class="logo-area">
+      <img src="assets/img/logo.png" alt="Logo SmartCondo" class="logo">
+      <div class="logo-text"><h1>Smart Condo</h1><p>Diagnóstico</p></div>
+    </header>
+
+    <section class="diag">
+      <h2>Por que o login não funciona</h2>
+      <p class="subtitle">Esta página testa cada peça do sistema e diz o que
+      está faltando. Não precisa entender nada: é só ler o que aparecer.</p>
+
+      <p class="info">
+        Página aberta de <code id="origem">—</code> ·
+        procurando a API em <code id="alvo">—</code>
+      </p>
+
+      <div id="resumo" class="resumo" role="status">Testando…</div>
+      <div id="passos"></div>
+
+      <a href="index.html" class="back-link" style="margin-top:24px">
+        <img src="assets/img/icons/arrow-left.svg" width="14" height="14" alt=""> Ir para o login
+      </a>
+    </section>
+  </main>
+
+<script>
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api;
+  var EMAIL = 'morador@smartcondo.com', SENHA = 'smartcondo123';
+
+  document.getElementById('origem').textContent = location.protocol + '//' + (location.host || '(arquivo local)');
+  document.getElementById('alvo').textContent = api.url;
+
+  var caixa = document.getElementById('passos');
+  function passo(estado, titulo, texto, conserto) {
+    var d = document.createElement('div');
+    d.className = 'passo ' + estado;
+    var m = document.createElement('div');
+    m.className = 'marca';
+    m.textContent = estado === 'ok' ? '✓' : (estado === 'falha' ? '✕' : '!');
+    var t = document.createElement('div');
+    t.className = 'passo-txt';
+    var b = document.createElement('b'); b.textContent = titulo;
+    var s = document.createElement('span'); s.textContent = texto;
+    t.appendChild(b); t.appendChild(s);
+    if (conserto) {
+      var c = document.createElement('div');
+      c.className = 'conserto';
+      var cb = document.createElement('b'); cb.textContent = 'Como resolver';
+      c.appendChild(cb);
+      conserto.forEach(function(linha) {
+        if (linha.charAt(0) === '$') {
+          var pre = document.createElement('pre');
+          pre.textContent = linha.slice(1).trim();
+          c.appendChild(pre);
+        } else {
+          var p = document.createElement('span');
+          p.style.display = 'block';
+          p.style.marginTop = '4px';
+          p.textContent = linha;
+          c.appendChild(p);
+        }
+      });
+      t.appendChild(c);
+    }
+    d.appendChild(m); d.appendChild(t);
+    caixa.appendChild(d);
+  }
+
+  function concluir(ok, texto) {
+    var r = document.getElementById('resumo');
+    r.className = 'resumo ' + (ok ? 'ok' : 'falha');
+    r.textContent = texto;
+  }
+
+  // ── 1. De onde a página foi aberta ──────────────────────────
+  if (location.protocol === 'file:') {
+    passo('aviso', 'A página foi aberta direto do arquivo',
+      'O endereço começa com file://, e não com http://. Isso funciona, mas só se o back-end estiver com DEBUG=true.',
+      ['Prefira abrir por um servidor: no VS Code, clique com o botão direito em frontend/index.html e escolha "Open with Live Server".']);
+  } else {
+    passo('ok', 'A página está sendo servida por um servidor',
+      'Endereço: ' + location.origin + '. É assim mesmo que deve ser.');
+  }
+
+  // ── 2. A API responde? ──────────────────────────────────────
+  fetch(api.url + '/saude', { method: 'GET' })
+    .then(function(r) { return r.json().then(function(j) { return { r: r, j: j }; }); })
+    .then(function(res) {
+      passo('ok', 'A API está no ar',
+        'Respondeu em ' + api.url + ' — versão ' + (res.j.versao || '?') + '.');
+      return proximoPasso();
+    })
+    .catch(function(erro) {
+      passo('falha', 'A API não respondeu',
+        'O navegador não conseguiu falar com ' + api.url + '. Ou ela não está rodando, ou está numa porta diferente, ou o navegador bloqueou por CORS.',
+        ['Abra um terminal na pasta backend e rode:',
+         '$ uvicorn app.main:app --reload',
+         'Deixe esse terminal aberto. Depois confira se esta página abre: http://localhost:8000/docs',
+         'Se o /docs abrir mas esta mensagem continuar, então é CORS: confirme que você puxou a última versão do código com "git pull".']);
+      concluir(false, 'O back-end não está no ar. É isso que impede o login.');
+    });
+
+  // ── 3. Login com a conta de demonstração ────────────────────
+  function proximoPasso() {
+    return fetch(api.url + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: EMAIL, senha: SENHA })
+    }).then(function(r) {
+      return r.json().catch(function() { return {}; }).then(function(j) { return { st: r.status, j: j }; });
+    }).then(function(res) {
+      if (res.st === 200) {
+        passo('ok', 'O login funciona',
+          'Entrei como ' + (res.j.usuario ? res.j.usuario.nome : EMAIL) + '. O sistema está pronto para uso.');
+        concluir(true, 'Está tudo funcionando. Pode entrar com morador@smartcondo.com e a senha smartcondo123.');
+        return;
+      }
+      if (res.st === 401) {
+        passo('falha', 'A API responde, mas a conta de demonstração não existe',
+          'O banco está no ar e vazio: ninguém foi cadastrado ainda.',
+          ['No terminal da pasta backend, rode:',
+           '$ alembic upgrade head\npython -m app.seed --limpar',
+           'Isso cria as contas de demonstração. Depois recarregue esta página.']);
+        concluir(false, 'Falta popular o banco de dados.');
+        return;
+      }
+      if (res.st >= 500) {
+        passo('falha', 'A API está no ar mas quebrou ao responder',
+          'Erro ' + res.st + '. Quase sempre é o PostgreSQL que não está rodando.',
+          ['Inicie o serviço do PostgreSQL. No Windows ele aparece em "Serviços" como postgresql.',
+           'Confira também a linha DATABASE_URL do arquivo backend/.env.',
+           'O terminal onde o uvicorn está rodando mostra o erro exato.']);
+        concluir(false, 'O banco de dados não está acessível.');
+        return;
+      }
+      passo('falha', 'Resposta inesperada do login',
+        'Código ' + res.st + ': ' + (res.j.detalhe || JSON.stringify(res.j).slice(0, 120)));
+      concluir(false, 'Algo respondeu diferente do esperado. O texto acima diz o quê.');
+    }).catch(function(e) {
+      passo('falha', 'Falhou ao tentar o login', String(e).slice(0, 140));
+      concluir(false, 'Não consegui completar o teste de login.');
+    });
+  }
+})();
+</script>
+<script src="assets/js/acessibilidade.js"></script>
+</body>
+</html>

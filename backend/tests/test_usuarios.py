@@ -441,3 +441,48 @@ def test_usuario_inativado_nao_loga(cliente, sindico, condominio):
         "/api/v1/auth/login", json={"email": "sai@exemplo.com", "senha": "senhaforte123"}
     )
     assert r.status_code == 403
+
+
+# ── O porteiro consulta as próprias permissões ───────────────────────
+def test_porteiro_le_as_proprias_permissoes(cliente, sindico, condominio):
+    """Sem isto o front-end não tem como esconder o que ele não pode.
+
+    A consulta por id é do síndico. O porteiro recebia 403 ao perguntar
+    pelas próprias, então a tela exibia o módulo, deixava preencher o
+    formulário e só no envio a API recusava.
+    """
+    porteiro_id, tok = cadastrar_porteiro(
+        cliente, sindico, condominio, email="porteiro.perm@exemplo.com", cpf=CPFS[4],
+    )
+    cliente.put(
+        f"/api/v1/usuarios/porteiros/{porteiro_id}/permissoes",
+        json={"registrar_visitantes": True, "registrar_encomendas": True,
+              "registrar_veiculos": False, "registrar_ocorrencias": False,
+              "acessar_financeiro": False},
+        headers=cab(sindico),
+    )
+
+    r = cliente.get("/api/v1/usuarios/eu/permissoes", headers=cab(tok))
+    assert r.status_code == 200
+    corpo = r.json()
+    assert corpo["porteiro_id"] == porteiro_id
+    assert corpo["registrar_visitantes"] is True
+    assert corpo["registrar_veiculos"] is False
+
+
+def test_so_porteiro_consulta_as_proprias_permissoes(cliente, sindico):
+    """Síndico e morador não têm permissões de porteiro para consultar."""
+    r = cliente.get("/api/v1/usuarios/eu/permissoes", headers=cab(sindico))
+    assert r.status_code == 403
+
+
+def test_porteiro_nao_le_as_permissoes_de_outro(cliente, sindico, condominio):
+    """A rota por id continua sendo só do síndico."""
+    outro_id, _ = cadastrar_porteiro(
+        cliente, sindico, condominio, email="outro.porteiro@exemplo.com", cpf=CPFS[5],
+    )
+    _, tok = cadastrar_porteiro(
+        cliente, sindico, condominio, email="curioso@exemplo.com", cpf=CPFS[7],
+    )
+    r = cliente.get(f"/api/v1/usuarios/porteiros/{outro_id}/permissoes", headers=cab(tok))
+    assert r.status_code == 403

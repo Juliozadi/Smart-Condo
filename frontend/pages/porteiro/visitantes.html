@@ -7,6 +7,7 @@
   <title>SmartCondo — Controle de Visitantes</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
   <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/permissoes.js"></script>
   <link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
@@ -117,6 +118,9 @@
     var usuario = api.protegerPagina('porteiro');
     if (!usuario) return;
 
+    // Esconde o que o síndico não liberou para este porteiro.
+    window.SmartCondo.permissoes.aplicar(usuario);
+
     function campo(id) { return document.getElementById(id); }
     var visitantes = [];
 
@@ -163,7 +167,7 @@
 
       var info = document.createElement('div');
       info.className = 'list-info';
-      var h = document.createElement('h3');
+      var h = document.createElement('h5');
       h.textContent = v.nome;
       var p = document.createElement('p');
       p.textContent = (v.unidade ? 'Apto ' + v.unidade + ' · ' : '') + v.tipo_visita +

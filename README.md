@@ -11,6 +11,7 @@
     <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=fff" alt="FastAPI">
     <img src="https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=fff" alt="PostgreSQL">
     <img src="https://github.com/Juliozadi/Smart-Condo/actions/workflows/testes.yml/badge.svg" alt="Testes">
+    <img src="https://img.shields.io/badge/licença-MIT-blue" alt="Licença MIT">
   </p>
 </div>
 
@@ -170,11 +171,11 @@ backend/
 │   ├── api/routers/                   # Endpoints
 │   ├── seed.py                        # Dados de demonstração
 │   └── main.py
-└── tests/                             # 203 casos de teste
+└── tests/                             # 216 casos de teste
 ```
 
-**Total:** 41 páginas HTML, 2 arquivos CSS, 6 arquivos JS, 47 ícones SVG e
-uma API com 78 endpoints.
+**Total:** 41 páginas HTML, 2 arquivos CSS, 7 arquivos JS, 47 ícones SVG e
+uma API com 79 endpoints.
 
 ---
 
@@ -194,11 +195,11 @@ uvicorn app.main:app --reload
 
 Documentação interativa da API em <http://localhost:8000/docs>.
 
-**78 endpoints**, cobrindo os casos de uso e as histórias de usuário da
+**79 endpoints**, cobrindo os casos de uso e as histórias de usuário da
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e
-comunicados. **203 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
+comunicados. **216 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
 
 ---
 
@@ -249,7 +250,8 @@ todas com a senha `smartcondo123`:
 - [x] Implementação de backend com API REST
 - [x] Autenticação com JWT
 - [x] Banco de dados real (PostgreSQL)
-- [ ] Envio real de e-mail e SMS (a interface já existe; falta o provedor)
+- [x] Envio real de e-mail (SMTP)
+- [ ] Envio de SMS (a interface já existe; falta o provedor)
 - [ ] Upload das fotos do vídeo porteiro (a API guarda a URL)
 - [x] Integrar as telas do front-end à API
 - [ ] Chat e chamada de voz com o porteiro (Node.js, seção 11.5.2)
@@ -257,6 +259,26 @@ todas com a senha `smartcondo123`:
 - [ ] Painel de gráficos com dados dinâmicos
 - [ ] Aplicativo mobile (React Native)
 - [ ] Integração com sistemas de portaria física
+
+---
+
+## 👥 Autores
+
+Projeto Integrador I, desenvolvido por:
+
+- Júlio César Zadi de Assis dos Santos
+- Joao Victor Muller Miranda
+- Luan Flores Martins
+- Lenini Bellodi Júnior
+- Juliano dos Santos Apolinario Araujo
+
+---
+
+## 📜 Licença
+
+Distribuído sob a [licença MIT](LICENSE) — o código pode ser usado,
+copiado e modificado, inclusive comercialmente, desde que o aviso de
+autoria seja mantido.
 
 ---
 

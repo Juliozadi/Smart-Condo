@@ -29,6 +29,7 @@ const arquitetura = {
     'A primeira é o front-end, escrito em HTML, CSS e JavaScript puro, sem frameworks. É o que o usuário enxerga no navegador. Toda a conversa com o servidor passa por um único arquivo, o api.js, que centraliza o endereço da API, o token da sessão e o tratamento dos erros. Com isso, nenhuma tela precisa saber como uma requisição é montada, e uma mudança no formato de autenticação é feita em um lugar só.',
     'A segunda é a API REST, escrita em Python com FastAPI. É ela que aplica as regras do negócio: quem pode cadastrar quem, se uma reserva conflita com outra já existente, se um porteiro tem permissão para registrar uma ocorrência. Nenhuma dessas decisões fica no navegador, porque o código do navegador pode ser alterado pelo usuário.',
     'A terceira é o banco de dados PostgreSQL, acessado pela API por meio do SQLAlchemy. As mudanças de estrutura são versionadas com o Alembic.',
+    'Fora dessas três camadas, o sistema depende de um serviço de envio de mensagens. Os códigos de confirmação de cadastro e de recuperação de senha saem por correio eletrônico, usando um servidor SMTP configurado por variáveis de ambiente, e a mensagem vai em duas versões, uma em texto simples e outra formatada. Sem essa configuração o código não é entregue a ninguém, o que travaria o cadastro do morador; por isso a aplicação avisa ao iniciar quando está em modo de produção sem o servidor de correio definido.',
   ],
   subsecoes: [
     { n: '13.1', nome: 'Modelagem do banco de dados', paragrafos: [
@@ -62,6 +63,9 @@ const arquitetura = {
       'O sistema também evita revelar informação desnecessária. O erro de login é o mesmo para e-mail inexistente e senha errada, para não permitir descobrir quais e-mails estão cadastrados. Na tela de reservas, a mensagem de conflito informa o horário já ocupado, mas nunca quem reservou, atendendo ao sigilo pedido na seção 6.',
       'Para que a senha não possa ser descoberta por tentativa e erro, o login conta as tentativas malsucedidas e bloqueia a conta por quinze minutos depois de cinco senhas erradas seguidas. O bloqueio é temporário de propósito: fosse permanente, bastaria errar a senha de alguém repetidamente para deixá-lo fora do sistema. Acertar a senha zera a contagem. A verificação do bloqueio acontece antes da conferência da senha, de modo que uma conta bloqueada não consuma processamento a cada nova tentativa.',
       'Toda decisão tomada dentro do sistema guarda o registro de quem a tomou e quando. Isso vale para a aprovação de uma reserva, para a resposta a uma ocorrência e também para a aprovação do cadastro de um morador, que é a decisão que concede acesso ao sistema; quando o cadastro é recusado, o motivo fica gravado junto.',
+      'O código de seis dígitos usado na confirmação do cadastro e na recuperação de senha também tem limite de tentativas, e por um motivo prático: sem ele, bastaria pedir a recuperação de um endereço conhecido e percorrer as combinações até acertar, o que daria acesso à conta alheia. O código é guardado embaralhado, vale por quinze minutos e é descartado assim que usado ou quando o limite se esgota. Ele nunca é registrado no diário do servidor, para que ter acesso a esse arquivo não signifique conseguir entrar nas contas.',
+      'As respostas da API trazem cabeçalhos que fecham portas deixadas abertas pelo comportamento padrão do navegador: impedir que o tipo do conteúdo seja adivinhado, impedir que a API seja exibida dentro de um quadro de outra página e restringir a origem do que a resposta pode carregar. Publicado o sistema, é acrescentado também o cabeçalho que obriga o uso de conexão segura.',
+      'As permissões do porteiro, definidas pelo síndico, são verificadas em toda gravação. A tela também as consulta, para esconder o que aquele porteiro não pode fazer em vez de deixá-lo preencher um formulário que seria recusado no envio; a decisão, porém, continua sendo da API, e não do navegador.',
       'Por fim, o tratamento dos dados pessoais é descrito em dois documentos acessíveis pelo próprio sistema: os Termos de Uso e a Política de Privacidade. A política relaciona, um a um, os dados que o sistema guarda, a base legal de cada tratamento, o prazo de guarda e os direitos previstos no artigo 18 da Lei 13.709/2018, a Lei Geral de Proteção de Dados. O aceite desses documentos é condição para concluir o cadastro.',
     ], tabela: null },
   ],
@@ -70,7 +74,7 @@ const arquitetura = {
 // ── 14 API REST (nova) ──────────────────────────────────────────────
 const api = {
   paragrafos: [
-    'A comunicação entre o front-end e o banco de dados acontece por uma API REST, com 78 endpoints distribuídos em onze módulos. Todos os endereços começam com /api/v1, o que permite publicar uma versão 2 no futuro sem quebrar as telas que já usam a versão atual.',
+    'A comunicação entre o front-end e o banco de dados acontece por uma API REST, com 79 endpoints distribuídos em onze módulos. Todos os endereços começam com /api/v1, o que permite publicar uma versão 2 no futuro sem quebrar as telas que já usam a versão atual.',
     'As mensagens de erro são padronizadas e vêm em português, para que a tela possa exibir ao usuário exatamente o que o servidor respondeu, sem precisar traduzir código de erro.',
     'O FastAPI gera automaticamente uma documentação interativa dos endpoints, acessível em /docs quando a API está no ar. Por ela é possível testar cada rota sem escrever código, o que facilita tanto o desenvolvimento quanto a demonstração do projeto.',
   ],
@@ -93,20 +97,21 @@ const api = {
 // ── 15 Testes automatizados (nova) ──────────────────────────────────
 const testes = {
   paragrafos: [
-    'As regras do sistema são verificadas por uma suíte de 203 casos de teste automatizados, escritos com pytest e executados contra um banco PostgreSQL real, e não contra um banco simulado. Assim, restrições de chave estrangeira e de unicidade também são exercitadas.',
+    'As regras do sistema são verificadas por uma suíte de 216 casos de teste automatizados, escritos com pytest e executados contra um banco PostgreSQL real, e não contra um banco simulado. Assim, restrições de chave estrangeira e de unicidade também são exercitadas.',
     'Os testes não conferem apenas se o caminho feliz funciona. Boa parte deles verifica justamente o que o sistema precisa recusar: um morador não pode ver a ocorrência de outro; um porteiro sem a permissão liberada pelo síndico não consegue registrar uma ocorrência; uma reserva que se sobrepõe a outra é recusada; a mensagem de conflito não revela quem reservou; e a senha nunca é gravada em texto puro.',
     'Cada vez que uma regra nova é escrita, um teste correspondente é adicionado. Isso permite alterar o código com segurança: se uma mudança quebrar uma regra antiga, a suíte acusa antes de o problema chegar à tela.',
     'A suíte é executada automaticamente a cada envio de código ao repositório, junto com duas outras verificações: a aplicação das mudanças de estrutura do banco no sentido de ida e de volta, feita com a tabela já populada, que é a situação em que uma alteração mal escrita falha; e a execução dos scripts de criação e carga do banco em um banco vazio, já que eles são mantidos manualmente e podem deixar de acompanhar uma mudança de estrutura.',
   ],
   tabela: [
     ['Arquivo de teste', 'Casos', 'O que cobre'],
-    ['test_auth.py', '33', 'Cadastro, código de confirmação, login, bloqueio por tentativas e recuperação de senha'],
+    ['test_auth.py', '36', 'Cadastro, código de confirmação, login, bloqueio por tentativas e recuperação de senha'],
     ['test_admin.py', '28', 'Painel do administrador e gestão da plataforma'],
-    ['test_usuarios.py', '30', 'Hierarquia de cadastro, aprovação com registro de autoria e permissões do porteiro'],
+    ['test_usuarios.py', '33', 'Hierarquia de cadastro, aprovação com registro de autoria e permissões do porteiro'],
     ['test_operacao.py', '32', 'Veículos, ordens de serviço e documentos'],
     ['test_financeiro.py', '30', 'Cobranças, pagamentos e inadimplência'],
     ['test_portaria.py', '24', 'Visitantes, encomendas e ocorrências'],
     ['test_reservas.py', '26', 'Espaços, agenda sigilosa e aprovação de reservas'],
+    ['test_notificacao.py', '7', 'Entrega dos códigos por e-mail e o que não pode ir para o log'],
   ],
 };
 
@@ -116,7 +121,7 @@ const conclusao = [
   'A implementação do SmartCondo é crucial para elevar a qualidade e praticidade na rotina desses condomínios, trazendo fluidez no setor financeiro e possibilitando a execução de ações rotineiras, como a visualização de espaços em uso. O objetivo é facilitar a operação do gerenciamento, eliminando falhas financeiras e reduzindo significativamente intrigas internas. Para isso, o projeto visa atender a todos os usuários de modo completo e se adequar ao cotidiano, garantindo organização nas moradias e serviços.',
   'O sistema prevê funcionalidades específicas para cada tipo de usuário – administrador, síndico, porteiro e morador. O administrador opera a plataforma, cadastrando os condomínios e criando a conta do síndico de cada um. O síndico poderá gerenciar de forma prática e eficiente, incluindo o gerenciamento financeiro com notificações de pagamento e a visualização remota e sigilosa da locação de espaços. O porteiro terá recursos para notificar entregas, registrar entradas e saídas e utilizar o videoporteiro para confirmar a entrada de convidados com foto ou gravação em tempo real, fomentando a segurança. O morador poderá realizar pagamentos com opções variadas, alugar espaços de forma sigilosa, verificar a ocupação de áreas comuns e receber notificações e confirmações de entregas/convidados.',
   'Com um prazo de 2 anos, o projeto se baseia na utilização de linguagens e ferramentas robustas e escaláveis, como HTML, CSS e JavaScript no front-end, Python com FastAPI no back-end e PostgreSQL no banco de dados. Adicionalmente, o projeto demonstra um compromisso com a acessibilidade, utilizando VLibras para usuários com deficiência auditiva, e recursos de alteração de tamanho de fonte e mudança de cores (modo claro/escuro) para deficiências visuais, garantindo uma boa experiência e inclusão.',
-  'Até o momento, o sistema conta com as quatro áreas de acesso implementadas e ligadas à API, 19 tabelas em PostgreSQL, 78 endpoints e 196 casos de teste automatizados cobrindo as regras de negócio.',
+  'Até o momento, o sistema conta com as quatro áreas de acesso implementadas e ligadas à API, 19 tabelas em PostgreSQL, 79 endpoints e 216 casos de teste automatizados cobrindo as regras de negócio.',
   'Em suma, o SmartCondo é um projeto realista, alinhado com as necessidades do mercado e da tecnologia atual, visando transformar a gestão de condomínios de pequeno e médio porte em um processo ágil, prático, seguro e inclusivo.',
 ];
 

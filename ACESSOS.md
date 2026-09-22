@@ -3,9 +3,11 @@
 Este arquivo existe para você abrir o SmartCondo, entrar com cada perfil e
 acompanhar o que já está pronto em cada área.
 
-> **"Não foi possível falar com o servidor"?** É a API que não está no ar.
-> O front-end não tem mais dados de mentira: toda tela busca do back-end.
-> Siga a seção [Subindo o sistema](#subindo-o-sistema) antes de entrar.
+> **Não está conseguindo entrar?** Abra a página
+> **`frontend/diagnostico.html`** pelo mesmo servidor que você usa para
+> abrir o sistema (Live Server ou `python -m http.server`). Ela testa
+> cada peça sozinha e diz exatamente o que está faltando, com o comando
+> para resolver.
 
 ---
 
@@ -109,6 +111,7 @@ funciona.
 | A tela carrega vazia, sem erro | O banco subiu sem os dados de demonstração | Idem: `python -m app.seed --limpar` |
 | Erro de CORS no console do navegador | Front-end numa origem que a API não libera | Qualquer `localhost`/`127.0.0.1` já é liberado. Para abrir o `index.html` direto do disco (`file://`), deixe `DEBUG=true` no `.env` |
 | `connection refused` no terminal da API | O PostgreSQL não está no ar | Inicie o serviço do PostgreSQL e confira a `DATABASE_URL` do `.env` |
+| O código de confirmação não chega no e-mail | Falta configurar o SMTP | Com `DEBUG=true` o código aparece no terminal da API e volta na resposta. Para enviar de verdade, preencha `SMTP_HOST` no `.env` |
 
 > Depois de rodar os testes (`pytest`), o banco fica vazio: os testes
 > derrubam as tabelas no fim. Rode `alembic upgrade head` e

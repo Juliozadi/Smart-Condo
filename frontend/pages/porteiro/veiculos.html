@@ -7,6 +7,7 @@
   <title>SmartCondo — Controle de Veículos</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
   <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/permissoes.js"></script>
   <link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
@@ -121,6 +122,9 @@
     var api = window.SmartCondo.api;
     var usuario = api.protegerPagina('porteiro');
     if (!usuario) return;
+
+    // Esconde o que o síndico não liberou para este porteiro.
+    window.SmartCondo.permissoes.aplicar(usuario);
 
     function campo(id) { return document.getElementById(id); }
 
