@@ -127,6 +127,36 @@ def listar_acoes_do_porteiro(
 
 
 @router.get(
+    "/eu/permissoes",
+    response_model=PermissoesPorteiroSaida,
+    summary="Permissões do porteiro logado",
+)
+def minhas_permissoes(
+    usuario: Usuario = Depends(exigir_papel(Papel.PORTEIRO)),
+    db: Session = Depends(get_db),
+) -> PermissoesPorteiroSaida:
+    """O porteiro precisa saber o que pode fazer.
+
+    A consulta por id é do síndico, que administra os outros. Sem esta,
+    o front-end do porteiro não tinha como saber o que esconder: ele
+    exibia o módulo, deixava preencher o formulário e só no envio a API
+    recusava com 403, o que parece defeito do sistema.
+
+    Isto é conveniência de tela. Quem decide continua sendo a API, que
+    confere a permissão em cada gravação.
+    """
+    permissoes = db.scalar(
+        select(PermissaoPorteiro).where(PermissaoPorteiro.porteiro_id == usuario.id)
+    )
+    if permissoes is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Suas permissões ainda não foram definidas pelo síndico.",
+        )
+    return PermissoesPorteiroSaida(porteiro_id=usuario.id, **permissoes.como_dicionario())
+
+
+@router.get(
     "/porteiros/{porteiro_id}/permissoes",
     response_model=PermissoesPorteiroSaida,
     summary="Consulta as permissões de um porteiro",
