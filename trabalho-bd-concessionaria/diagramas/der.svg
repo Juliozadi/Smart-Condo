@@ -1,0 +1,196 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1520" height="880" viewBox="0 0 1520 880">
+<rect width="1520" height="880" fill="#FFFFFF"/>
+<polyline points="460,138.0 510,138.0 510,426.0 560,426.0" fill="none" stroke="#1F2A37" stroke-width="2.2"/>
+<line x1="472.0" y1="127.0" x2="472.0" y2="149.0" stroke="#1F2A37" stroke-width="2.4"/>
+<circle cx="488.0" cy="138.0" r="7.5" fill="#FFFFFF" stroke="#1F2A37" stroke-width="2.2"/>
+<line x1="542.0" y1="426.0" x2="560.0" y2="438.0" stroke="#1F2A37" stroke-width="2.2"/>
+<line x1="542.0" y1="426.0" x2="560.0" y2="426.0" stroke="#1F2A37" stroke-width="2.2"/>
+<line x1="542.0" y1="426.0" x2="560.0" y2="414.0" stroke="#1F2A37" stroke-width="2.2"/>
+<circle cx="530.0" cy="426.0" r="7.5" fill="#FFFFFF" stroke="#1F2A37" stroke-width="2.2"/>
+<line x1="760.0" y1="444.0" x2="760.0" y2="560.0" stroke="#1F2A37" stroke-width="2.2"/>
+<line x1="771.0" y1="454.0" x2="749.0" y2="454.0" stroke="#1F2A37" stroke-width="2.4"/>
+<line x1="771.0" y1="462.0" x2="749.0" y2="462.0" stroke="#1F2A37" stroke-width="2.4"/>
+<line x1="749.0" y1="548.0" x2="771.0" y2="548.0" stroke="#1F2A37" stroke-width="2.4"/>
+<circle cx="760.0" cy="532.0" r="7.5" fill="#FFFFFF" stroke="#1F2A37" stroke-width="2.2"/>
+<polyline points="460,628.0 510,628.0 510,664.0 560,664.0" fill="none" stroke="#1F2A37" stroke-width="2.2"/>
+<line x1="470.0" y1="617.0" x2="470.0" y2="639.0" stroke="#1F2A37" stroke-width="2.4"/>
+<line x1="478.0" y1="617.0" x2="478.0" y2="639.0" stroke="#1F2A37" stroke-width="2.4"/>
+<line x1="542.0" y1="664.0" x2="560.0" y2="676.0" stroke="#1F2A37" stroke-width="2.2"/>
+<line x1="542.0" y1="664.0" x2="560.0" y2="664.0" stroke="#1F2A37" stroke-width="2.2"/>
+<line x1="542.0" y1="664.0" x2="560.0" y2="652.0" stroke="#1F2A37" stroke-width="2.2"/>
+<circle cx="530.0" cy="664.0" r="7.5" fill="#FFFFFF" stroke="#1F2A37" stroke-width="2.2"/>
+<polyline points="1060,628.0 1010,628.0 1010,700.0 960,700.0" fill="none" stroke="#1F2A37" stroke-width="2.2"/>
+<line x1="1050.0" y1="639.0" x2="1050.0" y2="617.0" stroke="#1F2A37" stroke-width="2.4"/>
+<line x1="1042.0" y1="639.0" x2="1042.0" y2="617.0" stroke="#1F2A37" stroke-width="2.4"/>
+<line x1="978.0" y1="700.0" x2="960.0" y2="688.0" stroke="#1F2A37" stroke-width="2.2"/>
+<line x1="978.0" y1="700.0" x2="960.0" y2="700.0" stroke="#1F2A37" stroke-width="2.2"/>
+<line x1="978.0" y1="700.0" x2="960.0" y2="712.0" stroke="#1F2A37" stroke-width="2.2"/>
+<circle cx="990.0" cy="700.0" r="7.5" fill="#FFFFFF" stroke="#1F2A37" stroke-width="2.2"/>
+<rect x="60" y="70" width="400" height="194" rx="6" fill="#FFFFFF" stroke="#1F3A5F" stroke-width="2.4"/>
+<path d="M60,120 v-44 a6,6 0 0 1 6,-6 h388 a6,6 0 0 1 6,6 v44 z" fill="#1F3A5F"/>
+<text x="260.0" y="95.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="22" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">fornecedores</text>
+<rect x="72" y="126.0" width="36" height="24" rx="4" fill="#B8860B"/>
+<text x="90.0" y="138.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">PK</text>
+<text x="158.0" y="138.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="bold" fill="#1F2A37" text-anchor="start" dominant-baseline="central">id</text>
+<text x="446.0" y="138.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">INT</text>
+<rect x="61.2" y="156.0" width="397.6" height="36" fill="#F3F6F9"/>
+<line x1="60.0" y1="156.0" x2="460.0" y2="156.0" stroke="#DCE3EA" stroke-width="1"/>
+<text x="158.0" y="174.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">nome</text>
+<text x="446.0" y="174.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">VARCHAR(100)</text>
+<line x1="60.0" y1="192.0" x2="460.0" y2="192.0" stroke="#DCE3EA" stroke-width="1"/>
+<rect x="72" y="198.0" width="36" height="24" rx="4" fill="#4B6F8F"/>
+<text x="90.0" y="210.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">UK</text>
+<text x="158.0" y="210.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">cnpj</text>
+<text x="446.0" y="210.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">VARCHAR(18)</text>
+<rect x="61.2" y="228.0" width="397.6" height="36" fill="#F3F6F9"/>
+<line x1="60.0" y1="228.0" x2="460.0" y2="228.0" stroke="#DCE3EA" stroke-width="1"/>
+<text x="158.0" y="246.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">telefone</text>
+<text x="446.0" y="246.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">VARCHAR(15)</text>
+<rect x="560" y="70" width="400" height="374" rx="6" fill="#FFFFFF" stroke="#1F3A5F" stroke-width="2.4"/>
+<path d="M560,120 v-44 a6,6 0 0 1 6,-6 h388 a6,6 0 0 1 6,6 v44 z" fill="#1F3A5F"/>
+<text x="760.0" y="95.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="22" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">veiculos</text>
+<rect x="572" y="126.0" width="36" height="24" rx="4" fill="#B8860B"/>
+<text x="590.0" y="138.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">PK</text>
+<text x="658.0" y="138.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="bold" fill="#1F2A37" text-anchor="start" dominant-baseline="central">id</text>
+<text x="946.0" y="138.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">INT</text>
+<rect x="561.2" y="156.0" width="397.6" height="36" fill="#F3F6F9"/>
+<line x1="560.0" y1="156.0" x2="960.0" y2="156.0" stroke="#DCE3EA" stroke-width="1"/>
+<text x="658.0" y="174.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">marca</text>
+<text x="946.0" y="174.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">VARCHAR(50)</text>
+<line x1="560.0" y1="192.0" x2="960.0" y2="192.0" stroke="#DCE3EA" stroke-width="1"/>
+<text x="658.0" y="210.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">modelo</text>
+<text x="946.0" y="210.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">VARCHAR(50)</text>
+<rect x="561.2" y="228.0" width="397.6" height="36" fill="#F3F6F9"/>
+<line x1="560.0" y1="228.0" x2="960.0" y2="228.0" stroke="#DCE3EA" stroke-width="1"/>
+<text x="658.0" y="246.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">ano</text>
+<text x="946.0" y="246.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">YEAR</text>
+<line x1="560.0" y1="264.0" x2="960.0" y2="264.0" stroke="#DCE3EA" stroke-width="1"/>
+<text x="658.0" y="282.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">cor</text>
+<text x="946.0" y="282.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">VARCHAR(30)</text>
+<rect x="561.2" y="300.0" width="397.6" height="36" fill="#F3F6F9"/>
+<line x1="560.0" y1="300.0" x2="960.0" y2="300.0" stroke="#DCE3EA" stroke-width="1"/>
+<rect x="572" y="306.0" width="36" height="24" rx="4" fill="#4B6F8F"/>
+<text x="590.0" y="318.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">UK</text>
+<text x="658.0" y="318.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">placa</text>
+<text x="946.0" y="318.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">VARCHAR(8)</text>
+<line x1="560.0" y1="336.0" x2="960.0" y2="336.0" stroke="#DCE3EA" stroke-width="1"/>
+<text x="658.0" y="354.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">preco</text>
+<text x="946.0" y="354.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">DECIMAL(10,2)</text>
+<rect x="561.2" y="372.0" width="397.6" height="36" fill="#F3F6F9"/>
+<line x1="560.0" y1="372.0" x2="960.0" y2="372.0" stroke="#DCE3EA" stroke-width="1"/>
+<text x="658.0" y="390.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">status</text>
+<text x="946.0" y="390.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">VARCHAR(20)</text>
+<line x1="560.0" y1="408.0" x2="960.0" y2="408.0" stroke="#DCE3EA" stroke-width="1"/>
+<rect x="572" y="414.0" width="36" height="24" rx="4" fill="#A8481A"/>
+<text x="590.0" y="426.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">FK</text>
+<text x="658.0" y="426.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">fornecedor_id</text>
+<text x="946.0" y="426.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">INT</text>
+<rect x="60" y="560" width="400" height="266" rx="6" fill="#FFFFFF" stroke="#1F3A5F" stroke-width="2.4"/>
+<path d="M60,610 v-44 a6,6 0 0 1 6,-6 h388 a6,6 0 0 1 6,6 v44 z" fill="#1F3A5F"/>
+<text x="260.0" y="585.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="22" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">clientes</text>
+<rect x="72" y="616.0" width="36" height="24" rx="4" fill="#B8860B"/>
+<text x="90.0" y="628.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">PK</text>
+<text x="158.0" y="628.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="bold" fill="#1F2A37" text-anchor="start" dominant-baseline="central">id</text>
+<text x="446.0" y="628.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">INT</text>
+<rect x="61.2" y="646.0" width="397.6" height="36" fill="#F3F6F9"/>
+<line x1="60.0" y1="646.0" x2="460.0" y2="646.0" stroke="#DCE3EA" stroke-width="1"/>
+<text x="158.0" y="664.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">nome</text>
+<text x="446.0" y="664.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">VARCHAR(100)</text>
+<line x1="60.0" y1="682.0" x2="460.0" y2="682.0" stroke="#DCE3EA" stroke-width="1"/>
+<rect x="72" y="688.0" width="36" height="24" rx="4" fill="#4B6F8F"/>
+<text x="90.0" y="700.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">UK</text>
+<text x="158.0" y="700.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">cpf</text>
+<text x="446.0" y="700.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">VARCHAR(14)</text>
+<rect x="61.2" y="718.0" width="397.6" height="36" fill="#F3F6F9"/>
+<line x1="60.0" y1="718.0" x2="460.0" y2="718.0" stroke="#DCE3EA" stroke-width="1"/>
+<text x="158.0" y="736.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">telefone</text>
+<text x="446.0" y="736.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">VARCHAR(15)</text>
+<line x1="60.0" y1="754.0" x2="460.0" y2="754.0" stroke="#DCE3EA" stroke-width="1"/>
+<text x="158.0" y="772.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">email</text>
+<text x="446.0" y="772.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">VARCHAR(100)</text>
+<rect x="61.2" y="790.0" width="397.6" height="36" fill="#F3F6F9"/>
+<line x1="60.0" y1="790.0" x2="460.0" y2="790.0" stroke="#DCE3EA" stroke-width="1"/>
+<text x="158.0" y="808.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">endereco</text>
+<text x="446.0" y="808.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">VARCHAR(150)</text>
+<rect x="560" y="560" width="400" height="266" rx="6" fill="#FFFFFF" stroke="#1F3A5F" stroke-width="2.4"/>
+<path d="M560,610 v-44 a6,6 0 0 1 6,-6 h388 a6,6 0 0 1 6,6 v44 z" fill="#1F3A5F"/>
+<text x="760.0" y="585.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="22" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">vendas</text>
+<rect x="572" y="616.0" width="36" height="24" rx="4" fill="#B8860B"/>
+<text x="590.0" y="628.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">PK</text>
+<text x="658.0" y="628.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="bold" fill="#1F2A37" text-anchor="start" dominant-baseline="central">id</text>
+<text x="946.0" y="628.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">INT</text>
+<rect x="561.2" y="646.0" width="397.6" height="36" fill="#F3F6F9"/>
+<line x1="560.0" y1="646.0" x2="960.0" y2="646.0" stroke="#DCE3EA" stroke-width="1"/>
+<rect x="572" y="652.0" width="36" height="24" rx="4" fill="#A8481A"/>
+<text x="590.0" y="664.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">FK</text>
+<text x="658.0" y="664.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">cliente_id</text>
+<text x="946.0" y="664.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">INT</text>
+<line x1="560.0" y1="682.0" x2="960.0" y2="682.0" stroke="#DCE3EA" stroke-width="1"/>
+<rect x="572" y="688.0" width="36" height="24" rx="4" fill="#A8481A"/>
+<text x="590.0" y="700.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">FK</text>
+<text x="658.0" y="700.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">funcionario_id</text>
+<text x="946.0" y="700.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">INT</text>
+<rect x="561.2" y="718.0" width="397.6" height="36" fill="#F3F6F9"/>
+<line x1="560.0" y1="718.0" x2="960.0" y2="718.0" stroke="#DCE3EA" stroke-width="1"/>
+<rect x="572" y="724.0" width="36" height="24" rx="4" fill="#A8481A"/>
+<text x="590.0" y="736.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">FK</text>
+<rect x="612" y="724.0" width="36" height="24" rx="4" fill="#4B6F8F"/>
+<text x="630.0" y="736.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">UK</text>
+<text x="658.0" y="736.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">veiculo_id</text>
+<text x="946.0" y="736.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">INT</text>
+<line x1="560.0" y1="754.0" x2="960.0" y2="754.0" stroke="#DCE3EA" stroke-width="1"/>
+<text x="658.0" y="772.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">data_venda</text>
+<text x="946.0" y="772.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">DATE</text>
+<rect x="561.2" y="790.0" width="397.6" height="36" fill="#F3F6F9"/>
+<line x1="560.0" y1="790.0" x2="960.0" y2="790.0" stroke="#DCE3EA" stroke-width="1"/>
+<text x="658.0" y="808.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">valor_venda</text>
+<text x="946.0" y="808.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">DECIMAL(10,2)</text>
+<rect x="1060" y="560" width="400" height="230" rx="6" fill="#FFFFFF" stroke="#1F3A5F" stroke-width="2.4"/>
+<path d="M1060,610 v-44 a6,6 0 0 1 6,-6 h388 a6,6 0 0 1 6,6 v44 z" fill="#1F3A5F"/>
+<text x="1260.0" y="585.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="22" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">funcionarios</text>
+<rect x="1072" y="616.0" width="36" height="24" rx="4" fill="#B8860B"/>
+<text x="1090.0" y="628.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">PK</text>
+<text x="1158.0" y="628.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="bold" fill="#1F2A37" text-anchor="start" dominant-baseline="central">id</text>
+<text x="1446.0" y="628.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">INT</text>
+<rect x="1061.2" y="646.0" width="397.6" height="36" fill="#F3F6F9"/>
+<line x1="1060.0" y1="646.0" x2="1460.0" y2="646.0" stroke="#DCE3EA" stroke-width="1"/>
+<text x="1158.0" y="664.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">nome</text>
+<text x="1446.0" y="664.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">VARCHAR(100)</text>
+<line x1="1060.0" y1="682.0" x2="1460.0" y2="682.0" stroke="#DCE3EA" stroke-width="1"/>
+<text x="1158.0" y="700.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">cargo</text>
+<text x="1446.0" y="700.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">VARCHAR(50)</text>
+<rect x="1061.2" y="718.0" width="397.6" height="36" fill="#F3F6F9"/>
+<line x1="1060.0" y1="718.0" x2="1460.0" y2="718.0" stroke="#DCE3EA" stroke-width="1"/>
+<text x="1158.0" y="736.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">salario</text>
+<text x="1446.0" y="736.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">DECIMAL(10,2)</text>
+<line x1="1060.0" y1="754.0" x2="1460.0" y2="754.0" stroke="#DCE3EA" stroke-width="1"/>
+<text x="1158.0" y="772.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="19" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">telefone</text>
+<text x="1446.0" y="772.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central">VARCHAR(15)</text>
+<text x="498.0" y="340.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="17" font-weight="normal" fill="#5B6B7C" text-anchor="end" dominant-baseline="central" font-style="italic">fornece</text>
+<text x="776.0" y="502.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="17" font-weight="normal" fill="#5B6B7C" text-anchor="start" dominant-baseline="central" font-style="italic">é vendido em</text>
+<rect x="1060" y="70" width="400" height="330" rx="6" fill="#FAFBFC" stroke="#C9D2DC" stroke-width="1.4"/>
+<text x="1082.0" y="102.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="20" font-weight="bold" fill="#1F2A37" text-anchor="start" dominant-baseline="central">Legenda</text>
+<rect x="1082" y="134" width="36" height="24" rx="4" fill="#B8860B"/>
+<text x="1100.0" y="146.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">PK</text>
+<text x="1180.0" y="146.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="18" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">Chave primária</text>
+<rect x="1082" y="176" width="36" height="24" rx="4" fill="#A8481A"/>
+<text x="1100.0" y="188.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">FK</text>
+<text x="1180.0" y="188.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="18" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">Chave estrangeira</text>
+<rect x="1082" y="218" width="36" height="24" rx="4" fill="#4B6F8F"/>
+<text x="1100.0" y="230.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">UK</text>
+<text x="1180.0" y="230.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="18" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">Valor único (UNIQUE)</text>
+<line x1="1082.0" y1="278.0" x2="1158.0" y2="278.0" stroke="#1F2A37" stroke-width="2.2"/>
+<line x1="1148.0" y1="289.0" x2="1148.0" y2="267.0" stroke="#1F2A37" stroke-width="2.4"/>
+<line x1="1140.0" y1="289.0" x2="1140.0" y2="267.0" stroke="#1F2A37" stroke-width="2.4"/>
+<text x="1180.0" y="278.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="18" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">Exatamente um</text>
+<line x1="1082.0" y1="322.0" x2="1158.0" y2="322.0" stroke="#1F2A37" stroke-width="2.2"/>
+<line x1="1146.0" y1="333.0" x2="1146.0" y2="311.0" stroke="#1F2A37" stroke-width="2.4"/>
+<circle cx="1130.0" cy="322.0" r="7.5" fill="#FFFFFF" stroke="#1F2A37" stroke-width="2.2"/>
+<text x="1180.0" y="322.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="18" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">Zero ou um</text>
+<line x1="1082.0" y1="366.0" x2="1158.0" y2="366.0" stroke="#1F2A37" stroke-width="2.2"/>
+<line x1="1140.0" y1="366.0" x2="1158.0" y2="378.0" stroke="#1F2A37" stroke-width="2.2"/>
+<line x1="1140.0" y1="366.0" x2="1158.0" y2="366.0" stroke="#1F2A37" stroke-width="2.2"/>
+<line x1="1140.0" y1="366.0" x2="1158.0" y2="354.0" stroke="#1F2A37" stroke-width="2.2"/>
+<circle cx="1128.0" cy="366.0" r="7.5" fill="#FFFFFF" stroke="#1F2A37" stroke-width="2.2"/>
+<text x="1180.0" y="366.0" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif" font-size="18" font-weight="normal" fill="#1F2A37" text-anchor="start" dominant-baseline="central">Zero ou muitos</text>
+</svg>

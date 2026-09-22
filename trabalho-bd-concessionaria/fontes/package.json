@@ -1,0 +1,11 @@
+{
+  "name": "documentacao-concessionaria",
+  "private": true,
+  "description": "Gera a documentação ABNT do banco de dados da concessionária",
+  "scripts": {
+    "montar": "node montar.js"
+  },
+  "dependencies": {
+    "docx": "^9.7.1"
+  }
+}
