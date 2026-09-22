@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     APP_VERSAO: str = "0.1.0"
     DEBUG: bool = False
 
-    # ── Banco de dados (documentação, seção 10.5: PostgreSQL) ────────
+    # ── Banco de dados (documentação, seção 19.5: PostgreSQL) ────────
     DATABASE_URL: str = Field(
         default="postgresql+psycopg://smartcondo:smartcondo@localhost:5432/smartcondo",
         description="URL de conexão do PostgreSQL.",
@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     BCRYPT_ROUNDS: int = Field(default=12, ge=4, le=16)
 
     # Validade do código de confirmação de cadastro e de recuperação de
-    # senha (documentação, seção 9: "Cadastro" e "Esqueci minha senha").
+    # senha (documentação, seção 12: "Cadastro" e "Esqueci minha senha").
     CODIGO_VERIFICACAO_EXPIRA_MIN: int = 15
 
     # Quantas senhas erradas seguidas antes de trancar a conta, e por

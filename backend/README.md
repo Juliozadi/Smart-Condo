@@ -125,7 +125,7 @@ backend/
 alugou, para evitar conflitos"*. `GET /espacos/agenda` devolve o espaço, a
 data e o horário ocupados, sem nenhum campo de autoria. Nem a mensagem de
 conflito de horário cita o outro morador. Quem enxerga o autor da reserva é
-apenas o síndico, que é quem aprova (seção 11.5.3).
+apenas o síndico, que é quem aprova (seção 13.5.3).
 
 **Ocupação em tempo real** — Seção 6: *"Piscina: 23 pessoas no momento"*.
 `GET /espacos/ocupacao` devolve a contagem mais recente de cada área de uso
@@ -173,6 +173,6 @@ pagou e a data.
   no log; a interface já é a definitiva).
 - Upload das fotos do vídeo porteiro: a API guarda a URL, falta o
   armazenamento dos arquivos.
-- Chat e chamada de voz com o porteiro (seção 11.5.2), que a documentação
+- Chat e chamada de voz com o porteiro (seção 13.5.2), que a documentação
   coloca em Node.js por serem em tempo real.
 - Geração automática das cobranças mensais (tarefa agendada).

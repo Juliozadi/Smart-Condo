@@ -10,7 +10,7 @@ Documentação, seção 6 (História do Usuário):
     confirmasse a minha entrega ou pedido"
 
 O que o porteiro pode fazer aqui depende das permissões que o síndico
-definiu (seção 9, caso de uso "Permissão do Porteiro").
+definiu (seção 12, caso de uso "Permissão do Porteiro").
 """
 from __future__ import annotations
 
@@ -313,7 +313,7 @@ def abrir_ocorrencia(
     db: Session = Depends(get_db),
 ) -> OcorrenciaSaida:
     if usuario.papel == Papel.PORTEIRO:
-        # O porteiro só registra ocorrência se o síndico liberou (seção 9).
+        # O porteiro só registra ocorrência se o síndico liberou (seção 12).
         from app.models.usuario import PermissaoPorteiro
 
         permissoes = db.scalar(

@@ -45,7 +45,7 @@ class ReservaSaida(SchemaBase):
 
 
 class ReservaSindicoSaida(ReservaSaida):
-    """Só o síndico vê quem reservou — ele é quem aprova (seção 11.5.3)."""
+    """Só o síndico vê quem reservou — ele é quem aprova (seção 13.5.3)."""
     morador_id: int
     morador_nome: str
     unidade: str | None = None
@@ -66,6 +66,6 @@ class OcupacaoAgenda(SchemaBase):
 
 
 class AvaliacaoReserva(SchemaBase):
-    """O síndico aprova ou recusa (seção 11.5.3)."""
+    """O síndico aprova ou recusa (seção 13.5.3)."""
     aprovada: bool
     motivo: str | None = Field(default=None, max_length=300)

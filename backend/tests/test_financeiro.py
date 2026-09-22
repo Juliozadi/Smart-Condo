@@ -1,7 +1,7 @@
 """Testes do financeiro e dos comunicados.
 
 Documentação, seção 6 (cobrança na data escolhida, formas de pagamento e
-aviso ao síndico) e seções 11.5.4 / 11.6.4 (comunicados).
+aviso ao síndico) e seções 13.5.4 / 13.6.4 (comunicados).
 """
 from __future__ import annotations
 
@@ -253,7 +253,7 @@ def test_resumo_do_sindico(cliente, cenario):
     assert resumo["unidades_inadimplentes"] == 1
 
 
-# ── Comunicados (seções 11.5.4 e 11.6.4) ─────────────────────────────
+# ── Comunicados (seções 13.5.4 e 13.6.4) ─────────────────────────────
 def publicar(cliente, tok, **extra):
     corpo = {"titulo": "Manutenção da piscina", "conteudo": "A piscina fica fechada dia 20."}
     corpo.update(extra)

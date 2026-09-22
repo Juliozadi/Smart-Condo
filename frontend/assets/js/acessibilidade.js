@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
    SmartCondo — Acessibilidade
-   Documentação, seção 12:
+   Documentação, seção 22:
      12.2 VLibras         — tradução para Libras (deficiência auditiva)
      12.3 Tamanho da fonte
      12.4 Mudança de cores — modo claro/escuro, seguindo por padrão a

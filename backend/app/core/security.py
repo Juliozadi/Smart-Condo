@@ -55,7 +55,7 @@ def ler_token_acesso(token: str) -> dict | None:
 
 
 # ── Códigos de verificação ───────────────────────────────────────────
-# Documentação, seção 9: no cadastro "o sistema salva e envia um código de
+# Documentação, seção 12: no cadastro "o sistema salva e envia um código de
 # confirmação pelo meio escolhido"; em "Esqueci minha senha", "o sistema
 # envia um código pelo meio escolhido pelo usuário".
 
@@ -77,7 +77,7 @@ def conferir_codigo(codigo: str, hash_armazenado: str) -> bool:
 def gerar_codigo_condominio(nome: str) -> str:
     """Código de acesso do condomínio, no formato COND-XXXX-YYYY.
 
-    Documentação, seção 11.3: o morador informa o condomínio ao se
+    Documentação, seção 13.3: o morador informa o condomínio ao se
     cadastrar. Com o código, ele entra sem que o sistema precise expor
     uma lista pública de todos os condomínios.
 

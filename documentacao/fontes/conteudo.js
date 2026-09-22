@@ -17,7 +17,7 @@ const capa = {
     'João Victor Muller Miranda',
   ],
   disciplina: 'Projeto Integrador I',
-  ano: '2025',
+  ano: '2026',
 };
 
 // ── Seções 1 a 10: texto original ───────────────────────────────────
@@ -62,7 +62,9 @@ const secoes = [
 ]},
 
 { n: '7', titulo: 'IDENTIFICAÇÃO DOS REQUISITOS', paragrafos: [
-  'O modo de referência será por nomenclatura do setor do projeto. Por exemplo, Realizar Cadastro, será encontrado por seu nome, que também vai estar visível no Sumário.',
+  'Os requisitos são referenciados por um identificador fixo, que não muda ao longo do projeto mesmo que a ordem das seções mude. Requisitos funcionais recebem a sigla RF seguida de três dígitos; requisitos não funcionais recebem RNF seguido de três dígitos.',
+  'O requisito [Cadastrar condomínio, RF001] está descrito na seção "Requisitos Funcionais", no bloco identificado por RF001. O requisito não funcional [Autenticação por token, RNF009] está descrito na seção "Requisitos Não Funcionais", na subseção de segurança, no bloco identificado por RNF009.',
+  'Cada bloco traz os atores envolvidos, a prioridade, a descrição do que o sistema faz, as entradas e pré-condições necessárias e as saídas e pós-condições resultantes. A prioridade segue três níveis: essencial, quando o sistema não cumpre seu objetivo sem o requisito; importante, quando a ausência prejudica o uso mas não o impede; e desejável, quando acrescenta conveniência.',
 ]},
 
 { n: '8', titulo: 'DESCRIÇÃO DOS USUÁRIOS', paragrafos: [
@@ -71,6 +73,18 @@ const secoes = [
   { negritoAte: 'Porteiro:', texto: 'Porteiro: responsável por realizar a permissão de entrada de convidados com o vídeo porteiro ou enviando fotos de confirmação para o morador que convidou, anotar pedidos ou entregas dos moradores e, enviar notificações para os moradores de seus pedidos ou entregas.' },
   { negritoAte: 'Morador:', texto: 'Morador: utilizar do sistema para fazer o pagamento, verificar se há possibilidade de alugar um espaço, verificar quantas pessoas tem em um lugar do condomínio, realizar e receber chamados do síndico ou porteiro quando necessário.' },
 ]},
+];
+
+// ── Histórico de revisões ───────────────────────────────────────────
+// Vai logo depois da capa, como no modelo: quem mexeu, quando e no quê.
+const historico = [
+  ['Data', 'Versão', 'Descrição', 'Autores'],
+  ['21/09/2026', '1.0', 'Versão inicial da documentação do projeto',
+   'Ian Araujo Ramos Jares, João Victor Arantes Oliveira, Júlio Zadi, Luan Flôres Martins, Juliano Araujo, João Victor Muller Miranda'],
+  ['22/09/2026', '1.1', 'Acessibilidade e contraste, bloqueio de login por tentativas e tratamento de dados pessoais',
+   'Ian Araujo Ramos Jares, João Victor Arantes Oliveira, Júlio Zadi, Luan Flôres Martins, Juliano Araujo, João Victor Muller Miranda'],
+  ['22/09/2026', '2.0', 'Requisitos funcionais e não funcionais numerados, diagrama de casos de uso, modelo e diagrama entidade-relacionamento, relacionamentos, dicionário de dados e implementações no banco',
+   'Ian Araujo Ramos Jares, João Victor Arantes Oliveira, Júlio Zadi, Luan Flôres Martins, Juliano Araujo, João Victor Muller Miranda'],
 ];
 
 // ── Seção 9: casos de uso ───────────────────────────────────────────
@@ -138,4 +152,4 @@ const casosDeUso = [
   },
 ];
 
-module.exports = { capa, secoes, casosDeUso };
+module.exports = { capa, historico, secoes, casosDeUso };

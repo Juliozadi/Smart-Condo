@@ -7,7 +7,49 @@ O texto escrito pelo grupo foi **preservado**. As mudanças abaixo são de
 duas naturezas: correções do que não correspondia mais ao sistema, e
 seções novas descrevendo o que foi construído desde então.
 
-## Correções
+## Versão 2.0 — a estrutura do modelo do professor
+
+O professor entregou um modelo de documentação como referência. Comparado
+a ele, o documento tinha texto suficiente nas seções de negócio, mas
+faltavam as seções técnicas que o modelo traz: requisitos numerados,
+diagrama de casos de uso, modelagem e dicionário de dados. Esta versão
+acrescenta essas seções e reorganiza a ordem para acompanhar o modelo.
+O documento passou de cerca de 5.800 para cerca de 15.800 palavras, 89
+tabelas e 30 figuras.
+
+| Seção | O que entrou |
+|---|---|
+| Histórico de revisões | Tabela logo depois da capa, como no modelo: data, versão, descrição e autores |
+| 7 Identificação dos requisitos | Reescrita: explica os identificadores RF e RNF e os três níveis de prioridade |
+| 9 Requisitos funcionais | **38 requisitos** (RF001 a RF038), cada um com atores, prioridade, descrição, entradas e pré-condições, saídas e pós-condições. Cada um corresponde a algo já implementado e testado |
+| 10 Requisitos não funcionais | **20 requisitos** (RNF001 a RNF020) em cinco grupos — usabilidade, confiabilidade, desempenho, segurança e padrões —, cada um com a forma como é verificado |
+| 11 Diagrama de caso de uso | Diagrama UML com os 4 atores e 25 casos de uso |
+| 12 Casos de uso | Os casos de uso que antes ficavam na seção 9, agora cada um com subseção própria (12.1 a 12.5) |
+| 14 Modelo entidade-relacionamento | As decisões de modelagem e o quadro das 19 entidades |
+| 15 Diagrama entidade-relacionamento | Quatro figuras: visão de conjunto e três recortes por assunto com todos os atributos |
+| 16 Relacionamentos | As 40 chaves estrangeiras, cada uma com o seu significado |
+| 17 Dicionário de dados | As 19 tabelas e os 220 atributos: tipo, obrigatoriedade, chave e descrição |
+| 18 Implementações no banco | Restrições de unicidade, verificações de valor, tipos enumerados, índices, e por que o projeto não usa gatilhos nem visões |
+
+**O que é gerado do banco.** O diagrama entidade-relacionamento e o
+dicionário de dados não foram escritos à mão: tipos, obrigatoriedade,
+chaves e valores dos tipos enumerados são lidos do PostgreSQL em
+funcionamento pelos scripts de `fontes/diagramas/`. As descrições em
+português ficam no próprio script, e a geração falha se alguma coluna ou
+chave estrangeira ficar sem descrição — assim o dicionário não envelhece
+em silêncio quando o banco muda.
+
+**Capa.** O ano estava como 2025; o projeto começou em junho de 2026 e
+as revisões são todas de 2026. Passou para 2026. Se o 2025 era
+proposital (por exemplo, o ano letivo da turma), basta trocar o campo
+`ano` em `fontes/conteudo.js` e gerar de novo.
+
+## Versão 1.x
+
+Os números de seção citados nesta parte são os da **numeração antiga**,
+anterior à versão 2.0.
+
+### Correções
 
 | Onde | O que estava | O que passou a estar |
 |---|---|---|
@@ -21,7 +63,7 @@ seções novas descrevendo o que foi construído desde então.
 | Sumário | Números de página todos "2" e "3"; três itens numerados "10.5"; "11.4 Mudança de cores" (deveria ser 12.4); "14" indicado como bibliografia quando é o cronograma | Sumário automático do Word, que numera as páginas e os itens sozinho ao ser atualizado |
 | 11.2 | O sumário dizia "Tela de cadastro do síndico" e o corpo mostrava o porteiro | Corrigido para "Tela de cadastro do porteiro", que é o que a seção descreve |
 
-## Seções novas
+### Seções novas
 
 - **11.4 Tela de login** — preenche a lacuna do 11.4, que existia no
   sumário mas não no corpo.
@@ -61,11 +103,25 @@ seções novas descrevendo o que foi construído desde então.
 
 ## Numeração
 
-A numeração de 1 a 12 **não mudou**, de propósito: os comentários do
-código-fonte citam seções da documentação (por exemplo "seção 6",
-"seção 11.5.3") e continuariam válidos. As seções novas entraram como
-13, 14 e 15, e apenas conclusão, cronograma e bibliografia foram
-deslocadas para 16, 17 e 18 — nenhuma delas é citada no código.
+Na versão 1.x a numeração de 1 a 12 foi mantida de propósito, porque os
+comentários do código-fonte citam seções da documentação. Na versão 2.0
+ela **mudou**, para acompanhar o modelo do professor — e as citações no
+código foram atualizadas no mesmo envio, para que nenhuma aponte para o
+lugar errado:
+
+| Assunto | Antes | Agora |
+|---|---|---|
+| Casos de uso | 9 | 12 |
+| Linguagens e ferramentas | 10 | 19 |
+| Prototipação das telas | 11 | 13 |
+| Acessibilidade | 12 | 22 |
+| Arquitetura | 13 | 20 |
+| API REST | 14 | 21 |
+| Testes automatizados | 15 | 23 |
+| Conclusão, cronograma e bibliografia | 16 a 18 | 24 a 26 |
+
+As seções 1 a 8 não mudaram. A modelagem do banco, que era a subseção
+13.1, virou as seções 14 a 18.
 
 ## Formatação
 
@@ -80,9 +136,11 @@ célula.
 
 ## Figuras
 
-As 25 figuras da seção 11 foram capturadas do sistema em funcionamento,
+As 25 figuras da seção 13 foram capturadas do sistema em funcionamento,
 com dados reais vindos da API e do banco — não são mais protótipos do
-Figma.
+Figma. As 5 figuras novas — o diagrama de casos de uso e os quatro do
+diagrama entidade-relacionamento — são geradas por script, a partir do
+banco, e podem ser refeitas a qualquer momento.
 
 ## Antes de entregar
 

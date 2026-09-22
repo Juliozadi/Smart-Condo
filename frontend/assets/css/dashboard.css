@@ -1483,7 +1483,7 @@ body:has(.step-page:target) .step-page.default-step {
 
 /* ═══════════════════════════════════════════
    CONTATO COM O PORTEIRO — chat e voz
-   Documentação, seção 11.5.2: "pode contatá-los por chat ou ligação de voz"
+   Documentação, seção 13.5.2: "pode contatá-los por chat ou ligação de voz"
    ═══════════════════════════════════════════ */
 .contato-acoes { display: flex; gap: 6px; flex-wrap: wrap; margin-right: 10px; }
 .contato-btn {
@@ -1752,7 +1752,7 @@ body:has(.step-page:target) .step-page.default-step {
   .pill-acao { padding: 7px 11px; }
 }
 
-/* ── Painel de permissões do porteiro (documentação, seção 9) ────── */
+/* ── Painel de permissões do porteiro (documentação, seção 12) ────── */
 .porteiro-bloco { display: flex; flex-direction: column; }
 .painel-permissoes {
   background: var(--surface-2);

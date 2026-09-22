@@ -40,7 +40,7 @@ img[src*="/assets/img/icons/"]{width:16px;height:16px;vertical-align:middle}
   --placeholder:    #5b737e;
 
   /* Cores de estado. Cada tema tem o seu tom, escolhido para passar os
-     4,5:1 do WCAG AA (seção 12.1) sobre a superfície mais clara do
+     4,5:1 do WCAG AA (seção 22.1) sobre a superfície mais clara do
      próprio tema — no claro o branco, no escuro o --surface-2. Nunca
      escreva um destes tons direto na regra: use a variável, senão a cor
      não acompanha a troca de tema. */
@@ -1477,7 +1477,7 @@ a, button, .role-btn, .dash-card, .list-item, .register-card, .register-card-com
 /* ── Card hover glow refinado ──────────────────────────────── */
 .form-card:hover { box-shadow: var(--shadow-md); border-color: rgba(16,182,168,.15); transition: all .25s var(--ease-smooth); }
 /* ═════════════════════════════════════════════════════════════
-   TEMA ESCURO / CLARO  (Documentação, seção 12.4)
+   TEMA ESCURO / CLARO  (Documentação, seção 22.4)
    Por padrão o SmartCondo segue a definição de modo de cor do
    sistema operacional; o usuário pode sobrescrever a qualquer
    momento pelo widget de acessibilidade (auto / claro / escuro).

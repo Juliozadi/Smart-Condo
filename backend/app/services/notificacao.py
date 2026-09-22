@@ -1,6 +1,6 @@
 """Envio de códigos e avisos.
 
-Documentação, seção 9: o sistema "envia um código pelo meio escolhido pelo
+Documentação, seção 12: o sistema "envia um código pelo meio escolhido pelo
 usuário" (e-mail ou SMS).
 
 O e-mail sai por SMTP, configurado pelas variáveis SMTP_* do .env. Sem

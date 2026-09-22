@@ -1,5 +1,5 @@
 """Testes da portaria — seção 6 da documentação (vídeo porteiro,
-confirmação do visitante e notificação de encomenda) e seção 9
+confirmação do visitante e notificação de encomenda) e seção 12
 (as permissões que o síndico definiu para o porteiro)."""
 from __future__ import annotations
 
@@ -153,9 +153,9 @@ def test_saida_so_apos_a_entrada(cliente, cenario):
     assert r.json()["saida_em"] is not None
 
 
-# ── Permissões do porteiro (seção 9) ─────────────────────────────────
+# ── Permissões do porteiro (seção 12) ─────────────────────────────────
 def test_porteiro_sem_permissao_nao_registra_visitante(cliente, cenario):
-    """Documentação, seção 9: vale o que o síndico liberou."""
+    """Documentação, seção 12: vale o que o síndico liberou."""
     porteiro_id, tok = cadastrar_porteiro(
         cliente, cenario["sindico"], cenario["cond"],
         email="limitado@exemplo.com", cpf=CPFS[4],

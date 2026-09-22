@@ -1,6 +1,6 @@
 """Schemas do condomínio, unidades e espaços comuns.
 
-Documentação, seção 9 — caso de uso "Cadastro do condomínio" (síndico).
+Documentação, seção 12 — caso de uso "Cadastro do condomínio" (síndico).
 """
 from __future__ import annotations
 

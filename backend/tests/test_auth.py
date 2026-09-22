@@ -1,6 +1,6 @@
 """Testes de cadastro, login e recuperação de senha.
 
-Documentação, seção 9. Com a hierarquia atual, o único cadastro público é o
+Documentação, seção 12. Com a hierarquia atual, o único cadastro público é o
 do morador: síndico é criado pelo administrador e porteiro pelo síndico.
 """
 from __future__ import annotations

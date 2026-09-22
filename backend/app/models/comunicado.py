@@ -1,6 +1,6 @@
 """Comunicados do síndico.
 
-Documentação, seção 11.5.4: "o Síndico pode fazer comunicados sobre
+Documentação, seção 13.5.4: "o Síndico pode fazer comunicados sobre
 qualquer assunto que lhe vê importância de repassar aos moradores".
 """
 from __future__ import annotations
@@ -55,7 +55,7 @@ class Comunicado(Base, TimestampMixin):
 
 
 class LeituraComunicado(Base):
-    """Marca que um morador leu o comunicado (seção 11.6.4)."""
+    """Marca que um morador leu o comunicado (seção 13.6.4)."""
 
     __tablename__ = "leituras_comunicado"
     __table_args__ = (

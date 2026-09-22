@@ -1,6 +1,6 @@
 """Testes do cadastro do condomínio, da aprovação e das permissões.
 
-Documentação, seções 8, 9 (casos de uso "Cadastro do condomínio" e
+Documentação, seções 8, 12 (casos de uso "Cadastro do condomínio" e
 "Permissão do Porteiro") e 11.2.
 """
 from __future__ import annotations
@@ -94,7 +94,7 @@ def test_cnpj_repetido_e_recusado(cliente, admin, condominio):
     assert r.status_code == 409
 
 
-# ── Código de acesso do condomínio (seção 11.3) ──────────────────────
+# ── Código de acesso do condomínio (seção 13.3) ──────────────────────
 def test_o_sindico_recebe_o_codigo_de_acesso(cliente, condominio):
     assert condominio["codigo_acesso"]
     # Formato legível, sem letras que se confundem ao copiar de um papel.
@@ -291,9 +291,9 @@ def test_sindico_nao_ve_usuario_de_outro_condominio(cliente, db, sindico, condom
     assert r.status_code == 404
 
 
-# ── Permissões do porteiro (seção 9) ─────────────────────────────────
+# ── Permissões do porteiro (seção 12) ─────────────────────────────────
 def test_sistema_mostra_as_acoes_do_porteiro(cliente, sindico):
-    """"O sistema mostra as possibilidades de ações do porteiro" (seção 9)."""
+    """"O sistema mostra as possibilidades de ações do porteiro" (seção 12)."""
     r = cliente.get("/api/v1/usuarios/porteiros/acoes", headers=cab(sindico))
     assert r.status_code == 200
     chaves = {a["chave"] for a in r.json()}
@@ -332,7 +332,7 @@ def test_o_financeiro_nao_vem_liberado_por_padrao(cliente, sindico, condominio):
 
 
 def test_sindico_altera_as_permissoes(cliente, sindico, condominio):
-    """"O síndico escolhe quais estarão disponíveis para o porteiro" (seção 9)."""
+    """"O síndico escolhe quais estarão disponíveis para o porteiro" (seção 12)."""
     porteiro_id, _ = cadastrar_porteiro(cliente, sindico, condominio, cpf=CPFS[2])
 
     r = cliente.put(

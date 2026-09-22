@@ -120,7 +120,7 @@ def test_ocupacao_do_estacionamento(cliente, cenario):
 
 
 def test_porteiro_sem_permissao_nao_registra_veiculo(cliente, cenario):
-    """Documentação, seção 9: vale o que o síndico liberou."""
+    """Documentação, seção 12: vale o que o síndico liberou."""
     _, tok = cadastrar_porteiro(
         cliente, cenario["sindico"], cenario["cond"],
         email="semvei@exemplo.com", cpf=CPFS[4],
