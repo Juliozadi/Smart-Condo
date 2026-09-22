@@ -3,9 +3,11 @@
 Este arquivo existe para você abrir o SmartCondo, entrar com cada perfil e
 acompanhar o que já está pronto em cada área.
 
-> **"Não foi possível falar com o servidor"?** É a API que não está no ar.
-> O front-end não tem mais dados de mentira: toda tela busca do back-end.
-> Siga a seção [Subindo o sistema](#subindo-o-sistema) antes de entrar.
+> **Não está conseguindo entrar?** Abra a página
+> **`frontend/diagnostico.html`** pelo mesmo servidor que você usa para
+> abrir o sistema (Live Server ou `python -m http.server`). Ela testa
+> cada peça sozinha e diz exatamente o que está faltando, com o comando
+> para resolver.
 
 ---
 

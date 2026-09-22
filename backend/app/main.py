@@ -66,6 +66,36 @@ _origens = list(settings.CORS_ORIGINS)
 if settings.DEBUG:
     _origens.append("null")
 
+# Registrado antes do CORS de propósito: o middleware adicionado antes
+# fica por dentro na pilha, e só assim o CORS enxerga esta resposta para
+# carimbar o cabeçalho de origem. O tratador @app.exception_handler não
+# serviria: ele roda por fora de todos os middlewares.
+@app.middleware("http")
+async def erro_inesperado(requisicao: Request, proxima):
+    """Transforma a exceção não prevista numa resposta JSON.
+
+    Sem isto, a exceção escapa até o Starlette, que responde 500 em
+    texto puro e sem CORS. O navegador descarta o corpo e a tela mostra
+    "não foi possível falar com o servidor" — a mesma mensagem de quando
+    a API está desligada. Quem estivesse só com o banco parado
+    procuraria o problema no lugar errado.
+
+    O motivo real vai para o diário do servidor, não para a resposta:
+    mensagem de exceção costuma revelar caminho de arquivo, nome de
+    tabela e trecho de consulta.
+    """
+    try:
+        return await proxima(requisicao)
+    except Exception:  # noqa: BLE001 — qualquer falha não prevista
+        logger.exception(
+            "Erro não tratado em %s %s", requisicao.method, requisicao.url.path
+        )
+        return JSONResponse(
+            status_code=500,
+            content={"detalhe": "Erro interno no servidor. Tente novamente em instantes."},
+        )
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_origens,
@@ -119,6 +149,7 @@ async def erro_validacao(request: Request, exc: RequestValidationError) -> JSONR
             "campos": jsonable_encoder(exc.errors()),
         },
     )
+
 
 
 app.include_router(auth.router, prefix="/api/v1")
