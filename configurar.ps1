@@ -10,7 +10,12 @@
     Rodar duas vezes não faz mal: ele pula o que já está pronto.
 #>
 
-$ErrorActionPreference = "Stop"
+# Deliberadamente "Continue", nao "Stop": no PowerShell do Windows o modo
+# "Stop" derruba o script quando um programa externo escreve na saida de
+# erro, e o psql escreve ali de proposito ao dizer que o usuario ainda nao
+# existe — que e a resposta esperada aqui, nao uma falha. O controle e feito
+# pelo $LASTEXITCODE de cada chamada, logo abaixo.
+$ErrorActionPreference = "Continue"
 
 $Raiz    = $PSScriptRoot
 $Backend = Join-Path $Raiz "backend"
@@ -81,8 +86,12 @@ if ($noPath) {
 } else {
     foreach ($pasta in @("C:\Program Files\PostgreSQL", "C:\Program Files (x86)\PostgreSQL")) {
         if (Test-Path $pasta) {
-            $achado = Get-ChildItem $pasta -Recurse -Filter psql.exe -ErrorAction SilentlyContinue |
+            $todos = Get-ChildItem $pasta -Recurse -Filter psql.exe -ErrorAction SilentlyContinue
+            $achado = $todos | Where-Object { $_.FullName -like "*\bin\psql.exe" } |
                       Sort-Object FullName -Descending | Select-Object -First 1
+            if (-not $achado) {
+                $achado = $todos | Sort-Object FullName -Descending | Select-Object -First 1
+            }
             if ($achado) { $psql = $achado.FullName; break }
         }
     }
@@ -104,7 +113,7 @@ $servico = Get-Service -Name "postgresql*" -ErrorAction SilentlyContinue | Selec
 if ($servico -and $servico.Status -ne "Running") {
     Aviso "O serviço está parado. Iniciando..."
     try {
-        Start-Service $servico.Name
+        Start-Service $servico.Name -ErrorAction Stop
         Start-Sleep -Seconds 3
         Ok "Serviço iniciado"
     } catch {
@@ -124,8 +133,12 @@ Titulo "Usuário e banco do SmartCondo"
 # Talvez já esteja tudo pronto de uma execução anterior. Se estiver, nem
 # precisamos pedir a senha do postgres.
 $env:PGPASSWORD = "smartcondo"
-& $psql -U smartcondo -h 127.0.0.1 -d smartcondo -c "SELECT 1" *> $null
-$ja_pronto = ($LASTEXITCODE -eq 0)
+try {
+    & $psql -U smartcondo -h 127.0.0.1 -d smartcondo -c "SELECT 1" *> $null
+    $ja_pronto = ($LASTEXITCODE -eq 0)
+} catch {
+    $ja_pronto = $false
+}
 Remove-Item Env:\PGPASSWORD -ErrorAction SilentlyContinue
 
 if ($ja_pronto) {
@@ -139,8 +152,14 @@ if ($ja_pronto) {
     $env:PGPASSWORD = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr)
     [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
 
-    & $psql -U postgres -h 127.0.0.1 -d postgres -c "SELECT 1" *> $null
-    if ($LASTEXITCODE -ne 0) {
+    $senha_ok = $false
+    try {
+        & $psql -U postgres -h 127.0.0.1 -d postgres -c "SELECT 1" *> $null
+        $senha_ok = ($LASTEXITCODE -eq 0)
+    } catch {
+        $senha_ok = $false
+    }
+    if (-not $senha_ok) {
         Remove-Item Env:\PGPASSWORD -ErrorAction SilentlyContinue
         Pop-Location
         Parar @"
@@ -159,7 +178,7 @@ A senha do usuário "postgres" não foi aceita.
     Ok "Usuário smartcondo pronto"
 
     foreach ($banco in @("smartcondo", "smartcondo_test")) {
-        $existe = (& $psql -U postgres -h 127.0.0.1 -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$banco'" | Out-String).Trim()
+        $existe = (& $psql -U postgres -h 127.0.0.1 -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$banco'" 2>$null | Out-String).Trim()
         if ($existe -ne "1") {
             & $psql -U postgres -h 127.0.0.1 -d postgres -c "CREATE DATABASE $banco OWNER smartcondo" *> $null
             Ok "Banco $banco criado"
