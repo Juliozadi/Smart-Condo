@@ -75,6 +75,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Cabeçalhos de segurança ──────────────────────────────────────────
+# A API devolve JSON e nada mais. Estes cabeçalhos custam nada e fecham
+# portas que o navegador deixaria abertas por padrão.
+@app.middleware("http")
+async def cabecalhos_de_seguranca(requisicao: Request, proxima):
+    resposta = await proxima(requisicao)
+    # Não deixa o navegador adivinhar o tipo do conteúdo.
+    resposta.headers["X-Content-Type-Options"] = "nosniff"
+    # A API não é para ser exibida dentro de um iframe de ninguém.
+    resposta.headers["X-Frame-Options"] = "DENY"
+    # Não vaza a URL da API ao seguir um link para fora.
+    resposta.headers["Referrer-Policy"] = "no-referrer"
+    # Uma resposta JSON não carrega script, imagem nem estilo. As páginas
+    # /docs e /redoc são a exceção: elas montam a interface do Swagger
+    # com arquivos de CDN e quebrariam com esta política.
+    if not requisicao.url.path.startswith(("/docs", "/redoc", "/openapi.json")):
+        resposta.headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'"
+    # Só vale sobre HTTPS; o navegador ignora quando vem por HTTP.
+    if not settings.DEBUG:
+        resposta.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return resposta
+
+
 # ── Erros em português ───────────────────────────────────────────────
 # O FastAPI responde com a chave "detail"; a API do SmartCondo padroniza
 # "detalhe", que é o que os schemas de sucesso também usam.
