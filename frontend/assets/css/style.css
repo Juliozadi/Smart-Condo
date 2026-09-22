@@ -164,7 +164,11 @@ body {
   align-items: center;
   justify-content: center;
   gap: 14px;
-  background: linear-gradient(135deg, #ffffff, #ffffff);
+  /* Tem de ser o token, não o branco escrito à mão: no tema escuro o
+     painel continuava branco enquanto o texto dentro dele virava
+     claro, e o nome do sistema sumia. Vale para as 15 páginas que
+     usam esta área. */
+  background: var(--surface);
   padding: 16px 24px;
   border-radius: var(--radius-md);
   margin-bottom: 32px;
@@ -1542,7 +1546,6 @@ body.tema-escuro .history-table .table-row:nth-child(even) { background: var(--s
 body.tema-escuro .history-table .table-row:hover {
   background: linear-gradient(90deg, rgba(22,201,185,.16), rgba(22,201,185,.06));
 }
-body.tema-escuro .login-brand { background: var(--surface); }
 body.tema-escuro .logout-btn:hover {
   background: rgba(240,80,80,.16); color: #ff9c9c; border-color: rgba(240,80,80,.4);
 }
