@@ -45,9 +45,19 @@ seções novas descrevendo o que foi construído desde então.
 - **13.2 Segurança dos dados** ganhou três parágrafos: o bloqueio da
   conta após cinco senhas erradas, o registro de autoria de cada
   decisão do sistema, e os dois documentos legais com a base na LGPD.
-- **15 Testes** passou de 196 para 203 casos, com a tabela por arquivo
+- **15 Testes** passou de 196 para 216 casos, com a tabela por arquivo
   corrigida, e ganhou um parágrafo sobre as verificações automáticas a
   cada envio de código.
+- **13 Arquitetura** ganhou um parágrafo sobre o envio das mensagens: os
+  códigos saem por SMTP, e sem essa configuração o cadastro do morador
+  travaria, porque o código não chegaria a ninguém.
+- **13.2 Segurança** ganhou mais três parágrafos: o limite de tentativas
+  do código de seis dígitos e por que ele existe, os cabeçalhos de
+  segurança das respostas, e a verificação das permissões do porteiro em
+  toda gravação.
+- **Números corrigidos:** a conclusão ainda dizia 78 endpoints e 196
+  casos de teste, defasada até em relação à revisão anterior. Agora são
+  79 e 216, conferidos contra a coleta do pytest e o OpenAPI.
 
 ## Numeração
 
