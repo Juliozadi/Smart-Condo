@@ -1,6 +1,6 @@
 """Usuários, permissões do porteiro e códigos de verificação.
 
-Documentação, seção 8 (Descrição dos Usuários) e seção 9 (casos de uso
+Documentação, seção 8 (Descrição dos Usuários) e seção 12 (casos de uso
 "Cadastro", "Login do usuário", "Esqueci minha senha" e "Permissão do
 Porteiro").
 """
@@ -97,7 +97,7 @@ class Usuario(Base, TimestampMixin):
 
 
 class PermissaoPorteiro(Base, TimestampMixin):
-    """Documentação, seção 9 — caso de uso "Permissão do Porteiro":
+    """Documentação, seção 12 — caso de uso "Permissão do Porteiro":
     "o sistema mostra as possibilidades de ações do porteiro" e
     "o síndico escolhe quais estarão disponíveis para o porteiro".
     """
@@ -137,7 +137,7 @@ class PermissaoPorteiro(Base, TimestampMixin):
 class CodigoVerificacao(Base, TimestampMixin):
     """Código enviado por e-mail ou SMS.
 
-    Documentação, seção 9: no cadastro "o sistema salva e envia um código de
+    Documentação, seção 12: no cadastro "o sistema salva e envia um código de
     confirmação pelo meio escolhido"; em "Esqueci minha senha", "o sistema
     envia um código pelo meio escolhido pelo usuário".
 

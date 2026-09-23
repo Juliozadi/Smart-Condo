@@ -1,7 +1,7 @@
 """Configuração dos testes.
 
 Os testes rodam contra um PostgreSQL de verdade (o mesmo banco da
-documentação, seção 10.5), num schema recriado a cada sessão.
+documentação, seção 19.5), num schema recriado a cada sessão.
 """
 from __future__ import annotations
 

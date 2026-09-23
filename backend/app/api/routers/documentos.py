@@ -1,6 +1,6 @@
 """Documentos do condomínio.
 
-Documentação, seção 11.6: o morador acessa atas, convenção e regimento
+Documentação, seção 13.6: o morador acessa atas, convenção e regimento
 interno. Quem publica é o síndico.
 """
 from __future__ import annotations

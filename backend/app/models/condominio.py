@@ -1,7 +1,7 @@
 """Condomínio e unidades.
 
-Documentação, seção 9 — caso de uso "Cadastro do condomínio" (usuário
-principal: síndico) — e seção 11.3, que descreve os dados da unidade do
+Documentação, seção 12 — caso de uso "Cadastro do condomínio" (usuário
+principal: síndico) — e seção 13.3, que descreve os dados da unidade do
 morador: condomínio, bloco/torre e número de vagas na garagem.
 """
 from __future__ import annotations
@@ -42,7 +42,7 @@ class Condominio(Base, TimestampMixin):
 
     telefone: Mapped[str | None] = mapped_column(String(20))
 
-    # O síndico que cadastrou o condomínio (pré-requisito da seção 9:
+    # O síndico que cadastrou o condomínio (pré-requisito da seção 12:
     # "Existir um síndico ativo").
     sindico_id: Mapped[int | None] = mapped_column(
         ForeignKey(

@@ -1,4 +1,4 @@
-"""Schemas dos comunicados (documentação, seção 11.5.4 e 11.6.4)."""
+"""Schemas dos comunicados (documentação, seção 13.5.4 e 13.6.4)."""
 from __future__ import annotations
 
 from datetime import datetime

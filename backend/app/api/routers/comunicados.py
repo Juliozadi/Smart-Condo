@@ -1,6 +1,6 @@
 """Comunicados do síndico.
 
-Documentação, seção 11.5.4: "o Síndico pode fazer comunicados sobre qualquer
+Documentação, seção 13.5.4: "o Síndico pode fazer comunicados sobre qualquer
 assunto que lhe vê importância de repassar aos moradores".
 Seção 11.6.4: o morador pode filtrar por categoria e marcar como lido.
 """

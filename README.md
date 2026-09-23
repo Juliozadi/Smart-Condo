@@ -21,7 +21,7 @@
 
 O **SmartCondo** é um sistema de gestão condominial desenvolvido como projeto integrador da faculdade. A plataforma centraliza em um único lugar todas as atividades relacionadas à administração de um condomínio, oferecendo quatro perfis de acesso com funcionalidades específicas para cada tipo de usuário.
 
-O projeto tem duas partes. O **front-end** é construído com tecnologias web puras — sem frameworks nem bibliotecas externas — e o **back-end** é uma API REST em Python com PostgreSQL, como define a documentação do projeto (seções 10.4 e 10.5).
+O projeto tem duas partes. O **front-end** é construído com tecnologias web puras — sem frameworks nem bibliotecas externas — e o **back-end** é uma API REST em Python com PostgreSQL, como define a documentação do projeto (seções 19.4 e 19.5).
 
 ---
 
@@ -254,7 +254,7 @@ todas com a senha `smartcondo123`:
 - [ ] Envio de SMS (a interface já existe; falta o provedor)
 - [ ] Upload das fotos do vídeo porteiro (a API guarda a URL)
 - [x] Integrar as telas do front-end à API
-- [ ] Chat e chamada de voz com o porteiro (Node.js, seção 11.5.2)
+- [ ] Chat e chamada de voz com o porteiro (Node.js, seção 13.5.2)
 - [ ] Notificações push
 - [ ] Painel de gráficos com dados dinâmicos
 - [ ] Aplicativo mobile (React Native)

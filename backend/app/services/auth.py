@@ -1,6 +1,6 @@
 """Regras de cadastro, confirmação, login e recuperação de senha.
 
-Documentação, seção 9 — casos de uso "Cadastro", "Login do usuário" e
+Documentação, seção 12 — casos de uso "Cadastro", "Login do usuário" e
 "Esqueci minha senha".
 """
 from __future__ import annotations
@@ -182,7 +182,7 @@ def _contar_senha_errada(db: Session, usuario: Usuario) -> None:
 
 
 def autenticar(db: Session, email: str, senha: str) -> Usuario:
-    """Valida as credenciais do login (seção 9).
+    """Valida as credenciais do login (seção 12).
 
     Sem limite de tentativas, adivinhar a senha é só questão de tempo.
     O bloqueio conta por conta, é temporário e some no primeiro acerto.

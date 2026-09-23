@@ -1,6 +1,6 @@
 """Schemas de cadastro, login e recuperação de senha.
 
-Documentação, seção 9 — casos de uso "Cadastro", "Login do usuário",
+Documentação, seção 12 — casos de uso "Cadastro", "Login do usuário",
 "Esqueci minha senha" e "Permissão do Porteiro".
 """
 from __future__ import annotations
@@ -15,7 +15,7 @@ from app.models.enums import (
 from app.schemas.comuns import CPF, SchemaBase, Senha, Telefone
 
 
-# ── Cadastro (seção 9) ───────────────────────────────────────────────
+# ── Cadastro (seção 12) ───────────────────────────────────────────────
 class CadastroBase(SchemaBase):
     nome: str = Field(min_length=3, max_length=160)
     email: EmailStr
@@ -61,7 +61,7 @@ class ReenvioCodigo(SchemaBase):
     canal: CanalVerificacao = CanalVerificacao.EMAIL
 
 
-# ── Login (seção 9) ──────────────────────────────────────────────────
+# ── Login (seção 12) ──────────────────────────────────────────────────
 class LoginEntrada(SchemaBase):
     email: EmailStr
     senha: str = Field(min_length=1, max_length=72)
@@ -74,7 +74,7 @@ class TokenSaida(SchemaBase):
     usuario: "UsuarioSaida"
 
 
-# ── Esqueci minha senha (seção 9) ────────────────────────────────────
+# ── Esqueci minha senha (seção 12) ────────────────────────────────────
 class SolicitacaoRecuperacao(SchemaBase):
     email: EmailStr
     canal: CanalVerificacao = CanalVerificacao.EMAIL
@@ -98,7 +98,7 @@ class TrocaSenha(SchemaBase):
     nova_senha: Senha
 
 
-# ── Permissões do porteiro (seção 9) ─────────────────────────────────
+# ── Permissões do porteiro (seção 12) ─────────────────────────────────
 class PermissoesPorteiroEntrada(SchemaBase):
     registrar_visitantes: bool = True
     registrar_encomendas: bool = True

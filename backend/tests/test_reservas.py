@@ -1,4 +1,4 @@
-"""Testes dos requisitos da seção 6 e da seção 11.5.3 da documentação."""
+"""Testes dos requisitos da seção 6 e da seção 13.5.3 da documentação."""
 from __future__ import annotations
 
 from datetime import date, timedelta
@@ -163,7 +163,7 @@ def test_espaco_de_uso_livre_nao_aceita_reserva(cliente, cenario):
     assert r.status_code == 400
 
 
-# ── Aprovação (seção 11.5.3) ─────────────────────────────────────────
+# ── Aprovação (seção 13.5.3) ─────────────────────────────────────────
 def test_sindico_aprova_e_recusa(cliente, cenario):
     a = reservar(cliente, cenario["ana"], cenario["salao"]["id"], "14:00", "18:00").json()
     assert a["status"] == "pendente"

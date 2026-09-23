@@ -1,7 +1,7 @@
 /* Permissões do porteiro no front-end.
  *
  * O síndico decide, por porteiro, o que ele pode registrar (documentação,
- * seção 9, "Permissão do Porteiro"). A API já recusa o que não foi
+ * seção 12, "Permissão do Porteiro"). A API já recusa o que não foi
  * liberado, com 403. Sem isto aqui, porém, o porteiro via o módulo no
  * menu, abria a tela, preenchia o formulário inteiro e só descobria no
  * envio que não podia — o que parece defeito do sistema.

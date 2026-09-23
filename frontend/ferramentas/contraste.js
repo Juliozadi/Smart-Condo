@@ -1,6 +1,6 @@
 /* Mede o contraste de todo texto visível das páginas, nos dois temas,
  * e lista o que não alcança o mínimo do WCAG AA (documentação, seção
- * 12.1): 4,5:1 para texto normal e 3:1 para texto grande.
+ * 22.1): 4,5:1 para texto normal e 3:1 para texto grande.
  *
  * Antes de rodar, deixe no ar a API (porta 8000) e o front-end
  * (porta 8080, servido de frontend/). Depois:

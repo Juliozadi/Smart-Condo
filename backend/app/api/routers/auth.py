@@ -1,6 +1,6 @@
 """Cadastro, login e recuperação de senha.
 
-Documentação, seção 9 — casos de uso "Cadastro", "Login do usuário" e
+Documentação, seção 12 — casos de uso "Cadastro", "Login do usuário" e
 "Esqueci minha senha".
 
 Quem se cadastra sozinho é apenas o morador, e ainda assim depende da

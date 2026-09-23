@@ -76,7 +76,7 @@ def exigir_papel(*papeis: Papel) -> Callable[[Usuario], Usuario]:
 def exigir_permissao_porteiro(nome_permissao: str) -> Callable[..., Usuario]:
     """Aplica as permissões que o síndico definiu para o porteiro.
 
-    Documentação, seção 9 — "Permissão do Porteiro": o síndico escolhe
+    Documentação, seção 12 — "Permissão do Porteiro": o síndico escolhe
     quais ações ficam disponíveis. O síndico passa direto; o morador nunca.
     """
 

@@ -40,7 +40,7 @@ img[src*="/assets/img/icons/"]{width:16px;height:16px;vertical-align:middle}
   --placeholder:    #5b737e;
 
   /* Cores de estado. Cada tema tem o seu tom, escolhido para passar os
-     4,5:1 do WCAG AA (seção 12.1) sobre a superfície mais clara do
+     4,5:1 do WCAG AA (seção 22.1) sobre a superfície mais clara do
      próprio tema — no claro o branco, no escuro o --surface-2. Nunca
      escreva um destes tons direto na regra: use a variável, senão a cor
      não acompanha a troca de tema. */
@@ -164,7 +164,11 @@ body {
   align-items: center;
   justify-content: center;
   gap: 14px;
-  background: linear-gradient(135deg, #ffffff, #ffffff);
+  /* Tem de ser o token, não o branco escrito à mão: no tema escuro o
+     painel continuava branco enquanto o texto dentro dele virava
+     claro, e o nome do sistema sumia. Vale para as 15 páginas que
+     usam esta área. */
+  background: var(--surface);
   padding: 16px 24px;
   border-radius: var(--radius-md);
   margin-bottom: 32px;
@@ -1473,7 +1477,7 @@ a, button, .role-btn, .dash-card, .list-item, .register-card, .register-card-com
 /* ── Card hover glow refinado ──────────────────────────────── */
 .form-card:hover { box-shadow: var(--shadow-md); border-color: rgba(16,182,168,.15); transition: all .25s var(--ease-smooth); }
 /* ═════════════════════════════════════════════════════════════
-   TEMA ESCURO / CLARO  (Documentação, seção 12.4)
+   TEMA ESCURO / CLARO  (Documentação, seção 22.4)
    Por padrão o SmartCondo segue a definição de modo de cor do
    sistema operacional; o usuário pode sobrescrever a qualquer
    momento pelo widget de acessibilidade (auto / claro / escuro).
@@ -1542,7 +1546,6 @@ body.tema-escuro .history-table .table-row:nth-child(even) { background: var(--s
 body.tema-escuro .history-table .table-row:hover {
   background: linear-gradient(90deg, rgba(22,201,185,.16), rgba(22,201,185,.06));
 }
-body.tema-escuro .login-brand { background: var(--surface); }
 body.tema-escuro .logout-btn:hover {
   background: rgba(240,80,80,.16); color: #ff9c9c; border-color: rgba(240,80,80,.4);
 }

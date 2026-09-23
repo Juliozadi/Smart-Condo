@@ -1,7 +1,7 @@
 """Controle de veículos no estacionamento.
 
 Documentação, seção 8: o porteiro registra entradas e saídas. O que ele
-pode fazer aqui depende da permissão que o síndico definiu (seção 9).
+pode fazer aqui depende da permissão que o síndico definiu (seção 12).
 """
 from __future__ import annotations
 

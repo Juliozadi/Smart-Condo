@@ -76,7 +76,7 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
 .profile-avatar i{font-size:15px;color:var(--primary);}
 .profile-avatar img,.profile-avatar svg{width:16px;height:16px;display:block;}
 .profile-role{font-size: 12px;font-weight:600;white-space:nowrap;}
-.profile-name{font-size:13px;font-weight:700;color:var(--text);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.profile-name{font-size:13px;font-weight:700;color:var(--text);max-width:240px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
 .mobile-back{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);font-size:16px;text-decoration:none;flex-shrink:0;transition:all .2s;}
 .mobile-back img{width:16px;height:16px;display:block;}
@@ -846,6 +846,12 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
   padding: 11px 16px;
 }
 
+/* A barra aqui tem 480px de propósito, e nela o papel ao lado do nome não
+   cabe: sobravam 9px e o nome do síndico terminava em reticências. O papel
+   é a informação repetida — o ícone do avatar já o indica e o painel logo
+   abaixo o repete por extenso —, então ele sai e o nome aparece inteiro. */
+.layout-mobile .profile-role { display: none; }
+
 .layout-mobile .user-chip {
   display: none;
 }
@@ -1477,7 +1483,7 @@ body:has(.step-page:target) .step-page.default-step {
 
 /* ═══════════════════════════════════════════
    CONTATO COM O PORTEIRO — chat e voz
-   Documentação, seção 11.5.2: "pode contatá-los por chat ou ligação de voz"
+   Documentação, seção 13.5.2: "pode contatá-los por chat ou ligação de voz"
    ═══════════════════════════════════════════ */
 .contato-acoes { display: flex; gap: 6px; flex-wrap: wrap; margin-right: 10px; }
 .contato-btn {
@@ -1670,6 +1676,9 @@ body:has(.step-page:target) .step-page.default-step {
 .app-bar-inner { gap: 10px; min-width: 0; }
 .app-bar-brand { min-width: 0; flex-shrink: 1; }
 .app-bar-right { min-width: 0; flex-shrink: 1; }
+/* Sem isto o nome não encolhe quando a barra aperta: ele ficaria no
+   limite de 240px e empurraria o botão Sair para fora da tela. */
+.profile-link { min-width: 0; }
 
 @media (max-width: 640px) {
   /* No celular o chip vira só o avatar: nome e papel saem, e o toque
@@ -1743,7 +1752,7 @@ body:has(.step-page:target) .step-page.default-step {
   .pill-acao { padding: 7px 11px; }
 }
 
-/* ── Painel de permissões do porteiro (documentação, seção 9) ────── */
+/* ── Painel de permissões do porteiro (documentação, seção 12) ────── */
 .porteiro-bloco { display: flex; flex-direction: column; }
 .painel-permissoes {
   background: var(--surface-2);

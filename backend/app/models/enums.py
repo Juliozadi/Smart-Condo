@@ -1,4 +1,4 @@
-"""Enumerações do domínio (documentação, seções 8 e 9)."""
+"""Enumerações do domínio (documentação, seções 8 e 12)."""
 import enum
 
 
@@ -25,7 +25,7 @@ class StatusUsuario(str, enum.Enum):
 
 
 class CanalVerificacao(str, enum.Enum):
-    """"o sistema envia um código pelo meio escolhido pelo usuário" (seção 9)."""
+    """"o sistema envia um código pelo meio escolhido pelo usuário" (seção 12)."""
     EMAIL = "email"
     SMS = "sms"
 
@@ -42,7 +42,7 @@ class TipoOcupacao(str, enum.Enum):
 
 
 class StatusReserva(str, enum.Enum):
-    """O síndico aprova ou recusa (seção 11.5.3)."""
+    """O síndico aprova ou recusa (seção 13.5.3)."""
     PENDENTE = "pendente"
     APROVADA = "aprovada"
     RECUSADA = "recusada"
@@ -131,7 +131,7 @@ class StatusOrdemServico(str, enum.Enum):
 
 
 class CategoriaDocumento(str, enum.Enum):
-    """Documentação, seção 11.6: atas, convenção e regimento interno."""
+    """Documentação, seção 13.6: atas, convenção e regimento interno."""
     CONVENCAO = "convencao"
     REGIMENTO = "regimento"
     ATA = "ata"

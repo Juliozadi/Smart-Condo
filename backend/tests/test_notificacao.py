@@ -1,6 +1,6 @@
 """Entrega dos códigos de confirmação e de recuperação de senha.
 
-Documentação, seção 9. O que estes testes protegem: sem envio real, o
+Documentação, seção 12. O que estes testes protegem: sem envio real, o
 morador que se cadastra fica preso esperando um código que nunca chega.
 """
 from __future__ import annotations

@@ -3,10 +3,10 @@
 Documentação:
   - seção 8: "Síndico: responsável pelo cadastro dos funcionários... 
     administrar os moradores"
-  - seção 9, caso de uso "Permissão do Porteiro": "o sistema mostra as
+  - seção 12, caso de uso "Permissão do Porteiro": "o sistema mostra as
     possibilidades de ações do porteiro" e "o síndico escolhe quais estarão
     disponíveis para o porteiro"
-  - seção 11.2: "o cadastro do porteiro deve ser fomentado com dados
+  - seção 13.2: "o cadastro do porteiro deve ser fomentado com dados
     pessoais, e por fim as permissões de uso no sistema"
 """
 from __future__ import annotations
@@ -55,7 +55,7 @@ def _buscar_do_meu_condominio(db: Session, sindico: Usuario, usuario_id: int) ->
     return usuario
 
 
-# ── Cadastro do porteiro (seções 9 e 11.2) ───────────────────────────
+# ── Cadastro do porteiro (seções 12 e 13.2) ───────────────────────────
 @router.post(
     "/porteiros",
     response_model=CadastroSaida,
@@ -114,7 +114,7 @@ def cadastrar_porteiro(
     )
 
 
-# ── Permissões (seção 9) ─────────────────────────────────────────────
+# ── Permissões (seção 12) ─────────────────────────────────────────────
 @router.get(
     "/porteiros/acoes",
     summary="Lista as ações que podem ser liberadas ao porteiro",
@@ -122,7 +122,7 @@ def cadastrar_porteiro(
 def listar_acoes_do_porteiro(
     _: Usuario = Depends(exigir_papel(Papel.SINDICO)),
 ) -> list[dict[str, str]]:
-    """"O sistema mostra as possibilidades de ações do porteiro" (seção 9)."""
+    """"O sistema mostra as possibilidades de ações do porteiro" (seção 12)."""
     return ACOES_DO_PORTEIRO
 
 
@@ -194,7 +194,7 @@ def definir_permissoes(
     sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
     db: Session = Depends(get_db),
 ) -> PermissoesPorteiroSaida:
-    """"O síndico escolhe quais estarão disponíveis para o porteiro" (seção 9)."""
+    """"O síndico escolhe quais estarão disponíveis para o porteiro" (seção 12)."""
     porteiro = _buscar_do_meu_condominio(db, sindico, porteiro_id)
     if porteiro.papel != Papel.PORTEIRO:
         raise HTTPException(

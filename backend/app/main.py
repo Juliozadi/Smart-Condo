@@ -1,7 +1,7 @@
 """SmartCondo — API.
 
 Sistema de Gerenciamento de Condomínios (Projeto Integrador I).
-Documentação, seção 10.4: o back-end é em Python; seção 10.5: PostgreSQL.
+Documentação, seção 19.4: o back-end é em Python; seção 19.5: PostgreSQL.
 """
 from __future__ import annotations
 

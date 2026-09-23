@@ -1,6 +1,6 @@
 """Espaços comuns, reservas e ocupação em tempo real.
 
-Documentação, seção 6 (História do Usuário) e seção 11.5.3 (o síndico
+Documentação, seção 6 (História do Usuário) e seção 13.5.3 (o síndico
 aprova ou recusa e vê o histórico).
 """
 from __future__ import annotations
@@ -327,7 +327,7 @@ def cancelar_reserva(
     return _para_saida(reserva)
 
 
-# ── Aprovação pelo síndico (seção 11.5.3) ────────────────────────────
+# ── Aprovação pelo síndico (seção 13.5.3) ────────────────────────────
 @router.get(
     "/reservas",
     response_model=list[ReservaSindicoSaida],

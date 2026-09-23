@@ -51,6 +51,27 @@ Morador*. Quem se cadastra assim fica pendente até o síndico aprovar.
 São três coisas no ar ao mesmo tempo: o **banco**, a **API** e o
 **front-end**.
 
+### No Windows, em um comando só
+
+O [`configurar.ps1`](configurar.ps1) faz todos os passos abaixo sozinho:
+instala as dependências, cria o `.env`, cria o usuário e o banco no
+PostgreSQL, cria as tabelas, carrega as contas de demonstração e sobe a
+API. Rodar duas vezes não faz mal — ele pula o que já está pronto.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\configurar.ps1
+```
+
+Ou dê dois cliques no `configurar.bat`, que chama o mesmo script.
+
+Ele vai pedir a senha do usuário `postgres` (a que você escolheu ao
+instalar o PostgreSQL) na primeira vez, e só nela. Se alguma peça estiver
+faltando, ele diz qual é e o que fazer, em vez de estourar um erro
+técnico.
+
+O resto desta seção é o mesmo caminho na mão, para Linux, macOS ou para
+quem quiser entender cada etapa.
+
 ### 1. Banco de dados (PostgreSQL)
 
 Instale o PostgreSQL 16 e crie o banco e o usuário:
