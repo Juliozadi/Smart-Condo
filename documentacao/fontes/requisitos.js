@@ -135,8 +135,8 @@ const requisitosFuncionais = [
   { id: 'RF021', nome: 'Registrar visitante',
     atores: 'Porteiro', prioridade: 'Essencial',
     descricao: 'O sistema permite registrar a chegada de um visitante, vinculando-o à unidade visitada e avisando o morador para que confirme.',
-    entradas: 'O porteiro informa nome do visitante, documento e a unidade de destino. É preciso ter a permissão de registrar visitantes.',
-    saidas: 'O visitante é registrado como "aguardando confirmação" e o morador da unidade recebe o aviso.' },
+    entradas: 'O porteiro informa nome do visitante, documento e a unidade de destino, e pode tirar uma foto pela câmera ou enviar uma imagem. É preciso ter a permissão de registrar visitantes.',
+    saidas: 'O visitante é registrado como "aguardando confirmação" e o morador da unidade recebe o aviso, com a foto no painel para reconhecer quem está na portaria. A foto só é vista pelo morador da unidade, pelo síndico e pela portaria, e não pode ser trocada depois que o morador responde.' },
 
   { id: 'RF022', nome: 'Confirmar ou recusar visitante',
     atores: 'Morador', prioridade: 'Essencial',
@@ -153,8 +153,8 @@ const requisitosFuncionais = [
   { id: 'RF024', nome: 'Registrar encomenda',
     atores: 'Porteiro', prioridade: 'Essencial',
     descricao: 'O sistema permite registrar a chegada de uma encomenda, vinculada à unidade, e avisar o morador de que há algo para retirar.',
-    entradas: 'O porteiro informa a unidade, a transportadora e, quando houver, o código de rastreio. É preciso ter a permissão de registrar encomendas.',
-    saidas: 'A encomenda fica como "aguardando retirada" e aparece no painel do morador.' },
+    entradas: 'O porteiro informa a unidade, a transportadora e, quando houver, o código de rastreio e uma foto do volume. É preciso ter a permissão de registrar encomendas.',
+    saidas: 'A encomenda fica como "aguardando retirada" e aparece no painel do morador, com a foto quando houver.' },
 
   { id: 'RF025', nome: 'Confirmar retirada de encomenda',
     atores: 'Morador', prioridade: 'Importante',
@@ -262,6 +262,18 @@ const requisitosFuncionais = [
     descricao: 'O sistema permite escolher receber o código de confirmação do cadastro e o de recuperação de senha por SMS, além do e-mail.',
     entradas: 'O servidor precisa ter um provedor de SMS configurado; sem ele, a opção aparece indisponível e a API recusa o pedido, orientando a usar o e-mail.',
     saidas: 'O código é enviado ao celular cadastrado, em uma mensagem curta, e o reenvio usa o mesmo canal escolhido.' },
+
+  { id: 'RF043', nome: 'Enviar documentos no cadastro',
+    atores: 'Morador', prioridade: 'Essencial',
+    descricao: 'O sistema permite ao morador enviar, junto com o cadastro, o RG ou a CNH, o comprovante de residência ou contrato de locação e, se for proprietário, a escritura; e também a foto de perfil.',
+    entradas: 'Cada documento precisa ser PDF, JPG, PNG ou WebP, com até 10 MB, conferido pelo conteúdo do arquivo. O envio usa a autorização devolvida pelo cadastro, que vale por uma hora e só enquanto o síndico não decidiu.',
+    saidas: 'Os documentos ficam guardados sem endereço público e aparecem para o síndico na fila de aprovação. Se algum envio falhar, a tela informa qual e permite tentar de novo ou seguir sem ele.' },
+
+  { id: 'RF044', nome: 'Conferir documentos antes de aprovar',
+    atores: 'Síndico', prioridade: 'Essencial',
+    descricao: 'O sistema mostra, em cada cadastro aguardando aprovação, os documentos enviados e os obrigatórios que faltam, e permite abri-los na própria tela.',
+    entradas: 'O cadastro deve ser de um morador do condomínio do síndico.',
+    saidas: 'O documento é exibido — imagem ou PDF — sem ser gravado no cache do navegador. Recusado o cadastro, ou inativado o morador, os documentos são apagados.' },
 ];
 
 // ── 10 Requisitos não funcionais ────────────────────────────────────
@@ -340,12 +352,12 @@ const requisitosNaoFuncionais = [
       verificacao: 'Conferido nas respostas do sistema em funcionamento.' },
     { id: 'RNF016', nome: 'Tratamento de dados pessoais',
       prioridade: 'Essencial',
-      descricao: 'O sistema trata dados pessoais de moradores, porteiros e visitantes, e por isso segue a Lei Geral de Proteção de Dados: coleta apenas o necessário para a finalidade declarada, informa o titular na Política de Privacidade e nos Termos de Uso, e limita o acesso ao condomínio a que o dado pertence.',
+      descricao: 'O sistema trata dados pessoais de moradores, porteiros e visitantes, e por isso segue a Lei Geral de Proteção de Dados: coleta apenas o necessário para a finalidade declarada, informa o titular na Política de Privacidade e nos Termos de Uso, e limita o acesso ao condomínio a que o dado pertence. O que não tem mais finalidade é apagado: as fotos de visitantes e encomendas depois de noventa dias, e os documentos do cadastro quando ele é recusado ou quando o morador é inativado.',
       verificacao: 'A Política de Privacidade e os Termos de Uso estão publicados e acessíveis a partir da tela de entrada.' },
-    { id: 'RNF017', nome: 'Arquivos enviados conferidos pelo conteúdo',
+    { id: 'RNF017', nome: 'Arquivos enviados conferidos e protegidos',
       prioridade: 'Essencial',
-      descricao: 'Toda foto enviada é aceita ou recusada pelos primeiros bytes do arquivo, e não pela extensão ou pelo tipo informado pelo navegador, que quem envia escolhe. O nome gravado é aleatório e gerado pelo servidor, o que impede adivinhar a foto de outra pessoa e usar o nome do arquivo para gravar fora da pasta de fotos.',
-      verificacao: 'Coberto por testes que enviam um HTML com extensão .png, um arquivo vazio, um arquivo grande demais e um nome com ../ — todos recusados ou neutralizados.' },
+      descricao: 'Todo arquivo enviado é aceito ou recusado pelos primeiros bytes do conteúdo, e não pela extensão ou pelo tipo informado pelo navegador, que quem envia escolhe. O nome gravado é aleatório e gerado pelo servidor, o que impede adivinhar o arquivo de outra pessoa e usar o nome para gravar fora da pasta. As fotos da portaria e os documentos do cadastro não têm endereço público: só saem por rotas que conferem o token e quem tem direito a ver cada um.',
+      verificacao: 'Coberto por testes que enviam um HTML com extensão .png, um executável com extensão .pdf, um arquivo vazio, um grande demais e um nome com ../, e por testes que tentam abrir a foto de um visitante como morador de outra unidade, como porteiro sem permissão, como síndico de outro condomínio e sem token — todos recusados.' },
   ]},
 
   { n: '10.5', grupo: 'Padrões', itens: [

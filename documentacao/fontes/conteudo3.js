@@ -31,7 +31,7 @@ const arquitetura = {
     'A terceira é o banco de dados PostgreSQL, acessado pela API por meio do SQLAlchemy. As mudanças de estrutura são versionadas com o Alembic.',
     'Fora dessas três camadas, o sistema depende de um serviço de envio de mensagens. Os códigos de confirmação de cadastro e de recuperação de senha saem por correio eletrônico, usando um servidor SMTP configurado por variáveis de ambiente, e a mensagem vai em duas versões, uma em texto simples e outra formatada. Sem essa configuração o código não é entregue a ninguém, o que travaria o cadastro do morador; por isso a aplicação avisa ao iniciar quando está em modo de produção sem o servidor de correio definido.',
     'Os mesmos códigos podem ir por SMS, por meio do provedor Twilio, quando as credenciais dele estão configuradas. A tela consulta a API para saber se o SMS está disponível e só oferece a opção nesse caso; sem provedor, a API recusa o pedido e orienta a usar o e-mail, em vez de gerar um código que nunca chegaria. O texto é curto de propósito, porque uma mensagem acima de 160 caracteres é cobrada como duas.',
-    'As fotos de perfil ficam gravadas em uma pasta do servidor, fora do banco, com um nome aleatório gerado no envio; o banco guarda apenas o caminho. O chat entre síndico, porteiros e moradores usa a mesma API: enquanto a conversa está aberta, a tela consulta as mensagens novas a cada quatro segundos, o que atende ao volume de um condomínio sem exigir uma conexão permanente com o servidor.',
+    'As fotos de perfil ficam gravadas em uma pasta do servidor, fora do banco, com um nome aleatório gerado no envio; o banco guarda apenas o caminho. As fotos tiradas na portaria e os documentos enviados no cadastro do morador também ficam em pastas do servidor, mas separadas e sem endereço público: por serem dados pessoais de terceiros, só saem por rotas da API que conferem o token e quem tem direito a ver cada arquivo. O chat entre síndico, porteiros e moradores usa a mesma API: enquanto a conversa está aberta, a tela consulta as mensagens novas a cada quatro segundos, o que atende ao volume de um condomínio sem exigir uma conexão permanente com o servidor.',
   ],
   subsecoes: [
     { n: '13.1', nome: 'Modelagem do banco de dados', paragrafos: [
@@ -53,11 +53,12 @@ const arquitetura = {
       ['comunicados', 'Avisos publicados pelo síndico'],
       ['leituras_comunicado', 'Quem já leu cada comunicado'],
       ['visitantes', 'Registro de visitantes, com a foto do vídeo porteiro'],
-      ['encomendas', 'Encomendas recebidas na portaria'],
+      ['encomendas', 'Encomendas recebidas na portaria, com a foto do volume'],
       ['ocorrencias', 'Chamados abertos por moradores, porteiros ou síndico'],
       ['movimentacoes_veiculo', 'Entradas e saídas do estacionamento'],
       ['ordens_servico', 'Manutenção aberta e acompanhada pelo síndico'],
       ['documentos', 'Atas, convenção, regimento e plantas'],
+      ['documentos_cadastro', 'RG, comprovante de residência e escritura enviados no cadastro do morador'],
     ]},
     { n: '13.2', nome: 'Segurança dos dados', paragrafos: [
       'As senhas nunca são guardadas em texto puro: o sistema armazena apenas o hash gerado pelo algoritmo bcrypt, que é de mão única. Mesmo com acesso ao banco, não é possível recuperar a senha original.',
@@ -67,6 +68,8 @@ const arquitetura = {
       'Toda decisão tomada dentro do sistema guarda o registro de quem a tomou e quando. Isso vale para a aprovação de uma reserva, para a resposta a uma ocorrência e também para a aprovação do cadastro de um morador, que é a decisão que concede acesso ao sistema; quando o cadastro é recusado, o motivo fica gravado junto.',
       'O código de seis dígitos usado na confirmação do cadastro e na recuperação de senha também tem limite de tentativas, e por um motivo prático: sem ele, bastaria pedir a recuperação de um endereço conhecido e percorrer as combinações até acertar, o que daria acesso à conta alheia. O código é guardado embaralhado, vale por quinze minutos e é descartado assim que usado ou quando o limite se esgota. Ele nunca é registrado no diário do servidor, para que ter acesso a esse arquivo não signifique conseguir entrar nas contas.',
       'As respostas da API trazem cabeçalhos que fecham portas deixadas abertas pelo comportamento padrão do navegador: impedir que o tipo do conteúdo seja adivinhado, impedir que a API seja exibida dentro de um quadro de outra página e restringir a origem do que a resposta pode carregar. Publicado o sistema, é acrescentado também o cabeçalho que obriga o uso de conexão segura.',
+      'As fotos de visitantes e de encomendas e os documentos do cadastro do morador são dados pessoais de terceiros e recebem tratamento próprio. O tipo de cada arquivo é conferido pelos primeiros bytes do conteúdo, e não pela extensão informada, que é escolhida por quem envia. Os arquivos não têm endereço público: a foto de um visitante só é entregue ao morador da unidade visitada, ao síndico e ao porteiro com permissão de registrar visitantes, e os documentos do cadastro só ao síndico do condomínio. A tela baixa o arquivo com o token e o exibe a partir da memória do navegador, sem que ele fique guardado em cache. As fotos da portaria são apagadas depois de noventa dias, e os documentos do cadastro são apagados quando o cadastro é recusado ou o morador é inativado, porque a finalidade que justificava guardá-los deixou de existir.',
+      'Quem acabou de se cadastrar ainda não pode entrar no sistema, mas precisa enviar os documentos. Para isso, o cadastro devolve uma autorização de uso único em propósito: ela vale por uma hora, só permite enviar os documentos e a foto daquele cadastro, deixa de valer quando o síndico decide e nunca abre uma sessão, nem depois da aprovação.',
       'As permissões do porteiro, definidas pelo síndico, são verificadas em toda gravação. A tela também as consulta, para esconder o que aquele porteiro não pode fazer em vez de deixá-lo preencher um formulário que seria recusado no envio; a decisão, porém, continua sendo da API, e não do navegador.',
       'Por fim, o tratamento dos dados pessoais é descrito em dois documentos acessíveis pelo próprio sistema: os Termos de Uso e a Política de Privacidade. A política relaciona, um a um, os dados que o sistema guarda, a base legal de cada tratamento, o prazo de guarda e os direitos previstos no artigo 18 da Lei 13.709/2018, a Lei Geral de Proteção de Dados. O aceite desses documentos é condição para concluir o cadastro.',
     ], tabela: null },
@@ -76,18 +79,18 @@ const arquitetura = {
 // ── 14 API REST (nova) ──────────────────────────────────────────────
 const api = {
   paragrafos: [
-    'A comunicação entre o front-end e o banco de dados acontece por uma API REST, com 88 endpoints distribuídos em treze módulos. Todos os endereços começam com /api/v1, o que permite publicar uma versão 2 no futuro sem quebrar as telas que já usam a versão atual.',
+    'A comunicação entre o front-end e o banco de dados acontece por uma API REST, com 96 endpoints distribuídos em treze módulos. Todos os endereços começam com /api/v1, o que permite publicar uma versão 2 no futuro sem quebrar as telas que já usam a versão atual.',
     'As mensagens de erro são padronizadas e vêm em português, para que a tela possa exibir ao usuário exatamente o que o servidor respondeu, sem precisar traduzir código de erro.',
     'O FastAPI gera automaticamente uma documentação interativa dos endpoints, acessível em /docs quando a API está no ar. Por ela é possível testar cada rota sem escrever código, o que facilita tanto o desenvolvimento quanto a demonstração do projeto.',
   ],
   tabela: [
     ['Módulo', 'Rotas', 'Responsabilidade'],
-    ['auth', '9', 'Cadastro, confirmação por código (e-mail ou SMS), login, recuperação de senha e canais disponíveis'],
+    ['auth', '11', 'Cadastro, envio dos documentos do cadastro, confirmação por código (e-mail ou SMS), login, recuperação de senha e canais disponíveis'],
     ['admin', '12', 'Painel do administrador: condomínios e usuários da plataforma'],
-    ['usuarios', '13', 'Cadastro de porteiros e moradores, aprovação, permissões e foto de perfil'],
+    ['usuarios', '15', 'Cadastro de porteiros e moradores, aprovação com os documentos do cadastro, permissões e foto de perfil'],
     ['condominios', '5', 'Dados do condomínio, unidades e código de acesso'],
     ['reservas', '10', 'Espaços comuns, agenda sigilosa, reservas e ocupação'],
-    ['portaria', '10', 'Visitantes, encomendas e ocorrências'],
+    ['portaria', '14', 'Visitantes, encomendas e ocorrências, com as fotos enviadas ao morador'],
     ['financeiro', '7', 'Preferência de cobrança, cobranças e pagamentos'],
     ['comunicados', '4', 'Publicação, leitura e remoção de avisos'],
     ['veiculos', '4', 'Entradas e saídas do estacionamento e ocupação'],
@@ -101,11 +104,11 @@ const api = {
 // ── 15 Testes automatizados (nova) ──────────────────────────────────
 const testes = {
   paragrafos: [
-    'As regras do sistema são verificadas por uma suíte de 249 casos de teste automatizados, escritos com pytest e executados contra um banco PostgreSQL real, e não contra um banco simulado. Assim, restrições de chave estrangeira e de unicidade também são exercitadas.',
+    'As regras do sistema são verificadas por uma suíte de 282 casos de teste automatizados, escritos com pytest e executados contra um banco PostgreSQL real, e não contra um banco simulado. Assim, restrições de chave estrangeira e de unicidade também são exercitadas.',
     'Os testes não conferem apenas se o caminho feliz funciona. Boa parte deles verifica justamente o que o sistema precisa recusar: um morador não pode ver a ocorrência de outro; um porteiro sem a permissão liberada pelo síndico não consegue registrar uma ocorrência; uma reserva que se sobrepõe a outra é recusada; a mensagem de conflito não revela quem reservou; e a senha nunca é gravada em texto puro.',
     'Cada vez que uma regra nova é escrita, um teste correspondente é adicionado. Isso permite alterar o código com segurança: se uma mudança quebrar uma regra antiga, a suíte acusa antes de o problema chegar à tela.',
     'A suíte é executada automaticamente a cada envio de código ao repositório, junto com duas outras verificações: a aplicação das mudanças de estrutura do banco no sentido de ida e de volta, feita com a tabela já populada, que é a situação em que uma alteração mal escrita falha; e a execução dos scripts de criação e carga do banco em um banco vazio, já que eles são mantidos manualmente e podem deixar de acompanhar uma mudança de estrutura.',
-    'Além da suíte do servidor, 47 testes de interface abrem as telas em um navegador Chromium real, nos temas claro e escuro, em largura de computador e de celular. Eles conferem o que já falhou uma vez e não pode voltar: erros de JavaScript, imagens quebradas, rolagem lateral no celular, a barra superior fora do topo, títulos e cartões sem ícone, caixas claras no tema escuro e o medidor de força da senha. Também rodam a cada envio, com o banco, a API e o site no ar.',
+    'Além da suíte do servidor, 49 testes de interface abrem as telas em um navegador Chromium real, nos temas claro e escuro, em largura de computador e de celular. Eles conferem o que já falhou uma vez e não pode voltar: erros de JavaScript, imagens quebradas, rolagem lateral no celular, a barra superior fora do topo, títulos e cartões sem ícone, caixas claras no tema escuro e o medidor de força da senha. Dois deles percorrem os fluxos com arquivo de ponta a ponta: a foto tirada pelo porteiro chegando ao painel do morador, e os documentos escolhidos no cadastro chegando à fila de aprovação do síndico. Também rodam a cada envio, com o banco, a API e o site no ar.',
     'Por fim, o banco criado pelos scripts SQL manuais é comparado ao banco criado pelas migrações — tabelas, colunas, restrições, índices e tipos —, porque rodar sem erro não garante que o resultado seja o mesmo: um script que esquecesse uma tabela nova rodaria normalmente.',
   ],
   tabela: [
@@ -120,6 +123,8 @@ const testes = {
     ['test_notificacao.py', '17', 'Entrega dos códigos por e-mail e por SMS, e o que não pode ir para o log'],
     ['test_foto.py', '12', 'Foto de perfil: tipo conferido pelo conteúdo, tamanho, nome gerado pelo servidor e remoção'],
     ['test_mensagens.py', '11', 'Chat: quem pode conversar com quem, não lidas e mensagens inválidas'],
+    ['test_documentos_cadastro.py', '18', 'Documentos do cadastro: autorização de envio, tipos aceitos, acesso só do síndico e descarte na recusa e na inativação'],
+    ['test_portaria_fotos.py', '15', 'Fotos de visitantes e encomendas: quem pode ver, tipo conferido e prazo de guarda'],
   ],
 };
 
@@ -129,7 +134,7 @@ const conclusao = [
   'A implementação do SmartCondo é crucial para elevar a qualidade e praticidade na rotina desses condomínios, trazendo fluidez no setor financeiro e possibilitando a execução de ações rotineiras, como a visualização de espaços em uso. O objetivo é facilitar a operação do gerenciamento, eliminando falhas financeiras e reduzindo significativamente intrigas internas. Para isso, o projeto visa atender a todos os usuários de modo completo e se adequar ao cotidiano, garantindo organização nas moradias e serviços.',
   'O sistema prevê funcionalidades específicas para cada tipo de usuário – administrador, síndico, porteiro e morador. O administrador opera a plataforma, cadastrando os condomínios e criando a conta do síndico de cada um. O síndico poderá gerenciar de forma prática e eficiente, incluindo o gerenciamento financeiro com notificações de pagamento e a visualização remota e sigilosa da locação de espaços. O porteiro terá recursos para notificar entregas, registrar entradas e saídas e utilizar o videoporteiro para confirmar a entrada de convidados com foto ou gravação em tempo real, fomentando a segurança. O morador poderá realizar pagamentos com opções variadas, alugar espaços de forma sigilosa, verificar a ocupação de áreas comuns e receber notificações e confirmações de entregas/convidados.',
   'Com um prazo de 2 anos, o projeto se baseia na utilização de linguagens e ferramentas robustas e escaláveis, como HTML, CSS e JavaScript no front-end, Python com FastAPI no back-end e PostgreSQL no banco de dados. Adicionalmente, o projeto demonstra um compromisso com a acessibilidade, utilizando VLibras para usuários com deficiência auditiva, e recursos de alteração de tamanho de fonte e mudança de cores (modo claro/escuro) para deficiências visuais, garantindo uma boa experiência e inclusão.',
-  'Até o momento, o sistema conta com as quatro áreas de acesso implementadas e ligadas à API, 20 tabelas em PostgreSQL, 88 endpoints, 249 casos de teste automatizados cobrindo as regras de negócio e 47 testes de interface executados em um navegador real.',
+  'Até o momento, o sistema conta com as quatro áreas de acesso implementadas e ligadas à API, 21 tabelas em PostgreSQL, 96 endpoints, 282 casos de teste automatizados cobrindo as regras de negócio e 49 testes de interface executados em um navegador real.',
   'Em suma, o SmartCondo é um projeto realista, alinhado com as necessidades do mercado e da tecnologia atual, visando transformar a gestão de condomínios de pequeno e médio porte em um processo ágil, prático, seguro e inclusivo.',
 ];
 

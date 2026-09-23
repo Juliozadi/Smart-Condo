@@ -86,6 +86,8 @@ const historico = [
    'Júlio Zadi, Luan Flôres Martins, Lenini Bellodi Júnior, Juliano Araujo, João Victor Muller Miranda'],
   ['23/09/2026', '2.1', 'Foto de perfil, chat e ligação, envio de código por SMS, testes de interface e comparação dos scripts SQL com as migrações',
    'Júlio Zadi, Luan Flôres Martins, Lenini Bellodi Júnior, Juliano Araujo, João Victor Muller Miranda'],
+  ['23/09/2026', '2.2', 'Fotos de visitantes e encomendas com acesso restrito e prazo de guarda, e documentos do cadastro do morador conferidos pelo síndico',
+   'Júlio Zadi, Luan Flôres Martins, Lenini Bellodi Júnior, Juliano Araujo, João Victor Muller Miranda'],
 ];
 
 // ── Seção 9: casos de uso ───────────────────────────────────────────
