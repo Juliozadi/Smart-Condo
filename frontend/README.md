@@ -92,3 +92,17 @@ Sai com código 1 se achar alguma falha, agrupada por causa — a mesma
 cor sobre o mesmo fundo aparece uma vez, não uma por ocorrência.
 Fundos em gradiente são pulados: com a cor variando ao longo do
 elemento, não dá para apurar a razão com honestidade.
+
+## Testes de interface
+
+`testes/` abre as telas num navegador de verdade e confere o que já
+quebrou uma vez: erro de JavaScript, imagem quebrada, rolagem lateral no
+celular, barra superior fora do topo, ícones faltando, fundo claro no
+tema escuro e o medidor de senha do cadastro. Rodam a cada envio ao
+GitHub; para rodar na sua máquina, com a API e o site no ar:
+
+```bash
+pip install -r testes/requirements.txt
+python -m playwright install chromium
+python -m pytest testes
+```

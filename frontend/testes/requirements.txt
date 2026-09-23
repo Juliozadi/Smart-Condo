@@ -1,0 +1,3 @@
+# Testes de interface: rodam num navegador de verdade (Chromium).
+pytest==9.1.1
+playwright==1.63.0
