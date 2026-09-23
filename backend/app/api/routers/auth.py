@@ -11,25 +11,33 @@ admin.py) e o síndico cadastra porteiros e moradores do seu condomínio
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_usuario_atual
+from app.api.deps import esquema_bearer, get_usuario_atual
 from app.core.config import settings
 from app.core.database import get_db
-from app.core.security import criar_token_acesso, gerar_hash_senha
+from app.core.security import (
+    criar_token_acesso, criar_token_documentos, gerar_hash_senha, ler_token_documentos,
+)
 from app.models.condominio import Condominio, Unidade
-from app.models.enums import CanalVerificacao, FinalidadeCodigo, Papel, StatusUsuario
+from app.models.enums import (
+    CanalVerificacao, FinalidadeCodigo, Papel, StatusUsuario, TipoDocumentoCadastro,
+)
 from app.models.usuario import Usuario
 from app.schemas.comuns import Mensagem
+from app.schemas.documento_cadastro import DocumentoCadastroSaida
 from app.schemas.usuario import (
     CanaisSaida,
     CadastroMorador, CadastroSaida, ConfirmacaoCodigo, LoginEntrada, PerfilSaida,
     RedefinicaoSenha, ReenvioCodigo, SolicitacaoRecuperacao, TokenSaida, TrocaSenha,
     UsuarioSaida,
 )
+from app.services import arquivos
 from app.services import auth as servico_auth
+from app.services import documentos_cadastro
 from app.services.notificacao import mascarar_destino
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
@@ -53,6 +61,7 @@ def canais() -> CanaisSaida:
 
 
 def _resposta_cadastro(usuario: Usuario, codigo: str, canal: CanalVerificacao) -> CadastroSaida:
+    """Resposta do cadastro público, que é sempre o de um morador."""
     destino = usuario.email if canal == CanalVerificacao.EMAIL else usuario.telefone
     return CadastroSaida(
         usuario=UsuarioSaida.model_validate(usuario),
@@ -62,6 +71,8 @@ def _resposta_cadastro(usuario: Usuario, codigo: str, canal: CanalVerificacao) -
         # O código só volta na resposta em modo de desenvolvimento, para dar
         # para testar o fluxo sem provedor de e-mail/SMS configurado.
         codigo_debug=codigo if settings.DEBUG else None,
+        token_documentos=criar_token_documentos(usuario.id),
+        token_documentos_expira_min=settings.TOKEN_DOCUMENTOS_MIN,
     )
 
 
@@ -127,6 +138,76 @@ def cadastrar_morador(dados: CadastroMorador, db: Session = Depends(get_db)) -> 
     db.commit()
     db.refresh(usuario)
     return _resposta_cadastro(usuario, codigo, dados.canal_confirmacao)
+
+
+def _cadastro_do_token(
+    credencial: HTTPAuthorizationCredentials | None = Depends(esquema_bearer),
+    db: Session = Depends(get_db),
+) -> Usuario:
+    """O cadastro autorizado pelo token_documentos, enquanto ainda não foi avaliado."""
+    usuario_id = ler_token_documentos(credencial.credentials) if credencial else None
+    usuario = db.get(Usuario, usuario_id) if usuario_id else None
+    if usuario is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="A autorização para enviar documentos é inválida ou expirou.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    # Depois que o síndico decidiu, os documentos não mudam mais.
+    if usuario.status not in (StatusUsuario.AGUARDANDO_CODIGO, StatusUsuario.AGUARDANDO_APROVACAO):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Este cadastro já foi avaliado; os documentos não podem mais ser trocados.",
+        )
+    return usuario
+
+
+@router.put(
+    "/cadastro/documentos/{tipo}",
+    response_model=list[DocumentoCadastroSaida],
+    summary="Envia um documento do cadastro do morador",
+)
+def enviar_documento_cadastro(
+    tipo: TipoDocumentoCadastro,
+    arquivo: UploadFile = File(..., description="PDF ou imagem JPG, PNG ou WebP"),
+    usuario: Usuario = Depends(_cadastro_do_token),
+    db: Session = Depends(get_db),
+) -> list[DocumentoCadastroSaida]:
+    """Usa o token_documentos devolvido pelo cadastro, não o de sessão.
+
+    Devolve todos os documentos já enviados, para a tela conferir o que
+    falta.
+    """
+    conteudo = arquivo.file.read(settings.DOCUMENTO_MAX_KB * 1024 + 1)
+    try:
+        documentos_cadastro.salvar(db, usuario, tipo, conteudo)
+    except arquivos.ArquivoRecusado as erro:
+        raise HTTPException(status_code=422, detail=str(erro)) from erro
+    return [documentos_cadastro.saida(d) for d in documentos_cadastro.listar(db, usuario.id)]
+
+
+@router.put(
+    "/cadastro/foto",
+    response_model=Mensagem,
+    summary="Envia a foto de perfil escolhida no cadastro do morador",
+)
+def enviar_foto_cadastro(
+    arquivo: UploadFile = File(..., description="Imagem JPG, PNG ou WebP"),
+    usuario: Usuario = Depends(_cadastro_do_token),
+    db: Session = Depends(get_db),
+) -> Mensagem:
+    """Mesma autorização dos documentos. Depois de aprovado, o morador
+    troca a foto pelo perfil (PUT /usuarios/eu/foto)."""
+    conteudo = arquivo.file.read(settings.FOTO_MAX_KB * 1024 + 1)
+    try:
+        nova = arquivos.salvar_foto(conteudo)
+    except arquivos.ArquivoRecusado as erro:
+        raise HTTPException(status_code=422, detail=str(erro)) from erro
+    anterior = usuario.foto_url
+    usuario.foto_url = nova
+    db.commit()
+    arquivos.apagar_foto(anterior)
+    return Mensagem(detalhe="Foto recebida.")
 
 
 @router.post(

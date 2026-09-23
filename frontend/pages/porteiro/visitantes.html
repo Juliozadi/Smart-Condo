@@ -164,6 +164,7 @@
       avatar.className = ('list-avatar ' + cor(v.nome)).trim();
       avatar.setAttribute('aria-hidden', 'true');
       avatar.textContent = iniciais(v.nome);
+      api.trocarPorFoto(avatar, v.foto_url, 'Foto de ' + v.nome);
 
       var info = document.createElement('div');
       info.className = 'list-info';
@@ -293,11 +294,9 @@
       var placa = campo('placa-visitante').value.trim();
       if (placa) corpo.placa_veiculo = placa;
 
-      // A foto do vídeo porteiro vira um data URL, que não cabe no campo
-      // de 500 caracteres da API. Enquanto não houver envio de arquivo,
-      // só um endereço curto é repassado.
+      // A foto do vídeo porteiro vai logo depois do registro, como arquivo.
       var foto = document.querySelector('.captura-valor');
-      if (foto && foto.value && foto.value.length <= 500) corpo.foto_url = foto.value;
+      var fotoCapturada = foto && foto.value;
 
       var botao = this.querySelector('button[type=submit]');
       var texto = botao.textContent;
@@ -305,10 +304,18 @@
       botao.textContent = 'Registrando…';
 
       api.post('/portaria/visitantes', corpo)
-        .then(function() {
+        .then(function(visitante) {
+          if (!fotoCapturada) return null;
+          return api.put('/portaria/visitantes/' + visitante.id + '/foto',
+                         api.arquivoDeDataUrl(fotoCapturada, 'visitante.jpg'))
+            .then(function() { return null; }, function(e) { return e.message; });
+        })
+        .then(function(falhaDaFoto) {
           campo('formVisitante').reset();
-          erro.className = 'form-erro sucesso';
-          erro.textContent = 'Visitante registrado. O morador foi notificado e precisa confirmar a entrada.';
+          erro.className = 'form-erro' + (falhaDaFoto ? '' : ' sucesso');
+          erro.textContent = falhaDaFoto
+            ? 'Visitante registrado e morador notificado, mas a foto não foi enviada: ' + falhaDaFoto
+            : 'Visitante registrado. O morador foi notificado e precisa confirmar a entrada.';
           return carregar();
         })
         .catch(function(e) { erro.textContent = e.message; })

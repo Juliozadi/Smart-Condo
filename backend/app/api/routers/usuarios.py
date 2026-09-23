@@ -14,15 +14,18 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import exigir_papel, get_usuario_atual
 from app.core.database import get_db
 from app.core.security import gerar_hash_senha
+from app.models.documento_cadastro import DocumentoCadastro
 from app.models.enums import CanalVerificacao, FinalidadeCodigo, Papel, StatusUsuario
 from app.models.usuario import PermissaoPorteiro, Usuario
 from app.schemas.comuns import Mensagem
+from app.schemas.documento_cadastro import DocumentoCadastroSaida
 from app.schemas.admin import (
     UsuarioAdminAtualizacao, UsuarioAdminEntrada, UsuarioAdminSaida,
 )
@@ -31,6 +34,7 @@ from app.schemas.usuario import (
     PermissoesPorteiroEntrada, PermissoesPorteiroSaida, UsuarioAtualizacao, UsuarioSaida,
 )
 from app.services import arquivos as servico_arquivos
+from app.services import documentos_cadastro
 from app.services import usuarios as servico_usuarios
 from app.services import auth as servico_auth
 from app.services.notificacao import mascarar_destino
@@ -343,8 +347,56 @@ def aprovar_usuario(
     usuario.avaliado_em = datetime.now(timezone.utc)
     usuario.motivo_recusa = None if dados.aprovado else dados.motivo
     db.commit()
+    if not dados.aprovado:
+        documentos_cadastro.descartar_todos(db, usuario.id)
     db.refresh(usuario)
     return usuario
+
+
+@router.get(
+    "/{usuario_id}/documentos",
+    response_model=list[DocumentoCadastroSaida],
+    summary="Documentos enviados no cadastro do morador",
+)
+def listar_documentos(
+    usuario_id: int,
+    sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
+    db: Session = Depends(get_db),
+) -> list[DocumentoCadastroSaida]:
+    """Para o síndico conferir antes de aprovar (seção 13.5.1)."""
+    usuario = _buscar_do_meu_condominio(db, sindico, usuario_id)
+    return [documentos_cadastro.saida(d) for d in documentos_cadastro.listar(db, usuario.id)]
+
+
+@router.get(
+    "/{usuario_id}/documentos/{documento_id}/arquivo",
+    summary="Abre um documento do cadastro",
+)
+def abrir_documento(
+    usuario_id: int,
+    documento_id: int,
+    sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
+    db: Session = Depends(get_db),
+) -> FileResponse:
+    usuario = _buscar_do_meu_condominio(db, sindico, usuario_id)
+    documento = db.get(DocumentoCadastro, documento_id)
+    caminho = (
+        servico_arquivos.caminho_privado(servico_arquivos.DOCUMENTOS, documento.arquivo)
+        if documento is not None and documento.usuario_id == usuario.id else None
+    )
+    if caminho is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Documento não encontrado."
+        )
+    return FileResponse(
+        caminho,
+        media_type=documento.tipo_conteudo,
+        headers={
+            "Cache-Control": "private, no-store",
+            # Mostra no navegador (imagem ou PDF), sem baixar sozinho.
+            "Content-Disposition": "inline",
+        },
+    )
 
 
 @router.patch("/eu", response_model=PerfilSaida, summary="Atualiza o próprio perfil")
@@ -419,4 +471,7 @@ def inativar_usuario(
     # financeiro precisa continuar apontando para o usuário.
     usuario.status = StatusUsuario.INATIVO
     db.commit()
+    # Os registros ficam; os documentos do cadastro, não: sem vínculo com
+    # o condomínio, acabou a finalidade de guardá-los (LGPD, art. 16).
+    documentos_cadastro.descartar_todos(db, usuario.id)
     return Mensagem(detalhe="Usuário inativado.")

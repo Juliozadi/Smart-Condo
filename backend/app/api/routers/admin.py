@@ -22,6 +22,7 @@ from app.schemas.admin import (
 )
 from app.schemas.comuns import Mensagem
 from app.schemas.condominio import CondominioEntrada
+from app.services import documentos_cadastro
 from app.services import usuarios as servico_usuarios
 
 router = APIRouter(prefix="/admin", tags=["Administrador"])
@@ -355,4 +356,6 @@ def remover_usuario(
         )
     servico_usuarios.remover_usuario(db, usuario, admin)
     db.commit()
+    # Sem vínculo com o condomínio, acabou a finalidade dos documentos.
+    documentos_cadastro.descartar_todos(db, usuario.id)
     return Mensagem(detalhe="Usuário removido.")

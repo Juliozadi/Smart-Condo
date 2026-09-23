@@ -18,6 +18,19 @@
     return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
   }
 
+  // A foto vai para a API como JPEG de até 1280 px no lado maior: a do
+  // celular costuma passar do limite de 2 MB, e para reconhecer alguém na
+  // portaria não precisa de mais que isso.
+  var LADO_MAXIMO = 1280;
+  function comoJpeg(origem, largura, altura) {
+    var escala = Math.min(1, LADO_MAXIMO / Math.max(largura, altura));
+    var canvas = document.createElement('canvas');
+    canvas.width = Math.round(largura * escala);
+    canvas.height = Math.round(altura * escala);
+    canvas.getContext('2d').drawImage(origem, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/jpeg', 0.85);
+  }
+
   function montar(campo) {
     if (campo.dataset.montado) return;
     campo.dataset.montado = '1';
@@ -120,23 +133,25 @@
 
     bTirar.addEventListener('click', function() {
       if (!stream) return;
-      var canvas = document.createElement('canvas');
-      canvas.width  = video.videoWidth  || 640;
-      canvas.height = video.videoHeight || 480;
-      canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-      mostrarFoto(canvas.toDataURL('image/jpeg', 0.85));
+      mostrarFoto(comoJpeg(video, video.videoWidth || 640, video.videoHeight || 480));
     });
 
-    bRefaz.addEventListener('click', function() {
+    function limpar() {
+      pararCamera();
       if (imagem) { imagem.remove(); imagem = null; }
       vazio.hidden = false;
       valor.value = '';
+      arquivo.value = '';
       bRefaz.hidden = true;
       bTirar.hidden = true;
       bAbrir.hidden = !temCamera();
       campo.classList.remove('tem-foto');
       avisar('');
-    });
+    }
+    bRefaz.addEventListener('click', limpar);
+    // O reset do formulário não mexe em campo oculto nem na prévia.
+    var formulario = campo.closest('form');
+    if (formulario) formulario.addEventListener('reset', limpar);
 
     arquivo.addEventListener('change', function() {
       var f = this.files && this.files[0];
@@ -145,10 +160,19 @@
         avisar('Selecione um arquivo de imagem.', true);
         return;
       }
-      var leitor = new FileReader();
-      leitor.onload = function() { mostrarFoto(leitor.result); };
-      leitor.onerror = function() { avisar('Não foi possível ler o arquivo.', true); };
-      leitor.readAsDataURL(f);
+      // Passa pelo canvas: reduz o tamanho e converte qualquer formato
+      // que o navegador abra (HEIC do iPhone, GIF…) para JPEG.
+      var endereco = URL.createObjectURL(f);
+      var img = new Image();
+      img.onload = function() {
+        URL.revokeObjectURL(endereco);
+        mostrarFoto(comoJpeg(img, img.naturalWidth, img.naturalHeight));
+      };
+      img.onerror = function() {
+        URL.revokeObjectURL(endereco);
+        avisar('Não foi possível abrir esta imagem. Tente uma foto JPG ou PNG.', true);
+      };
+      img.src = endereco;
     });
 
     // Libera a câmera ao sair da página

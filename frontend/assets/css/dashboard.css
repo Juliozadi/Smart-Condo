@@ -398,6 +398,9 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
   color: white; font-weight: 800; font-size: 15px; flex-shrink: 0;
   box-shadow: 0 3px 8px rgba(16,182,168,.3);
 }
+/* Foto da portaria no lugar das iniciais ou do ícone (api.trocarPorFoto). */
+.com-foto { padding: 0; overflow: hidden; background: var(--border); }
+.com-foto .foto-registro { width: 100%; height: 100%; object-fit: cover; display: block; }
 .list-avatar.amber  { background: linear-gradient(135deg, #e6a23c, #d48e25); box-shadow: 0 3px 8px rgba(230,162,60,.3); }
 .list-avatar.blue   { background: linear-gradient(135deg, #409eff, #2172c8); box-shadow: 0 3px 8px rgba(64,158,255,.3); }
 .list-avatar.purple { background: linear-gradient(135deg, #9164fa, #7a4ee0); box-shadow: 0 3px 8px rgba(145,100,250,.3); }
@@ -1679,6 +1682,40 @@ a.contato-btn { text-decoration: none; }
   font-size: 12px; color: var(--erro); font-weight: 600;
   margin: 14px 0 0; min-height: 17px;
 }
+
+.modal-acoes a {
+  font-size: 13px; font-weight: 700; padding: 10px 20px;
+  border-radius: var(--radius-xs); text-decoration: none;
+  display: inline-flex; align-items: center;
+}
+.modal-acoes a[hidden] { display: none; }
+
+/* ── Documentos do cadastro (fila de aprovação do síndico) ───────── */
+.docs-cadastro {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;
+  font-size: 11px; color: var(--muted);
+}
+.doc-chip {
+  font-family: inherit; font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--primary); background: var(--primary-light); color: var(--primary);
+  transition: background .18s;
+}
+.doc-chip:hover { background: var(--primary-glow); }
+.doc-chip:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-glow); }
+.doc-chip.falta {
+  cursor: default; border-color: rgba(245,108,108,.35);
+  background: rgba(245,108,108,.1); color: var(--erro);
+}
+.visor-caixa { max-width: 860px; }
+.visor-conteudo {
+  min-height: 120px; display: flex; align-items: center; justify-content: center;
+  background: var(--surface-2); border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm); overflow: hidden;
+  font-size: 13px; color: var(--muted); font-weight: 600;
+}
+.visor-conteudo img { max-width: 100%; max-height: 70vh; display: block; }
+.visor-conteudo iframe { width: 100%; height: 70vh; border: 0; background: #fff; }
 
 /* ── Aviso vazio / carregando ────────────────────────────────────── */
 .estado-lista {

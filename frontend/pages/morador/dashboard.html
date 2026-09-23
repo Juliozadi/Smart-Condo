@@ -135,18 +135,25 @@
 
     var foto = document.createElement('div');
     foto.className = 'portaria-foto';
+    // O ícone fica até a foto chegar. A foto só sai da API com o token
+    // (é dado pessoal do visitante), então vem por api.protegido.
+    var icone = document.createElement('img');
+    icone.src = '../../assets/img/icons/' + dados.icone;
+    icone.width = 30; icone.height = 30;
+    icone.alt = 'Registro da portaria';
+    foto.appendChild(icone);
     if (dados.foto_url) {
-      var retrato = document.createElement('img');
-      retrato.className = 'retrato';
-      retrato.src = dados.foto_url;
-      retrato.alt = 'Foto enviada pela portaria';
-      foto.appendChild(retrato);
-    } else {
-      var icone = document.createElement('img');
-      icone.src = '../../assets/img/icons/' + dados.icone;
-      icone.width = 30; icone.height = 30;
-      icone.alt = 'Registro da portaria';
-      foto.appendChild(icone);
+      api.protegido(dados.foto_url).then(function(arquivo) {
+        var retrato = document.createElement('img');
+        retrato.className = 'retrato';
+        retrato.alt = 'Foto enviada pela portaria';
+        retrato.addEventListener('load', function() {
+          URL.revokeObjectURL(arquivo.url);
+          icone.replaceWith(retrato);
+        }, { once: true });
+        retrato.addEventListener('error', function() { URL.revokeObjectURL(arquivo.url); }, { once: true });
+        retrato.src = arquivo.url;
+      }).catch(function() {});
     }
     var selo = document.createElement('span');
     selo.className = 'selo';

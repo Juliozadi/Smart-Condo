@@ -93,7 +93,9 @@
       cabecalhos['Content-Type'] = 'application/json';
     }
 
-    var token = sessao.token();
+    // opcoes.token troca o token da sessão por outro — o do envio dos
+    // documentos do cadastro, que não abre sessão.
+    var token = opcoes.token || sessao.token();
     if (token && opcoes.semToken !== true) {
       cabecalhos['Authorization'] = 'Bearer ' + token;
     }
@@ -113,7 +115,7 @@
         if (resposta.ok) return dados;
 
         // O token venceu ou foi revogado: derruba a sessão.
-        if (resposta.status === 401 && token && opcoes.semRedirecionar !== true) {
+        if (resposta.status === 401 && token && !opcoes.token && opcoes.semRedirecionar !== true) {
           sessao.encerrar();
           global.location.href = BASE + 'index.html?sessao=expirada';
           // A navegação é assíncrona; interrompe a cadeia aqui.
@@ -156,6 +158,70 @@
       if (!caminho) return '';
       if (/^https?:\/\//.test(caminho)) return caminho;
       return API + caminho;
+    },
+
+    /* Arquivo que só sai com o token (foto de visitante, documento do
+       cadastro). Uma <img src> não manda o cabeçalho Authorization, então
+       o arquivo é baixado aqui e vira um endereço blob: local. Quem usa
+       deve chamar URL.revokeObjectURL quando a imagem sair da tela. */
+    protegido: function(caminho) {
+      var token = sessao.token();
+      return fetch(API + caminho, {
+        headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+      }).then(function(resposta) {
+        if (!resposta.ok) {
+          throw new ErroApi(resposta.status === 404
+            ? 'Arquivo não encontrado.'
+            : 'Não foi possível abrir o arquivo (erro ' + resposta.status + ').', resposta.status);
+        }
+        return resposta.blob();
+      }, function() {
+        throw new ErroApi('Não foi possível falar com o servidor. Verifique se a API está no ar.', 0);
+      }).then(function(blob) {
+        return { url: URL.createObjectURL(blob), tipo: blob.type };
+      });
+    },
+
+    /* Mostra numa <img> um arquivo protegido; se não der, chama "falhou". */
+    imagemProtegida: function(img, caminho, falhou) {
+      return api.protegido(caminho).then(function(arquivo) {
+        function soltar() { URL.revokeObjectURL(arquivo.url); }
+        img.addEventListener('load', soltar, { once: true });
+        img.addEventListener('error', soltar, { once: true });
+        img.src = arquivo.url;
+      }).catch(function() { if (falhou) falhou(); });
+    },
+
+    /* Troca o conteúdo de "caixa" (ícone, iniciais) pela foto protegida,
+       se ela abrir. Se não abrir, a caixa fica como estava. */
+    trocarPorFoto: function(caixa, caminho, alt) {
+      if (!caminho) return;
+      var img = document.createElement('img');
+      img.className = 'foto-registro';
+      img.alt = alt || '';
+      api.protegido(caminho).then(function(arquivo) {
+        function soltar() { URL.revokeObjectURL(arquivo.url); }
+        img.addEventListener('load', function() {
+          soltar();
+          caixa.textContent = '';
+          caixa.classList.add('com-foto');
+          caixa.appendChild(img);
+        }, { once: true });
+        img.addEventListener('error', soltar, { once: true });
+        img.src = arquivo.url;
+      }).catch(function() {});
+    },
+
+    /* Um data URL (a foto capturada pela câmera) como arquivo para envio. */
+    arquivoDeDataUrl: function(dataUrl, nome) {
+      var partes = dataUrl.split(',');
+      var tipo = (partes[0].match(/data:([^;]+)/) || [])[1] || 'application/octet-stream';
+      var binario = atob(partes[1] || '');
+      var bytes = new Uint8Array(binario.length);
+      for (var i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
+      var dados = new FormData();
+      dados.append('arquivo', new Blob([bytes], { type: tipo }), nome || 'foto.jpg');
+      return dados;
     },
 
     /* Faz o login e guarda a sessão. Devolve o usuário autenticado. */

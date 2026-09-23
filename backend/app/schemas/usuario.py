@@ -175,6 +175,11 @@ class CadastroSaida(SchemaBase):
     expira_em_min: int
     # Só preenchido quando DEBUG está ligado, para testar sem e-mail/SMS real.
     codigo_debug: str | None = None
+    # Só no cadastro feito pelo próprio morador: autoriza apenas o envio
+    # dos documentos (PUT /auth/cadastro/documentos/{tipo}) e não abre
+    # sessão. Quem o síndico cadastra por dentro não envia documentos.
+    token_documentos: str | None = None
+    token_documentos_expira_min: int | None = None
 
 
 CadastroPorteiro.model_rebuild()

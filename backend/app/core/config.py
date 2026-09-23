@@ -73,11 +73,20 @@ class Settings(BaseSettings):
     def sms_configurado(self) -> bool:
         return bool(self.SMS_CONTA and self.SMS_TOKEN and self.SMS_REMETENTE)
 
-    # ── Arquivos enviados (foto de perfil) ───────────────────────────
-    # Pasta onde as fotos ficam gravadas. Relativa à pasta backend/,
-    # a não ser que venha um caminho absoluto.
+    # ── Arquivos enviados ────────────────────────────────────────────
+    # Pasta onde fotos e documentos ficam gravados. Relativa à pasta
+    # backend/, a não ser que venha um caminho absoluto.
     UPLOADS_DIR: str = "uploads"
     FOTO_MAX_KB: int = Field(default=2048, ge=50, le=10240)
+    # Documentos do cadastro do morador (RG, comprovante, escritura).
+    DOCUMENTO_MAX_KB: int = Field(default=10240, ge=100, le=20480)
+    # Por quanto tempo vale a autorização para enviar esses documentos,
+    # contada a partir do cadastro.
+    TOKEN_DOCUMENTOS_MIN: int = Field(default=60, ge=5, le=1440)
+    # Fotos de visitantes e encomendas são dado pessoal de terceiros
+    # (LGPD): passado este prazo, o arquivo é apagado e o registro fica
+    # sem foto.
+    FOTO_PORTARIA_DIAS: int = Field(default=90, ge=1, le=3650)
 
     # ── CORS ─────────────────────────────────────────────────────────
     # O front-end é servido de qualquer porta local (o python -m

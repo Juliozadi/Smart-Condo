@@ -116,6 +116,8 @@ backend/
 | Veículos | `/api/v1/veiculos` | Seção 8: o porteiro controla entradas e saídas |
 | Manutenção | `/api/v1/manutencao` | Ordens de serviço abertas pelo síndico |
 | Documentos | `/api/v1/documentos` | Seção 11.6: atas, convenção e regimento |
+| Mensagens | `/api/v1/mensagens` | Seção 13.5.2: chat entre síndico, portaria e moradores |
+| Arquivos | `/api/v1/arquivos` | Fotos de perfil (as da portaria e os documentos saem pelas próprias áreas) |
 
 ---
 
@@ -131,9 +133,27 @@ apenas o síndico, que é quem aprova (seção 13.5.3).
 `GET /espacos/ocupacao` devolve a contagem mais recente de cada área de uso
 livre, com capacidade e percentual.
 
-**Vídeo porteiro** — Seção 6: o registro de visitante guarda a foto e nasce
-como `aguardando_confirmacao`; só o morador da unidade visitada confirma ou
-recusa a entrada.
+**Vídeo porteiro** — Seção 6: o registro de visitante nasce como
+`aguardando_confirmacao`; só o morador da unidade visitada confirma ou
+recusa a entrada. A foto vai logo depois, em
+`PUT /portaria/visitantes/{id}/foto` (e `/encomendas/{id}/foto` para o
+volume).
+
+**Fotos da portaria e documentos do cadastro** — são dados pessoais de
+terceiros, então não têm endereço público como a foto de perfil. Ficam em
+`uploads/portaria` e `uploads/documentos` e só saem por rotas que conferem
+o token: a foto do visitante vai para o morador da unidade, o síndico e o
+porteiro com permissão de registrar visitantes; os documentos, só para o
+síndico do condomínio. Respostas com `Cache-Control: private, no-store`.
+As fotos passam de `FOTO_PORTARIA_DIAS` (90) e são apagadas; os documentos
+saem quando o cadastro é recusado ou o usuário é inativado.
+
+**Envio dos documentos no cadastro** — quem acabou de se cadastrar ainda
+não pode entrar, então `POST /auth/cadastro/morador` devolve um
+`token_documentos`. Ele vale `TOKEN_DOCUMENTOS_MIN` (60) minutos, só serve
+para `PUT /auth/cadastro/documentos/{tipo}` e `PUT /auth/cadastro/foto`,
+deixa de valer quando o síndico decide e nunca abre sessão — nem depois da
+aprovação.
 
 **Permissão do Porteiro** — Seção 9: o síndico consulta as ações
 disponíveis e escolhe quais libera. A API aplica isso em cada rota da
@@ -169,13 +189,9 @@ pagou e a data.
 
 ## O que ainda falta
 
-- Fotos do visitante e da encomenda: a portaria tira a foto, mas a tela
-  só a envia se tiver até 500 caracteres — ou seja, nunca. Salvá-las
-  como as fotos de perfil não basta: é dado pessoal de terceiros e
-  precisa ser servido só a quem tem direito (portaria e morador da
-  unidade), com o token, e não por endereço aberto.
-- Documentos do cadastro do morador (RG, comprovante): o formulário os
-  exige, mas não os envia.
+- Dados complementares do cadastro do morador (número do RG, contato de
+  emergência, veículos, animais): o formulário pede, mas a API ainda não
+  tem onde guardá-los.
 - Chamada de voz dentro do navegador; hoje "Ligar" disca o telefone
   cadastrado.
 - Geração automática das cobranças mensais (tarefa agendada).

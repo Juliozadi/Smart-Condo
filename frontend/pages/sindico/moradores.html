@@ -77,6 +77,20 @@
     <p class="estado-lista" id="estadoTabela"></p>
   </main>
 
+  <!-- Visualizador dos documentos do cadastro. O arquivo só sai da API
+       com o token do síndico, então é baixado e mostrado daqui. -->
+  <div class="modal-fundo" id="visorDocumento" role="dialog" aria-modal="true" aria-labelledby="visorTitulo">
+    <div class="modal-caixa visor-caixa">
+      <h3 class="modal-titulo" id="visorTitulo"><img src="../../assets/img/icons/id-card.svg" alt=""><span id="visorNome">Documento</span></h3>
+      <p class="modal-sub" id="visorSub"></p>
+      <div class="visor-conteudo" id="visorConteudo"></div>
+      <div class="modal-acoes">
+        <a class="btn-secundario" id="visorNovaAba" target="_blank" rel="noopener">Abrir em nova aba</a>
+        <button type="button" class="btn-primario" id="visorFechar">Fechar</button>
+      </div>
+    </div>
+  </div>
+
 <script src="../../assets/js/admin-ui.js"></script>
 <script>
 /* Gestão de moradores do síndico: estatísticas, fila de aprovação e a
@@ -119,6 +133,96 @@
     return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2);
   }
 
+  /* ── Documentos do cadastro (RG, comprovante, escritura) ──────── */
+  var NOME_DOCUMENTO = {
+    identidade: 'RG ou CNH',
+    comprovante_residencia: 'Comprovante de residência',
+    escritura: 'Escritura'
+  };
+  // Os que o formulário de cadastro exige; a escritura é opcional.
+  var FALTA = {
+    identidade: 'Sem RG ou CNH',
+    comprovante_residencia: 'Sem comprovante de residência'
+  };
+
+  function documentosDoCadastro(u) {
+    var caixa = document.createElement('div');
+    caixa.className = 'docs-cadastro';
+    caixa.textContent = 'Carregando documentos…';
+    api.get('/usuarios/' + u.id + '/documentos')
+      .then(function(lista) {
+        caixa.textContent = '';
+        var enviados = {};
+        lista.forEach(function(d) {
+          enviados[d.tipo] = true;
+          var botao = document.createElement('button');
+          botao.type = 'button';
+          botao.className = 'doc-chip';
+          botao.textContent = NOME_DOCUMENTO[d.tipo] || d.tipo;
+          botao.title = 'Ver ' + (NOME_DOCUMENTO[d.tipo] || 'documento') + ' de ' + u.nome;
+          botao.addEventListener('click', function() { abrirDocumento(u, d, botao); });
+          caixa.appendChild(botao);
+        });
+        Object.keys(FALTA).forEach(function(tipo) {
+          if (enviados[tipo]) return;
+          var falta = document.createElement('span');
+          falta.className = 'doc-chip falta';
+          falta.textContent = FALTA[tipo];
+          caixa.appendChild(falta);
+        });
+      })
+      .catch(function() { caixa.textContent = 'Não foi possível carregar os documentos.'; });
+    return caixa;
+  }
+
+  var visor = {
+    fundo: document.getElementById('visorDocumento'),
+    url: null,
+    origem: null
+  };
+  function fecharVisor() {
+    visor.fundo.classList.remove('aberto');
+    document.getElementById('visorConteudo').textContent = '';
+    if (visor.url) { URL.revokeObjectURL(visor.url); visor.url = null; }
+    if (visor.origem) { visor.origem.focus(); visor.origem = null; }
+  }
+  function abrirDocumento(u, d, origem) {
+    var conteudo = document.getElementById('visorConteudo');
+    var novaAba = document.getElementById('visorNovaAba');
+    document.getElementById('visorNome').textContent = NOME_DOCUMENTO[d.tipo] || 'Documento';
+    document.getElementById('visorSub').textContent = u.nome + ' · enviado em ' + dataCurta(d.enviado_em);
+    conteudo.textContent = 'Carregando…';
+    novaAba.hidden = true;
+    visor.origem = origem;
+    visor.fundo.classList.add('aberto');
+    document.getElementById('visorFechar').focus();
+
+    api.protegido(d.url)
+      .then(function(arquivo) {
+        if (!visor.fundo.classList.contains('aberto')) { URL.revokeObjectURL(arquivo.url); return; }
+        visor.url = arquivo.url;
+        conteudo.textContent = '';
+        var exibicao;
+        if (arquivo.tipo === 'application/pdf') {
+          exibicao = document.createElement('iframe');
+          exibicao.title = NOME_DOCUMENTO[d.tipo] || 'Documento';
+        } else {
+          exibicao = document.createElement('img');
+          exibicao.alt = (NOME_DOCUMENTO[d.tipo] || 'Documento') + ' de ' + u.nome;
+        }
+        exibicao.src = arquivo.url;
+        conteudo.appendChild(exibicao);
+        novaAba.href = arquivo.url;
+        novaAba.hidden = false;
+      })
+      .catch(function(e) { conteudo.textContent = e.message; });
+  }
+  document.getElementById('visorFechar').addEventListener('click', fecharVisor);
+  visor.fundo.addEventListener('click', function(e) { if (e.target === visor.fundo) fecharVisor(); });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && visor.fundo.classList.contains('aberto')) fecharVisor();
+  });
+
   function cartaoPendente(u) {
     var item = document.createElement('div');
     item.className = 'list-item';
@@ -137,6 +241,7 @@
       ' · Cadastrado em ' + dataCurta(u.criado_em);
     info.appendChild(titulo);
     info.appendChild(sub);
+    info.appendChild(documentosDoCadastro(u));
 
     var acoes = document.createElement('div');
     acoes.className = 'acoes-aprovacao';

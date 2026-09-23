@@ -154,9 +154,9 @@
       <label class="photo-upload" for="foto-m">
         <img src="../../assets/img/icons/camera.svg" width="16" height="16" alt="">
         <span>Clique para enviar sua foto</span>
-        <small>JPG, PNG · Máx. 5 MB · Fundo neutro, rosto visível</small>
+        <small>JPG, PNG ou WebP · Máx. 2 MB · Fundo neutro, rosto visível</small>
       </label>
-      <input type="file" id="foto-m" accept="image/*" style="display:none;">
+      <input type="file" id="foto-m" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" style="display:none;">
     </div>
 
     <div class="step-nav-btns">
@@ -355,7 +355,7 @@
       <p class="form-section-title"><img src="../../assets/img/icons/folder-open.svg" width="16" height="16" alt=""> Documentos <span class="section-tag obrig">Obrigatório</span></p>
       <div class="step-alert info">
         
-        <p>Envie documentos legíveis em <strong>PDF, JPG ou PNG</strong> · Máx. 10 MB por arquivo. Analisados em até 48h.</p>
+        <p>Envie documentos legíveis em <strong>PDF, JPG ou PNG</strong> · Máx. 10 MB por arquivo. Só o síndico do seu condomínio tem acesso a eles, para aprovar o cadastro.</p>
       </div>
       <label class="doc-upload" for="doc-rg-m">
         <div class="doc-upload-icon"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt=""></div>
@@ -365,17 +365,17 @@
         </div>
         <span class="doc-upload-badge req">Obrigatório</span>
       </label>
-      <input type="file" id="doc-rg-m" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" required>
+      <input type="file" id="doc-rg-m" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" style="display:none;" required>
 
       <label class="doc-upload" for="doc-res-m">
-        <div class="doc-upload-icon amber"></div>
+        <div class="doc-upload-icon amber"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt=""></div>
         <div class="doc-upload-text">
           <strong>Comprovante de residência / Contrato de locação</strong>
           <span>Conta de água, luz, gás ou contrato assinado</span>
         </div>
         <span class="doc-upload-badge req">Obrigatório</span>
       </label>
-      <input type="file" id="doc-res-m" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" required>
+      <input type="file" id="doc-res-m" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" style="display:none;" required>
 
       <label class="doc-upload" for="doc-escrit-m">
         <div class="doc-upload-icon"><img src="../../assets/img/icons/file-contract.svg" width="16" height="16" alt=""></div>
@@ -385,7 +385,12 @@
         </div>
         <span class="doc-upload-badge opt">Opcional</span>
       </label>
-      <input type="file" id="doc-escrit-m" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
+      <input type="file" id="doc-escrit-m" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" style="display:none;">
+
+      <div class="step-alert danger" id="avisoDocumentos" role="alert" hidden>
+        <p><span id="textoDocumentos"></span>
+          <a href="#" id="continuarSemDocumentos">Continuar sem enviar</a></p>
+      </div>
     </div>
 
     <div class="form-section">
@@ -510,7 +515,7 @@
       else if (!validarTelefone(celular.value)) { mostrarErro(celular, 'Telefone inválido'); valido = false; }
       var emergNome = document.querySelector('#step1 input[placeholder="Nome do responsável"]');
       var emergTel = document.querySelectorAll('#step1 .mask-tel')[1];
-      var emergParent = document.querySelector('#step1 select');
+      var emergParent = document.getElementById('morado_parentesco');
       if (emergNome && !emergNome.value.trim()) { mostrarErro(emergNome, 'Informe o contato de emergência'); valido = false; }
       if (emergTel && !emergTel.value.trim()) { mostrarErro(emergTel, 'Informe o telefone de emergência'); valido = false; }
       else if (emergTel && !validarTelefone(emergTel.value)) { mostrarErro(emergTel, 'Telefone inválido'); valido = false; }
@@ -540,6 +545,59 @@
      O morador entra pelo código de acesso que recebeu do síndico; o
      sistema envia um código de confirmação e só depois ele segue para a
      fila de aprovação. */
+  /* Documentos do cadastro: vão depois do cadastro criado, com a
+     autorização (token_documentos) que ele devolve. Essa autorização só
+     serve para isso — não abre sessão. */
+  var TIPOS_DOCUMENTO = /\.(pdf|jpe?g|png|webp)$/i;
+  var TIPOS_FOTO = /\.(jpe?g|png|webp)$/i;
+  var MB = 1024 * 1024;
+  var DOCUMENTOS = [
+    { campo: 'doc-rg-m', tipo: 'identidade', nome: 'RG ou CNH',
+      rota: '/auth/cadastro/documentos/identidade', aceita: TIPOS_DOCUMENTO, limite: 10 },
+    { campo: 'doc-res-m', tipo: 'comprovante_residencia', nome: 'comprovante de residência',
+      rota: '/auth/cadastro/documentos/comprovante_residencia', aceita: TIPOS_DOCUMENTO, limite: 10 },
+    { campo: 'doc-escrit-m', tipo: 'escritura', nome: 'escritura',
+      rota: '/auth/cadastro/documentos/escritura', aceita: TIPOS_DOCUMENTO, limite: 10 },
+    // A foto de perfil escolhida na primeira etapa vai pela mesma autorização.
+    { campo: 'foto-m', tipo: 'foto', nome: 'foto de perfil',
+      rota: '/auth/cadastro/foto', aceita: TIPOS_FOTO, limite: 2 }
+  ];
+  var cadastroCriado = null;   // resposta do cadastro, depois que ele deu certo
+  var documentosEnviados = {}; // tipo → true
+
+  function irParaConfirmacao() {
+    var resposta = cadastroCriado;
+    try {
+      sessionStorage.setItem('smartcondo_cadastro', JSON.stringify({
+        email: resposta.usuario.email,
+        papel: resposta.usuario.papel,
+        destino: resposta.codigo_enviado_para,
+        canal: resposta.canal,
+        codigo_debug: resposta.codigo_debug || null
+      }));
+    } catch (_) {}
+    window.location.href = 'confirmar_codigo.html';
+  }
+
+  /* Envia, um de cada vez, os documentos escolhidos que ainda não foram.
+     Devolve a lista do que falhou. */
+  function enviarDocumentos() {
+    var falhas = [];
+    return DOCUMENTOS.reduce(function(fila, doc) {
+      var entrada = document.getElementById(doc.campo);
+      var arquivo = entrada.files && entrada.files[0];
+      if (!arquivo || documentosEnviados[doc.tipo]) return fila;
+      return fila.then(function() {
+        var dados = new FormData();
+        dados.append('arquivo', arquivo, arquivo.name);
+        return SmartCondo.api.put(doc.rota, dados,
+                                  { token: cadastroCriado.token_documentos })
+          .then(function() { documentosEnviados[doc.tipo] = true; },
+                function(e) { falhas.push(doc.nome + ' (' + e.message + ')'); });
+      });
+    }, Promise.resolve()).then(function() { return falhas; });
+  }
+
   function enviarCadastroMorador(evento) {
     evento.preventDefault();
     if (!validarStepMorador()) return false;
@@ -554,6 +612,25 @@
       botao.innerHTML = textoOriginal;
       if (campo) { mostrarStep(campo.etapa); mostrarErro(campo.elemento, mensagem); }
       else { alert(mensagem); }
+    }
+
+    function depoisDosDocumentos(falhas) {
+      if (!falhas.length) { irParaConfirmacao(); return; }
+      // O cadastro já existe: aqui só se tenta de novo o que faltou.
+      botao.style.pointerEvents = '';
+      botao.innerHTML = 'Enviar os documentos de novo';
+      document.getElementById('textoDocumentos').textContent =
+        'Seu cadastro foi criado, mas não conseguimos enviar: ' + falhas.join('; ') +
+        '. Escolha o arquivo de novo se precisar e tente outra vez, ou siga sem ele — ' +
+        'o síndico pode pedir o documento depois.';
+      var aviso = document.getElementById('avisoDocumentos');
+      aviso.hidden = false;
+      aviso.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    if (cadastroCriado) {
+      enviarDocumentos().then(depoisDosDocumentos);
+      return false;
     }
 
     var codigo = document.getElementById('mCodigoCondominio');
@@ -575,18 +652,10 @@
 
     SmartCondo.api.post('/auth/cadastro/morador', corpo, { semToken: true })
       .then(function(resposta) {
-        try {
-          sessionStorage.setItem('smartcondo_cadastro', JSON.stringify({
-            email: resposta.usuario.email,
-            papel: resposta.usuario.papel,
-            destino: resposta.codigo_enviado_para,
-            canal: resposta.canal,
-            codigo_debug: resposta.codigo_debug || null
-          }));
-        } catch (_) {}
-        window.location.href = 'confirmar_codigo.html';
-      })
-      .catch(function(erro) {
+        cadastroCriado = resposta;
+        botao.innerHTML = 'Enviando os documentos...';
+        return enviarDocumentos().then(depoisDosDocumentos);
+      }, function(erro) {
         // Erro do código do condomínio volta para a etapa da unidade.
         if (/[Cc]ódigo de acesso/.test(erro.message)) {
           falhar(erro.message, { etapa: 2, elemento: codigo });
@@ -606,6 +675,40 @@
 
     return false;
   }
+
+  /* Mostra o arquivo escolhido em cada documento e barra, antes de
+     enviar, o que o servidor recusaria. */
+  DOCUMENTOS.forEach(function(doc) {
+    var entrada = document.getElementById(doc.campo);
+    var rotulo = document.querySelector('label[for="' + doc.campo + '"]');
+    var legenda = rotulo.querySelector('.doc-upload-text span') || rotulo.querySelector('span');
+    var textoOriginal = legenda.textContent;
+    entrada.addEventListener('change', function() {
+      var arquivo = entrada.files && entrada.files[0];
+      rotulo.classList.remove('escolhido', 'invalido');
+      rotulo.style.borderColor = '';
+      legenda.textContent = textoOriginal;
+      documentosEnviados[doc.tipo] = false;
+      if (!arquivo) return;
+      var problema = !doc.aceita.test(arquivo.name)
+        ? (doc.aceita === TIPOS_FOTO ? 'Envie JPG, PNG ou WebP.' : 'Envie PDF, JPG, PNG ou WebP.')
+        : arquivo.size > doc.limite * MB ? 'O arquivo passa de ' + doc.limite + ' MB.' : '';
+      if (problema) {
+        entrada.value = '';
+        rotulo.classList.add('invalido');
+        legenda.textContent = problema;
+        return;
+      }
+      rotulo.classList.add('escolhido');
+      var kb = arquivo.size / 1024;
+      legenda.textContent = arquivo.name + ' · ' +
+        (kb >= 1024 ? (kb / 1024).toFixed(1).replace('.', ',') + ' MB' : Math.max(1, Math.round(kb)) + ' KB');
+    });
+  });
+  document.getElementById('continuarSemDocumentos').addEventListener('click', function(e) {
+    e.preventDefault();
+    if (cadastroCriado) irParaConfirmacao();
+  });
 
   function validarStepMorador() {
     var valido = true;
