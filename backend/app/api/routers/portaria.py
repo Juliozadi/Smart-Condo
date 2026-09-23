@@ -11,31 +11,39 @@ Documentação, seção 6 (História do Usuário):
 
 O que o porteiro pode fazer aqui depende das permissões que o síndico
 definiu (seção 12, caso de uso "Permissão do Porteiro").
+
+As fotos de visitantes e encomendas são dado pessoal de terceiros
+(LGPD). Não têm endereço público: são enviadas e lidas por rotas desta
+área, que conferem o token e quem pode ver cada uma — a portaria com a
+permissão correspondente, o síndico e o morador da unidade. Passado
+FOTO_PORTARIA_DIAS, o arquivo é apagado.
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import (
     exigir_condominio, exigir_papel, exigir_permissao_porteiro, get_usuario_atual,
 )
+from app.core.config import settings
 from app.core.database import get_db
 from app.models.condominio import Unidade
 from app.models.enums import (
     CanalVerificacao, Papel, StatusEncomenda, StatusOcorrencia, StatusVisitante,
 )
 from app.models.portaria import Encomenda, Ocorrencia, Visitante
-from app.models.usuario import Usuario
+from app.models.usuario import PermissaoPorteiro, Usuario
 from app.schemas.portaria import (
     ConfirmacaoVisitante, EncomendaEntrada, EncomendaSaida, OcorrenciaEntrada,
     OcorrenciaSaida, RespostaOcorrencia, RetiradaEncomenda, VisitanteEntrada,
     VisitanteSaida,
 )
-from app.services import notificacao
+from app.services import arquivos, notificacao
 
 router = APIRouter(prefix="/portaria", tags=["Portaria"])
 
@@ -67,7 +75,9 @@ def _visitante_saida(v: Visitante, unidade: Unidade | None = None) -> VisitanteS
         id=v.id, unidade_id=v.unidade_id,
         unidade=(unidade or v.unidade).identificacao,
         nome=v.nome, documento=v.documento, tipo_visita=v.tipo_visita,
-        placa_veiculo=v.placa_veiculo, foto_url=v.foto_url, status=v.status,
+        placa_veiculo=v.placa_veiculo,
+        foto_url=f"/portaria/visitantes/{v.id}/foto" if v.foto_arquivo else None,
+        status=v.status,
         entrada_em=v.entrada_em, saida_em=v.saida_em,
         confirmado_em=v.confirmado_em, criado_em=v.criado_em,
     )
@@ -78,9 +88,74 @@ def _encomenda_saida(e: Encomenda) -> EncomendaSaida:
         id=e.id, unidade_id=e.unidade_id, unidade=e.unidade.identificacao,
         remetente=e.remetente, tipo_volume=e.tipo_volume,
         codigo_rastreio=e.codigo_rastreio, observacoes=e.observacoes,
-        foto_url=e.foto_url, status=e.status, recebida_em=e.recebida_em,
+        foto_url=f"/portaria/encomendas/{e.id}/foto" if e.foto_arquivo else None,
+        status=e.status, recebida_em=e.recebida_em,
         retirada_em=e.retirada_em, criado_em=e.criado_em,
     )
+
+
+# ── Fotos (vídeo porteiro e encomendas) ─────────────────────────────
+def _ler_foto_enviada(arquivo: UploadFile) -> str:
+    """Grava a foto em uploads/portaria e devolve o nome gravado."""
+    # Lê só até um byte além do limite, como na foto de perfil.
+    conteudo = arquivo.file.read(settings.FOTO_MAX_KB * 1024 + 1)
+    try:
+        return arquivos.salvar_privado(
+            arquivos.PORTARIA, conteudo, aceita_pdf=False, max_kb=settings.FOTO_MAX_KB
+        )
+    except arquivos.ArquivoRecusado as erro:
+        raise HTTPException(status_code=422, detail=str(erro)) from erro
+
+
+def _pode_ver_foto(db: Session, usuario: Usuario, unidade: Unidade, permissao: str) -> bool:
+    if unidade.condominio_id != usuario.condominio_id:
+        return False
+    if usuario.papel == Papel.SINDICO:
+        return True
+    if usuario.papel == Papel.MORADOR:
+        return unidade.id == usuario.unidade_id
+    if usuario.papel == Papel.PORTEIRO:
+        permissoes = db.scalar(
+            select(PermissaoPorteiro).where(PermissaoPorteiro.porteiro_id == usuario.id)
+        )
+        return bool(permissoes and getattr(permissoes, permissao, False))
+    return False
+
+
+def _entregar_foto(nome: str | None) -> FileResponse:
+    caminho = arquivos.caminho_privado(arquivos.PORTARIA, nome)
+    if caminho is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Foto não encontrada.")
+    return FileResponse(
+        caminho,
+        media_type=arquivos.tipo_de_conteudo(caminho.name),
+        # Dado pessoal: nada de cópia em cache compartilhado nem no disco
+        # do navegador.
+        headers={"Cache-Control": "private, no-store"},
+    )
+
+
+def _expurgar_fotos_antigas(db: Session) -> None:
+    """Apaga as fotos da portaria que passaram do prazo de guarda.
+
+    Roda a cada novo registro, sem depender de tarefa agendada: o custo é
+    uma consulta pelos poucos registros vencidos que ainda têm foto.
+    """
+    limite = _agora() - timedelta(days=settings.FOTO_PORTARIA_DIAS)
+    vencidos = [
+        *db.scalars(select(Visitante).where(
+            Visitante.foto_arquivo.is_not(None), Visitante.criado_em < limite)),
+        *db.scalars(select(Encomenda).where(
+            Encomenda.foto_arquivo.is_not(None), Encomenda.criado_em < limite)),
+    ]
+    if not vencidos:
+        return
+    nomes = [registro.foto_arquivo for registro in vencidos]
+    for registro in vencidos:
+        registro.foto_arquivo = None
+    db.commit()
+    for nome in nomes:
+        arquivos.apagar_privado(arquivos.PORTARIA, nome)
 
 
 # ── Visitantes ───────────────────────────────────────────────────────
@@ -96,6 +171,7 @@ def registrar_visitante(
     db: Session = Depends(get_db),
 ) -> VisitanteSaida:
     unidade = _unidade_do_condominio(db, usuario, dados.unidade_id)
+    _expurgar_fotos_antigas(db)
 
     visitante = Visitante(
         **dados.model_dump(),
@@ -214,6 +290,54 @@ def registrar_saida(
     return _visitante_saida(visitante)
 
 
+@router.put(
+    "/visitantes/{visitante_id}/foto",
+    response_model=VisitanteSaida,
+    summary="Envia a foto do visitante (vídeo porteiro)",
+)
+def enviar_foto_visitante(
+    visitante_id: int,
+    arquivo: UploadFile = File(..., description="Imagem JPG, PNG ou WebP"),
+    usuario: Usuario = Depends(exigir_permissao_porteiro("registrar_visitantes")),
+    db: Session = Depends(get_db),
+) -> VisitanteSaida:
+    visitante = db.get(Visitante, visitante_id)
+    if visitante is None or visitante.unidade.condominio_id != usuario.condominio_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Visitante não encontrado."
+        )
+    # A foto é para o morador reconhecer quem está na portaria. Depois
+    # da resposta dele, trocá-la mudaria o que ele viu ao decidir.
+    if visitante.status != StatusVisitante.AGUARDANDO_CONFIRMACAO:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="O morador já respondeu; a foto não pode mais ser trocada.",
+        )
+
+    nova = _ler_foto_enviada(arquivo)
+    anterior = visitante.foto_arquivo
+    visitante.foto_arquivo = nova
+    db.commit()
+    arquivos.apagar_privado(arquivos.PORTARIA, anterior)
+    db.refresh(visitante)
+    return _visitante_saida(visitante)
+
+
+@router.get("/visitantes/{visitante_id}/foto", summary="Foto do visitante")
+def foto_visitante(
+    visitante_id: int,
+    usuario: Usuario = Depends(exigir_condominio),
+    db: Session = Depends(get_db),
+) -> FileResponse:
+    visitante = db.get(Visitante, visitante_id)
+    # 404 também para quem não pode ver: não confirma que o registro existe.
+    if visitante is None or not _pode_ver_foto(
+        db, usuario, visitante.unidade, "registrar_visitantes"
+    ):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Foto não encontrada.")
+    return _entregar_foto(visitante.foto_arquivo)
+
+
 # ── Encomendas ───────────────────────────────────────────────────────
 @router.post(
     "/encomendas",
@@ -227,6 +351,7 @@ def registrar_encomenda(
     db: Session = Depends(get_db),
 ) -> EncomendaSaida:
     unidade = _unidade_do_condominio(db, usuario, dados.unidade_id)
+    _expurgar_fotos_antigas(db)
 
     encomenda = Encomenda(
         **dados.model_dump(),
@@ -298,6 +423,51 @@ def confirmar_retirada(
     db.commit()
     db.refresh(encomenda)
     return _encomenda_saida(encomenda)
+
+
+@router.put(
+    "/encomendas/{encomenda_id}/foto",
+    response_model=EncomendaSaida,
+    summary="Envia a foto da encomenda",
+)
+def enviar_foto_encomenda(
+    encomenda_id: int,
+    arquivo: UploadFile = File(..., description="Imagem JPG, PNG ou WebP"),
+    usuario: Usuario = Depends(exigir_permissao_porteiro("registrar_encomendas")),
+    db: Session = Depends(get_db),
+) -> EncomendaSaida:
+    encomenda = db.get(Encomenda, encomenda_id)
+    if encomenda is None or encomenda.unidade.condominio_id != usuario.condominio_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Encomenda não encontrada."
+        )
+    if encomenda.status != StatusEncomenda.AGUARDANDO_RETIRADA:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="O morador já respondeu; a foto não pode mais ser trocada.",
+        )
+
+    nova = _ler_foto_enviada(arquivo)
+    anterior = encomenda.foto_arquivo
+    encomenda.foto_arquivo = nova
+    db.commit()
+    arquivos.apagar_privado(arquivos.PORTARIA, anterior)
+    db.refresh(encomenda)
+    return _encomenda_saida(encomenda)
+
+
+@router.get("/encomendas/{encomenda_id}/foto", summary="Foto da encomenda")
+def foto_encomenda(
+    encomenda_id: int,
+    usuario: Usuario = Depends(exigir_condominio),
+    db: Session = Depends(get_db),
+) -> FileResponse:
+    encomenda = db.get(Encomenda, encomenda_id)
+    if encomenda is None or not _pode_ver_foto(
+        db, usuario, encomenda.unidade, "registrar_encomendas"
+    ):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Foto não encontrada.")
+    return _entregar_foto(encomenda.foto_arquivo)
 
 
 # ── Ocorrências ──────────────────────────────────────────────────────

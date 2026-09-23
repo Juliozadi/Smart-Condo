@@ -39,6 +39,7 @@ TABELAS = {
     "encomendas": "As encomendas recebidas na portaria e a retirada pelo morador.",
     "movimentacoes_veiculo": "As entradas e saídas de veículos registradas na portaria.",
     "mensagens": "As mensagens do chat entre síndico, porteiros e moradores do mesmo condomínio.",
+    "documentos_cadastro": "Os documentos que o morador envia ao se cadastrar, para o síndico conferir antes de aprovar.",
 }
 
 # O significado de cada coluna que não é identificador, vínculo ou carimbo
@@ -46,6 +47,11 @@ TABELAS = {
 DESCRICOES = {
     "condominios.nome": "Razão social ou nome pelo qual o condomínio é conhecido",
     "condominios.cnpj": "CNPJ do condomínio, conferido pelos dígitos verificadores e único na plataforma",
+    "documentos_cadastro.tipo": "RG ou CNH, comprovante de residência ou escritura; um arquivo por tipo",
+    "documentos_cadastro.arquivo": "Nome aleatório do arquivo gravado pela API, nunca o nome original",
+    "documentos_cadastro.tipo_conteudo": "Tipo do arquivo conferido pelo conteúdo: PDF, JPEG, PNG ou WebP",
+    "documentos_cadastro.tamanho_bytes": "Tamanho do arquivo enviado",
+    "documentos_cadastro.enviado_em": "Momento do envio",
     "condominios.cep": "CEP do endereço",
     "condominios.logradouro": "Rua, avenida ou praça",
     "condominios.numero": "Número do imóvel no logradouro",
@@ -165,7 +171,7 @@ DESCRICOES = {
     "visitantes.documento": "Documento apresentado na portaria",
     "visitantes.tipo_visita": "Natureza da visita",
     "visitantes.placa_veiculo": "Placa do veículo, quando o visitante chega de carro",
-    "visitantes.foto_url": "Endereço da foto tirada na portaria, quando houver",
+    "visitantes.foto_arquivo": "Nome do arquivo da foto tirada na portaria, gravado pela API sem endereço público; apagado após o prazo de guarda",
     "visitantes.status": "Situação da visita, do anúncio à saída",
     "visitantes.entrada_em": "Momento da entrada",
     "visitantes.saida_em": "Momento da saída",
@@ -175,7 +181,7 @@ DESCRICOES = {
     "encomendas.tipo_volume": "Tipo do volume recebido",
     "encomendas.codigo_rastreio": "Código de rastreio, quando houver",
     "encomendas.observacoes": "Anotações da portaria",
-    "encomendas.foto_url": "Endereço da foto do volume, quando houver",
+    "encomendas.foto_arquivo": "Nome do arquivo da foto do volume, gravado pela API sem endereço público; apagado após o prazo de guarda",
     "encomendas.status": "Situação da encomenda, do recebimento à retirada",
     "encomendas.recebida_em": "Momento em que a portaria recebeu",
     "encomendas.retirada_em": "Momento em que o morador retirou",
@@ -238,6 +244,7 @@ VINCULOS = {
     "mensagens.condominio_id": "Condomínio onde a conversa acontece",
     "mensagens.remetente_id": "Quem enviou a mensagem",
     "mensagens.destinatario_id": "Quem recebe a mensagem; não pode ser o próprio remetente",
+    "documentos_cadastro.usuario_id": "Morador que enviou o documento",
 }
 
 

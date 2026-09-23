@@ -194,6 +194,7 @@
       glifo.className = 'glifo';
       glifo.style.setProperty('--icone', 'url(../../assets/img/icons/' + visual[1] + ')');
       icone.appendChild(glifo);
+      api.trocarPorFoto(icone, e.foto_url, 'Foto do volume');
 
       var info = document.createElement('div');
       info.className = 'list-info';
@@ -302,10 +303,9 @@
       if (rastreio) corpo.codigo_rastreio = rastreio;
       var obs = campo('encome_observacoes').value.trim();
       if (obs) corpo.observacoes = obs;
-      // Data URL da foto não cabe nos 500 caracteres do campo; só um
-      // endereço curto é repassado enquanto não houver envio de arquivo.
+      // A foto do volume vai logo depois do registro, como arquivo.
       var foto = document.querySelector('.captura-valor');
-      if (foto && foto.value && foto.value.length <= 500) corpo.foto_url = foto.value;
+      var fotoCapturada = foto && foto.value;
 
       var botao = this.querySelector('button[type=submit]');
       var texto = botao.textContent;
@@ -313,10 +313,18 @@
       botao.textContent = 'Registrando…';
 
       api.post('/portaria/encomendas', corpo)
-        .then(function() {
+        .then(function(encomenda) {
+          if (!fotoCapturada) return null;
+          return api.put('/portaria/encomendas/' + encomenda.id + '/foto',
+                         api.arquivoDeDataUrl(fotoCapturada, 'encomenda.jpg'))
+            .then(function() { return null; }, function(e) { return e.message; });
+        })
+        .then(function(falhaDaFoto) {
           campo('formEncomenda').reset();
-          erro.className = 'form-erro sucesso';
-          erro.textContent = 'Encomenda registrada. O morador foi notificado.';
+          erro.className = 'form-erro' + (falhaDaFoto ? '' : ' sucesso');
+          erro.textContent = falhaDaFoto
+            ? 'Encomenda registrada e morador notificado, mas a foto não foi enviada: ' + falhaDaFoto
+            : 'Encomenda registrada. O morador foi notificado.';
           return carregar();
         })
         .catch(function(e) { erro.textContent = e.message; })

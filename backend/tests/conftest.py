@@ -58,6 +58,16 @@ def limpar_tabelas(schema_de_teste):
         conexao.execute(text(f"TRUNCATE {nomes} RESTART IDENTITY CASCADE"))
 
 
+@pytest.fixture(autouse=True)
+def uploads_temporarios(tmp_path, monkeypatch):
+    """Nenhum teste grava em backend/uploads, que é a pasta de verdade."""
+    from app.core.config import settings
+
+    pasta = tmp_path / "uploads"
+    monkeypatch.setattr(settings, "UPLOADS_DIR", str(pasta))
+    return pasta
+
+
 @pytest.fixture
 def db():
     sessao = SessionLocal()

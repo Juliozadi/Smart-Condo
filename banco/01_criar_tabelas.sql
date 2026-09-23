@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS
+    documentos_cadastro,
     mensagens,
     documentos,
     ordens_servico,
@@ -38,6 +39,7 @@ DROP TYPE IF EXISTS
     status_reserva,
     status_usuario,
     status_visitante,
+    tipo_documento_cadastro,
     tipo_movimentacao,
     tipo_ocupacao
 CASCADE;
@@ -153,6 +155,12 @@ CREATE TYPE status_visitante AS ENUM (
     'RECUSADO',
     'DENTRO',
     'SAIU'
+);
+
+CREATE TYPE tipo_documento_cadastro AS ENUM (
+    'IDENTIDADE',
+    'COMPROVANTE_RESIDENCIA',
+    'ESCRITURA'
 );
 
 CREATE TYPE tipo_movimentacao AS ENUM (
@@ -501,7 +509,7 @@ CREATE TABLE visitantes (
     documento character varying(20) NOT NULL,
     tipo_visita character varying(60) NOT NULL,
     placa_veiculo character varying(10),
-    foto_url character varying(500),
+    foto_arquivo character varying(100),
     status status_visitante NOT NULL,
     entrada_em timestamp with time zone,
     saida_em timestamp with time zone,
@@ -530,7 +538,7 @@ CREATE TABLE encomendas (
     tipo_volume character varying(60) NOT NULL,
     codigo_rastreio character varying(60),
     observacoes text,
-    foto_url character varying(500),
+    foto_arquivo character varying(100),
     status status_encomenda NOT NULL,
     recebida_em timestamp with time zone NOT NULL,
     retirada_em timestamp with time zone,
@@ -689,6 +697,31 @@ ALTER TABLE ONLY mensagens ALTER COLUMN id SET DEFAULT nextval('mensagens_id_seq
 ALTER TABLE ONLY mensagens
     ADD CONSTRAINT mensagens_pkey PRIMARY KEY (id);
 
+-- Documentos enviados pelo morador no cadastro (seção 13.3). O arquivo
+-- fica em backend/uploads/documentos; aqui vai só o nome gravado.
+CREATE TABLE documentos_cadastro (
+    id integer NOT NULL,
+    usuario_id integer NOT NULL,
+    tipo tipo_documento_cadastro NOT NULL,
+    arquivo character varying(100) NOT NULL,
+    tipo_conteudo character varying(40) NOT NULL,
+    tamanho_bytes integer NOT NULL,
+    enviado_em timestamp with time zone DEFAULT now() NOT NULL
+);
+CREATE SEQUENCE documentos_cadastro_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE documentos_cadastro_id_seq OWNED BY documentos_cadastro.id;
+ALTER TABLE ONLY documentos_cadastro ALTER COLUMN id SET DEFAULT nextval('documentos_cadastro_id_seq'::regclass);
+ALTER TABLE ONLY documentos_cadastro
+    ADD CONSTRAINT documentos_cadastro_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY documentos_cadastro
+    ADD CONSTRAINT uq_documento_cadastro_tipo UNIQUE (usuario_id, tipo);
+
 ALTER TABLE ONLY cobrancas
     ADD CONSTRAINT cobrancas_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
 
@@ -712,6 +745,9 @@ ALTER TABLE ONLY documentos
 
 ALTER TABLE ONLY documentos
     ADD CONSTRAINT documentos_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY documentos_cadastro
+    ADD CONSTRAINT documentos_cadastro_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY mensagens
     ADD CONSTRAINT mensagens_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
@@ -901,6 +937,8 @@ CREATE INDEX ix_registros_ocupacao_espaco_id ON registros_ocupacao USING btree (
 CREATE INDEX ix_registros_ocupacao_registrado_em ON registros_ocupacao USING btree (registrado_em);
 
 CREATE INDEX ix_reservas_data ON reservas USING btree (data);
+
+CREATE INDEX ix_documentos_cadastro_usuario_id ON documentos_cadastro USING btree (usuario_id);
 
 CREATE INDEX ix_mensagens_condominio_id ON mensagens USING btree (condominio_id);
 

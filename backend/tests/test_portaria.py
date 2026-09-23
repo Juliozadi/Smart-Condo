@@ -39,7 +39,6 @@ def registrar_visitante(cliente, tok, unidade_id, **extra):
     corpo = {
         "unidade_id": unidade_id, "nome": "Marcos Alves", "documento": DOC_VISITANTE,
         "tipo_visita": "Visita pessoal",
-        "foto_url": "https://cdn.exemplo.com/videoporteiro/1.jpg",
     }
     corpo.update(extra)
     return cliente.post("/api/v1/portaria/visitantes", json=corpo, headers=cab(tok))
@@ -49,19 +48,19 @@ def registrar_encomenda(cliente, tok, unidade_id, **extra):
     corpo = {
         "unidade_id": unidade_id, "remetente": "Correios", "tipo_volume": "Caixa média",
         "codigo_rastreio": "BR987654321",
-        "foto_url": "https://cdn.exemplo.com/encomendas/1.jpg",
     }
     corpo.update(extra)
     return cliente.post("/api/v1/portaria/encomendas", json=corpo, headers=cab(tok))
 
 
 # ── Vídeo porteiro e confirmação (seção 6) ───────────────────────────
-def test_visitante_entra_aguardando_confirmacao_com_a_foto(cliente, cenario):
+def test_visitante_entra_aguardando_confirmacao(cliente, cenario):
     r = registrar_visitante(cliente, cenario["porteiro"], cenario["u204"])
     assert r.status_code == 201, r.text
     v = r.json()
     assert v["status"] == "aguardando_confirmacao"
-    assert v["foto_url"] == "https://cdn.exemplo.com/videoporteiro/1.jpg"
+    # A foto vai depois, como arquivo (tests/test_portaria_fotos.py).
+    assert v["foto_url"] is None
     assert v["unidade"] == "204"
     assert v["entrada_em"] is None
 
@@ -203,12 +202,12 @@ def test_sindico_registra_mesmo_sem_registro_de_permissoes(cliente, cenario):
 
 
 # ── Encomendas (seção 6) ─────────────────────────────────────────────
-def test_encomenda_com_foto_fica_aguardando_retirada(cliente, cenario):
+def test_encomenda_fica_aguardando_retirada(cliente, cenario):
     r = registrar_encomenda(cliente, cenario["porteiro"], cenario["u204"])
     assert r.status_code == 201, r.text
     e = r.json()
     assert e["status"] == "aguardando_retirada"
-    assert e["foto_url"] == "https://cdn.exemplo.com/encomendas/1.jpg"
+    assert e["foto_url"] is None
     assert e["codigo_rastreio"] == "BR987654321"
 
 

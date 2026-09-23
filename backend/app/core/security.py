@@ -46,11 +46,51 @@ def criar_token_acesso(subject: str, papel: str, expira_min: int | None = None) 
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITMO_JWT)
 
 
-def ler_token_acesso(token: str) -> dict | None:
-    """Devolve o payload do token, ou None se for inválido ou expirado."""
+def _ler_jwt(token: str) -> dict | None:
     try:
         return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITMO_JWT])
     except JWTError:
+        return None
+
+
+def ler_token_acesso(token: str) -> dict | None:
+    """Devolve o payload do token de sessão, ou None se for inválido,
+    expirado ou emitido para outra finalidade."""
+    payload = _ler_jwt(token)
+    # Um token com "finalidade" só serve para aquilo (o envio dos
+    # documentos do cadastro, por exemplo) e nunca abre uma sessão —
+    # nem depois que o cadastro é aprovado.
+    if payload is None or "finalidade" in payload:
+        return None
+    return payload
+
+
+# ── Envio dos documentos do cadastro ─────────────────────────────────
+# Quem acabou de se cadastrar ainda não pode entrar (aguarda o código e a
+# aprovação), mas precisa enviar RG e comprovante. O cadastro devolve este
+# token, que só autoriza isso, só para aquele usuário e por pouco tempo.
+FINALIDADE_DOCUMENTOS = "documentos_cadastro"
+
+
+def criar_token_documentos(usuario_id: int) -> str:
+    agora = datetime.now(timezone.utc)
+    payload = {
+        "sub": str(usuario_id),
+        "finalidade": FINALIDADE_DOCUMENTOS,
+        "iat": agora,
+        "exp": agora + timedelta(minutes=settings.TOKEN_DOCUMENTOS_MIN),
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITMO_JWT)
+
+
+def ler_token_documentos(token: str) -> int | None:
+    """O id do usuário autorizado, ou None."""
+    payload = _ler_jwt(token)
+    if payload is None or payload.get("finalidade") != FINALIDADE_DOCUMENTOS:
+        return None
+    try:
+        return int(payload["sub"])
+    except (KeyError, TypeError, ValueError):
         return None
 
 

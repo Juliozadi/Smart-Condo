@@ -441,6 +441,64 @@ const dicionario = [
     "regras": []
   },
   {
+    "nome": "documentos_cadastro",
+    "resumo": "Os documentos que o morador envia ao se cadastrar, para o síndico conferir antes de aprovar.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "usuario_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Morador que enviou o documento"
+      },
+      {
+        "coluna": "tipo",
+        "tipo": "ENUM",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "RG ou CNH, comprovante de residência ou escritura; um arquivo por tipo — tipo enumerado tipo_documento_cadastro, valores: IDENTIDADE, COMPROVANTE_RESIDENCIA, ESCRITURA"
+      },
+      {
+        "coluna": "arquivo",
+        "tipo": "VARCHAR(100)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Nome aleatório do arquivo gravado pela API, nunca o nome original"
+      },
+      {
+        "coluna": "tipo_conteudo",
+        "tipo": "VARCHAR(40)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Tipo do arquivo conferido pelo conteúdo: PDF, JPEG, PNG ou WebP"
+      },
+      {
+        "coluna": "tamanho_bytes",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Tamanho do arquivo enviado"
+      },
+      {
+        "coluna": "enviado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento do envio"
+      }
+    ],
+    "regras": [
+      "UNIQUE (usuario_id, tipo)"
+    ]
+  },
+  {
     "nome": "encomendas",
     "resumo": "As encomendas recebidas na portaria e a retirada pelo morador.",
     "colunas": [
@@ -494,11 +552,11 @@ const dicionario = [
         "descricao": "Anotações da portaria"
       },
       {
-        "coluna": "foto_url",
-        "tipo": "VARCHAR(500)",
+        "coluna": "foto_arquivo",
+        "tipo": "VARCHAR(100)",
         "obrigatorio": "Não",
         "chave": "",
-        "descricao": "Endereço da foto do volume, quando houver"
+        "descricao": "Nome do arquivo da foto do volume, gravado pela API sem endereço público; apagado após o prazo de guarda"
       },
       {
         "coluna": "status",
@@ -1695,11 +1753,11 @@ const dicionario = [
         "descricao": "Placa do veículo, quando o visitante chega de carro"
       },
       {
-        "coluna": "foto_url",
-        "tipo": "VARCHAR(500)",
+        "coluna": "foto_arquivo",
+        "tipo": "VARCHAR(100)",
         "obrigatorio": "Não",
         "chave": "",
-        "descricao": "Endereço da foto tirada na portaria, quando houver"
+        "descricao": "Nome do arquivo da foto tirada na portaria, gravado pela API sem endereço público; apagado após o prazo de guarda"
       },
       {
         "coluna": "status",
@@ -1803,6 +1861,12 @@ const relacoes = [
     "coluna": "unidade_id",
     "destino": "unidades",
     "texto": "Unidade destinatária, quando o documento não é para todo o condomínio"
+  },
+  {
+    "origem": "documentos_cadastro",
+    "coluna": "usuario_id",
+    "destino": "usuarios",
+    "texto": "Morador que enviou o documento"
   },
   {
     "origem": "encomendas",
@@ -2080,6 +2144,10 @@ const enumerados = [
   {
     "nome": "status_visitante",
     "valores": "AGUARDANDO_CONFIRMACAO, CONFIRMADO, RECUSADO, DENTRO, SAIU"
+  },
+  {
+    "nome": "tipo_documento_cadastro",
+    "valores": "IDENTIDADE, COMPROVANTE_RESIDENCIA, ESCRITURA"
   },
   {
     "nome": "tipo_movimentacao",

@@ -778,6 +778,15 @@ body.modo-leitura .stats-row { display: none !important; }
 .doc-upload-badge { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: var(--radius-md); flex-shrink: 0; text-transform: uppercase; letter-spacing: .3px; }
 .doc-upload-badge.req { background: rgba(245,108,108,.1); color: var(--erro); }
 .doc-upload-badge.opt { background: var(--border-soft); color: var(--muted); }
+/* Arquivo escolhido (o nome aparece no lugar da descrição) ou recusado. */
+.doc-upload.escolhido, .photo-upload.escolhido { border-style: solid; border-color: var(--primary); }
+.doc-upload.escolhido .doc-upload-text span,
+.photo-upload.escolhido > span { color: var(--primary); font-weight: 600; overflow-wrap: anywhere; }
+.doc-upload.invalido, .photo-upload.invalido { border-style: solid; border-color: var(--erro); }
+.doc-upload.invalido .doc-upload-text span,
+.photo-upload.invalido > span { color: var(--erro); font-weight: 600; }
+.step-alert[hidden] { display: none; }
+.step-alert a { color: inherit; font-weight: 700; }
 
 .pwd-strength { display: flex; gap: 4px; margin-top: 7px; }
 .pwd-bar { flex: 1; height: 4px; border-radius: 3px; background: var(--border); transition: background .3s; }

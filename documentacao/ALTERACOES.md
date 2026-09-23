@@ -7,6 +7,17 @@ O texto escrito pelo grupo foi **preservado**. As mudanças abaixo são de
 duas naturezas: correções do que não correspondia mais ao sistema, e
 seções novas descrevendo o que foi construído desde então.
 
+## Versão 2.2 — fotos da portaria e documentos do cadastro
+
+| Seção | O que mudou |
+|---|---|
+| 9 Requisitos funcionais | RF021 e RF024 passam a citar a foto do visitante e do volume. Dois novos: RF043 enviar documentos no cadastro e RF044 conferir documentos antes de aprovar |
+| 10 Requisitos não funcionais | RNF016 ganha o prazo de guarda das fotos e o descarte dos documentos na recusa e na inativação; RNF017 passa a cobrir o acesso restrito aos arquivos |
+| 14 a 17 | A tabela documentos_cadastro entra no modelo, no diagrama, nos relacionamentos e no dicionário — agora 21 entidades, 234 atributos e 44 relacionamentos. Em visitantes e encomendas, foto_url dá lugar a foto_arquivo |
+| 20 Arquitetura | Armazenamento das fotos da portaria e dos documentos sem endereço público, e a autorização de envio devolvida pelo cadastro |
+| 21 API REST | 96 endpoints em treze módulos |
+| 23 Testes | 282 casos no servidor e 49 testes de interface, incluindo os fluxos com arquivo de ponta a ponta |
+
 ## Versão 2.1 — foto de perfil, chat, SMS e testes de interface
 
 | Seção | O que mudou |

@@ -45,7 +45,9 @@ class Visitante(Base, TimestampMixin):
     placa_veiculo: Mapped[str | None] = mapped_column(String(10))
 
     # Vídeo porteiro: a foto capturada na portaria e enviada ao morador.
-    foto_url: Mapped[str | None] = mapped_column(String(500))
+    # Guarda só o nome do arquivo em uploads/portaria; quem vê a foto
+    # passa por GET /portaria/visitantes/{id}/foto, que confere o acesso.
+    foto_arquivo: Mapped[str | None] = mapped_column(String(100))
 
     status: Mapped[StatusVisitante] = mapped_column(
         SAEnum(StatusVisitante, name="status_visitante"),
@@ -87,7 +89,8 @@ class Encomenda(Base, TimestampMixin):
     observacoes: Mapped[str | None] = mapped_column(Text)
 
     # Foto do volume, enviada ao morador junto da notificação de chegada.
-    foto_url: Mapped[str | None] = mapped_column(String(500))
+    # Mesmo esquema da foto do visitante.
+    foto_arquivo: Mapped[str | None] = mapped_column(String(100))
 
     status: Mapped[StatusEncomenda] = mapped_column(
         SAEnum(StatusEncomenda, name="status_encomenda"),

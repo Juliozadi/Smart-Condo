@@ -21,8 +21,8 @@ class VisitanteEntrada(SchemaBase):
     documento: CPF
     tipo_visita: str = Field(min_length=3, max_length=60)
     placa_veiculo: str | None = Field(default=None, max_length=10)
-    # Vídeo porteiro: a foto capturada na portaria (seção 6).
-    foto_url: str | None = Field(default=None, max_length=500)
+    # A foto do vídeo porteiro (seção 6) não vem aqui: ela é enviada como
+    # arquivo em PUT /portaria/visitantes/{id}/foto logo depois do registro.
 
 
 class VisitanteSaida(SchemaBase):
@@ -33,6 +33,8 @@ class VisitanteSaida(SchemaBase):
     documento: str
     tipo_visita: str
     placa_veiculo: str | None = None
+    # Caminho na API (/portaria/visitantes/{id}/foto), que só responde com
+    # o token de quem pode ver. None quando não há foto.
     foto_url: str | None = None
     status: StatusVisitante
     entrada_em: datetime | None = None
@@ -53,8 +55,7 @@ class EncomendaEntrada(SchemaBase):
     tipo_volume: str = Field(min_length=2, max_length=60)
     codigo_rastreio: str | None = Field(default=None, max_length=60)
     observacoes: str | None = Field(default=None, max_length=500)
-    # Foto do volume enviada ao morador junto da notificação (seção 6).
-    foto_url: str | None = Field(default=None, max_length=500)
+    # A foto do volume vai como arquivo, em PUT /portaria/encomendas/{id}/foto.
 
 
 class EncomendaSaida(SchemaBase):
@@ -65,6 +66,7 @@ class EncomendaSaida(SchemaBase):
     tipo_volume: str
     codigo_rastreio: str | None = None
     observacoes: str | None = None
+    # Caminho na API (/portaria/encomendas/{id}/foto), como no visitante.
     foto_url: str | None = None
     status: StatusEncomenda
     recebida_em: datetime

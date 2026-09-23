@@ -41,6 +41,13 @@ class TipoOcupacao(str, enum.Enum):
     COABITANTE = "coabitante"
 
 
+class TipoDocumentoCadastro(str, enum.Enum):
+    """Documentos que o morador envia ao se cadastrar."""
+    IDENTIDADE = "identidade"            # RG ou CNH
+    COMPROVANTE_RESIDENCIA = "comprovante_residencia"  # ou contrato de locação
+    ESCRITURA = "escritura"              # só proprietário; opcional
+
+
 class StatusReserva(str, enum.Enum):
     """O síndico aprova ou recusa (seção 13.5.3)."""
     PENDENTE = "pendente"

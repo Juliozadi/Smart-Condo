@@ -253,8 +253,9 @@ todas com a senha `smartcondo123`:
 - [x] Envio real de e-mail (SMTP)
 - [x] Envio de SMS (Twilio, opcional, configurado no `.env`)
 - [x] Foto de perfil
-- [ ] Fotos do visitante e da encomenda: a portaria tira a foto, mas ela não é salva (precisa de acesso restrito, por ser dado pessoal)
-- [ ] Documentos do cadastro do morador: o formulário pede RG e comprovante, mas os arquivos não são enviados
+- [x] Fotos do visitante e da encomenda, vistas só pela portaria, pelo síndico e pelo morador da unidade, e apagadas depois de 90 dias
+- [x] Documentos do cadastro do morador (RG, comprovante, escritura), conferidos pelo síndico antes de aprovar
+- [ ] Dados complementares do cadastro do morador (número do RG, contato de emergência, veículos, animais): o formulário pede, mas a API ainda não os guarda
 - [x] Integrar as telas do front-end à API
 - [x] Chat entre síndico, porteiros e moradores, e ligação pelo telefone cadastrado
 - [ ] Chamada de voz dentro do navegador (exige servidor de mídia)
