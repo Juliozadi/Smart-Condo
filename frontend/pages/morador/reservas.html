@@ -37,8 +37,8 @@
 
     <div class="stats-row">
       <div class="stat-card teal"><span class="stat-value" id="totAprovadas">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Aprovadas</span></div>
-      <div class="stat-card amber"><span class="stat-value" id="totPendentes">—</span><span class="stat-label">Pendentes</span></div>
-      <div class="stat-card blue"><span class="stat-value" id="totRealizadas">—</span><span class="stat-label">Realizadas</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totPendentes">—</span><span class="stat-label"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Pendentes</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totRealizadas">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Realizadas</span></div>
     </div>
 
     <!-- Ocupação em tempo real das áreas comuns — doc, seção 6 -->
@@ -50,7 +50,7 @@
     <div class="ocupacao-grid" id="ocupacaoGrid" aria-live="polite"></div>
     <p class="estado-lista" id="estadoOcupacao">Carregando…</p>
 
-    <p class="section-title">Espaços Disponíveis</p>
+    <p class="section-title"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Espaços Disponíveis</p>
     <div class="space-grid" id="gradeEspacos"></div>
     <p class="estado-lista" id="estadoEspacos">Carregando…</p>
 
@@ -60,7 +60,7 @@
       horário em que o espaço está ocupado, mas nunca quem reservou.</span>
     </p>
 
-    <p class="section-title">Solicitar Nova Reserva</p>
+    <p class="section-title"><img src="../../assets/img/icons/reservas.svg" width="16" height="16" alt=""> Solicitar Nova Reserva</p>
     <div class="form-card">
       <h3>Formulário de Reserva</h3>
       <form id="formReserva" novalidate>
@@ -72,10 +72,10 @@
         </div>
         <div class="form-row">
           <div class="form-group"><label for="reserv_data">Data</label><input id="reserv_data" type="date" required></div>
-          <div class="form-group"><label for="reserv_horarioDeInicio"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Horário de início</label><input id="reserv_horarioDeInicio" type="time" required></div>
+          <div class="form-group"><label for="reserv_horarioDeInicio">Horário de início</label><input id="reserv_horarioDeInicio" type="time" required></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label for="reserv_horarioDeTermino"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Horário de término</label><input id="reserv_horarioDeTermino" type="time" required></div>
+          <div class="form-group"><label for="reserv_horarioDeTermino">Horário de término</label><input id="reserv_horarioDeTermino" type="time" required></div>
           <div class="form-group"><label for="reserv_noEstimadoDePessoas">Nº estimado de pessoas</label><input id="reserv_noEstimadoDePessoas" type="number" min="1" placeholder="Ex: 30"></div>
         </div>
         <div class="form-group"><label for="reserv_observacoesOpcional">Observações (opcional)</label><input id="reserv_observacoesOpcional" type="text" placeholder="Decoração, necessidades especiais..." maxlength="500"></div>
@@ -91,9 +91,9 @@
     <div class="reserve-list" id="minhasReservas"></div>
     <p class="estado-lista" id="estadoMinhas">Carregando…</p>
 
-    <p class="section-title">Histórico</p>
+    <p class="section-title"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Histórico</p>
     <div class="data-table tabela-status" id="tabelaHistorico">
-      <div class="table-head cols-4"><span>Espaço</span><span>Data</span><span><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Horário</span><span>Status</span></div>
+      <div class="table-head cols-4"><span>Espaço</span><span>Data</span><span>Horário</span><span>Status</span></div>
     </div>
     <p class="estado-lista" id="estadoHistorico"></p>
 

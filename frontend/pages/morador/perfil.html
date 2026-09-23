@@ -21,7 +21,10 @@
     .p-field .p-val .p-badge{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(16,182,168,.07),rgba(16,182,168,.015));backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:5px 18px 5px 13px;border-radius:var(--radius-xs);border:1px solid rgba(16,182,168,.1);border-left:3px solid rgba(16,182,168,.35);transition:all .28s cubic-bezier(.22,.68,0,1);position:relative;box-shadow:0 1px 3px rgba(16,182,168,.04),0 4px 12px rgba(16,182,168,.06),inset 0 1px 0 rgba(255,255,255,.55);}
     .p-field .p-val .p-badge::after{content:'';position:absolute;top:-1px;right:8px;width:20px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35));border-radius:1px;}
     .p-field .p-val .p-badge:hover{background:linear-gradient(135deg,rgba(16,182,168,.12),rgba(16,182,168,.03));border-color:rgba(16,182,168,.2);border-left-color:rgba(16,182,168,.5);transform:translateY(-1px);box-shadow:0 2px 6px rgba(16,182,168,.06),0 6px 20px rgba(16,182,168,.08),inset 0 1px 0 rgba(255,255,255,.6);}
-    .p-field .p-val .p-badge .b-dot{width:5px;height:5px;border-radius:50%;background:var(--primary);opacity:.25;flex-shrink:0;}
+    /* O ponto depois do valor era enfeite sem função e parecia resto de
+       um ícone removido. */
+    .p-field .p-val .p-badge .b-dot{display:none;}
+    .p-field .p-val .p-badge{padding-right:13px;}
     .p-field .p-val .p-badge .b-txt{font-size:13px;font-weight:700;color:var(--text);letter-spacing:-.01em;}
     .p-field .p-val.hidden{display:none;}
     .p-field .p-edit{display:none;}
@@ -33,6 +36,10 @@
     .p-avatar-wrap{position:relative;flex-shrink:0;}
     .p-avatar{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;font-size:38px;color:#fff;box-shadow:0 4px 16px rgba(7,158,146,.3);transition:all .25s;overflow:hidden;position:relative;}
     .p-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+    /* O ícone de quem ainda não tem foto fica branco e no centro. Esticado
+       no círculo, era um bonequinho verde sobre verde, quase invisível. */
+    .p-avatar img#avatarIcon,
+    body.tema-escuro .p-avatar img#avatarIcon{width:44px;height:44px;object-fit:contain;border-radius:0;filter:brightness(0) invert(1);}
     .p-name h1{font-size:24px;font-weight:800;color:var(--text);margin:0 0 4px;letter-spacing:-.3px;}
     .p-name .p-role{font-size:13px;color:var(--text-2);display:flex;align-items:center;gap:6px;}
     .p-name .p-role img{width:14px;height:14px;}
@@ -80,7 +87,7 @@
     <div class="dash-greeting">
       <p class="greeting-sub" id="tituloSub">Meus dados</p>
       <h2 class="greeting-name"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Meu Perfil</h2>
-      <p class="greeting-condo"> Seus dados pessoais e informações da unidade</p>
+      <p class="greeting-condo">Seus dados pessoais e informações da unidade</p>
     </div>
 
     <div class="profile-top">

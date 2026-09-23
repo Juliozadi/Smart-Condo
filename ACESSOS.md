@@ -5,7 +5,7 @@ acompanhar o que já está pronto em cada área.
 
 > **Não está conseguindo entrar?** Abra a página
 > **`frontend/diagnostico.html`** pelo mesmo servidor que você usa para
-> abrir o sistema (Live Server ou `python -m http.server`). Ela testa
+> abrir o sistema (Live Server ou `python servidor.py`). Ela testa
 > cada peça sozinha e diz exatamente o que está faltando, com o comando
 > para resolver.
 
@@ -113,7 +113,7 @@ Em **outro terminal**, na pasta `frontend/`:
 
 ```bash
 cd frontend
-python -m http.server 8080
+python servidor.py 8080
 ```
 
 Abra <http://localhost:8080> e faça o login.

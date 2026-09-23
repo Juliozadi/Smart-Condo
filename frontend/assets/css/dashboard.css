@@ -7,6 +7,10 @@
 body.dashboard-body {
   flex-direction: column;
   align-items: stretch;
+  /* O body da tela de entrada centraliza o cartão na vertical; herdado
+     aqui, fazia a barra superior descer nas telas mais curtas que a
+     janela, em vez de ficar colada no topo. */
+  justify-content: flex-start;
   padding: 0;
   background-color: #d9e8ec;
   background-image:
@@ -108,6 +112,12 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
   border: 2px solid rgba(7,158,146,.2);
 }
 .dash-wrapper.wide { max-width: 980px; }
+/* Quando a janela tem quase a largura máxima do painel, o cartão
+   encostava nas bordas laterais. No celular quem cuida disso é a regra
+   de max-width: 640px, mais abaixo. */
+@media (min-width: 641px) {
+  .dash-wrapper { width: calc(100% - 40px); }
+}
 
 /* ═══════════════════════════════════════════
    GREETING BANNER
@@ -161,6 +171,10 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
 .greeting-sub img { width: 14px; height: 14px; vertical-align: middle; margin-right: 4px; display: inline-block; }
 
 .greeting-name {
+  /* Em flex o ícone fica centrado na altura do texto. Com
+     vertical-align: middle ele se alinhava à altura-x e ficava 2 a 3px
+     abaixo do centro das letras maiúsculas do título. */
+  display: flex; align-items: center; flex-wrap: wrap;
   font-size: 26px;
   font-weight: 800;
   letter-spacing: -.5px;
@@ -168,7 +182,7 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
   position: relative; z-index: 1;
   line-height: 1.1;
 }
-.greeting-name img { width: 26px; height: 26px; vertical-align: middle; margin-right: 6px; display: inline-block; }
+.greeting-name img { width: 26px; height: 26px; margin-right: 8px; display: block; flex-shrink: 0; }
 
 .greeting-condo {
   font-size: 12px;
@@ -456,7 +470,7 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
 }
 .action-btn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.15) 50%, transparent 60%); background-size: 200% 100%; opacity: 0; transition: opacity .2s; }
 .action-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16,182,168,.3), 0 12px 28px rgba(16,182,168,.24); }
-.action-btn:hover::after { opacity: 1; animation: shimmer .7s linear; }
+.action-btn:hover::after { opacity: 1; animation: shimmer .7s linear forwards; }
 .action-btn:active { transform: translateY(0); }
 
 .action-btn img { width: 16px; height: 16px; display: inline-block; vertical-align: middle; }
@@ -819,6 +833,11 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
 .layout-mobile .stats-row {
   grid-template-columns: repeat(2, 1fr);
   gap: 8px;
+}
+/* Três cartões em duas colunas deixavam o terceiro sozinho, com um
+   buraco ao lado. Na coluna de 480px os três cabem numa linha. */
+.layout-mobile .stats-row:has(> :nth-child(3):last-child) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .layout-mobile .stat-card {
@@ -1194,7 +1213,14 @@ body:has(.step-page:target) .step-page.default-step {
   pointer-events: none;
 }
 .list-item { position: relative; overflow: hidden; }
-.list-item:hover::after { opacity: 1; animation: shimmer 1s linear; }
+/* "forwards" faz a faixa de brilho terminar fora do item. Sem ele,
+   quando a animação acabava a faixa voltava ao meio e ficava parada ali
+   enquanto o mouse estivesse em cima — no tema escuro, um borrão claro
+   atravessando o cartão. */
+.list-item:hover::after { opacity: 1; animation: shimmer 1s linear forwards; }
+body.tema-escuro .list-item::after {
+  background-image: linear-gradient(90deg, transparent, rgba(255,255,255,.07), transparent);
+}
 
 /* ── Stat card subtle gradient overlay ────────────────────── */
 .stat-card::after {
@@ -1798,6 +1824,10 @@ body:has(.step-page:target) .step-page.default-step {
      duas delas nao cabiam em 360px. */
   .admin-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .stats-row   { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  /* No celular, quando sobra um cartão, ele ocupa a linha inteira. */
+  .stats-row > :last-child:nth-child(odd),
+  .layout-mobile .stats-row:has(> :nth-child(3):last-child) > :last-child { grid-column: 1 / -1; }
+  .layout-mobile .stats-row:has(> :nth-child(3):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .admin-stat, .stat-card { padding: 16px 12px; min-width: 0; }
   .admin-stat .stat-value, .stat-card .stat-value { font-size: 23px; }
   .dash-grid .action-btn,

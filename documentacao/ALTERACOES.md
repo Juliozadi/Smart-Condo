@@ -40,7 +40,8 @@ chave estrangeira ficar sem descrição — assim o dicionário não envelhece
 em silêncio quando o banco muda.
 
 **Capa.** Saíram Ian Araujo Ramos Jares e João Victor Arantes Oliveira,
-que não fazem mais parte do grupo; com isso o gestor do projeto, na
+que não fazem mais parte do grupo, e entrou Lenini Bellodi Júnior, que
+faz e não aparecia; com isso o gestor do projeto, na
 seção 2, passou a ser Júlio Zadi. O ano da capa continua 2025, que é
 quando o projeto começou.
 

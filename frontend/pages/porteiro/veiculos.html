@@ -40,12 +40,12 @@
 
     <div class="stats-row">
       <div class="stat-card teal"><span class="stat-value" id="totOcupadas">—</span><span class="stat-label"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">No estac.</span></div>
-      <div class="stat-card blue"><span class="stat-value" id="totVagas">—</span><span class="stat-label">Total vagas</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totVagas">—</span><span class="stat-label"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Total vagas</span></div>
       <div class="stat-card amber"><span class="stat-value" id="totLivres">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Livres</span></div>
     </div>
 
     <!-- Ocupação visual -->
-    <p class="section-title">Ocupação do Estacionamento</p>
+    <p class="section-title"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt=""> Ocupação do Estacionamento</p>
     <div class="painel-ocupacao">
       <div class="ocupacao-cabecalho">
         <span class="ocupacao-texto" id="ocupacaoTexto">Carregando…</span>
@@ -57,18 +57,18 @@
 
     <p class="section-title"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt=""> Veículos no Pátio Agora</p>
     <div class="data-table tabela-status" id="tabelaPatio">
-      <div class="table-head cols-4"><span><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Placa</span><span>Modelo / cor</span><span><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Apto</span><span>Entrou</span></div>
+      <div class="table-head cols-4"><span>Placa</span><span>Modelo / cor</span><span>Apto</span><span>Entrou</span></div>
     </div>
     <p class="estado-lista" id="estadoPatio">Carregando…</p>
 
     <!-- Registrar entrada/saída -->
-    <p class="section-title">Registrar Movimentação</p>
+    <p class="section-title"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt=""> Registrar Movimentação</p>
     <div class="form-card">
       <h3><img src="../../assets/img/icons/car.svg" width="16" height="16" alt=""> Dados do Veículo</h3>
       <form id="formVeiculo" novalidate>
         <div class="form-row">
           <div class="form-group">
-            <label for="veicul_placaDoVeiculo"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Placa do veículo</label>
+            <label for="veicul_placaDoVeiculo">Placa do veículo</label>
             <input id="veicul_placaDoVeiculo" type="text" placeholder="ABC-1D23" class="mask-placa" style="text-transform:uppercase;letter-spacing:2px;font-weight:700;font-size:16px;" maxlength="8" required>
           </div>
           <div class="form-group">
@@ -86,7 +86,7 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="veicul_apartamento"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Apartamento</label>
+            <label for="veicul_apartamento">Apartamento</label>
             <select id="veicul_apartamento">
               <option value="" selected>Sem vínculo com unidade</option>
             </select>
@@ -104,9 +104,9 @@
     </div>
 
     <!-- Histórico -->
-    <p class="section-title">Últimas Movimentações</p>
+    <p class="section-title"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Últimas Movimentações</p>
     <div class="data-table tabela-status" id="tabelaHistorico">
-      <div class="table-head cols-4"><span><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Placa</span><span><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Apto</span><span><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Horário</span><span>Tipo</span></div>
+      <div class="table-head cols-4"><span>Placa</span><span>Apto</span><span>Horário</span><span>Tipo</span></div>
     </div>
     <p class="estado-lista" id="estadoHistorico"></p>
 

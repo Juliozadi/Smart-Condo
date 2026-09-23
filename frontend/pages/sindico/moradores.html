@@ -27,14 +27,14 @@
     <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
     <div class="dash-greeting">
       <p class="greeting-sub">Painel Administrativo</p>
-      <h2 class="greeting-name">Gestão de Moradores</h2>
+      <h2 class="greeting-name"><img src="../../assets/img/icons/moradores.svg" width="26" height="26" alt=""> Gestão de Moradores</h2>
       <p class="greeting-condo" id="resumoCondominio">Carregando…</p>
     </div>
     <div class="admin-stats">
-      <div class="admin-stat teal"><span class="stat-value" id="totMoradores">—</span><span class="stat-label">Moradores</span></div>
-      <div class="admin-stat blue"><span class="stat-value" id="totProprietarios">—</span><span class="stat-label">Proprietários</span></div>
-      <div class="admin-stat amber"><span class="stat-value" id="totInquilinos">—</span><span class="stat-label">Inquilinos</span></div>
-      <div class="admin-stat red"><span class="stat-value" id="totPendentes">—</span><span class="stat-label">Aguard. aprov.</span></div>
+      <div class="admin-stat teal"><span class="stat-value" id="totMoradores">—</span><span class="stat-label"><img src="../../assets/img/icons/moradores.svg" width="16" height="16" alt="">Moradores</span></div>
+      <div class="admin-stat blue"><span class="stat-value" id="totProprietarios">—</span><span class="stat-label"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">Proprietários</span></div>
+      <div class="admin-stat amber"><span class="stat-value" id="totInquilinos">—</span><span class="stat-label"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Inquilinos</span></div>
+      <div class="admin-stat red"><span class="stat-value" id="totPendentes">—</span><span class="stat-label"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Aguard. aprov.</span></div>
     </div>
 
     <div class="alert-box" id="avisoPendentes" hidden>
@@ -51,14 +51,17 @@
     <br>
 
     <div id="blocoPendentes">
-      <p class="section-title">Cadastros Aguardando Aprovação</p>
+      <p class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Cadastros Aguardando Aprovação</p>
       <div class="list-items" id="listaPendentes"></div>
       <p class="estado-lista" id="estadoPendentes">Carregando…</p>
     </div>
 
-    <p class="section-title">Todos os Moradores</p>
+    <p class="section-title"><img src="../../assets/img/icons/moradores.svg" width="16" height="16" alt=""> Todos os Moradores</p>
     <div class="barra-acoes">
-      <input type="search" id="buscaMorador" placeholder="Buscar por nome, e-mail ou unidade" aria-label="Buscar morador">
+      <div class="campo-busca">
+        <img src="../../assets/img/icons/moradores.svg" alt="">
+        <input type="search" id="buscaMorador" placeholder="Buscar por nome, e-mail ou unidade" aria-label="Buscar morador">
+      </div>
       <select id="filtroStatus" aria-label="Filtrar por status">
         <option value="">Todos os status</option>
         <option value="ativo">Ativo</option>
@@ -69,7 +72,7 @@
       </select>
     </div>
     <div class="data-table tabela-status" id="tabelaMoradores">
-      <div class="table-head cols-5"><span><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Morador</span><span><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Unidade</span><span>Tipo</span><span>Desde</span><span>Status</span></div>
+      <div class="table-head cols-5"><span>Morador</span><span>Unidade</span><span>Tipo</span><span>Desde</span><span>Status</span></div>
     </div>
     <p class="estado-lista" id="estadoTabela"></p>
   </main>

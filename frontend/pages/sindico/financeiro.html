@@ -16,9 +16,9 @@
   <main class="dash-wrapper wide">
     <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
     <div class="dash-greeting">
-      <p class="greeting-sub"> Painel Administrativo</p>
-      <h2 class="greeting-name"> Financeiro</h2>
-      <p class="greeting-condo"> Gestão financeira completa do condomínio</p>
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h2 class="greeting-name"><img src="../../assets/img/icons/financeiro.svg" width="26" height="26" alt=""> Financeiro</h2>
+      <p class="greeting-condo">Gestão financeira completa do condomínio</p>
     </div>
     <div class="balance-card">
       <p class="balance-label">Total recebido</p>
@@ -31,9 +31,9 @@
     </div>
     <div class="admin-stats">
       <div class="admin-stat teal"><span class="stat-value" id="statRecebido">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Recebido</span></div>
-      <div class="admin-stat blue"><span class="stat-value" id="statAberto">—</span><span class="stat-label">Em aberto</span></div>
+      <div class="admin-stat blue"><span class="stat-value" id="statAberto">—</span><span class="stat-label"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt="">Em aberto</span></div>
       <div class="admin-stat red"><span class="stat-value" id="statVencido">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt="">Vencido</span></div>
-      <div class="admin-stat amber"><span class="stat-value" id="statInadimplentes">—</span><span class="stat-label">Unidades em atraso</span></div>
+      <div class="admin-stat amber"><span class="stat-value" id="statInadimplentes">—</span><span class="stat-label"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Unidades em atraso</span></div>
     </div>
 
     <p class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Gerar Cobranças</p>
@@ -59,7 +59,7 @@
       </form>
     </div>
 
-    <p class="section-title">Cobranças</p>
+    <p class="section-title"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt=""> Cobranças</p>
     <div class="barra-acoes">
       <select id="filtroStatus" aria-label="Filtrar por status">
         <option value="">Todos os status</option>
@@ -71,7 +71,7 @@
       <button type="button" id="btnExportar" class="action-btn outline" style="width:auto;margin:0;">Exportar (CSV)</button>
     </div>
     <div class="data-table tabela-status" id="tabelaCobrancas">
-      <div class="table-head cols-6"><span><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">Unidade</span><span>Competência</span><span>Descrição</span><span>Vencimento</span><span>Valor</span><span>Situação</span></div>
+      <div class="table-head cols-6"><span>Unidade</span><span>Competência</span><span>Descrição</span><span>Vencimento</span><span>Valor</span><span>Situação</span></div>
     </div>
     <p class="estado-lista" id="estadoTabela">Carregando…</p>
 

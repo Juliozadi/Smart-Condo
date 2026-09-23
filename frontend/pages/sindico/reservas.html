@@ -16,23 +16,23 @@
   <main class="dash-wrapper wide">
     <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
     <div class="dash-greeting">
-      <p class="greeting-sub"> Painel Administrativo</p>
-      <h2 class="greeting-name"> Gestão de Reservas</h2>
-      <p class="greeting-condo"> Gerencie os agendamentos dos espaços comuns</p>
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h2 class="greeting-name"><img src="../../assets/img/icons/calendar-check.svg" width="26" height="26" alt=""> Gestão de Reservas</h2>
+      <p class="greeting-condo">Gerencie os agendamentos dos espaços comuns</p>
     </div>
     <div class="stats-row">
-      <div class="stat-card amber"><span class="stat-value" id="totPendentesR">—</span><span class="stat-label">Pendentes</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totPendentesR">—</span><span class="stat-label"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Pendentes</span></div>
       <div class="stat-card teal"><span class="stat-value" id="totAprovadas">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Aprovadas</span></div>
-      <div class="stat-card blue"><span class="stat-value" id="totMes">—</span><span class="stat-label">Este mês</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totMes">—</span><span class="stat-label"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt="">Este mês</span></div>
     </div>
 
     <div id="blocoPendentes">
-      <p class="section-title">Aguardando Aprovação</p>
+      <p class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Aguardando Aprovação</p>
       <div class="list-items" id="listaPendentes"></div>
     </div>
     <p class="estado-lista" id="estadoPendentes">Carregando…</p>
 
-    <p class="section-title">Todas as Reservas</p>
+    <p class="section-title"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Todas as Reservas</p>
     <div class="barra-acoes">
       <select id="filtroStatus" aria-label="Filtrar por status">
         <option value="">Todos os status</option>
@@ -44,7 +44,7 @@
       </select>
     </div>
     <div class="data-table" id="tabelaReservas">
-      <div class="table-head cols-4"><span><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Morador</span><span>Espaço</span><span>Data</span><span>Status</span></div>
+      <div class="table-head cols-4"><span>Morador</span><span>Espaço</span><span>Data</span><span>Status</span></div>
     </div>
     <p class="estado-lista" id="estadoTabela"></p>
   </main>
