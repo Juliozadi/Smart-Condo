@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -30,6 +30,7 @@ from app.schemas.usuario import (
     AprovacaoUsuario, CadastroPorteiro, CadastroSaida, PerfilSaida,
     PermissoesPorteiroEntrada, PermissoesPorteiroSaida, UsuarioAtualizacao, UsuarioSaida,
 )
+from app.services import arquivos as servico_arquivos
 from app.services import usuarios as servico_usuarios
 from app.services import auth as servico_auth
 from app.services.notificacao import mascarar_destino
@@ -355,6 +356,45 @@ def atualizar_perfil(
     for campo, valor in dados.model_dump(exclude_unset=True).items():
         setattr(usuario, campo, valor)
     db.commit()
+    db.refresh(usuario)
+    return usuario
+
+
+@router.put("/eu/foto", response_model=PerfilSaida, summary="Envia ou troca a foto de perfil")
+def enviar_foto(
+    arquivo: UploadFile = File(..., description="Imagem JPG, PNG ou WebP"),
+    usuario: Usuario = Depends(get_usuario_atual),
+    db: Session = Depends(get_db),
+) -> Usuario:
+    from app.core.config import settings
+
+    # Lê só até um byte além do limite: o bastante para saber que
+    # passou, sem carregar na memória um arquivo de qualquer tamanho.
+    conteudo = arquivo.file.read(settings.FOTO_MAX_KB * 1024 + 1)
+    try:
+        nova = servico_arquivos.salvar_foto(conteudo)
+    except servico_arquivos.ArquivoRecusado as erro:
+        raise HTTPException(status_code=422, detail=str(erro)) from erro
+
+    anterior = usuario.foto_url
+    usuario.foto_url = nova
+    db.commit()
+    # A antiga só sai do disco depois que a nova foi gravada no banco:
+    # se o commit falhasse, o usuário não ficaria sem nenhuma.
+    servico_arquivos.apagar_foto(anterior)
+    db.refresh(usuario)
+    return usuario
+
+
+@router.delete("/eu/foto", response_model=PerfilSaida, summary="Remove a foto de perfil")
+def remover_foto(
+    usuario: Usuario = Depends(get_usuario_atual),
+    db: Session = Depends(get_db),
+) -> Usuario:
+    anterior = usuario.foto_url
+    usuario.foto_url = None
+    db.commit()
+    servico_arquivos.apagar_foto(anterior)
     db.refresh(usuario)
     return usuario
 

@@ -16,7 +16,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.routers import (
-    admin, auth, comunicados, condominios, documentos, financeiro, manutencao,
+    admin, arquivos, auth, comunicados, condominios, documentos, financeiro, manutencao,
     portaria, reservas, usuarios, veiculos,
 )
 from app.core.config import settings
@@ -163,6 +163,7 @@ app.include_router(comunicados.router, prefix="/api/v1")
 app.include_router(veiculos.router, prefix="/api/v1")
 app.include_router(manutencao.router, prefix="/api/v1")
 app.include_router(documentos.router, prefix="/api/v1")
+app.include_router(arquivos.router, prefix="/api/v1")
 
 
 @app.get("/api/v1/saude", tags=["Serviço"], summary="Verificação de disponibilidade")

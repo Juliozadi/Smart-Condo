@@ -1,7 +1,7 @@
 """Testes do cadastro do condomínio, da aprovação e das permissões.
 
 Documentação, seções 8, 12 (casos de uso "Cadastro do condomínio" e
-"Permissão do Porteiro") e 11.2.
+"Permissão do Porteiro") e 13.2.
 """
 from __future__ import annotations
 

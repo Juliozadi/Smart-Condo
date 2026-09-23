@@ -1979,3 +1979,25 @@ body.tema-escuro .list-item::after {
 }
 .p-senha input:focus { border-color: var(--primary); }
 .p-senha .form-erro { margin: 10px 0; }
+
+/* ── Foto de perfil ─────────────────────────────────────────────── */
+/* Botão de câmera no canto do avatar: abre a escolha do arquivo. */
+.p-foto-btn {
+  position: absolute; right: 0; bottom: 2px;
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface); border: 2px solid var(--border);
+  box-shadow: var(--shadow-xs); cursor: pointer; transition: all .2s;
+}
+.p-foto-btn:hover { border-color: var(--primary-texto); transform: scale(1.06); }
+.p-foto-btn:focus-within, .p-foto-btn:focus-visible { outline: 3px solid var(--primary-glow); }
+.p-foto-btn img { width: 16px; height: 16px; display: block; }
+.p-foto-acoes { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+.p-foto-remover {
+  background: none; border: none; padding: 4px 0; cursor: pointer;
+  font: inherit; font-size: 12px; font-weight: 600; color: var(--erro);
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.p-foto-aviso { font-size: 12px; font-weight: 600; color: var(--primary-texto); min-height: 0; }
+.p-foto-aviso:empty { display: none; }
+.p-foto-aviso.erro { color: var(--erro); }

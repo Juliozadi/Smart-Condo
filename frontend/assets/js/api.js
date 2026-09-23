@@ -86,7 +86,10 @@
     opcoes = opcoes || {};
 
     var cabecalhos = { 'Accept': 'application/json' };
-    if (corpo !== undefined && corpo !== null) {
+    // Arquivo (FormData) vai como está: o navegador monta o
+    // Content-Type com a fronteira do multipart sozinho.
+    var ehArquivo = typeof FormData !== 'undefined' && corpo instanceof FormData;
+    if (corpo !== undefined && corpo !== null && !ehArquivo) {
       cabecalhos['Content-Type'] = 'application/json';
     }
 
@@ -98,7 +101,7 @@
     return fetch(API + rota, {
       method: metodo,
       headers: cabecalhos,
-      body: corpo !== undefined && corpo !== null ? JSON.stringify(corpo) : undefined
+      body: ehArquivo ? corpo : (corpo !== undefined && corpo !== null ? JSON.stringify(corpo) : undefined)
     }).then(function(resposta) {
       // 204 e afins não têm corpo.
       if (resposta.status === 204) return null;
@@ -145,6 +148,15 @@
     put:    function(rota, corpo, opcoes) { return requisitar('PUT', rota, corpo, opcoes); },
     patch:  function(rota, corpo, opcoes) { return requisitar('PATCH', rota, corpo, opcoes); },
     remover:function(rota, opcoes)        { return requisitar('DELETE', rota, null, opcoes); },
+
+    /* Endereço completo de um arquivo servido pela API (foto de perfil).
+       O servidor guarda o caminho relativo, "/arquivos/fotos/…", para
+       que o registro continue válido se a API mudar de endereço. */
+    arquivo: function(caminho) {
+      if (!caminho) return '';
+      if (/^https?:\/\//.test(caminho)) return caminho;
+      return API + caminho;
+    },
 
     /* Faz o login e guarda a sessão. Devolve o usuário autenticado. */
     entrar: function(email, senha) {

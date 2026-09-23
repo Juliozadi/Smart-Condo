@@ -59,6 +59,12 @@ class Settings(BaseSettings):
     def email_configurado(self) -> bool:
         return bool(self.SMTP_HOST)
 
+    # ── Arquivos enviados (foto de perfil) ───────────────────────────
+    # Pasta onde as fotos ficam gravadas. Relativa à pasta backend/,
+    # a não ser que venha um caminho absoluto.
+    UPLOADS_DIR: str = "uploads"
+    FOTO_MAX_KB: int = Field(default=2048, ge=50, le=10240)
+
     # ── CORS ─────────────────────────────────────────────────────────
     # O front-end é servido de qualquer porta local (o python -m
     # http.server, o Live Server do VS Code, etc.), então a origem é
