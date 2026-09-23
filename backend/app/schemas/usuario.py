@@ -179,3 +179,9 @@ class CadastroSaida(SchemaBase):
 
 CadastroPorteiro.model_rebuild()
 TokenSaida.model_rebuild()
+
+
+class CanaisSaida(SchemaBase):
+    """Por onde o código pode ser enviado neste servidor."""
+    email: bool
+    sms: bool

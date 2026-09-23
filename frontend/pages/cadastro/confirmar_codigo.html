@@ -121,7 +121,7 @@
       var link = this;
       link.textContent = 'Enviando...';
       SmartCondo.api
-        .post('/auth/codigo/reenviar', { email: dados.email, canal: 'email' }, { semToken: true })
+        .post('/auth/codigo/reenviar', { email: dados.email, canal: dados.canal || 'email' }, { semToken: true })
         .then(function() { link.textContent = 'Código reenviado'; })
         .catch(function() { link.textContent = 'Reenviar código'; });
     });

@@ -422,34 +422,23 @@
           <input type="password" id="mConfirmarSenha" placeholder="Repita a senha" required>
         </div>
       </div>
-      <div class="cad-divider">Autenticação em Duas Etapas (2FA)</div>
-      <div class="toggle-row">
-        <div class="toggle-info">
-          <strong>2FA por SMS / WhatsApp</strong>
-          <span>Código enviado ao celular a cada novo login</span>
-        </div>
-        <div class="toggle-switch">
-          <input type="checkbox" id="2fa-sms-m" checked>
-          <label for="2fa-sms-m"></label>
-        </div>
-      </div>
-      <div class="toggle-row">
-        <div class="toggle-info">
-          <strong>Alerta de login em novo dispositivo</strong>
-          <span>Notificação ao acessar de aparelho não reconhecido</span>
-        </div>
-        <div class="toggle-switch">
-          <input type="checkbox" id="alert-m" checked>
-          <label for="alert-m"></label>
-        </div>
-      </div>
-      <div class="cad-divider">Notificações</div>
-      <div class="tag-select">
-        <input type="checkbox" id="n-com" checked><label for="n-com"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt=""> Comunicados</label>
-        <input type="checkbox" id="n-enc" checked><label for="n-enc"><img src="../../assets/img/icons/box.svg" width="16" height="16" alt=""> Encomendas</label>
-        <input type="checkbox" id="n-bol" checked><label for="n-bol"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt=""> Boleto</label>
-        <input type="checkbox" id="n-res"><label for="n-res"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Reservas</label>
-        <input type="checkbox" id="n-oco"><label for="n-oco"><img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt=""> Ocorrências</label>
+      <!-- Antes aqui havia "2FA por SMS", "alerta de novo dispositivo" e
+           escolhas de notificação. Nenhum deles era enviado ao servidor:
+           a tela prometia recursos que não existiam. Fica a escolha real,
+           o canal do código de confirmação. -->
+      <div class="cad-divider">Código de confirmação</div>
+      <p class="canal-dica">Depois do cadastro enviamos um código para confirmar que o contato é seu.</p>
+      <div class="canal-opcoes" role="radiogroup" aria-label="Como receber o código de confirmação">
+        <label class="canal-opcao">
+          <input type="radio" name="canalCodigo" value="email" checked>
+          <img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">
+          <span><strong>E-mail</strong><small>No endereço informado acima</small></span>
+        </label>
+        <label class="canal-opcao" id="opcaoSms">
+          <input type="radio" name="canalCodigo" value="sms" disabled>
+          <img src="../../assets/img/icons/phone.svg" width="16" height="16" alt="">
+          <span><strong>SMS</strong><small id="smsDica">Verificando disponibilidade…</small></span>
+        </label>
       </div>
     </div>
 
@@ -458,9 +447,8 @@
       <div class="summary-box">
         <h4><img src="../../assets/img/icons/user.svg" width="16" height="16" alt=""> Resumo do Cadastro</h4>
         <div class="summary-row"><span>Perfil</span><span>Morador</span></div>
-        <div class="summary-row"><span>Unidade</span><span>A preencher no Step 2</span></div>
-        <div class="summary-row"><span>Documentos</span><span>RG + Comprovante</span></div>
-        <div class="summary-row"><span>2FA</span><span>Ativado via SMS</span></div>
+        <div class="summary-row"><span>Unidade</span><span id="resumoUnidade">—</span></div>
+        <div class="summary-row"><span>Código de confirmação</span><span id="resumoCanal">Por e-mail</span></div>
       </div>
       <div class="terms-check">
         <input id="morado_aceiteLiEAceitoOsTermosDeUsoEAPoli" aria-labelledby="morado_aceiteLiEAceitoOsTermosDeUsoEAPoli_txt" type="checkbox" required>
@@ -579,7 +567,7 @@
       unidade_numero: document.getElementById('mApartamento').value.trim(),
       unidade_bloco: document.getElementById('mBloco').value.trim() || 'unico',
       tipo_ocupacao: document.getElementById('mOcupacao').value,
-      canal_confirmacao: 'email'
+      canal_confirmacao: canalEscolhido()
     };
 
     var nascimento = document.getElementById('mNascimento').value;
@@ -592,6 +580,7 @@
             email: resposta.usuario.email,
             papel: resposta.usuario.papel,
             destino: resposta.codigo_enviado_para,
+            canal: resposta.canal,
             codigo_debug: resposta.codigo_debug || null
           }));
         } catch (_) {}
@@ -662,6 +651,7 @@
     }
     document.getElementById('step' + num).style.display = 'block';
     stepAtual = num;
+    if (num === 3) atualizarResumo();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -694,7 +684,7 @@
     });
   });
 </script>
-<script src="../../assets/js/acessibilidade.js">
+<script>
   /* Medidor de força e lista de regras, ao vivo. */
   (function() {
     var campo = document.getElementById('mSenha');
@@ -718,7 +708,37 @@
     campo.addEventListener('input', atualizar);
     atualizar();
   })();
+
+  /* Canal do código: SMS só fica disponível se o servidor tiver provedor. */
+  function canalEscolhido() {
+    var marcado = document.querySelector('input[name="canalCodigo"]:checked');
+    return marcado ? marcado.value : 'email';
+  }
+  function atualizarResumo() {
+    var ap = document.getElementById('mApartamento').value.trim();
+    var bloco = document.getElementById('mBloco').value.trim();
+    document.getElementById('resumoUnidade').textContent =
+      ap ? 'Apto ' + ap + (bloco ? ' · ' + bloco : '') : '—';
+    document.getElementById('resumoCanal').textContent =
+      canalEscolhido() === 'sms' ? 'Por SMS' : 'Por e-mail';
+  }
+  document.querySelectorAll('input[name="canalCodigo"]').forEach(function(r) {
+    r.addEventListener('change', atualizarResumo);
+  });
+  SmartCondo.api.get('/auth/canais', { semToken: true })
+    .then(function(c) {
+      var sms = document.querySelector('input[name="canalCodigo"][value="sms"]');
+      sms.disabled = !c.sms;
+      document.getElementById('smsDica').textContent =
+        c.sms ? 'No celular informado acima' : 'Indisponível neste servidor';
+      document.getElementById('opcaoSms').classList.toggle('indisponivel', !c.sms);
+    })
+    .catch(function() {
+      document.getElementById('smsDica').textContent = 'Indisponível no momento';
+      document.getElementById('opcaoSms').classList.add('indisponivel');
+    });
 </script>
+<script src="../../assets/js/acessibilidade.js"></script>
 
 </body>
 </html>
