@@ -208,23 +208,34 @@
 
     var contato = document.createElement('div');
     contato.className = 'contato-acoes';
-    [['chat', 'Chat', 'comunicados.svg'], ['voz', 'Ligar', 'phone.svg']].forEach(function(via) {
-      var botao = document.createElement('button');
-      botao.type = 'button';
-      botao.className = 'contato-btn';
-      botao.title = (via[0] === 'voz' ? 'Ligar para ' : 'Abrir chat com ') + p.nome;
-      botao.setAttribute('aria-label', botao.title);
-      var img = document.createElement('img');
-      img.src = '../../assets/img/icons/' + via[2];
-      img.alt = '';
-      botao.appendChild(img);
-      botao.appendChild(document.createTextNode(via[1]));
-      botao.addEventListener('click', function() {
-        campo('contatoStatus').textContent =
-          (via[0] === 'voz' ? 'Chamada de voz' : 'Chat') + ' com ' + p.nome + ' — iniciando…';
-      });
-      contato.appendChild(botao);
+    // Chat abre a conversa no painel de mensagens; Ligar disca o
+    // telefone cadastrado (no celular, abre a ligação direto).
+    var chatBtn = document.createElement('button');
+    chatBtn.type = 'button';
+    chatBtn.className = 'contato-btn';
+    chatBtn.title = 'Abrir chat com ' + p.nome;
+    chatBtn.setAttribute('aria-label', chatBtn.title);
+    var imgChat = document.createElement('img');
+    imgChat.src = '../../assets/img/icons/comunicados.svg';
+    imgChat.alt = '';
+    chatBtn.appendChild(imgChat);
+    chatBtn.appendChild(document.createTextNode('Chat'));
+    chatBtn.addEventListener('click', function() {
+      if (window.SmartCondo.chat) window.SmartCondo.chat.abrir(p.id);
     });
+    contato.appendChild(chatBtn);
+
+    var ligar = document.createElement('a');
+    ligar.className = 'contato-btn';
+    ligar.href = 'tel:' + String(p.telefone || '').replace(/[^\d+]/g, '');
+    ligar.title = 'Ligar para ' + p.nome;
+    ligar.setAttribute('aria-label', ligar.title);
+    var imgLigar = document.createElement('img');
+    imgLigar.src = '../../assets/img/icons/phone.svg';
+    imgLigar.alt = '';
+    ligar.appendChild(imgLigar);
+    ligar.appendChild(document.createTextNode('Ligar'));
+    contato.appendChild(ligar);
     item.appendChild(contato);
 
     var selo = document.createElement('span');

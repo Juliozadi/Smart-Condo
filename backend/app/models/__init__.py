@@ -11,6 +11,7 @@ from app.models.enums import (
     StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
     StatusVisitante, TipoMovimentacao, TipoOcupacao,
 )
+from app.models.mensagem import Mensagem
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
 from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico
 from app.models.financeiro import Cobranca, Pagamento, PreferenciaCobranca
@@ -19,7 +20,7 @@ from app.models.usuario import CodigoVerificacao, PermissaoPorteiro, Usuario
 
 __all__ = [
     "Cobranca", "CodigoVerificacao", "Comunicado", "Condominio", "Documento",
-    "Encomenda", "EspacoComum", "LeituraComunicado", "MovimentacaoVeiculo",
+    "Encomenda", "EspacoComum", "LeituraComunicado", "Mensagem", "MovimentacaoVeiculo",
     "Ocorrencia", "OrdemServico", "Pagamento", "PermissaoPorteiro",
     "PreferenciaCobranca", "RegistroOcupacao", "Reserva", "Unidade", "Usuario",
     "Visitante",
