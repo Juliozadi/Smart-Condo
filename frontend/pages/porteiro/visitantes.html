@@ -39,21 +39,21 @@
 
     <div class="stats-row" role="region" aria-label="Resumo de visitantes">
       <div class="stat-card teal"><span class="stat-value" id="totDentro">—</span><span class="stat-label"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="" aria-hidden="true">No cond.</span></div>
-      <div class="stat-card blue"><span class="stat-value" id="totHoje">—</span><span class="stat-label">Total hoje</span></div>
-      <div class="stat-card amber"><span class="stat-value" id="totSairam">—</span><span class="stat-label">Saíram</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totHoje">—</span><span class="stat-label"><img src="../../assets/img/icons/person-walking-arrow-right.svg" width="16" height="16" alt="">Total hoje</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totSairam">—</span><span class="stat-label"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt="">Saíram</span></div>
     </div>
 
-    <h2 class="section-title" id="titulo-registro"> Registrar Novo Visitante</h2>
+    <h2 class="section-title" id="titulo-registro"><img src="../../assets/img/icons/person-walking-arrow-right.svg" width="16" height="16" alt=""> Registrar Novo Visitante</h2>
     <div class="form-card" role="region" aria-labelledby="titulo-registro">
-      <h3> Dados do Visitante</h3>
+      <h3><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt=""> Dados do Visitante</h3>
       <form id="formVisitante" novalidate aria-label="Formulário de registro de visitante">
         <div class="form-row">
-          <div class="form-group"><label for="nome-visitante"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="" aria-hidden="true">Nome completo</label><input type="text" id="nome-visitante" placeholder="Nome do visitante" required autocomplete="name"></div>
-          <div class="form-group"><label for="doc-visitante"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="" aria-hidden="true">CPF / Documento</label><input type="text" id="doc-visitante" placeholder="000.000.000-00" class="mask-cpf" required autocomplete="off"></div>
+          <div class="form-group"><label for="nome-visitante">Nome completo</label><input type="text" id="nome-visitante" placeholder="Nome do visitante" required autocomplete="name"></div>
+          <div class="form-group"><label for="doc-visitante">CPF / Documento</label><input type="text" id="doc-visitante" placeholder="000.000.000-00" class="mask-cpf" required autocomplete="off"></div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="apto-visitante"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="" aria-hidden="true">Visitando o apartamento</label>
+            <label for="apto-visitante">Visitando o apartamento</label>
             <select id="apto-visitante" required>
               <option value="" disabled selected>Selecione o apto</option>
             </select>
@@ -71,7 +71,7 @@
           </div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label for="placa-visitante"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="" aria-hidden="true">Placa do veículo (opcional)</label><input type="text" id="placa-visitante" placeholder="ABC-1D23" class="mask-placa"></div>
+          <div class="form-group"><label for="placa-visitante">Placa do veículo (opcional)</label><input type="text" id="placa-visitante" placeholder="ABC-1D23" class="mask-placa"></div>
           <div class="form-group"><label for="tipo-visita-obs">Observação (opcional)</label><input type="text" id="tipo-visita-obs" maxlength="60" placeholder="Empresa, motivo, nº do pedido…"></div>
         </div>
         <!-- Vídeo porteiro — doc, seções 6 e 8 -->
@@ -94,11 +94,11 @@
       </form>
     </div>
 
-    <h2 class="section-title" id="titulo-presentes">Visitantes no Condomínio Agora</h2>
+    <h2 class="section-title" id="titulo-presentes"><img src="../../assets/img/icons/person-walking-arrow-right.svg" width="16" height="16" alt=""> Visitantes no Condomínio Agora</h2>
     <div class="list-items" id="listaPresentes" role="list" aria-labelledby="titulo-presentes" aria-live="polite"></div>
     <p class="estado-lista" id="estadoPresentes">Carregando…</p>
 
-    <h2 class="section-title" id="titulo-historico">Registros de Hoje</h2>
+    <h2 class="section-title" id="titulo-historico"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Registros de Hoje</h2>
     <div class="data-table history-table" id="tabelaHistorico" role="region" aria-labelledby="titulo-historico">
       <div class="table-head cols-5" role="row"><span role="columnheader"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="" aria-hidden="true">Visitante</span><span role="columnheader">Apto</span><span role="columnheader">Entrada</span><span role="columnheader">Saída</span><span role="columnheader">Situação</span></div>
     </div>

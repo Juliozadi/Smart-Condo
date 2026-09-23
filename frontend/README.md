@@ -4,7 +4,7 @@ HTML, CSS e JavaScript puros: sem framework, sem build, sem dependência
 externa. Basta servir esta pasta.
 
 ```bash
-python -m http.server 8080      # a partir de frontend/
+python servidor.py 8080         # a partir de frontend/
 ```
 
 Abra <http://localhost:8080>. A API precisa estar no ar em

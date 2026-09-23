@@ -226,7 +226,7 @@ uvicorn app.main:app --reload
 
 # 2. Front-end, em outro terminal, na pasta frontend/
 cd frontend
-python -m http.server 8080
+python servidor.py 8080
 ```
 
 Abra <http://localhost:8080> e entre com uma das contas de demonstração —

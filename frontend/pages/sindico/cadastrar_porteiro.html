@@ -34,7 +34,7 @@
     <!-- Banner -->
     <div class="dash-greeting" style="background:linear-gradient(130deg,#1a5fa8 0%,#1560aa 40%,#134d8e 100%);">
       <p class="greeting-sub">Painel Administrativo</p>
-      <h2 class="greeting-name">Cadastrar Novo Porteiro</h2>
+      <h2 class="greeting-name"><img src="../../assets/img/icons/shield-halved.svg" width="26" height="26" alt=""> Cadastrar Novo Porteiro</h2>
       <div class="greeting-stat-row">
         <div class="greeting-stat"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Residencial das Palmeiras</div>
         <div class="greeting-stat"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt=""> Apenas o síndico pode cadastrar porteiros</div>
@@ -54,15 +54,15 @@
       <div class="form-card" style="margin-bottom:16px;">
         <h3><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt=""> Dados Pessoais</h3>
         <div class="form-row">
-          <div class="form-group"><label for="pNome"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Nome completo *</label><input type="text" id="pNome" placeholder="Nome completo do porteiro" required></div>
+          <div class="form-group"><label for="pNome">Nome completo *</label><input type="text" id="pNome" placeholder="Nome completo do porteiro" required></div>
           <div class="form-group"><label for="pCpf">CPF *</label><input type="text" id="pCpf" placeholder="000.000.000-00" class="mask-cpf" required maxlength="14"></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label for="cadast_rg"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">RG *</label><input id="cadast_rg" type="text" placeholder="00.000.000-0" required></div>
+          <div class="form-group"><label for="cadast_rg">RG *</label><input id="cadast_rg" type="text" placeholder="00.000.000-0" required></div>
           <div class="form-group"><label for="pNascimento">Data de nascimento *</label><input type="date" id="pNascimento" required></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label for="pEmail"><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">E-mail *</label><input type="email" id="pEmail" placeholder="email@exemplo.com" required></div>
+          <div class="form-group"><label for="pEmail">E-mail *</label><input type="email" id="pEmail" placeholder="email@exemplo.com" required></div>
           <div class="form-group"><label for="pTelefone">Celular *</label><input type="tel" id="pTelefone" placeholder="(00) 90000-0000" class="mask-tel" required></div>
         </div>
         <div class="form-group"><label for="cadast_enderecoResidencial">Endereço residencial</label><input id="cadast_enderecoResidencial" type="text" placeholder="Rua, número, bairro, cidade/UF"></div>
@@ -72,7 +72,7 @@
       <div class="form-card" style="margin-bottom:16px;">
         <h3><img src="../../assets/img/icons/briefcase.svg" width="16" height="16" alt=""> Dados Profissionais</h3>
         <div class="form-row">
-          <div class="form-group"><label for="cadast_turnoDeTrabalho"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Turno de trabalho *</label>
+          <div class="form-group"><label for="cadast_turnoDeTrabalho">Turno de trabalho *</label>
             <select id="cadast_turnoDeTrabalho" required>
               <option value="" disabled selected>Selecione o turno</option>
               <option>Manhã — 07h às 15h</option>
@@ -81,7 +81,7 @@
               <option>Diarista / Especial</option>
             </select>
           </div>
-          <div class="form-group"><label for="cadast_tipoDeContrato"><img src="../../assets/img/icons/file-contract.svg" width="16" height="16" alt="">Tipo de contrato *</label>
+          <div class="form-group"><label for="cadast_tipoDeContrato">Tipo de contrato *</label>
             <select id="cadast_tipoDeContrato" required>
               <option value="" disabled selected>Selecione</option>
               <option>CLT — Funcionário fixo</option>
@@ -107,25 +107,25 @@
           <div class="form-group"><label for="cadast_nisPis">NIS / PIS *</label><input id="cadast_nisPis" type="text" placeholder="000.00000.00-0" required></div>
           <div class="form-group"><label for="cadast_noCtps">Nº CTPS</label><input id="cadast_noCtps" type="text" placeholder="Série e número"></div>
         </div>
-        <div class="form-group"><label for="cadast_observacoesInternas"><img src="../../assets/img/icons/pen.svg" width="16" height="16" alt="">Observações internas</label>
+        <div class="form-group"><label for="cadast_observacoesInternas">Observações internas</label>
           <textarea id="cadast_observacoesInternas" placeholder="Notas sobre o porteiro (visíveis apenas para o síndico)..." style="width:100%;min-height:70px;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);resize:vertical;outline:none;transition:.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'"></textarea>
         </div>
       </div>
 
       <!-- SEÇÃO 3: Acesso ao Sistema (síndico define as credenciais) -->
       <div class="form-card" style="margin-bottom:16px;">
-        <h3> Credenciais de Acesso</h3>
+        <h3><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""> Credenciais de Acesso</h3>
 
-        <div style="background:linear-gradient(135deg,var(--primary-light),#d5f4f1);border:1px solid rgba(7,158,146,.2);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px;">
-          
-          <div style="font-size:13px;color:var(--primary-texto);font-weight:500;line-height:1.55;">
+        <div class="caixa-dica">
+          <img src="../../assets/img/icons/lock.svg" width="16" height="16" alt="">
+          <div>
             Defina uma <strong>senha de acesso</strong> e entregue ao porteiro. Ele pode trocá-la depois pelo próprio perfil.
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label for="pEmailEspelho"><img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">E-mail de acesso</label>
+            <label for="pEmailEspelho">E-mail de acesso</label>
             <input type="text" id="pEmailEspelho" disabled placeholder="O e-mail informado acima" style="opacity:.75;">
             <span style="font-size:11px;color:var(--muted);margin-top:4px;display:block;font-weight:500;">O porteiro entra com o mesmo e-mail dos dados pessoais</span>
           </div>
@@ -140,9 +140,9 @@
       <div class="form-card" style="margin-bottom:16px;">
         <h3><img src="../../assets/img/icons/folder-open.svg" width="16" height="16" alt=""> Documentos do Porteiro</h3>
 
-        <div style="background:linear-gradient(135deg,#fff5f5,#fee2e2);border:1.5px solid rgba(245,108,108,.25);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px;">
+        <div class="caixa-dica perigo">
           <img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt="">
-          <p style="font-size:13px;color:var(--erro);font-weight:500;line-height:1.55;">Como síndico, você é responsável por verificar os documentos do porteiro antes de cadastrá-lo, incluindo a <strong>Certidão de Antecedentes Criminais</strong>.</p>
+          <p>Como síndico, você é responsável por verificar os documentos do porteiro antes de cadastrá-lo, incluindo a <strong>Certidão de Antecedentes Criminais</strong>.</p>
         </div>
 
         <label class="doc-upload" for="dp-rg-s"><div class="doc-upload-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" fill="var(--primary)" style="width:20px;height:20px;"><path d="M528 32H48C21.5 32 0 53.5 0 80v352c0 26.5 21.5 48 48 48h480c26.5 0 48-21.5 48-48V80c0-26.5-21.5-48-48-48zm0 400H48V80h480v352zM208 256c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm-32 32h64c17.7 0 32 14.3 32 32v8c0 8.8-7.2 16-16 16H160c-8.8 0-16-7.2-16-16v-8c0-17.7 14.3-32 32-32zm240-96h-64c-8.8 0-16-7.2-16-16s7.2-16 16-16h64c8.8 0 16 7.2 16 16s-7.2 16-16 16zm-128 0c-8.8 0-16-7.2-16-16s7.2-16 16-16 16 7.2 16 16-7.2 16-16 16zm128 64h-64c-8.8 0-16-7.2-16-16s7.2-16 16-16h64c8.8 0 16 7.2 16 16s-7.2 16-16 16zm-128 0c-8.8 0-16-7.2-16-16s7.2-16 16-16 16 7.2 16 16-7.2 16-16 16z"/></svg></div><div class="doc-upload-text"><strong>RG ou CNH (frente e verso)</strong><span>Documento de identidade com foto</span></div><span class="doc-upload-badge req">Obrigatório</span></label>
@@ -160,7 +160,7 @@
 
       <!-- SEÇÃO 5: Permissões -->
       <div class="form-card" style="margin-bottom:20px;">
-        <h3> Permissões de Acesso</h3>
+        <h3><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt=""> Permissões de Acesso</h3>
 
         <p style="font-size:13px;color:var(--text-2);margin-bottom:14px;font-weight:500;">Selecione o que este porteiro poderá acessar no sistema:</p>
 

@@ -55,7 +55,7 @@
       <p class="form-section-title"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt=""> Dados Pessoais <span class="section-tag obrig">Obrigatório</span></p>
       <div class="cad-row">
         <div class="cad-group">
-          <label for="mNome"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Nome completo <span class="req">*</span></label>
+          <label for="mNome">Nome completo <span class="req">*</span></label>
           <input type="text" id="mNome" placeholder="Como consta no documento" required>
         </div>
         <div class="cad-group">
@@ -69,7 +69,7 @@
           <input type="text" id="mCpf" class="mask-cpf" placeholder="000.000.000-00" required maxlength="14">
         </div>
         <div class="cad-group">
-          <label for="morado_rg"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">RG <span class="req">*</span></label>
+          <label for="morado_rg">RG <span class="req">*</span></label>
           <input id="morado_rg" type="text" placeholder="00.000.000-0" required>
         </div>
       </div>
@@ -97,7 +97,7 @@
           </select>
         </div>
         <div class="cad-group">
-          <label for="morado_profissao"><img src="../../assets/img/icons/briefcase.svg" width="16" height="16" alt="">Profissão</label>
+          <label for="morado_profissao">Profissão</label>
           <input id="morado_profissao" type="text" placeholder="Ex: Engenheiro">
         </div>
       </div>
@@ -128,7 +128,7 @@
       <p style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:4px 0 12px;">Contato de Emergência <span class="req">*</span></p>
       <div class="cad-row">
         <div class="cad-group">
-          <label for="morado_nome"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt="">Nome <span class="req">*</span></label>
+          <label for="morado_nome">Nome <span class="req">*</span></label>
           <input id="morado_nome" type="text" placeholder="Nome do responsável" required>
         </div>
         <div class="cad-group">
@@ -253,7 +253,7 @@
     <div class="form-section">
       <p class="form-section-title"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt=""> Veículos <span class="section-tag opc">Opcional</span></p>
       <div class="cad-group">
-          <label for="morado_quantidadeDeVeiculosACadastrar"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Quantidade de veículos a cadastrar</label>
+          <label for="morado_quantidadeDeVeiculosACadastrar">Quantidade de veículos a cadastrar</label>
           <select id="morado_quantidadeDeVeiculosACadastrar">
             <option value="" disabled selected>Selecione</option>
             <option>Nenhum</option><option>1 veículo</option><option>2 veículos</option><option>3 ou mais</option>
@@ -261,7 +261,7 @@
       </div>
       <div class="cad-row">
         <div class="cad-group">
-          <label for="morado_placaVeiculo1"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Placa — Veículo 1</label>
+          <label for="morado_placaVeiculo1">Placa — Veículo 1</label>
           <input id="morado_placaVeiculo1" type="text" placeholder="ABC-1D23" style="text-transform:uppercase;" maxlength="8">
         </div>
         <div class="cad-group">
@@ -271,7 +271,7 @@
       </div>
       <div class="cad-row">
         <div class="cad-group">
-          <label for="morado_placaVeiculo2"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">Placa — Veículo 2</label>
+          <label for="morado_placaVeiculo2">Placa — Veículo 2</label>
           <input id="morado_placaVeiculo2" type="text" placeholder="ABC-1D23" style="text-transform:uppercase;" maxlength="8">
         </div>
         <div class="cad-group">
@@ -391,25 +391,28 @@
     <div class="form-section">
       <p class="form-section-title"><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""> Criação de Senha <span class="section-tag obrig">Obrigatório</span></p>
       <div class="cad-group">
-        <label for="mSenha"><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt="">Senha <span class="req">*</span></label>
+        <label for="mSenha">Senha <span class="req">*</span></label>
         <div class="cad-input-icon">
           <img src="../../assets/img/icons/lock.svg" width="16" height="16" alt="">
           <input type="password" id="mSenha" placeholder="Crie uma senha forte" required>
         </div>
         <div class="pwd-strength-row">
           <div class="pwd-strength">
-            <div class="pwd-bar weak"></div>
-            <div class="pwd-bar medium"></div>
+            <div class="pwd-bar"></div>
+            <div class="pwd-bar"></div>
             <div class="pwd-bar"></div>
             <div class="pwd-bar"></div>
           </div>
-          <span class="pwd-level medium">Média</span>
+          <span class="pwd-level" id="pwdNivel" aria-live="polite"></span>
         </div>
+        <!-- As mesmas regras que o servidor cobra (app/schemas/comuns.py).
+             A lista anterior pedia maiúsculas e símbolo, que o servidor
+             não exige, e ficava parada: dois itens já vinham marcados
+             antes de a pessoa digitar qualquer coisa. -->
         <div class="pwd-reqs">
-          <div class="pwd-req ok"> Mínimo 8 caracteres</div>
-          <div class="pwd-req ok"> Maiúsculas e minúsculas</div>
-          <div class="pwd-req"> Ao menos 1 número</div>
-          <div class="pwd-req"> Ao menos 1 símbolo (!@#$...)</div>
+          <div class="pwd-req" data-regra="1"><img src="../../assets/img/icons/check.svg" width="14" height="14" alt="">Mínimo 8 caracteres</div>
+          <div class="pwd-req" data-regra="2"><img src="../../assets/img/icons/check.svg" width="14" height="14" alt="">Ao menos uma letra</div>
+          <div class="pwd-req" data-regra="3"><img src="../../assets/img/icons/check.svg" width="14" height="14" alt="">Ao menos um número ou símbolo</div>
         </div>
       </div>
       <div class="cad-group">
@@ -485,7 +488,7 @@
       <p>Cadastro analisado pelo síndico em até <strong>48 horas úteis</strong>. Você receberá confirmação por e-mail.</p>
     </div>
 
-    <p class="cad-login-link">Já tem conta? <a href="../../index.html"> Fazer login</a></p>
+    <p class="cad-login-link">Já tem conta? <a href="../../index.html">Fazer login</a></p>
 
   </div><!-- /step3 -->
 
@@ -691,7 +694,31 @@
     });
   });
 </script>
-<script src="../../assets/js/acessibilidade.js"></script>
+<script src="../../assets/js/acessibilidade.js">
+  /* Medidor de força e lista de regras, ao vivo. */
+  (function() {
+    var campo = document.getElementById('mSenha');
+    var barras = document.querySelectorAll('.pwd-strength .pwd-bar');
+    var nivel = document.getElementById('pwdNivel');
+    var NIVEIS = [null, ['weak', 'Fraca'], ['medium', 'Média'], ['medium', 'Boa'], ['strong', 'Forte']];
+    function atualizar() {
+      var s = campo.value;
+      var regras = { 1: s.length >= 8, 2: /[a-zA-Z]/.test(s), 3: /[0-9]/.test(s) || /[^a-zA-Z0-9]/.test(s) };
+      document.querySelectorAll('.pwd-req').forEach(function(el) {
+        el.classList.toggle('ok', !!regras[el.getAttribute('data-regra')]);
+      });
+      var pontos = s ? (regras[1] + regras[2] + regras[3] + (s.length >= 12 && regras[3])) : 0;
+      if (s && !pontos) pontos = 1;
+      barras.forEach(function(b, i) {
+        b.className = 'pwd-bar' + (i < pontos ? ' ' + NIVEIS[pontos][0] : '');
+      });
+      nivel.className = 'pwd-level' + (pontos ? ' ' + NIVEIS[pontos][0] : '');
+      nivel.textContent = pontos ? NIVEIS[pontos][1] : '';
+    }
+    campo.addEventListener('input', atualizar);
+    atualizar();
+  })();
+</script>
 
 </body>
 </html>

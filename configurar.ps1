@@ -224,7 +224,7 @@ $abrir = Read-Host "   Abrir o front-end numa janela separada? (S/n)"
 if ($abrir -ne "n" -and $abrir -ne "N") {
     Start-Process powershell -ArgumentList @(
         "-NoExit", "-Command",
-        "Set-Location '$Front'; Write-Host 'Front-end em http://localhost:5500 — feche esta janela para parar.' -ForegroundColor Cyan; python -m http.server 5500"
+        "Set-Location '$Front'; Write-Host 'Front-end em http://localhost:5500 — feche esta janela para parar.' -ForegroundColor Cyan; python servidor.py 5500"
     )
     Start-Sleep -Seconds 2
     Start-Process "http://localhost:5500/index.html"
