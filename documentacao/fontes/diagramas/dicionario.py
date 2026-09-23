@@ -38,6 +38,7 @@ TABELAS = {
     "visitantes": "Os visitantes anunciados pela portaria e a confirmação do morador.",
     "encomendas": "As encomendas recebidas na portaria e a retirada pelo morador.",
     "movimentacoes_veiculo": "As entradas e saídas de veículos registradas na portaria.",
+    "mensagens": "As mensagens do chat entre síndico, porteiros e moradores do mesmo condomínio.",
 }
 
 # O significado de cada coluna que não é identificador, vínculo ou carimbo
@@ -186,6 +187,10 @@ DESCRICOES = {
     "movimentacoes_veiculo.categoria": "A quem o veículo pertence",
     "movimentacoes_veiculo.registrada_em": "Momento do registro",
     "movimentacoes_veiculo.observacao": "Anotação da portaria",
+
+    "mensagens.texto": "Conteúdo da mensagem, de 1 a 2.000 caracteres",
+    "mensagens.enviada_em": "Momento do envio, preenchido pelo banco",
+    "mensagens.lida_em": "Momento em que o destinatário abriu a conversa; vazio enquanto não lida",
 }
 
 # O que cada vínculo significa, quando o nome da coluna não basta.
@@ -230,6 +235,9 @@ VINCULOS = {
     "usuarios.condominio_id": "Condomínio em que o usuário atua; vazio apenas para o administrador da plataforma",
     "usuarios.unidade_id": "Unidade em que o morador vive; vazio para síndico, porteiro e administrador",
     "visitantes.unidade_id": "Unidade visitada",
+    "mensagens.condominio_id": "Condomínio onde a conversa acontece",
+    "mensagens.remetente_id": "Quem enviou a mensagem",
+    "mensagens.destinatario_id": "Quem recebe a mensagem; não pode ser o próprio remetente",
 }
 
 

@@ -321,7 +321,7 @@ filhos.push(legenda('Quadro — Entidades do banco de dados do SmartCondo'));
 filhos.push(new Paragraph({ children: [new PageBreak()] }));
 filhos.push(titulo1('15', 'DIAGRAMA ENTIDADE-RELACIONAMENTO'));
 filhos.push(corpo('O diagrama entidade-relacionamento mostra as tabelas do banco e como elas se ligam. É gerado diretamente do banco em funcionamento — colunas, tipos e chaves são lidos do catálogo do PostgreSQL —, de modo que a figura não fica defasada quando a estrutura muda.'));
-filhos.push(corpo('Dezenove entidades com mais de duzentos atributos não cabem legíveis numa página só. Por isso o diagrama vem em quatro partes: uma visão de conjunto, com os nomes e as ligações, e três recortes por assunto, com todos os atributos. Nos recortes, PK marca a chave primária e FK as chaves estrangeiras; as setas partem da entidade que guarda a chave estrangeira e apontam para a entidade referenciada.'));
+filhos.push(corpo('Vinte entidades com mais de duzentos atributos não cabem legíveis numa página só. Por isso o diagrama vem em quatro partes: uma visão de conjunto, com os nomes e as ligações, e três recortes por assunto, com todos os atributos. Nos recortes, PK marca a chave primária e FK as chaves estrangeiras; as setas partem da entidade que guarda a chave estrangeira e apontam para a entidade referenciada.'));
 filhos.push(imagemDiagrama('der_geral.png'));
 filhos.push(legenda('Figura — Diagrama entidade-relacionamento: visão de conjunto'));
 [
@@ -444,6 +444,10 @@ const numeroDaPagina = () => new Header({
 });
 
 const doc = new Document({
+  // Ao abrir, o Word pergunta se deve atualizar os campos — e com isso
+  // monta o sumário com os números de página, sem ninguém precisar
+  // lembrar do "Atualizar campo".
+  features: { updateFields: true },
   creator: 'Projeto Integrador I — SmartCondo',
   title: 'Sistema de Gerenciamento de Condomínios',
   description: 'Documentação do projeto SmartCondo',

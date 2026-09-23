@@ -31,9 +31,9 @@ RECORTES = [
     ("Núcleo — condomínio, unidades e usuários", [
         "condominios", "unidades", "usuarios", "permissoes_porteiro", "codigos_verificacao",
     ]),
-    ("Convivência — espaços, comunicados, documentos e ocorrências", [
+    ("Convivência — espaços, comunicados, documentos, ocorrências e mensagens", [
         "espacos_comuns", "reservas", "registros_ocupacao", "comunicados",
-        "leituras_comunicado", "documentos", "ocorrencias", "ordens_servico",
+        "leituras_comunicado", "documentos", "ocorrencias", "ordens_servico", "mensagens",
     ]),
     ("Financeiro e portaria", [
         "cobrancas", "pagamentos", "preferencias_cobranca",
@@ -163,7 +163,7 @@ def figura_geral(tabelas, ligacoes, arquivo):
     """Visão de conjunto: só os nomes das entidades e as ligações."""
     fig, ax = plt.subplots(figsize=(13.8, 8.4))
     ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.axis("off")
-    ax.text(0.5, 0.985, "Visão de conjunto — as 19 entidades e suas ligações",
+    ax.text(0.5, 0.985, "Visão de conjunto — as 20 entidades e suas ligações",
             ha="center", va="top", fontsize=11, weight="bold", color=CINZA)
 
     # Posições escolhidas à mão: o núcleo no centro, cada assunto de um lado.
@@ -177,6 +177,7 @@ def figura_geral(tabelas, ligacoes, arquivo):
         "cobrancas": (0.83, 0.54), "pagamentos": (0.83, 0.38),
         "preferencias_cobranca": (0.83, 0.22), "visitantes": (0.83, 0.07),
         "encomendas": (0.335, 0.30), "movimentacoes_veiculo": (0.665, 0.30),
+        "mensagens": (0.335, 0.56),
     }
     for origem, _, destino in ligacoes:
         if origem == destino or origem not in pos or destino not in pos:

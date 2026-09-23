@@ -8,9 +8,10 @@
 
 ## Antes de entregar
 
-Abra o `.docx` no Word e **atualize o sumário**: botão direito sobre ele →
-*Atualizar campo* → *Atualizar o índice inteiro*. Os números de página só
-são calculados nessa hora.
+Ao abrir o `.docx`, o Word pergunta se deve **atualizar os campos**:
+responda *Sim*, e o sumário aparece com os números de página. Se a
+pergunta não aparecer, clique com o botão direito no sumário →
+*Atualizar campo* → *Atualizar o índice inteiro*.
 
 ## Regerando o documento
 

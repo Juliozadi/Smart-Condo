@@ -39,7 +39,7 @@ const requisitosFuncionais = [
   { id: 'RF005', nome: 'Confirmar cadastro com código',
     atores: 'Administrador, Síndico, Porteiro, Morador', prioridade: 'Essencial',
     descricao: 'O sistema envia um código de confirmação ao usuário recém-cadastrado e só considera a conta válida depois que esse código é informado. O mesmo mecanismo permite reenviar o código.',
-    entradas: 'A conta deve existir e estar aguardando confirmação. O código tem prazo de validade e um limite de tentativas erradas.',
+    entradas: 'A conta deve existir e estar aguardando confirmação. O código vai por e-mail ou, quando o servidor tem provedor de SMS configurado, por SMS, à escolha do usuário. Tem prazo de validade e um limite de tentativas erradas.',
     saidas: 'Confirmado o código, a conta passa para "ativo" ou, no caso do morador que se cadastrou sozinho, para "aguardando aprovação" do síndico. Esgotadas as tentativas, o código é invalidado e é preciso pedir outro.' },
 
   { id: 'RF006', nome: 'Aprovar ou recusar cadastro de morador',
@@ -239,6 +239,29 @@ const requisitosFuncionais = [
     descricao: 'O sistema apresenta ao administrador quantos condomínios, síndicos, porteiros e moradores existem na plataforma, e quantos cadastros aguardam aprovação.',
     entradas: 'O usuário deve ter o papel de administrador.',
     saidas: 'Os números são exibidos no painel do administrador, somando todos os condomínios.' },
+  { id: 'RF039', nome: 'Enviar foto de perfil',
+    atores: 'Síndico, Porteiro, Morador', prioridade: 'Desejável',
+    descricao: 'O sistema permite enviar, trocar e remover a foto de perfil, exibida no perfil e na lista de contatos do chat.',
+    entradas: 'A imagem precisa ser JPG, PNG ou WebP e ter até 2 MB. O tipo é conferido pelo conteúdo do arquivo, não pela extensão.',
+    saidas: 'A foto é gravada com um nome gerado pelo servidor e passa a aparecer no perfil. Ao trocar, a anterior é apagada; ao remover, volta o ícone padrão.' },
+
+  { id: 'RF040', nome: 'Conversar pelo chat',
+    atores: 'Síndico, Porteiro, Morador', prioridade: 'Importante',
+    descricao: 'O sistema permite trocar mensagens de texto entre pessoas do mesmo condomínio, com o número de mensagens não lidas sempre visível na barra superior.',
+    entradas: 'O síndico conversa com porteiros e moradores; o porteiro, com o síndico, os colegas e os moradores; o morador, com o síndico e a portaria — nunca com outro morador. A mensagem tem de 1 a 2.000 caracteres.',
+    saidas: 'A mensagem aparece para o destinatário sem que ele precise recarregar a página. Abrir a conversa marca as mensagens recebidas como lidas.' },
+
+  { id: 'RF041', nome: 'Ligar para um contato',
+    atores: 'Síndico, Porteiro, Morador', prioridade: 'Desejável',
+    descricao: 'O sistema oferece um botão de ligação para os contatos do chat e para os porteiros, na tela de gestão da portaria do síndico.',
+    entradas: 'O contato precisa ter telefone cadastrado.',
+    saidas: 'O botão abre a discagem para o número cadastrado — no celular, a ligação direta; no computador, o aplicativo de chamadas configurado.' },
+
+  { id: 'RF042', nome: 'Receber o código por SMS',
+    atores: 'Síndico, Porteiro, Morador', prioridade: 'Desejável',
+    descricao: 'O sistema permite escolher receber o código de confirmação do cadastro e o de recuperação de senha por SMS, além do e-mail.',
+    entradas: 'O servidor precisa ter um provedor de SMS configurado; sem ele, a opção aparece indisponível e a API recusa o pedido, orientando a usar o e-mail.',
+    saidas: 'O código é enviado ao celular cadastrado, em uma mensagem curta, e o reenvio usa o mesmo canal escolhido.' },
 ];
 
 // ── 10 Requisitos não funcionais ────────────────────────────────────
@@ -272,7 +295,7 @@ const requisitosNaoFuncionais = [
     { id: 'RNF006', nome: 'Testes automatizados',
       prioridade: 'Essencial',
       descricao: 'O sistema é coberto por testes automatizados que sobem a aplicação, falam com um banco de verdade e conferem tanto o caminho feliz quanto as recusas esperadas. Os testes rodam sozinhos a cada alteração enviada ao repositório.',
-      verificacao: 'A suíte roda em ambiente limpo, contra um banco exclusivo de teste, e precisa passar inteira antes de qualquer alteração ser aceita.' },
+      verificacao: 'A suíte do servidor roda em ambiente limpo, contra um banco exclusivo de teste, e os testes de interface abrem as telas num navegador real; os dois precisam passar antes de qualquer alteração ser aceita.' },
   ]},
 
   { n: '10.3', grupo: 'Desempenho', itens: [
@@ -319,22 +342,26 @@ const requisitosNaoFuncionais = [
       prioridade: 'Essencial',
       descricao: 'O sistema trata dados pessoais de moradores, porteiros e visitantes, e por isso segue a Lei Geral de Proteção de Dados: coleta apenas o necessário para a finalidade declarada, informa o titular na Política de Privacidade e nos Termos de Uso, e limita o acesso ao condomínio a que o dado pertence.',
       verificacao: 'A Política de Privacidade e os Termos de Uso estão publicados e acessíveis a partir da tela de entrada.' },
+    { id: 'RNF017', nome: 'Arquivos enviados conferidos pelo conteúdo',
+      prioridade: 'Essencial',
+      descricao: 'Toda foto enviada é aceita ou recusada pelos primeiros bytes do arquivo, e não pela extensão ou pelo tipo informado pelo navegador, que quem envia escolhe. O nome gravado é aleatório e gerado pelo servidor, o que impede adivinhar a foto de outra pessoa e usar o nome do arquivo para gravar fora da pasta de fotos.',
+      verificacao: 'Coberto por testes que enviam um HTML com extensão .png, um arquivo vazio, um arquivo grande demais e um nome com ../ — todos recusados ou neutralizados.' },
   ]},
 
   { n: '10.5', grupo: 'Padrões', itens: [
-    { id: 'RNF017', nome: 'Banco de dados relacional',
+    { id: 'RNF018', nome: 'Banco de dados relacional',
       prioridade: 'Essencial',
       descricao: 'Os dados ficam em um banco relacional PostgreSQL, com chaves estrangeiras, restrições de unicidade e verificações de valor declaradas no próprio banco. Regra declarada no banco vale mesmo que alguém acesse os dados por fora do sistema.',
       verificacao: 'As restrições são criadas pelas migrações e conferidas pelos testes.' },
-    { id: 'RNF018', nome: 'Linguagens e ferramentas',
+    { id: 'RNF019', nome: 'Linguagens e ferramentas',
       prioridade: 'Essencial',
       descricao: 'O front-end é feito em HTML, CSS e JavaScript, sem dependência de framework, para que o time consiga ler e alterar qualquer tela. O back-end é em Python com FastAPI, e o acesso ao banco é feito com SQLAlchemy e Alembic.',
       verificacao: 'As versões estão fixadas no arquivo de dependências do projeto.' },
-    { id: 'RNF019', nome: 'API REST versionada',
+    { id: 'RNF020', nome: 'API REST versionada',
       prioridade: 'Importante',
       descricao: 'A comunicação entre tela e servidor é feita por uma API REST, com endereços versionados, de modo que uma mudança futura possa conviver com a versão atual sem quebrar quem já usa.',
       verificacao: 'Todos os endereços começam pelo prefixo da versão, e a documentação interativa é gerada a partir do próprio código.' },
-    { id: 'RNF020', nome: 'Nomes e mensagens em português',
+    { id: 'RNF021', nome: 'Nomes e mensagens em português',
       prioridade: 'Desejável',
       descricao: 'Tabelas, colunas, campos das respostas da API e mensagens seguem o português, para que a leitura do código e do banco acompanhe a linguagem usada no condomínio e na própria documentação.',
       verificacao: 'Conferido no dicionário de dados e nas respostas da API, reproduzidos nesta documentação.' },

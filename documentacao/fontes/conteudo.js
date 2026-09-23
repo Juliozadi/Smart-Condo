@@ -84,6 +84,8 @@ const historico = [
    'Júlio Zadi, Luan Flôres Martins, Lenini Bellodi Júnior, Juliano Araujo, João Victor Muller Miranda'],
   ['22/09/2026', '2.0', 'Requisitos funcionais e não funcionais numerados, diagrama de casos de uso, modelo e diagrama entidade-relacionamento, relacionamentos, dicionário de dados e implementações no banco',
    'Júlio Zadi, Luan Flôres Martins, Lenini Bellodi Júnior, Juliano Araujo, João Victor Muller Miranda'],
+  ['23/09/2026', '2.1', 'Foto de perfil, chat e ligação, envio de código por SMS, testes de interface e comparação dos scripts SQL com as migrações',
+   'Júlio Zadi, Luan Flôres Martins, Lenini Bellodi Júnior, Juliano Araujo, João Victor Muller Miranda'],
 ];
 
 // ── Seção 9: casos de uso ───────────────────────────────────────────

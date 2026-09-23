@@ -251,10 +251,13 @@ todas com a senha `smartcondo123`:
 - [x] Autenticação com JWT
 - [x] Banco de dados real (PostgreSQL)
 - [x] Envio real de e-mail (SMTP)
-- [ ] Envio de SMS (a interface já existe; falta o provedor)
-- [ ] Upload das fotos do vídeo porteiro (a API guarda a URL)
+- [x] Envio de SMS (Twilio, opcional, configurado no `.env`)
+- [x] Foto de perfil
+- [ ] Fotos do visitante e da encomenda: a portaria tira a foto, mas ela não é salva (precisa de acesso restrito, por ser dado pessoal)
+- [ ] Documentos do cadastro do morador: o formulário pede RG e comprovante, mas os arquivos não são enviados
 - [x] Integrar as telas do front-end à API
-- [ ] Chat e chamada de voz com o porteiro (Node.js, seção 13.5.2)
+- [x] Chat entre síndico, porteiros e moradores, e ligação pelo telefone cadastrado
+- [ ] Chamada de voz dentro do navegador (exige servidor de mídia)
 - [ ] Notificações push
 - [ ] Painel de gráficos com dados dinâmicos
 - [ ] Aplicativo mobile (React Native)
