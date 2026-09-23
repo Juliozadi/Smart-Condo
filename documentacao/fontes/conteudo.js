@@ -9,15 +9,13 @@
 const capa = {
   titulo: 'Sistema de Gerenciamento de Condomínios',
   integrantes: [
-    'Ian Araujo Ramos Jares',
-    'João Victor Arantes Oliveira',
     'Júlio Zadi',
     'Luan Flôres Martins',
     'Juliano Araujo',
     'João Victor Muller Miranda',
   ],
   disciplina: 'Projeto Integrador I',
-  ano: '2026',
+  ano: '2025',
 };
 
 // ── Seções 1 a 10: texto original ───────────────────────────────────
@@ -29,7 +27,7 @@ const secoes = [
 
 { n: '2', titulo: 'IDENTIFICAÇÃO DO PROJETO', paragrafos: [
   'Projeto: SmartCondo: Gestão de condomínios',
-  'Gestor do Projeto: Ian Araujo Ramos Jares',
+  'Gestor do Projeto: Júlio Zadi',
 ]},
 
 { n: '3', titulo: 'JUSTIFICATIVA', paragrafos: [
@@ -80,11 +78,11 @@ const secoes = [
 const historico = [
   ['Data', 'Versão', 'Descrição', 'Autores'],
   ['21/09/2026', '1.0', 'Versão inicial da documentação do projeto',
-   'Ian Araujo Ramos Jares, João Victor Arantes Oliveira, Júlio Zadi, Luan Flôres Martins, Juliano Araujo, João Victor Muller Miranda'],
+   'Júlio Zadi, Luan Flôres Martins, Juliano Araujo, João Victor Muller Miranda'],
   ['22/09/2026', '1.1', 'Acessibilidade e contraste, bloqueio de login por tentativas e tratamento de dados pessoais',
-   'Ian Araujo Ramos Jares, João Victor Arantes Oliveira, Júlio Zadi, Luan Flôres Martins, Juliano Araujo, João Victor Muller Miranda'],
+   'Júlio Zadi, Luan Flôres Martins, Juliano Araujo, João Victor Muller Miranda'],
   ['22/09/2026', '2.0', 'Requisitos funcionais e não funcionais numerados, diagrama de casos de uso, modelo e diagrama entidade-relacionamento, relacionamentos, dicionário de dados e implementações no banco',
-   'Ian Araujo Ramos Jares, João Victor Arantes Oliveira, Júlio Zadi, Luan Flôres Martins, Juliano Araujo, João Victor Muller Miranda'],
+   'Júlio Zadi, Luan Flôres Martins, Juliano Araujo, João Victor Muller Miranda'],
 ];
 
 // ── Seção 9: casos de uso ───────────────────────────────────────────

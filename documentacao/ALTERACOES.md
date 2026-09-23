@@ -39,10 +39,10 @@ português ficam no próprio script, e a geração falha se alguma coluna ou
 chave estrangeira ficar sem descrição — assim o dicionário não envelhece
 em silêncio quando o banco muda.
 
-**Capa.** O ano estava como 2025; o projeto começou em junho de 2026 e
-as revisões são todas de 2026. Passou para 2026. Se o 2025 era
-proposital (por exemplo, o ano letivo da turma), basta trocar o campo
-`ano` em `fontes/conteudo.js` e gerar de novo.
+**Capa.** Saíram Ian Araujo Ramos Jares e João Victor Arantes Oliveira,
+que não fazem mais parte do grupo; com isso o gestor do projeto, na
+seção 2, passou a ser Júlio Zadi. O ano da capa continua 2025, que é
+quando o projeto começou.
 
 ## Versão 1.x
 
