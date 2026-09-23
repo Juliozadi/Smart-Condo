@@ -30,6 +30,8 @@ const arquitetura = {
     'A segunda é a API REST, escrita em Python com FastAPI. É ela que aplica as regras do negócio: quem pode cadastrar quem, se uma reserva conflita com outra já existente, se um porteiro tem permissão para registrar uma ocorrência. Nenhuma dessas decisões fica no navegador, porque o código do navegador pode ser alterado pelo usuário.',
     'A terceira é o banco de dados PostgreSQL, acessado pela API por meio do SQLAlchemy. As mudanças de estrutura são versionadas com o Alembic.',
     'Fora dessas três camadas, o sistema depende de um serviço de envio de mensagens. Os códigos de confirmação de cadastro e de recuperação de senha saem por correio eletrônico, usando um servidor SMTP configurado por variáveis de ambiente, e a mensagem vai em duas versões, uma em texto simples e outra formatada. Sem essa configuração o código não é entregue a ninguém, o que travaria o cadastro do morador; por isso a aplicação avisa ao iniciar quando está em modo de produção sem o servidor de correio definido.',
+    'Os mesmos códigos podem ir por SMS, por meio do provedor Twilio, quando as credenciais dele estão configuradas. A tela consulta a API para saber se o SMS está disponível e só oferece a opção nesse caso; sem provedor, a API recusa o pedido e orienta a usar o e-mail, em vez de gerar um código que nunca chegaria. O texto é curto de propósito, porque uma mensagem acima de 160 caracteres é cobrada como duas.',
+    'As fotos de perfil ficam gravadas em uma pasta do servidor, fora do banco, com um nome aleatório gerado no envio; o banco guarda apenas o caminho. O chat entre síndico, porteiros e moradores usa a mesma API: enquanto a conversa está aberta, a tela consulta as mensagens novas a cada quatro segundos, o que atende ao volume de um condomínio sem exigir uma conexão permanente com o servidor.',
   ],
   subsecoes: [
     { n: '13.1', nome: 'Modelagem do banco de dados', paragrafos: [
@@ -74,15 +76,15 @@ const arquitetura = {
 // ── 14 API REST (nova) ──────────────────────────────────────────────
 const api = {
   paragrafos: [
-    'A comunicação entre o front-end e o banco de dados acontece por uma API REST, com 79 endpoints distribuídos em onze módulos. Todos os endereços começam com /api/v1, o que permite publicar uma versão 2 no futuro sem quebrar as telas que já usam a versão atual.',
+    'A comunicação entre o front-end e o banco de dados acontece por uma API REST, com 88 endpoints distribuídos em treze módulos. Todos os endereços começam com /api/v1, o que permite publicar uma versão 2 no futuro sem quebrar as telas que já usam a versão atual.',
     'As mensagens de erro são padronizadas e vêm em português, para que a tela possa exibir ao usuário exatamente o que o servidor respondeu, sem precisar traduzir código de erro.',
     'O FastAPI gera automaticamente uma documentação interativa dos endpoints, acessível em /docs quando a API está no ar. Por ela é possível testar cada rota sem escrever código, o que facilita tanto o desenvolvimento quanto a demonstração do projeto.',
   ],
   tabela: [
     ['Módulo', 'Rotas', 'Responsabilidade'],
-    ['auth', '8', 'Cadastro, confirmação por código, login e recuperação de senha'],
+    ['auth', '9', 'Cadastro, confirmação por código (e-mail ou SMS), login, recuperação de senha e canais disponíveis'],
     ['admin', '12', 'Painel do administrador: condomínios e usuários da plataforma'],
-    ['usuarios', '10', 'Cadastro de porteiros e moradores, aprovação e permissões'],
+    ['usuarios', '13', 'Cadastro de porteiros e moradores, aprovação, permissões e foto de perfil'],
     ['condominios', '5', 'Dados do condomínio, unidades e código de acesso'],
     ['reservas', '10', 'Espaços comuns, agenda sigilosa, reservas e ocupação'],
     ['portaria', '10', 'Visitantes, encomendas e ocorrências'],
@@ -91,16 +93,20 @@ const api = {
     ['veiculos', '4', 'Entradas e saídas do estacionamento e ocupação'],
     ['manutencao', '5', 'Ordens de serviço e indicadores de custo'],
     ['documentos', '3', 'Atas, convenção, regimento e plantas'],
+    ['mensagens', '4', 'Chat entre síndico, porteiros e moradores, com contador de não lidas'],
+    ['arquivos', '1', 'Entrega das fotos de perfil enviadas'],
   ],
 };
 
 // ── 15 Testes automatizados (nova) ──────────────────────────────────
 const testes = {
   paragrafos: [
-    'As regras do sistema são verificadas por uma suíte de 216 casos de teste automatizados, escritos com pytest e executados contra um banco PostgreSQL real, e não contra um banco simulado. Assim, restrições de chave estrangeira e de unicidade também são exercitadas.',
+    'As regras do sistema são verificadas por uma suíte de 249 casos de teste automatizados, escritos com pytest e executados contra um banco PostgreSQL real, e não contra um banco simulado. Assim, restrições de chave estrangeira e de unicidade também são exercitadas.',
     'Os testes não conferem apenas se o caminho feliz funciona. Boa parte deles verifica justamente o que o sistema precisa recusar: um morador não pode ver a ocorrência de outro; um porteiro sem a permissão liberada pelo síndico não consegue registrar uma ocorrência; uma reserva que se sobrepõe a outra é recusada; a mensagem de conflito não revela quem reservou; e a senha nunca é gravada em texto puro.',
     'Cada vez que uma regra nova é escrita, um teste correspondente é adicionado. Isso permite alterar o código com segurança: se uma mudança quebrar uma regra antiga, a suíte acusa antes de o problema chegar à tela.',
     'A suíte é executada automaticamente a cada envio de código ao repositório, junto com duas outras verificações: a aplicação das mudanças de estrutura do banco no sentido de ida e de volta, feita com a tabela já populada, que é a situação em que uma alteração mal escrita falha; e a execução dos scripts de criação e carga do banco em um banco vazio, já que eles são mantidos manualmente e podem deixar de acompanhar uma mudança de estrutura.',
+    'Além da suíte do servidor, 47 testes de interface abrem as telas em um navegador Chromium real, nos temas claro e escuro, em largura de computador e de celular. Eles conferem o que já falhou uma vez e não pode voltar: erros de JavaScript, imagens quebradas, rolagem lateral no celular, a barra superior fora do topo, títulos e cartões sem ícone, caixas claras no tema escuro e o medidor de força da senha. Também rodam a cada envio, com o banco, a API e o site no ar.',
+    'Por fim, o banco criado pelos scripts SQL manuais é comparado ao banco criado pelas migrações — tabelas, colunas, restrições, índices e tipos —, porque rodar sem erro não garante que o resultado seja o mesmo: um script que esquecesse uma tabela nova rodaria normalmente.',
   ],
   tabela: [
     ['Arquivo de teste', 'Casos', 'O que cobre'],
@@ -111,7 +117,9 @@ const testes = {
     ['test_financeiro.py', '30', 'Cobranças, pagamentos e inadimplência'],
     ['test_portaria.py', '24', 'Visitantes, encomendas e ocorrências'],
     ['test_reservas.py', '26', 'Espaços, agenda sigilosa e aprovação de reservas'],
-    ['test_notificacao.py', '7', 'Entrega dos códigos por e-mail e o que não pode ir para o log'],
+    ['test_notificacao.py', '17', 'Entrega dos códigos por e-mail e por SMS, e o que não pode ir para o log'],
+    ['test_foto.py', '12', 'Foto de perfil: tipo conferido pelo conteúdo, tamanho, nome gerado pelo servidor e remoção'],
+    ['test_mensagens.py', '11', 'Chat: quem pode conversar com quem, não lidas e mensagens inválidas'],
   ],
 };
 
@@ -121,7 +129,7 @@ const conclusao = [
   'A implementação do SmartCondo é crucial para elevar a qualidade e praticidade na rotina desses condomínios, trazendo fluidez no setor financeiro e possibilitando a execução de ações rotineiras, como a visualização de espaços em uso. O objetivo é facilitar a operação do gerenciamento, eliminando falhas financeiras e reduzindo significativamente intrigas internas. Para isso, o projeto visa atender a todos os usuários de modo completo e se adequar ao cotidiano, garantindo organização nas moradias e serviços.',
   'O sistema prevê funcionalidades específicas para cada tipo de usuário – administrador, síndico, porteiro e morador. O administrador opera a plataforma, cadastrando os condomínios e criando a conta do síndico de cada um. O síndico poderá gerenciar de forma prática e eficiente, incluindo o gerenciamento financeiro com notificações de pagamento e a visualização remota e sigilosa da locação de espaços. O porteiro terá recursos para notificar entregas, registrar entradas e saídas e utilizar o videoporteiro para confirmar a entrada de convidados com foto ou gravação em tempo real, fomentando a segurança. O morador poderá realizar pagamentos com opções variadas, alugar espaços de forma sigilosa, verificar a ocupação de áreas comuns e receber notificações e confirmações de entregas/convidados.',
   'Com um prazo de 2 anos, o projeto se baseia na utilização de linguagens e ferramentas robustas e escaláveis, como HTML, CSS e JavaScript no front-end, Python com FastAPI no back-end e PostgreSQL no banco de dados. Adicionalmente, o projeto demonstra um compromisso com a acessibilidade, utilizando VLibras para usuários com deficiência auditiva, e recursos de alteração de tamanho de fonte e mudança de cores (modo claro/escuro) para deficiências visuais, garantindo uma boa experiência e inclusão.',
-  'Até o momento, o sistema conta com as quatro áreas de acesso implementadas e ligadas à API, 19 tabelas em PostgreSQL, 79 endpoints e 216 casos de teste automatizados cobrindo as regras de negócio.',
+  'Até o momento, o sistema conta com as quatro áreas de acesso implementadas e ligadas à API, 20 tabelas em PostgreSQL, 88 endpoints, 249 casos de teste automatizados cobrindo as regras de negócio e 47 testes de interface executados em um navegador real.',
   'Em suma, o SmartCondo é um projeto realista, alinhado com as necessidades do mercado e da tecnologia atual, visando transformar a gestão de condomínios de pequeno e médio porte em um processo ágil, prático, seguro e inclusivo.',
 ];
 

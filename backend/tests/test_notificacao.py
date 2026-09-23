@@ -90,15 +90,82 @@ def test_sem_smtp_nao_tenta_enviar(monkeypatch):
     SMTP.assert_not_called()
 
 
-def test_sms_nao_finge_que_entregou(smtp_configurado, caplog):
-    """Não há provedor de SMS: registrar como não entregue, não como envio."""
-    with patch("app.services.notificacao.smtplib.SMTP") as SMTP:
-        with caplog.at_level(logging.WARNING, logger="smartcondo.notificacao"):
+@pytest.mark.parametrize("debug,esperado", [(False, "SEM ENVIO"), (True, "SEM PROVEDOR")])
+def test_sms_sem_provedor_nao_finge_que_entregou(smtp_configurado, caplog, monkeypatch, debug, esperado):
+    """Sem as variáveis SMS_*, nada é entregue — e o log diz isso."""
+    monkeypatch.setattr(settings, "DEBUG", debug)
+    with patch("app.services.notificacao.urllib.request.urlopen") as urlopen, \
+         patch("app.services.notificacao.smtplib.SMTP") as SMTP:
+        with caplog.at_level(logging.INFO, logger="smartcondo.notificacao"):
             notificacao.enviar_codigo(
                 "67999990000", CanalVerificacao.SMS, "777888", "confirmacao_cadastro"
             )
+    urlopen.assert_not_called()
     SMTP.assert_not_called()
-    assert "SEM ENVIO" in " ".join(r.getMessage() for r in caplog.records)
+    registrado = " ".join(r.getMessage() for r in caplog.records)
+    assert esperado in registrado
+    assert "enviado" not in registrado
+
+
+# ── SMS com provedor ──────────────────────────────────────────────────
+@pytest.fixture
+def sms_configurado(monkeypatch):
+    monkeypatch.setattr(settings, "SMS_CONTA", "AC123")
+    monkeypatch.setattr(settings, "SMS_TOKEN", "segredo")
+    monkeypatch.setattr(settings, "SMS_REMETENTE", "+15005550006")
+
+
+def test_sms_sai_pelo_provedor_no_formato_internacional(sms_configurado, caplog):
+    with patch("app.services.notificacao.urllib.request.urlopen") as urlopen:
+        urlopen.return_value.__enter__.return_value.status = 201
+        with caplog.at_level(logging.DEBUG, logger="smartcondo.notificacao"):
+            notificacao.enviar_codigo(
+                "(67) 99999-0002", CanalVerificacao.SMS, "424242", "recuperacao_senha"
+            )
+
+    pedido = urlopen.call_args[0][0]
+    assert pedido.full_url.endswith("/Accounts/AC123/Messages.json")
+    corpo = pedido.data.decode()
+    assert "To=%2B5567999990002" in corpo
+    assert "424242" in corpo
+    assert pedido.headers["Authorization"].startswith("Basic ")
+    # A mensagem cabe num SMS só (acima de 160 caracteres é cobrado em dobro).
+    import urllib.parse
+    texto = urllib.parse.parse_qs(corpo)["Body"][0]
+    assert len(texto) <= 160
+    registrado = " ".join(r.getMessage() for r in caplog.records)
+    assert "424242" not in registrado and "SMS" in registrado
+
+
+def test_falha_do_provedor_de_sms_nao_derruba_o_cadastro(sms_configurado, caplog):
+    import urllib.error
+    with patch("app.services.notificacao.urllib.request.urlopen",
+               side_effect=urllib.error.URLError("sem rede")):
+        with caplog.at_level(logging.ERROR, logger="smartcondo.notificacao"):
+            notificacao.enviar_codigo("67999990002", CanalVerificacao.SMS, "1", "confirmacao_cadastro")
+    assert "Falha" in " ".join(r.getMessage() for r in caplog.records)
+
+
+@pytest.mark.parametrize("entrada,saida", [
+    ("(67) 99999-0002", "+5567999990002"),
+    ("67 3333-4444", "+556733334444"),
+    ("+55 67 99999-0002", "+5567999990002"),
+    ("5567999990002", "+5567999990002"),
+    ("123", None),
+])
+def test_telefone_internacional(entrada, saida):
+    assert notificacao.telefone_internacional(entrada) == saida
+
+
+def test_api_recusa_sms_quando_nao_ha_provedor(cliente):
+    r = cliente.post("/api/v1/auth/senha/recuperar", json={"email": "x@exemplo.com", "canal": "sms"})
+    assert r.status_code == 422
+    assert "SMS" in r.json()["detalhe"]
+    assert cliente.get("/api/v1/auth/canais").json() == {"email": True, "sms": False}
+
+
+def test_canais_mostram_sms_quando_configurado(cliente, sms_configurado):
+    assert cliente.get("/api/v1/auth/canais").json() == {"email": True, "sms": True}
 
 
 def test_mascara_esconde_o_destino():

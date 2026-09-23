@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS
+    mensagens,
     documentos,
     ordens_servico,
     movimentacoes_veiculo,
@@ -664,6 +665,30 @@ ALTER TABLE ONLY documentos ALTER COLUMN id SET DEFAULT nextval('documentos_id_s
 ALTER TABLE ONLY documentos
     ADD CONSTRAINT documentos_pkey PRIMARY KEY (id);
 
+-- Chat entre síndico, porteiros e moradores (seção 13.5.2).
+CREATE TABLE mensagens (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    remetente_id integer NOT NULL,
+    destinatario_id integer NOT NULL,
+    texto text NOT NULL,
+    enviada_em timestamp with time zone DEFAULT now() NOT NULL,
+    lida_em timestamp with time zone,
+    CONSTRAINT ck_mensagem_para_outra_pessoa CHECK ((remetente_id <> destinatario_id)),
+    CONSTRAINT ck_mensagem_tamanho CHECK (((char_length(texto) >= 1) AND (char_length(texto) <= 2000)))
+);
+CREATE SEQUENCE mensagens_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE mensagens_id_seq OWNED BY mensagens.id;
+ALTER TABLE ONLY mensagens ALTER COLUMN id SET DEFAULT nextval('mensagens_id_seq'::regclass);
+ALTER TABLE ONLY mensagens
+    ADD CONSTRAINT mensagens_pkey PRIMARY KEY (id);
+
 ALTER TABLE ONLY cobrancas
     ADD CONSTRAINT cobrancas_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
 
@@ -687,6 +712,15 @@ ALTER TABLE ONLY documentos
 
 ALTER TABLE ONLY documentos
     ADD CONSTRAINT documentos_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY mensagens
+    ADD CONSTRAINT mensagens_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY mensagens
+    ADD CONSTRAINT mensagens_remetente_id_fkey FOREIGN KEY (remetente_id) REFERENCES usuarios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY mensagens
+    ADD CONSTRAINT mensagens_destinatario_id_fkey FOREIGN KEY (destinatario_id) REFERENCES usuarios(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY encomendas
     ADD CONSTRAINT encomendas_registrada_por_id_fkey FOREIGN KEY (registrada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
@@ -867,6 +901,12 @@ CREATE INDEX ix_registros_ocupacao_espaco_id ON registros_ocupacao USING btree (
 CREATE INDEX ix_registros_ocupacao_registrado_em ON registros_ocupacao USING btree (registrado_em);
 
 CREATE INDEX ix_reservas_data ON reservas USING btree (data);
+
+CREATE INDEX ix_mensagens_condominio_id ON mensagens USING btree (condominio_id);
+
+CREATE INDEX ix_mensagens_conversa ON mensagens USING btree (remetente_id, destinatario_id, id);
+
+CREATE INDEX ix_mensagens_nao_lidas ON mensagens USING btree (destinatario_id, lida_em);
 
 CREATE INDEX ix_reservas_espaco_id ON reservas USING btree (espaco_id);
 

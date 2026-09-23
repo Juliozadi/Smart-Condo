@@ -64,6 +64,9 @@
 (function() {
   var email = null;
   try { email = sessionStorage.getItem('smartcondo_email_recuperacao'); } catch (_) {}
+  function canalRecuperacao() {
+    try { return sessionStorage.getItem('smartcondo_canal_recuperacao') || 'email'; } catch (_) { return 'email'; }
+  }
 
   // Chegou direto nesta URL, sem passar pela etapa anterior.
   if (!email) {
@@ -94,7 +97,7 @@
     var link = this;
     link.textContent = 'Enviando...';
     SmartCondo.api
-      .post('/auth/senha/recuperar', { email: email, canal: 'email' }, { semToken: true })
+      .post('/auth/senha/recuperar', { email: email, canal: canalRecuperacao() }, { semToken: true })
       .then(function() { link.textContent = 'Código reenviado'; })
       .catch(function() { link.textContent = 'Reenviar código'; });
   });

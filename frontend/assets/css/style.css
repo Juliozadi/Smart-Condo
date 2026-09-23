@@ -1731,3 +1731,22 @@ body.tema-escuro .tab-bar { background: rgba(21,36,39,.96); border-top-color: va
     display: inline-flex; align-items: center; justify-content: center;
   }
 }
+
+/* ── Escolha do canal do código (cadastro, recuperação de senha) ───── */
+.canal-dica { font-size: 12px; color: var(--muted); margin: -4px 0 10px; }
+.canal-opcoes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.canal-opcao {
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+  padding: 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface-2); transition: all .2s; text-align: left;
+}
+.canal-opcao:has(input:checked) { border-color: var(--primary-texto); background: var(--primary-light); }
+.canal-opcao:has(input:focus-visible) { box-shadow: 0 0 0 3px var(--primary-glow); }
+.canal-opcao input { accent-color: var(--primary-texto); margin: 0; }
+.canal-opcao span { display: flex; flex-direction: column; line-height: 1.3; }
+.canal-opcao strong { font-size: 13px; color: var(--text); }
+.canal-opcao small { font-size: 11px; color: var(--muted); }
+.canal-opcao.indisponivel { opacity: .6; cursor: not-allowed; }
+@media (max-width: 400px) { .canal-opcoes { grid-template-columns: 1fr; } }
+.canal-opcoes[hidden] { display: none; }
+#canaisRecuperacao { margin: 4px 0 14px; }

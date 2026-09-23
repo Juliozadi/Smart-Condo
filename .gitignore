@@ -27,3 +27,6 @@ Thumbs.db
 
 # Saída da auditoria de contraste
 frontend/ferramentas/contraste-achados.json
+
+# Fotos enviadas pelos usuários
+backend/uploads/

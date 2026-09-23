@@ -169,10 +169,13 @@ pagou e a data.
 
 ## O que ainda falta
 
-- Envio real de e-mail e SMS (hoje `app/services/notificacao.py` registra
-  no log; a interface já é a definitiva).
-- Upload das fotos do vídeo porteiro: a API guarda a URL, falta o
-  armazenamento dos arquivos.
-- Chat e chamada de voz com o porteiro (seção 13.5.2), que a documentação
-  coloca em Node.js por serem em tempo real.
+- Fotos do visitante e da encomenda: a portaria tira a foto, mas a tela
+  só a envia se tiver até 500 caracteres — ou seja, nunca. Salvá-las
+  como as fotos de perfil não basta: é dado pessoal de terceiros e
+  precisa ser servido só a quem tem direito (portaria e morador da
+  unidade), com o token, e não por endereço aberto.
+- Documentos do cadastro do morador (RG, comprovante): o formulário os
+  exige, mas não os envia.
+- Chamada de voz dentro do navegador; hoje "Ligar" disca o telefone
+  cadastrado.
 - Geração automática das cobranças mensais (tarefa agendada).

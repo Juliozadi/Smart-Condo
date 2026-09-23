@@ -7,6 +7,22 @@ O texto escrito pelo grupo foi **preservado**. As mudanças abaixo são de
 duas naturezas: correções do que não correspondia mais ao sistema, e
 seções novas descrevendo o que foi construído desde então.
 
+## Versão 2.1 — foto de perfil, chat, SMS e testes de interface
+
+| Seção | O que mudou |
+|---|---|
+| 9 Requisitos funcionais | Quatro novos: RF039 foto de perfil, RF040 chat, RF041 ligação, RF042 código por SMS. O RF005 passa a citar a escolha do canal |
+| 10 Requisitos não funcionais | Novo RNF017, arquivos conferidos pelo conteúdo. Os requisitos de padrões passam a RNF018 a RNF021 |
+| 11 Diagrama de caso de uso | Dois casos novos: conversar pelo chat e enviar foto de perfil |
+| 14 a 17 | A tabela de mensagens entra no modelo, no diagrama, nos relacionamentos e no dicionário — agora 20 entidades, 227 atributos e 43 relacionamentos |
+| 20 Arquitetura | Envio por SMS, armazenamento das fotos e funcionamento do chat |
+| 21 API REST | 88 endpoints em treze módulos, com mensagens e arquivos |
+| 23 Testes | 249 casos no servidor, 47 testes de interface num navegador real e a comparação dos scripts SQL com as migrações |
+
+**Sumário.** O arquivo agora pede ao Word que atualize os campos ao ser
+aberto: o Word pergunta se deve atualizar, e basta responder "Sim" para
+o sumário aparecer com os números de página.
+
 ## Versão 2.0 — a estrutura do modelo do professor
 
 O professor entregou um modelo de documentação como referência. Comparado

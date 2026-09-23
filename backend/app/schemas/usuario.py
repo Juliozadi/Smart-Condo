@@ -155,7 +155,10 @@ class UsuarioAtualizacao(SchemaBase):
     nome: str | None = Field(default=None, min_length=3, max_length=160)
     telefone: Telefone | None = None
     data_nascimento: date | None = None
-    foto_url: str | None = Field(default=None, max_length=500)
+    # A foto não entra aqui: ela só muda pelo envio do arquivo
+    # (PUT /usuarios/eu/foto). Aceitar um endereço livre deixava qualquer
+    # usuário apontar a própria foto para um servidor de terceiros, que
+    # passaria a ver quem abre a tela.
 
 
 class AprovacaoUsuario(SchemaBase):
@@ -176,3 +179,9 @@ class CadastroSaida(SchemaBase):
 
 CadastroPorteiro.model_rebuild()
 TokenSaida.model_rebuild()
+
+
+class CanaisSaida(SchemaBase):
+    """Por onde o código pode ser enviado neste servidor."""
+    email: bool
+    sms: bool

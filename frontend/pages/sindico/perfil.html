@@ -99,14 +99,17 @@
       <div class="p-avatar-wrap">
         <div class="p-avatar sindico">
           <img src="../../assets/img/icons/user.svg" width="16" height="16" alt="" id="avatarIcon">
-          <img id="avatarPreview" alt="" style="display:none;">
+          <img id="avatarPreview" alt="Sua foto de perfil" style="display:none;">
         </div>
+        <label class="p-foto-btn" for="fotoArquivo" title="Enviar ou trocar a foto"><img src="../../assets/img/icons/camera.svg" width="16" height="16" alt="Enviar ou trocar a foto"></label>
+        <input type="file" id="fotoArquivo" accept="image/jpeg,image/png,image/webp" hidden>
       </div>
       <div class="p-name">
         <h1 id="viewNome">Roberto Nascimento</h1>
         <p class="p-role"><img src="../../assets/img/icons/star.svg" width="16" height="16" alt=""> Síndico</p>
         <span class="p-tag">Residencial das Palmeiras</span>
         <div class="p-status" id="pStatus"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt=""> Dados salvos automaticamente</div>
+        <div class="p-foto-acoes"><button type="button" class="p-foto-remover" id="fotoRemover" hidden>Remover foto</button><p class="p-foto-aviso" id="fotoAviso" role="status" aria-live="polite"></p></div>
       </div>
     </div>
 
@@ -246,11 +249,7 @@
         })
         .catch(function() {});
     }
-    if (p.foto_url) {
-      var img = campo('avatarPreview'), icone = campo('avatarIcon');
-      if (img) { img.src = p.foto_url; img.style.display = 'block'; }
-      if (icone) icone.style.display = 'none';
-    }
+    fotoPerfil.mostrar(p.foto_url);
   }
 
   function entrarEdicao() {
@@ -349,6 +348,7 @@
 </script>
 
 <script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/foto-perfil.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>
 </body>
 </html>

@@ -71,6 +71,16 @@
 
     global.SmartCondo.usuario = usuario;
     document.dispatchEvent(new CustomEvent('smartcondo:sessao', { detail: usuario }));
+
+    // O chat existe para síndico, porteiro e morador; o administrador
+    // não pertence a condomínio nenhum. Carregado daqui para não repetir
+    // a tag em cada uma das páginas internas.
+    if (['sindico', 'porteiro', 'morador'].indexOf(usuario.papel) !== -1 &&
+        !global.SmartCondo.chat) {
+      var s = document.createElement('script');
+      s.src = api.base + 'assets/js/chat.js';
+      document.body.appendChild(s);
+    }
   }
 
   if (document.readyState === 'loading') {

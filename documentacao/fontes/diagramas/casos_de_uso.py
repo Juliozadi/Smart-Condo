@@ -40,6 +40,8 @@ CASOS = [
     ("Consultar cobranças",             ["MOR"],                      DIR),
     ("Escolher forma de pagamento",     ["MOR"],                      DIR),
     ("Consultar comunicados",           ["MOR"],                      DIR),
+    ("Conversar pelo chat",             ["SIN", "POR", "MOR"],        DIR),
+    ("Enviar foto de perfil",           ["SIN", "POR", "MOR"],        DIR),
 ]
 
 ATORES = {

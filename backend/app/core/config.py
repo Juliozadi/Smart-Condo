@@ -59,6 +59,26 @@ class Settings(BaseSettings):
     def email_configurado(self) -> bool:
         return bool(self.SMTP_HOST)
 
+    # ── Envio de SMS ─────────────────────────────────────────────────
+    # Pelo Twilio (twilio.com): SMS_CONTA é o Account SID, SMS_TOKEN o
+    # Auth Token e SMS_REMETENTE o número comprado lá, no formato
+    # +5567999990000. Sem os três, a tela não oferece SMS e o código vai
+    # por e-mail. O serviço é pago por mensagem.
+    SMS_CONTA: str = ""
+    SMS_TOKEN: str = ""
+    SMS_REMETENTE: str = ""
+    SMS_TIMEOUT_S: int = Field(default=10, ge=1, le=60)
+
+    @property
+    def sms_configurado(self) -> bool:
+        return bool(self.SMS_CONTA and self.SMS_TOKEN and self.SMS_REMETENTE)
+
+    # ── Arquivos enviados (foto de perfil) ───────────────────────────
+    # Pasta onde as fotos ficam gravadas. Relativa à pasta backend/,
+    # a não ser que venha um caminho absoluto.
+    UPLOADS_DIR: str = "uploads"
+    FOTO_MAX_KB: int = Field(default=2048, ge=50, le=10240)
+
     # ── CORS ─────────────────────────────────────────────────────────
     # O front-end é servido de qualquer porta local (o python -m
     # http.server, o Live Server do VS Code, etc.), então a origem é

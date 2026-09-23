@@ -24,6 +24,7 @@ from app.models.enums import CanalVerificacao, FinalidadeCodigo, Papel, StatusUs
 from app.models.usuario import Usuario
 from app.schemas.comuns import Mensagem
 from app.schemas.usuario import (
+    CanaisSaida,
     CadastroMorador, CadastroSaida, ConfirmacaoCodigo, LoginEntrada, PerfilSaida,
     RedefinicaoSenha, ReenvioCodigo, SolicitacaoRecuperacao, TokenSaida, TrocaSenha,
     UsuarioSaida,
@@ -32,6 +33,23 @@ from app.services import auth as servico_auth
 from app.services.notificacao import mascarar_destino
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
+
+
+def _exigir_canal(canal: CanalVerificacao) -> None:
+    """Recusa SMS quando não há provedor, em vez de gerar um código que
+    nunca chegaria. E-mail é sempre aceito: sem SMTP, em desenvolvimento
+    o código volta na resposta."""
+    if canal == CanalVerificacao.SMS and not settings.sms_configurado:
+        raise HTTPException(
+            status_code=422,
+            detail="O envio por SMS não está disponível. Escolha receber o código por e-mail.",
+        )
+
+
+@router.get("/canais", response_model=CanaisSaida, summary="Canais disponíveis para o código")
+def canais() -> CanaisSaida:
+    """A tela só oferece SMS quando ele funciona de verdade."""
+    return CanaisSaida(email=True, sms=settings.sms_configurado)
 
 
 def _resposta_cadastro(usuario: Usuario, codigo: str, canal: CanalVerificacao) -> CadastroSaida:
@@ -54,6 +72,7 @@ def _resposta_cadastro(usuario: Usuario, codigo: str, canal: CanalVerificacao) -
     summary="Cadastra um morador",
 )
 def cadastrar_morador(dados: CadastroMorador, db: Session = Depends(get_db)) -> CadastroSaida:
+    _exigir_canal(dados.canal_confirmacao)
     servico_auth.garantir_email_e_cpf_livres(db, dados.email, dados.cpf)
 
     condominio = db.scalar(
@@ -136,6 +155,7 @@ def confirmar_cadastro(dados: ConfirmacaoCodigo, db: Session = Depends(get_db)) 
 
 @router.post("/codigo/reenviar", response_model=Mensagem, summary="Reenvia o código de cadastro")
 def reenviar_codigo(dados: ReenvioCodigo, db: Session = Depends(get_db)) -> Mensagem:
+    _exigir_canal(dados.canal)
     usuario = servico_auth.buscar_por_email(db, dados.email)
     if usuario is not None and usuario.status == StatusUsuario.AGUARDANDO_CODIGO:
         servico_auth.emitir_codigo(
@@ -181,6 +201,7 @@ def login(dados: LoginEntrada, db: Session = Depends(get_db)) -> TokenSaida:
 def solicitar_recuperacao(
     dados: SolicitacaoRecuperacao, db: Session = Depends(get_db)
 ) -> Mensagem:
+    _exigir_canal(dados.canal)
     usuario = servico_auth.buscar_por_email(db, dados.email)
     if usuario is not None:
         servico_auth.emitir_codigo(

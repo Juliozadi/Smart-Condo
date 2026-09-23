@@ -20,7 +20,7 @@
     </header>
     <section class="recover-area">
       <h2>Esqueci minha senha</h2>
-      <p class="subtitle">Informe seu e-mail ou telefone e enviaremos um código de recuperação.</p>
+      <p class="subtitle">Informe o e-mail cadastrado e enviaremos um código de recuperação.</p>
 
       <div class="recover-info">
         <img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">
@@ -31,6 +31,19 @@
         <div class="input-box">
           <img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">
           <input type="email" id="emailRecuperar" placeholder="E-mail cadastrado" required autocomplete="email" aria-label="E-mail cadastrado">
+        </div>
+        <!-- Só aparece quando o servidor tem provedor de SMS. -->
+        <div class="canal-opcoes" id="canaisRecuperacao" role="radiogroup" aria-label="Como receber o código" hidden>
+          <label class="canal-opcao">
+            <input type="radio" name="canalCodigo" value="email" checked>
+            <img src="../../assets/img/icons/envelope.svg" width="16" height="16" alt="">
+            <span><strong>E-mail</strong><small>No endereço acima</small></span>
+          </label>
+          <label class="canal-opcao">
+            <input type="radio" name="canalCodigo" value="sms">
+            <img src="../../assets/img/icons/phone.svg" width="16" height="16" alt="">
+            <span><strong>SMS</strong><small>No celular cadastrado</small></span>
+          </label>
         </div>
         <button class="login-btn" type="submit">
           Enviar código de recuperação
@@ -77,10 +90,15 @@ document.getElementById('formRecuperar').addEventListener('submit', function(e) 
   botao.disabled = true;
   botao.innerHTML = 'Enviando...';
 
-  SmartCondo.api.post('/auth/senha/recuperar', { email: email, canal: 'email' }, { semToken: true })
+  var marcado = document.querySelector('input[name="canalCodigo"]:checked');
+  var canal = marcado ? marcado.value : 'email';
+  SmartCondo.api.post('/auth/senha/recuperar', { email: email, canal: canal }, { semToken: true })
     .then(function() {
       // O e-mail segue para a próxima etapa, que precisa dele na redefinição.
-      try { sessionStorage.setItem('smartcondo_email_recuperacao', email); } catch (_) {}
+      try {
+        sessionStorage.setItem('smartcondo_email_recuperacao', email);
+        sessionStorage.setItem('smartcondo_canal_recuperacao', canal);
+      } catch (_) {}
       window.location.href = 'codigo_recuperacao.html';
     })
     .catch(function(erro) {
@@ -89,6 +107,10 @@ document.getElementById('formRecuperar').addEventListener('submit', function(e) 
       mostrarErro(document.getElementById('emailRecuperar'), erro.message);
     });
 });
+
+SmartCondo.api.get('/auth/canais', { semToken: true })
+  .then(function(c) { document.getElementById('canaisRecuperacao').hidden = !c.sms; })
+  .catch(function() {});
 </script>
 <script src="../../assets/js/acessibilidade.js"></script>
 

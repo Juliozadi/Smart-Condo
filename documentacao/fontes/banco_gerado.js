@@ -660,6 +660,65 @@ const dicionario = [
     ]
   },
   {
+    "nome": "mensagens",
+    "resumo": "As mensagens do chat entre síndico, porteiros e moradores do mesmo condomínio.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio onde a conversa acontece"
+      },
+      {
+        "coluna": "remetente_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Quem enviou a mensagem"
+      },
+      {
+        "coluna": "destinatario_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Quem recebe a mensagem; não pode ser o próprio remetente"
+      },
+      {
+        "coluna": "texto",
+        "tipo": "TEXT",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Conteúdo da mensagem, de 1 a 2.000 caracteres"
+      },
+      {
+        "coluna": "enviada_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento do envio, preenchido pelo banco"
+      },
+      {
+        "coluna": "lida_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Momento em que o destinatário abriu a conversa; vazio enquanto não lida"
+      }
+    ],
+    "regras": [
+      "CHECK ((remetente_id <> destinatario_id))",
+      "CHECK (((char_length(texto) >= 1) AND (char_length(texto) <= 2000)))"
+    ]
+  },
+  {
     "nome": "movimentacoes_veiculo",
     "resumo": "As entradas e saídas de veículos registradas na portaria.",
     "colunas": [
@@ -1780,6 +1839,24 @@ const relacoes = [
     "coluna": "usuario_id",
     "destino": "usuarios",
     "texto": "Usuário que leu"
+  },
+  {
+    "origem": "mensagens",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio onde a conversa acontece"
+  },
+  {
+    "origem": "mensagens",
+    "coluna": "destinatario_id",
+    "destino": "usuarios",
+    "texto": "Quem recebe a mensagem; não pode ser o próprio remetente"
+  },
+  {
+    "origem": "mensagens",
+    "coluna": "remetente_id",
+    "destino": "usuarios",
+    "texto": "Quem enviou a mensagem"
   },
   {
     "origem": "movimentacoes_veiculo",
