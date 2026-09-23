@@ -11,6 +11,7 @@ const capa = {
   integrantes: [
     'Júlio Zadi',
     'Luan Flôres Martins',
+    'Lenini Bellodi Júnior',
     'Juliano Araujo',
     'João Victor Muller Miranda',
   ],
@@ -78,11 +79,11 @@ const secoes = [
 const historico = [
   ['Data', 'Versão', 'Descrição', 'Autores'],
   ['21/09/2026', '1.0', 'Versão inicial da documentação do projeto',
-   'Júlio Zadi, Luan Flôres Martins, Juliano Araujo, João Victor Muller Miranda'],
+   'Júlio Zadi, Luan Flôres Martins, Lenini Bellodi Júnior, Juliano Araujo, João Victor Muller Miranda'],
   ['22/09/2026', '1.1', 'Acessibilidade e contraste, bloqueio de login por tentativas e tratamento de dados pessoais',
-   'Júlio Zadi, Luan Flôres Martins, Juliano Araujo, João Victor Muller Miranda'],
+   'Júlio Zadi, Luan Flôres Martins, Lenini Bellodi Júnior, Juliano Araujo, João Victor Muller Miranda'],
   ['22/09/2026', '2.0', 'Requisitos funcionais e não funcionais numerados, diagrama de casos de uso, modelo e diagrama entidade-relacionamento, relacionamentos, dicionário de dados e implementações no banco',
-   'Júlio Zadi, Luan Flôres Martins, Juliano Araujo, João Victor Muller Miranda'],
+   'Júlio Zadi, Luan Flôres Martins, Lenini Bellodi Júnior, Juliano Araujo, João Victor Muller Miranda'],
 ];
 
 // ── Seção 9: casos de uso ───────────────────────────────────────────
