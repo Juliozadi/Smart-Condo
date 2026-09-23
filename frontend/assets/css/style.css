@@ -8,6 +8,12 @@
 }
 
 
+/* O atributo hidden sempre esconde. Sem isto, qualquer regra com display
+   (flex, grid, block) o anula e o elemento aparece mesmo "escondido" —
+   foi o que deixava o contador de mensagens mostrando "0" e o aviso da
+   câmera ao lado da foto do visitante. */
+[hidden] { display: none !important; }
+
 @keyframes pulse-infinite {
   0% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.18); opacity: 0.7; }
@@ -785,7 +791,6 @@ body.modo-leitura .stats-row { display: none !important; }
 .doc-upload.invalido, .photo-upload.invalido { border-style: solid; border-color: var(--erro); }
 .doc-upload.invalido .doc-upload-text span,
 .photo-upload.invalido > span { color: var(--erro); font-weight: 600; }
-.step-alert[hidden] { display: none; }
 .step-alert a { color: inherit; font-weight: 700; }
 
 .pwd-strength { display: flex; gap: 4px; margin-top: 7px; }
@@ -1757,5 +1762,4 @@ body.tema-escuro .tab-bar { background: rgba(21,36,39,.96); border-top-color: va
 .canal-opcao small { font-size: 11px; color: var(--muted); }
 .canal-opcao.indisponivel { opacity: .6; cursor: not-allowed; }
 @media (max-width: 400px) { .canal-opcoes { grid-template-columns: 1fr; } }
-.canal-opcoes[hidden] { display: none; }
 #canaisRecuperacao { margin: 4px 0 14px; }

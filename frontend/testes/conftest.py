@@ -46,7 +46,10 @@ def paginas_do_papel(papel: str) -> list[str]:
 @pytest.fixture(scope="session")
 def navegador():
     with sync_playwright() as p:
-        opcoes = {"args": ["--no-sandbox"]}
+        # A câmera falsa do Chromium permite testar a captura do vídeo
+        # porteiro sem câmera de verdade e sem o pedido de permissão.
+        opcoes = {"args": ["--no-sandbox", "--use-fake-device-for-media-stream",
+                           "--use-fake-ui-for-media-stream"]}
         if os.environ.get("CHROMIUM_PATH"):
             opcoes["executable_path"] = os.environ["CHROMIUM_PATH"]
         b = p.chromium.launch(**opcoes)

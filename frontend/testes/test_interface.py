@@ -8,7 +8,11 @@ Cada teste corresponde a um defeito real encontrado nas telas:
 - caixas com cor clara escrita à mão que continuavam claras no tema
   escuro, e o brilho de hover que ficava parado sobre o item;
 - telas com erro de JavaScript, imagem quebrada ou rolagem lateral no
-  celular.
+  celular;
+- elementos marcados como escondidos (hidden) que apareciam mesmo assim,
+  porque uma regra de display do CSS anulava o atributo — o contador de
+  mensagens mostrava "0" e o aviso da câmera ficava ao lado da foto;
+- a logo das telas internas levava à tela de entrada, e não ao painel.
 """
 from __future__ import annotations
 
@@ -29,7 +33,10 @@ CHECA_TELA = """() => ({
   rolagemLateral: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
   quebradas: [...document.images]
      .filter(i => i.getAttribute('src') && i.complete && i.naturalWidth === 0 && !/vlibras/.test(i.src))
-     .map(i => i.getAttribute('src'))
+     .map(i => i.getAttribute('src')),
+  escondidosVisiveis: [...document.querySelectorAll('[hidden]')]
+     .filter(e => getComputedStyle(e).display !== 'none')
+     .map(e => e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + '.' + e.className)
 })"""
 
 
@@ -45,6 +52,8 @@ def test_telas_publicas_sem_erro(navegador, largura, tema):
         if pg.erros: problemas.append(f"{pagina}: erro de JavaScript {pg.erros}")
         if r["rolagemLateral"]: problemas.append(f"{pagina}: rolagem lateral")
         if r["quebradas"]: problemas.append(f"{pagina}: imagem quebrada {r['quebradas']}")
+        if r["escondidosVisiveis"]:
+            problemas.append(f"{pagina}: escondido aparecendo {r['escondidosVisiveis']}")
     ctx.close()
     assert not problemas, "\n".join(problemas)
 
@@ -62,6 +71,8 @@ def test_telas_internas_sem_erro(navegador, papel, largura, tema):
         if pg.erros: problemas.append(f"{pagina}: erro de JavaScript {pg.erros}")
         if r["rolagemLateral"]: problemas.append(f"{pagina}: rolagem lateral")
         if r["quebradas"]: problemas.append(f"{pagina}: imagem quebrada {r['quebradas']}")
+        if r["escondidosVisiveis"]:
+            problemas.append(f"{pagina}: escondido aparecendo {r['escondidosVisiveis']}")
     ctx.close()
     assert not problemas, "\n".join(problemas)
 
@@ -203,6 +214,20 @@ def test_medidor_de_senha_do_cadastro(navegador, senha, regras, nivel):
     texto_nivel = pg.inner_text("#pwdNivel")
     ctx.close()
     assert (marcadas, texto_nivel) == (regras, nivel)
+
+
+# ── Logo ──────────────────────────────────────────────────────────────
+@pytest.mark.parametrize("papel", PAPEIS)
+def test_logo_leva_ao_painel_do_papel(navegador, papel):
+    ctx, pg = abrir(navegador, 1280, "light", papel)
+    outra = next(p for p in _todas(papel) if not p.endswith("dashboard.html"))
+    ir(pg, outra, 400)
+    pg.click(".app-bar-brand")
+    pg.wait_for_url(f"**/pages/{papel}/dashboard.html", timeout=8000)
+    # No próprio painel, a logo só recarrega a página.
+    pg.click(".app-bar-brand")
+    pg.wait_for_url(f"**/pages/{papel}/dashboard.html", timeout=8000)
+    ctx.close()
 
 
 # ── Mensagens ─────────────────────────────────────────────────────────

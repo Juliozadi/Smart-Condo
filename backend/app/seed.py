@@ -33,6 +33,7 @@ from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico
 from app.models.financeiro import Cobranca, Pagamento, PreferenciaCobranca
 from app.models.portaria import Encomenda, Ocorrencia, Visitante
 from app.models.usuario import PermissaoPorteiro, Usuario
+from app.services import arquivos
 
 SENHA = "smartcondo123"
 HOJE = date.today()
@@ -51,6 +52,13 @@ def limpar(db) -> None:
     # O TRUNCATE reinicia os IDs, mas a sessão ainda guarda os objetos
     # antigos; sem soltar o identity map, o SQLAlchemy avisa de colisão.
     db.expunge_all()
+    # Os arquivos enviados (fotos e documentos) ficam fora do banco; sem
+    # os registros que apontavam para eles, só ocupariam espaço — e são
+    # dados pessoais sem finalidade.
+    for pasta in ("fotos", arquivos.PORTARIA, arquivos.DOCUMENTOS):
+        for arquivo in arquivos._pasta(pasta).iterdir():
+            if arquivo.is_file():
+                arquivo.unlink()
 
 
 def criar(db) -> dict:

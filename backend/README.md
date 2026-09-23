@@ -53,7 +53,7 @@ alembic upgrade head
 
 ```bash
 python -m app.seed             # cria um condomínio completo
-python -m app.seed --limpar    # apaga tudo antes de criar
+python -m app.seed --limpar    # apaga tudo (inclusive os arquivos enviados) antes de criar
 ```
 
 Cria síndico, dois porteiros com permissões diferentes, quatro moradores,
