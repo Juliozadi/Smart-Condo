@@ -16,7 +16,7 @@ seções novas descrevendo o que foi construído desde então.
 | 14 a 17 | A tabela documentos_cadastro entra no modelo, no diagrama, nos relacionamentos e no dicionário — agora 21 entidades, 234 atributos e 44 relacionamentos. Em visitantes e encomendas, foto_url dá lugar a foto_arquivo |
 | 20 Arquitetura | Armazenamento das fotos da portaria e dos documentos sem endereço público, e a autorização de envio devolvida pelo cadastro |
 | 21 API REST | 96 endpoints em treze módulos |
-| 23 Testes | 282 casos no servidor e 49 testes de interface, incluindo os fluxos com arquivo de ponta a ponta |
+| 23 Testes | 282 casos no servidor e 54 testes de interface, incluindo os fluxos com arquivo de ponta a ponta, a câmera e a logo |
 
 ## Versão 2.1 — foto de perfil, chat, SMS e testes de interface
 

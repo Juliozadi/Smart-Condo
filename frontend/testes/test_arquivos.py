@@ -84,6 +84,29 @@ def test_foto_do_visitante_chega_ao_morador_so_com_o_token(navegador):
     ctx.close()
 
 
+def test_camera_mostra_uma_coisa_por_vez(navegador):
+    """Aviso, câmera e foto dividem o mesmo espaço: nunca dois ao mesmo tempo."""
+    ctx, pg = abrir(navegador, papel="porteiro")
+    ctx.grant_permissions(["camera"], origin=FRONT)
+    ir(pg, "pages/porteiro/visitantes.html", 1000)
+    visiveis = """() => [...document.querySelectorAll('.captura-palco > *')]
+        .filter(e => getComputedStyle(e).display !== 'none').map(e => e.className)"""
+    assert pg.evaluate(visiveis) == ["captura-vazio"]
+
+    pg.click(".captura-btn.abrir")
+    pg.wait_for_function("document.querySelector('.captura-video').readyState >= 2", timeout=8000)
+    assert pg.evaluate(visiveis) == ["captura-video"]
+
+    pg.click(".captura-btn.tirar")
+    assert pg.evaluate(visiveis) == ["captura-imagem"]
+    assert pg.input_value(".captura-valor").startswith("data:image/jpeg")
+
+    pg.click(".captura-btn.refazer")
+    assert pg.evaluate(visiveis) == ["captura-vazio"]
+    assert pg.erros == []
+    ctx.close()
+
+
 def test_documentos_do_cadastro_chegam_ao_sindico(navegador):
     ctx, pg = abrir(navegador)
     ir(pg, "pages/cadastro/morador.html", 1000)
