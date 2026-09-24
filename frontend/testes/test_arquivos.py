@@ -185,3 +185,32 @@ def test_documentos_do_cadastro_chegam_ao_sindico(navegador):
     pg.click("#visorFechar")
     assert pg.erros == []
     ctx.close()
+
+
+def test_foto_da_ocorrencia_do_morador_chega_ao_sindico(navegador):
+    ctx, pg = abrir(navegador, papel="morador")
+    ir(pg, "pages/morador/ocorrencias.html", 1000)
+    assunto = f"Lâmpada queimada {random.randint(1000, 9999)}"
+    pg.select_option("#ocorre_tipoDeOcorrencia", index=1)
+    pg.select_option("#ocorre_prioridade", index=1)
+    pg.select_option("#ocorre_localDaOcorrencia", index=1)
+    pg.fill("#ocorre_assunto", assunto)
+    pg.fill("#ocorre_descricaoDetalhada", "A lâmpada do corredor está queimada há dias.")
+    pg.set_input_files(".captura-foto input[type=file]", files=[
+        {"name": "lampada.png", "mimeType": "image/png", "buffer": png(cor=(250, 200, 40))}])
+    pg.wait_for_selector(".captura-imagem", timeout=5000)
+    pg.click("#formOcorrencia button[type=submit]")
+    pg.wait_for_selector("#erroOcorrencia.sucesso", timeout=10000)
+    # Na lista do próprio morador, com a miniatura.
+    pg.locator(".list-item", has_text=assunto).locator(".miniatura-foto img").wait_for(timeout=8000)
+    assert pg.erros == []
+    ctx.close()
+
+    ctx, pg = abrir(navegador, papel="sindico")
+    ir(pg, "pages/sindico/ocorrencias.html", 1200)
+    mini = pg.locator(".list-item", has_text=assunto).locator(".miniatura-foto img")
+    mini.wait_for(timeout=8000)
+    assert mini.get_attribute("src").startswith("blob:")
+    assert mini.evaluate("i => i.naturalWidth") > 0
+    assert pg.erros == []
+    ctx.close()

@@ -96,13 +96,13 @@ def _encomenda_saida(e: Encomenda) -> EncomendaSaida:
 
 
 # ── Fotos (vídeo porteiro e encomendas) ─────────────────────────────
-def _ler_foto_enviada(arquivo: UploadFile) -> str:
-    """Grava a foto em uploads/portaria e devolve o nome gravado."""
+def _ler_foto_enviada(arquivo: UploadFile, pasta: str = arquivos.PORTARIA) -> str:
+    """Grava a foto numa pasta privada e devolve o nome gravado."""
     # Lê só até um byte além do limite, como na foto de perfil.
     conteudo = arquivo.file.read(settings.FOTO_MAX_KB * 1024 + 1)
     try:
         return arquivos.salvar_privado(
-            arquivos.PORTARIA, conteudo, aceita_pdf=False, max_kb=settings.FOTO_MAX_KB
+            pasta, conteudo, aceita_pdf=False, max_kb=settings.FOTO_MAX_KB
         )
     except arquivos.ArquivoRecusado as erro:
         raise HTTPException(status_code=422, detail=str(erro)) from erro
@@ -120,8 +120,8 @@ def _pode_ver_foto(db: Session, usuario: Usuario, unidade: Unidade, permissao: s
     return False
 
 
-def _entregar_foto(nome: str | None) -> FileResponse:
-    caminho = arquivos.caminho_privado(arquivos.PORTARIA, nome)
+def _entregar_foto(nome: str | None, pasta: str = arquivos.PORTARIA) -> FileResponse:
+    caminho = arquivos.caminho_privado(pasta, nome)
     if caminho is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Foto não encontrada.")
     return FileResponse(
@@ -502,7 +502,8 @@ def _ocorrencia_saida(db: Session, o: Ocorrencia) -> OcorrenciaSaida:
     return OcorrenciaSaida(
         id=o.id, titulo=o.titulo, descricao=o.descricao, categoria=o.categoria,
         local=o.local, prioridade=o.prioridade,
-        foto_url=o.foto_url, status=o.status, aberta_por_id=o.aberta_por_id,
+        foto_url=f"/portaria/ocorrencias/{o.id}/foto" if o.foto_arquivo else None,
+        status=o.status, aberta_por_id=o.aberta_por_id,
         aberta_por_nome=o.aberta_por.nome,
         unidade=unidade.identificacao if unidade else None,
         resposta=o.resposta, respondida_em=o.respondida_em, criado_em=o.criado_em,
@@ -527,6 +528,66 @@ def listar_ocorrencias(
         _ocorrencia_saida(db, o)
         for o in db.scalars(consulta.order_by(Ocorrencia.id.desc())).all()
     ]
+
+
+def _ocorrencia_visivel(db: Session, usuario: Usuario, ocorrencia_id: int) -> Ocorrencia:
+    """A ocorrência, se quem pede pode vê-la — as mesmas regras da lista."""
+    ocorrencia = db.get(Ocorrencia, ocorrencia_id)
+    visivel = ocorrencia is not None and ocorrencia.condominio_id == usuario.condominio_id and (
+        usuario.papel == Papel.SINDICO
+        or ocorrencia.aberta_por_id == usuario.id
+        or (usuario.papel == Papel.PORTEIRO
+            and porteiro_tem_permissao(db, usuario, "registrar_ocorrencias"))
+    )
+    if not visivel:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Ocorrência não encontrada."
+        )
+    return ocorrencia
+
+
+@router.put(
+    "/ocorrencias/{ocorrencia_id}/foto",
+    response_model=OcorrenciaSaida,
+    summary="Anexa uma foto à ocorrência",
+)
+def enviar_foto_ocorrencia(
+    ocorrencia_id: int,
+    arquivo: UploadFile = File(..., description="Imagem JPG, PNG ou WebP"),
+    usuario: Usuario = Depends(exigir_condominio),
+    db: Session = Depends(get_db),
+) -> OcorrenciaSaida:
+    ocorrencia = _ocorrencia_visivel(db, usuario, ocorrencia_id)
+    # Só quem abriu anexa, e só enquanto ninguém respondeu: a foto é a
+    # prova do que foi relatado, e o síndico decide olhando para ela.
+    if ocorrencia.aberta_por_id != usuario.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Só quem abriu a ocorrência pode anexar a foto.",
+        )
+    if ocorrencia.respondida_em is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A ocorrência já foi respondida; a foto não pode mais ser trocada.",
+        )
+
+    nova = _ler_foto_enviada(arquivo, arquivos.OCORRENCIAS)
+    anterior = ocorrencia.foto_arquivo
+    ocorrencia.foto_arquivo = nova
+    db.commit()
+    arquivos.apagar_privado(arquivos.OCORRENCIAS, anterior)
+    db.refresh(ocorrencia)
+    return _ocorrencia_saida(db, ocorrencia)
+
+
+@router.get("/ocorrencias/{ocorrencia_id}/foto", summary="Foto da ocorrência")
+def foto_ocorrencia(
+    ocorrencia_id: int,
+    usuario: Usuario = Depends(exigir_condominio),
+    db: Session = Depends(get_db),
+) -> FileResponse:
+    ocorrencia = _ocorrencia_visivel(db, usuario, ocorrencia_id)
+    return _entregar_foto(ocorrencia.foto_arquivo, arquivos.OCORRENCIAS)
 
 
 @router.post(

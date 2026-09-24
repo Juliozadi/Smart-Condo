@@ -85,7 +85,7 @@ class OcorrenciaEntrada(SchemaBase):
     categoria: str = Field(default="geral", max_length=60)
     local: str | None = Field(default=None, max_length=120)
     prioridade: PrioridadeOcorrencia = PrioridadeOcorrencia.NORMAL
-    foto_url: str | None = Field(default=None, max_length=500)
+    # A foto vai como arquivo, em PUT /portaria/ocorrencias/{id}/foto.
 
 
 class OcorrenciaSaida(SchemaBase):
@@ -95,6 +95,7 @@ class OcorrenciaSaida(SchemaBase):
     categoria: str
     local: str | None = None
     prioridade: PrioridadeOcorrencia
+    # Caminho na API (/portaria/ocorrencias/{id}/foto), que pede o token.
     foto_url: str | None = None
     status: StatusOcorrencia
     aberta_por_id: int

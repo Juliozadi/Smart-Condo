@@ -200,6 +200,7 @@
     info.appendChild(titulo);
     info.appendChild(sub);
     info.appendChild(descricao);
+    if (o.foto_url) info.appendChild(api.miniatura(o.foto_url, 'Foto da ocorrência'));
     if (o.resposta) {
       var resposta = document.createElement('p');
       resposta.className = 'ocorrencia-resposta';

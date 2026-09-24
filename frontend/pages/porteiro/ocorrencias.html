@@ -121,14 +121,12 @@
             </select>
           </div>
         </div>
-        <div class="form-group">
-          <label>Evidências fotográficas <span style="font-size:11px;color:var(--muted);font-weight:400;">(opcional)</span></label>
-          <label style="display:flex;align-items:center;gap:12px;padding:14px;border:2px dashed var(--border);border-radius:var(--radius-xs);cursor:pointer;background:var(--surface-2);" for="ocorr-p-foto">
-            <img src="../../assets/img/icons/camera.svg" width="16" height="16" alt="">
-            <div><p style="font-size:13px;color:var(--muted);font-weight:500;">Anexar imagem ou arquivo</p><p style="font-size:11px;color:var(--placeholder);">JPG, PNG, PDF · Máx. 10 MB</p></div>
-          </label>
-          <input type="file" id="ocorr-p-foto" accept="image/*,.pdf" style="display:none;">
-        </div>
+        <div class="captura-foto"
+             data-rotulo="Foto da ocorrência (opcional)"
+             data-dica="Uma imagem do que aconteceu ajuda o síndico a decidir. Só quem pode ver a ocorrência vê a foto."
+             data-icone="../../assets/img/icons/camera.svg"
+             data-pronta="Imagem pronta. Ela vai junto com a ocorrência."
+             data-input="foto_ocorrencia"></div>
         <p class="form-erro" id="erroOcorrencia" role="alert"></p>
         <button class="action-btn" type="submit" style="margin-top:4px;">
           Registrar Ocorrência
@@ -151,6 +149,7 @@
   </main>
 
 
+  <script src="../../assets/js/foto.js"></script>
   <script src="../../assets/js/validation.js"></script>
   <script>
   /* Ocorrências pelo lado da portaria (documentação, seções 8 e 12). O
@@ -217,6 +216,7 @@
       quem.textContent = 'Aberta por ' + o.aberta_por_nome +
         (o.unidade ? ' (Apto ' + o.unidade + ')' : '') + ' em ' + dataCurta(o.criado_em);
       info.appendChild(h); info.appendChild(p); info.appendChild(quem);
+      if (o.foto_url) info.appendChild(api.miniatura(o.foto_url, 'Foto da ocorrência'));
 
       var selo = document.createElement('span');
       selo.className = 'badge ' + (CLASSE_STATUS[o.status] || 'badge-neutral');
@@ -336,11 +336,19 @@
       botao.disabled = true;
       botao.textContent = 'Registrando…';
 
+      var foto = document.querySelector('.captura-valor');
+      var fotoCapturada = foto && foto.value;
+
       api.post('/portaria/ocorrencias', corpo)
-        .then(function() {
+        .then(function(ocorrencia) {
+          return api.anexarFoto('/portaria/ocorrencias/' + ocorrencia.id + '/foto', fotoCapturada);
+        })
+        .then(function(falhaDaFoto) {
           campo('formOcorrencia').reset();
-          erro.className = 'form-erro sucesso';
-          erro.textContent = 'Ocorrência registrada. O síndico vai acompanhar.';
+          erro.className = 'form-erro' + (falhaDaFoto ? '' : ' sucesso');
+          erro.textContent = falhaDaFoto
+            ? 'Ocorrência registrada, mas a foto não foi enviada: ' + falhaDaFoto
+            : 'Ocorrência registrada. O síndico vai acompanhar.';
           return carregar();
         })
         .catch(function(e) { erro.textContent = e.message; })

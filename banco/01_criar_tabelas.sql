@@ -568,7 +568,7 @@ CREATE TABLE ocorrencias (
     categoria character varying(60) NOT NULL,
     local character varying(120),
     prioridade prioridade_ocorrencia NOT NULL,
-    foto_url character varying(500),
+    foto_arquivo character varying(100),
     status status_ocorrencia NOT NULL,
     resposta text,
     respondida_por_id integer,

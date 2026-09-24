@@ -237,6 +237,35 @@
       atualizar();
     },
 
+    /* Envia a foto capturada (data URL) para a rota dada. Resolve com
+       null se deu certo ou não havia foto, e com a mensagem do erro se
+       falhou — o registro já existe, então a falha da foto não o desfaz. */
+    anexarFoto: function(rota, dataUrl) {
+      if (!dataUrl) return Promise.resolve(null);
+      return api.put(rota, api.arquivoDeDataUrl(dataUrl, 'foto.jpg'))
+        .then(function() { return null; }, function(e) { return e.message; });
+    },
+
+    /* Miniatura de uma foto protegida; clicar abre a imagem inteira numa
+       nova aba. Enquanto carrega, ou se não carregar, fica invisível. */
+    miniatura: function(caminho, alt) {
+      var link = document.createElement('a');
+      link.className = 'miniatura-foto';
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.hidden = true;
+      link.title = 'Abrir a foto';
+      var img = document.createElement('img');
+      img.alt = alt || 'Foto anexada';
+      link.appendChild(img);
+      api.protegido(caminho).then(function(arquivo) {
+        img.addEventListener('load', function() { link.hidden = false; }, { once: true });
+        img.src = arquivo.url;
+        link.href = arquivo.url;
+      }).catch(function() {});
+      return link;
+    },
+
     /* Um data URL (a foto capturada pela câmera) como arquivo para envio. */
     arquivoDeDataUrl: function(dataUrl, nome) {
       var partes = dataUrl.split(',');

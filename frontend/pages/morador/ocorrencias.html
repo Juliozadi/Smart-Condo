@@ -100,6 +100,12 @@
           <label for="ocorre_descricaoDetalhada">Descrição detalhada</label>
           <textarea id="ocorre_descricaoDetalhada" required placeholder="Descreva a ocorrência com o máximo de detalhes possível..." style="min-height:100px;width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);resize:vertical;outline:none;" onFocus="this.style.borderColor='var(--primary)'" onBlur="this.style.borderColor='var(--border)'"></textarea>
         </div>
+        <div class="captura-foto"
+             data-rotulo="Foto (opcional)"
+             data-dica="Uma imagem do que aconteceu ajuda o síndico a resolver. Só você, o síndico e a portaria veem a foto."
+             data-icone="../../assets/img/icons/camera.svg"
+             data-pronta="Imagem pronta. Ela vai junto com a ocorrência."
+             data-input="foto_ocorrencia"></div>
         <p class="form-erro" id="erroOcorrencia" role="alert"></p>
         <button class="action-btn" type="submit" style="margin-top:4px;">
           Registrar Ocorrência
@@ -115,6 +121,7 @@
   </main>
 
 
+<script src="../../assets/js/foto.js"></script>
 <script src="../../assets/js/validation.js"></script>
 <script>
 /* Ocorrências do morador (documentação, seção 8): abre o chamado pela API
@@ -190,6 +197,8 @@
       resposta.textContent = 'Síndico: ' + o.resposta;
       info.appendChild(resposta);
     }
+
+    if (o.foto_url) info.appendChild(api.miniatura(o.foto_url, 'Foto da ocorrência'));
 
     var selo = document.createElement('span');
     selo.className = 'badge ' + (CLASSE_STATUS[o.status] || 'badge-neutral');
@@ -275,12 +284,20 @@
     botao.disabled = true;
     botao.textContent = 'Enviando…';
 
+    var foto = document.querySelector('.captura-valor');
+    var fotoCapturada = foto && foto.value;
+
     api.post('/portaria/ocorrencias', corpo)
-      .then(function() {
+      .then(function(ocorrencia) {
+        return api.anexarFoto('/portaria/ocorrencias/' + ocorrencia.id + '/foto', fotoCapturada);
+      })
+      .then(function(falhaDaFoto) {
         campo('formOcorrencia').reset();
         campo('grupoOutroLocal').hidden = true;
-        erro.className = 'form-erro sucesso';
-        erro.textContent = 'Ocorrência registrada. O síndico foi notificado.';
+        erro.className = 'form-erro' + (falhaDaFoto ? '' : ' sucesso');
+        erro.textContent = falhaDaFoto
+          ? 'Ocorrência registrada, mas a foto não foi enviada: ' + falhaDaFoto
+          : 'Ocorrência registrada. O síndico foi notificado.';
         return carregar();
       })
       .catch(function(e) { erro.textContent = e.message; })

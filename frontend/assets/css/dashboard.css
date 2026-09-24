@@ -1691,6 +1691,14 @@ a.contato-btn { text-decoration: none; }
   display: inline-flex; align-items: center;
 }
 
+/* ── Miniatura de foto protegida (api.miniatura) ─────────────────── */
+.miniatura-foto {
+  display: inline-block; margin-top: 8px; border-radius: var(--radius-xs);
+  overflow: hidden; border: 1px solid var(--border); line-height: 0;
+}
+.miniatura-foto img { width: 96px; height: 72px; object-fit: cover; display: block; }
+.miniatura-foto:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-glow); }
+
 /* ── Documentos do cadastro (fila de aprovação do síndico) ───────── */
 .docs-cadastro {
   display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;

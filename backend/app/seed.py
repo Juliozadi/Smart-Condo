@@ -55,7 +55,7 @@ def limpar(db) -> None:
     # Os arquivos enviados (fotos e documentos) ficam fora do banco; sem
     # os registros que apontavam para eles, só ocupariam espaço — e são
     # dados pessoais sem finalidade.
-    for pasta in ("fotos", arquivos.PORTARIA, arquivos.DOCUMENTOS):
+    for pasta in ("fotos", arquivos.PORTARIA, arquivos.OCORRENCIAS, arquivos.DOCUMENTOS):
         for arquivo in arquivos._pasta(pasta).iterdir():
             if arquivo.is_file():
                 arquivo.unlink()

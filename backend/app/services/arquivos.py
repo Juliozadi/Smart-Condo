@@ -41,8 +41,9 @@ NOME_PRIVADO_VALIDO = re.compile(r"^[A-Za-z0-9_-]{20,64}\.(jpg|png|webp|pdf)$")
 
 # Pastas dos arquivos que só saem com autorização.
 PORTARIA = "portaria"
+OCORRENCIAS = "ocorrencias"
 DOCUMENTOS = "documentos"
-_PASTAS_PRIVADAS = {PORTARIA, DOCUMENTOS}
+_PASTAS_PRIVADAS = {PORTARIA, OCORRENCIAS, DOCUMENTOS}
 
 
 class ArquivoRecusado(ValueError):
