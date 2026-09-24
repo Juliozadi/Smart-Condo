@@ -92,13 +92,17 @@
     window.location.href = 'nova_senha.html';
   });
 
-  document.getElementById('reenviarCodigo').addEventListener('click', function(e) {
+  var reenviar = document.getElementById('reenviarCodigo');
+  // O código acabou de ser pedido na tela anterior.
+  SmartCondo.api.esperarReenvio(reenviar);
+  reenviar.addEventListener('click', function(e) {
     e.preventDefault();
     var link = this;
+    if (link.dataset.aguardando) return;
     link.textContent = 'Enviando...';
     SmartCondo.api
       .post('/auth/senha/recuperar', { email: email, canal: canalRecuperacao() }, { semToken: true })
-      .then(function() { link.textContent = 'Código reenviado'; })
+      .then(function() { SmartCondo.api.esperarReenvio(link); })
       .catch(function() { link.textContent = 'Reenviar código'; });
   });
 })();

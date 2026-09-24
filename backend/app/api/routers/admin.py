@@ -341,6 +341,7 @@ def editar_usuario(
         )
     servico_usuarios.atualizar_usuario(db, usuario, dados)
     db.commit()
+    documentos_cadastro.descartar_se_encerrado(db, usuario)
     db.refresh(usuario)
     return _usuario_saida(db, usuario)
 

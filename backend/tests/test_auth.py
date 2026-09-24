@@ -7,7 +7,8 @@ from __future__ import annotations
 
 import pytest
 
-from app.models.enums import Papel, StatusUsuario
+from app.core.config import settings
+from app.models.enums import FinalidadeCodigo, Papel, StatusUsuario
 from app.models.usuario import Usuario
 from tests.fixtures import CPFS, cab, montar_condominio, token
 
@@ -137,7 +138,8 @@ def test_o_codigo_so_pode_ser_usado_uma_vez(cliente, cenario):
     assert cliente.post("/api/v1/auth/confirmar", json=corpo).status_code == 409
 
 
-def test_reenviar_invalida_o_codigo_anterior(cliente, cenario):
+def test_reenviar_invalida_o_codigo_anterior(cliente, cenario, monkeypatch):
+    monkeypatch.setattr(settings, "CODIGO_INTERVALO_S", 0)
     antigo = cadastrar(cliente, cenario).json()["codigo_debug"]
 
     reenvio = cliente.post("/api/v1/auth/codigo/reenviar", json={"email": "joao@exemplo.com"})
@@ -147,6 +149,37 @@ def test_reenviar_invalida_o_codigo_anterior(cliente, cenario):
         "/api/v1/auth/confirmar", json={"email": "joao@exemplo.com", "codigo": antigo}
     )
     assert conf.status_code == 400
+
+
+def _codigos_emitidos(db, email, finalidade):
+    from app.models.usuario import CodigoVerificacao, Usuario
+    return db.query(CodigoVerificacao).join(Usuario).filter(
+        Usuario.email == email, CodigoVerificacao.finalidade == FinalidadeCodigo[finalidade]).count()
+
+
+def test_reenvio_seguido_nao_gera_codigo_novo(cliente, cenario, db):
+    """Um código por minuto: sem isso, dava para disparar e-mail ou SMS
+    pago sem parar para qualquer pessoa."""
+    antigo = cadastrar(cliente, cenario).json()["codigo_debug"]
+    r = cliente.post("/api/v1/auth/codigo/reenviar", json={"email": "joao@exemplo.com"})
+    # A resposta é a mesma de sempre, para não revelar quem existe...
+    assert r.status_code == 200
+    assert "Se houver" in r.json()["detalhe"]
+    # ...mas nenhum código novo saiu, e o anterior continua valendo.
+    assert _codigos_emitidos(db, "joao@exemplo.com", "CONFIRMACAO_CADASTRO") == 1
+    conf = cliente.post(
+        "/api/v1/auth/confirmar", json={"email": "joao@exemplo.com", "codigo": antigo}
+    )
+    assert conf.status_code == 200
+
+
+def test_recuperacao_tem_limite_por_hora(cliente, cenario, db, monkeypatch):
+    monkeypatch.setattr(settings, "CODIGO_INTERVALO_S", 0)
+    cadastrar_e_confirmar(cliente, cenario)
+    for _ in range(settings.CODIGO_MAX_POR_HORA + 3):
+        r = cliente.post("/api/v1/auth/senha/recuperar", json={"email": "joao@exemplo.com"})
+        assert r.status_code == 200
+    assert _codigos_emitidos(db, "joao@exemplo.com", "RECUPERACAO_SENHA") == settings.CODIGO_MAX_POR_HORA
 
 
 def test_reenvio_para_email_inexistente_nao_revela_nada(cliente):
@@ -354,6 +387,28 @@ def test_troca_de_senha_logado(cliente, cenario):
         "/api/v1/auth/login",
         json={"email": "sindico@exemplo.com", "senha": "novasenha456"},
     ).status_code == 200
+
+
+def test_troca_de_senha_tambem_tranca_por_tentativas(cliente, cenario):
+    """Quem pegasse uma sessão aberta não pode testar senhas na troca."""
+    for _ in range(settings.MAX_TENTATIVAS_LOGIN):
+        r = cliente.post(
+            "/api/v1/auth/senha/trocar",
+            json={"senha_atual": "naoehessa1", "nova_senha": "novasenha456"},
+            headers=cab(cenario["sindico"]),
+        )
+        assert r.status_code == 400
+    # Trancada, nem a senha certa passa — nem aqui, nem no login.
+    certa = cliente.post(
+        "/api/v1/auth/senha/trocar",
+        json={"senha_atual": "senhaforte123", "nova_senha": "novasenha456"},
+        headers=cab(cenario["sindico"]),
+    )
+    assert certa.status_code == 429
+    assert cliente.post(
+        "/api/v1/auth/login",
+        json={"email": "sindico@exemplo.com", "senha": "senhaforte123"},
+    ).status_code == 429
 
 
 def test_saude(cliente):

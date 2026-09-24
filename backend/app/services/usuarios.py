@@ -156,11 +156,23 @@ def atualizar_usuario(db: Session, usuario: Usuario, dados) -> Usuario:
             detail="Tipo de ocupação é só para morador.",
         )
 
+    # Inativar pela edição tem o mesmo efeito de remover (remover_usuario).
+    if campos.get("status") == StatusUsuario.INATIVO:
+        _soltar_do_condominio_se_sindico(db, usuario)
+
     for campo, valor in campos.items():
         setattr(usuario, campo, valor)
 
     db.flush()
     return usuario
+
+
+def _soltar_do_condominio_se_sindico(db: Session, usuario: Usuario) -> None:
+    """O condomínio não pode ficar apontando para um síndico inativo."""
+    if usuario.papel == Papel.SINDICO and usuario.condominio_id:
+        condominio = db.get(Condominio, usuario.condominio_id)
+        if condominio is not None and condominio.sindico_id == usuario.id:
+            condominio.sindico_id = None
 
 
 def remover_usuario(db: Session, usuario: Usuario, quem_remove: Usuario) -> None:
@@ -175,11 +187,6 @@ def remover_usuario(db: Session, usuario: Usuario, quem_remove: Usuario) -> None
             detail="Você não pode remover o próprio usuário.",
         )
 
-    # O condomínio não pode ficar apontando para um síndico inativo.
-    if usuario.papel == Papel.SINDICO and usuario.condominio_id:
-        condominio = db.get(Condominio, usuario.condominio_id)
-        if condominio is not None and condominio.sindico_id == usuario.id:
-            condominio.sindico_id = None
-
+    _soltar_do_condominio_se_sindico(db, usuario)
     usuario.status = StatusUsuario.INATIVO
     db.flush()

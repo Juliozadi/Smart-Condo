@@ -13,6 +13,8 @@
    foi o que deixava o contador de mensagens mostrando "0" e o aviso da
    câmera ao lado da foto do visitante. */
 [hidden] { display: none !important; }
+/* Link de reenvio esperando o intervalo (api.esperarReenvio). */
+.link-aguardando { opacity: .6; cursor: default; pointer-events: none; }
 
 @keyframes pulse-infinite {
   0% { transform: scale(1); opacity: 1; }

@@ -239,10 +239,15 @@ def reenviar_codigo(dados: ReenvioCodigo, db: Session = Depends(get_db)) -> Mens
     _exigir_canal(dados.canal)
     usuario = servico_auth.buscar_por_email(db, dados.email)
     if usuario is not None and usuario.status == StatusUsuario.AGUARDANDO_CODIGO:
-        servico_auth.emitir_codigo(
-            db, usuario, FinalidadeCodigo.CONFIRMACAO_CADASTRO, dados.canal
-        )
-        db.commit()
+        try:
+            servico_auth.emitir_codigo(
+                db, usuario, FinalidadeCodigo.CONFIRMACAO_CADASTRO, dados.canal
+            )
+            db.commit()
+        except servico_auth.CodigoMuitoFrequente:
+            # Mesma resposta: um aviso diferente revelaria que o e-mail
+            # existe. A tela já espera o intervalo antes de reenviar.
+            db.rollback()
 
     # Resposta igual em qualquer caso, para não revelar quem está cadastrado.
     return Mensagem(detalhe="Se houver um cadastro pendente, um novo código foi enviado.")
@@ -285,10 +290,13 @@ def solicitar_recuperacao(
     _exigir_canal(dados.canal)
     usuario = servico_auth.buscar_por_email(db, dados.email)
     if usuario is not None:
-        servico_auth.emitir_codigo(
-            db, usuario, FinalidadeCodigo.RECUPERACAO_SENHA, dados.canal
-        )
-        db.commit()
+        try:
+            servico_auth.emitir_codigo(
+                db, usuario, FinalidadeCodigo.RECUPERACAO_SENHA, dados.canal
+            )
+            db.commit()
+        except servico_auth.CodigoMuitoFrequente:
+            db.rollback()
 
     return Mensagem(detalhe="Se o e-mail estiver cadastrado, um código foi enviado.")
 

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.models.documento_cadastro import DocumentoCadastro
-from app.models.enums import TipoDocumentoCadastro
+from app.models.enums import StatusUsuario, TipoDocumentoCadastro
 from app.models.usuario import Usuario
 from app.schemas.documento_cadastro import DocumentoCadastroSaida
 from app.services import arquivos
@@ -61,6 +61,13 @@ def salvar(
     arquivos.apagar_privado(arquivos.DOCUMENTOS, anterior)
     db.refresh(documento)
     return documento
+
+
+def descartar_se_encerrado(db: Session, usuario: Usuario) -> None:
+    """Chamado depois de qualquer mudança de situação: recusado ou inativo,
+    o cadastro não precisa mais dos documentos."""
+    if usuario.status in (StatusUsuario.RECUSADO, StatusUsuario.INATIVO):
+        descartar_todos(db, usuario.id)
 
 
 def descartar_todos(db: Session, usuario_id: int) -> None:

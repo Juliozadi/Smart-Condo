@@ -11,7 +11,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.api.deps import exigir_condominio, exigir_permissao_porteiro
+from app.api.deps import (
+    exigir_condominio, exigir_permissao_do_porteiro, exigir_permissao_porteiro,
+)
 from app.core.database import get_db
 from app.models.condominio import Unidade
 from app.models.enums import CategoriaVeiculo, Papel, TipoMovimentacao
@@ -113,9 +115,13 @@ def registrar_movimentacao(
 
 @router.get("/patio", response_model=list[VeiculoNoPatio], summary="Veículos no pátio agora")
 def listar_no_patio(
-    usuario: Usuario = Depends(exigir_condominio), db: Session = Depends(get_db)
+    usuario: Usuario = Depends(exigir_permissao_porteiro("registrar_veiculos")),
+    db: Session = Depends(get_db),
 ) -> list[VeiculoNoPatio]:
-    """Quem está dentro sai da última movimentação de cada placa."""
+    """Quem está dentro sai da última movimentação de cada placa.
+
+    Traz placa e unidade de todos os carros: é da portaria e do síndico. O
+    morador vê só a ocupação, em números (GET /veiculos/ocupacao)."""
     ultimas = _ultima_por_placa(usuario.condominio_id)
     dentro = db.scalars(
         select(MovimentacaoVeiculo)
@@ -178,6 +184,7 @@ def listar_movimentacoes(
     usuario: Usuario = Depends(exigir_condominio),
     db: Session = Depends(get_db),
 ) -> list[MovimentacaoSaida]:
+    exigir_permissao_do_porteiro(db, usuario, "registrar_veiculos")
     consulta = select(MovimentacaoVeiculo).where(
         MovimentacaoVeiculo.condominio_id == usuario.condominio_id
     )

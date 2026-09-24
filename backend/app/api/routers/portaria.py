@@ -28,7 +28,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import (
-    exigir_condominio, exigir_papel, exigir_permissao_porteiro, get_usuario_atual,
+    exigir_condominio, exigir_papel, exigir_permissao_do_porteiro, exigir_permissao_porteiro,
+    porteiro_tem_permissao,
 )
 from app.core.config import settings
 from app.core.database import get_db
@@ -37,7 +38,7 @@ from app.models.enums import (
     CanalVerificacao, Papel, StatusEncomenda, StatusOcorrencia, StatusVisitante,
 )
 from app.models.portaria import Encomenda, Ocorrencia, Visitante
-from app.models.usuario import PermissaoPorteiro, Usuario
+from app.models.usuario import Usuario
 from app.schemas.portaria import (
     ConfirmacaoVisitante, EncomendaEntrada, EncomendaSaida, OcorrenciaEntrada,
     OcorrenciaSaida, RespostaOcorrencia, RetiradaEncomenda, VisitanteEntrada,
@@ -115,10 +116,7 @@ def _pode_ver_foto(db: Session, usuario: Usuario, unidade: Unidade, permissao: s
     if usuario.papel == Papel.MORADOR:
         return unidade.id == usuario.unidade_id
     if usuario.papel == Papel.PORTEIRO:
-        permissoes = db.scalar(
-            select(PermissaoPorteiro).where(PermissaoPorteiro.porteiro_id == usuario.id)
-        )
-        return bool(permissoes and getattr(permissoes, permissao, False))
+        return porteiro_tem_permissao(db, usuario, permissao)
     return False
 
 
@@ -201,6 +199,7 @@ def listar_visitantes(
     usuario: Usuario = Depends(exigir_condominio),
     db: Session = Depends(get_db),
 ) -> list[VisitanteSaida]:
+    exigir_permissao_do_porteiro(db, usuario, "registrar_visitantes")
     consulta = select(Visitante).join(Unidade).where(
         Unidade.condominio_id == usuario.condominio_id
     )
@@ -379,6 +378,7 @@ def listar_encomendas(
     usuario: Usuario = Depends(exigir_condominio),
     db: Session = Depends(get_db),
 ) -> list[EncomendaSaida]:
+    exigir_permissao_do_porteiro(db, usuario, "registrar_encomendas")
     consulta = select(Encomenda).join(Unidade).where(
         Unidade.condominio_id == usuario.condominio_id
     )
@@ -482,18 +482,8 @@ def abrir_ocorrencia(
     usuario: Usuario = Depends(exigir_condominio),
     db: Session = Depends(get_db),
 ) -> OcorrenciaSaida:
-    if usuario.papel == Papel.PORTEIRO:
-        # O porteiro só registra ocorrência se o síndico liberou (seção 12).
-        from app.models.usuario import PermissaoPorteiro
-
-        permissoes = db.scalar(
-            select(PermissaoPorteiro).where(PermissaoPorteiro.porteiro_id == usuario.id)
-        )
-        if permissoes is None or not permissoes.registrar_ocorrencias:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="O síndico não liberou esta ação para o seu usuário.",
-            )
+    # O porteiro só registra ocorrência se o síndico liberou (seção 12).
+    exigir_permissao_do_porteiro(db, usuario, "registrar_ocorrencias")
 
     ocorrencia = Ocorrencia(
         condominio_id=usuario.condominio_id,
@@ -525,6 +515,7 @@ def listar_ocorrencias(
     usuario: Usuario = Depends(exigir_condominio),
     db: Session = Depends(get_db),
 ) -> list[OcorrenciaSaida]:
+    exigir_permissao_do_porteiro(db, usuario, "registrar_ocorrencias")
     consulta = select(Ocorrencia).where(Ocorrencia.condominio_id == usuario.condominio_id)
     # O morador acompanha só o que ele mesmo abriu.
     if usuario.papel == Papel.MORADOR:

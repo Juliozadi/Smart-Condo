@@ -303,3 +303,18 @@ def test_inativar_o_morador_apaga_os_documentos(cliente, base):
     r = cliente.delete(f"/api/v1/usuarios/{uid}", headers=cab(base["sindico"]))
     assert r.status_code == 200, r.text
     assert list(pasta().iterdir()) == []
+
+
+def test_inativar_pela_edicao_tambem_apaga_os_documentos(cliente, base):
+    """A situação também muda pelo formulário de edição; o descarte vale
+    por qualquer caminho."""
+    cad = cadastrar(cliente, base)
+    enviar(cliente, cad["token_documentos"], "identidade", PDF)
+    confirmar(cliente, cad)
+    uid = cad["usuario"]["id"]
+    cliente.post(f"/api/v1/usuarios/{uid}/aprovacao", json={"aprovado": True},
+                 headers=cab(base["sindico"]))
+    r = cliente.put(f"/api/v1/usuarios/{uid}", json={"status": "inativo"},
+                    headers=cab(base["sindico"]))
+    assert r.status_code == 200, r.text
+    assert list(pasta().iterdir()) == []

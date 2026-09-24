@@ -34,6 +34,12 @@ class Settings(BaseSettings):
     # Validade do código de confirmação de cadastro e de recuperação de
     # senha (documentação, seção 12: "Cadastro" e "Esqueci minha senha").
     CODIGO_VERIFICACAO_EXPIRA_MIN: int = 15
+    # Frequência máxima de códigos por pessoa e finalidade. Sem limite,
+    # qualquer um dispara "esqueci minha senha" com o e-mail de outra
+    # pessoa sem parar — cada SMS é pago —, e cada código novo traria mais
+    # tentativas para adivinhar.
+    CODIGO_INTERVALO_S: int = Field(default=60, ge=0, le=3600)
+    CODIGO_MAX_POR_HORA: int = Field(default=5, ge=1, le=100)
 
     # Quantas senhas erradas seguidas antes de trancar a conta, e por
     # quanto tempo. O bloqueio é temporário de propósito: permanente,

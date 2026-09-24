@@ -212,6 +212,31 @@
       }).catch(function() {});
     },
 
+    /* Espera antes de deixar pedir outro código. A API só emite um código
+       por minuto por pessoa (contra disparos de e-mail e SMS); sem esta
+       espera, o clique parecia funcionar e nada chegava. */
+    esperarReenvio: function(link, segundos) {
+      var texto = 'Reenviar código';
+      var resta = segundos || 60;
+      link.dataset.aguardando = '1';
+      link.setAttribute('aria-disabled', 'true');
+      link.classList.add('link-aguardando');
+      function atualizar() {
+        if (resta <= 0) {
+          clearInterval(relogio);
+          delete link.dataset.aguardando;
+          link.removeAttribute('aria-disabled');
+          link.classList.remove('link-aguardando');
+          link.textContent = texto;
+          return;
+        }
+        link.textContent = 'Reenviar em ' + resta + ' s';
+        resta -= 1;
+      }
+      var relogio = setInterval(atualizar, 1000);
+      atualizar();
+    },
+
     /* Um data URL (a foto capturada pela câmera) como arquivo para envio. */
     arquivoDeDataUrl: function(dataUrl, nome) {
       var partes = dataUrl.split(',');

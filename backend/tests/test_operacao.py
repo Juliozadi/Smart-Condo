@@ -135,6 +135,30 @@ def test_porteiro_sem_permissao_nao_registra_veiculo(cliente, cenario):
     assert "não liberou" in r.json()["detalhe"]
 
 
+def test_porteiro_sem_permissao_nao_consulta_veiculos(cliente, cenario):
+    """A Política de Privacidade promete que o porteiro só vê o que o
+    síndico liberou — vale para consultar, não só para registrar."""
+    _, tok = cadastrar_porteiro(
+        cliente, cenario["sindico"], cenario["cond"],
+        email="semvei2@exemplo.com", cpf=CPFS[4],
+        permissoes={
+            "registrar_visitantes": True, "registrar_encomendas": True,
+            "registrar_veiculos": False, "registrar_ocorrencias": True,
+            "acessar_financeiro": False,
+        },
+    )
+    assert cliente.get("/api/v1/veiculos/patio", headers=cab(tok)).status_code == 403
+    assert cliente.get("/api/v1/veiculos", headers=cab(tok)).status_code == 403
+
+
+def test_morador_nao_ve_as_placas_do_patio(cliente, cenario):
+    """O pátio traz placa e unidade de todos os carros; o morador fica com
+    a ocupação em números."""
+    mover(cliente, cenario["porteiro"])
+    assert cliente.get("/api/v1/veiculos/patio", headers=cab(cenario["morador"])).status_code == 403
+    assert cliente.get("/api/v1/veiculos/ocupacao", headers=cab(cenario["morador"])).status_code == 200
+
+
 def test_morador_nao_registra_veiculo(cliente, cenario):
     assert mover(cliente, cenario["morador"]).status_code == 403
 
