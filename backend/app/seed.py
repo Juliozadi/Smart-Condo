@@ -17,6 +17,7 @@ from decimal import Decimal
 
 from sqlalchemy import select, text
 
+from app.core.config import settings
 from app.core.database import Base, SessionLocal, engine
 from app.core.security import gerar_hash_senha
 from app.models.comunicado import Comunicado
@@ -44,6 +45,39 @@ def _hora(h: int, m: int = 0) -> time:
     return time(hour=h, minute=m)
 
 
+def pdf_de_exemplo(titulo: str, linhas: list[str]) -> bytes:
+    """Um PDF de uma página, com título e algumas linhas — o bastante para
+    os documentos de demonstração abrirem de verdade no navegador."""
+    def texto(t: str) -> str:
+        t = t.replace("—", "-")
+        return t.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+    conteudo = ["BT", "/F1 20 Tf", "72 760 Td", f"({texto(titulo)}) Tj", "/F1 12 Tf"]
+    for linha in linhas:
+        conteudo += ["0 -28 Td", f"({texto(linha)}) Tj"]
+    conteudo.append("ET")
+    fluxo = "\n".join(conteudo).encode("cp1252")
+    objetos = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] "
+        b"/Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>",
+        b"<< /Length %d >>\nstream\n" % len(fluxo) + fluxo + b"\nendstream",
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
+    ]
+    saida = bytearray(b"%PDF-1.4\n")
+    posicoes = []
+    for i, obj in enumerate(objetos, 1):
+        posicoes.append(len(saida))
+        saida += b"%d 0 obj\n" % i + obj + b"\nendobj\n"
+    inicio_xref = len(saida)
+    saida += b"xref\n0 %d\n0000000000 65535 f \n" % (len(objetos) + 1)
+    for pos in posicoes:
+        saida += b"%010d 00000 n \n" % pos
+    saida += b"trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n" % (
+        len(objetos) + 1, inicio_xref)
+    return bytes(saida)
+
+
 def limpar(db) -> None:
     nomes = ", ".join(f'"{t.name}"' for t in Base.metadata.sorted_tables
                       if t.name != "alembic_version")
@@ -55,7 +89,8 @@ def limpar(db) -> None:
     # Os arquivos enviados (fotos e documentos) ficam fora do banco; sem
     # os registros que apontavam para eles, só ocupariam espaço — e são
     # dados pessoais sem finalidade.
-    for pasta in ("fotos", arquivos.PORTARIA, arquivos.OCORRENCIAS, arquivos.DOCUMENTOS):
+    for pasta in ("fotos", arquivos.PORTARIA, arquivos.OCORRENCIAS, arquivos.DOCUMENTOS,
+                  arquivos.CONDOMINIO):
         for arquivo in arquivos._pasta(pasta).iterdir():
             if arquivo.is_file():
                 arquivo.unlink()
@@ -378,25 +413,33 @@ def criar(db) -> dict:
         ))
 
     # ── Documentos ────────────────────────────────────────────────────
-    for titulo, categoria, descricao, tamanho, unidade in [
+    # Cada um com um PDF de verdade, gravado como se o síndico o tivesse
+    # enviado — assim o "Baixar" do morador abre um arquivo que existe.
+    for titulo, categoria, descricao, unidade in [
         ("Convenção do Condomínio", CategoriaDocumento.CONVENCAO,
-         "Documento registrado em cartório.", 820, None),
+         "Documento registrado em cartório.", None),
         ("Regimento Interno", CategoriaDocumento.REGIMENTO,
-         "Regras de convivência e uso das áreas comuns.", 410, None),
+         "Regras de convivência e uso das áreas comuns.", None),
         ("Ata da Assembleia de Março", CategoriaDocumento.ATA,
-         "Prestação de contas e eleição do conselho.", 180, None),
+         "Prestação de contas e eleição do conselho.", None),
         ("Ata da Assembleia de Janeiro", CategoriaDocumento.ATA,
-         "Aprovação do orçamento anual.", 165, None),
+         "Aprovação do orçamento anual.", None),
         ("Prestação de Contas 2024", CategoriaDocumento.PRESTACAO_CONTAS,
-         "Balanço completo do exercício.", 1240, None),
+         "Balanço completo do exercício.", None),
         ("Planta Baixa — Apto 204", CategoriaDocumento.PLANTA,
-         "Planta da unidade.", 2100, "204"),
+         "Planta da unidade.", "204"),
     ]:
+        pdf = pdf_de_exemplo(titulo, [
+            condominio.nome, descricao,
+            "Documento de demonstração gerado pelo seed do SmartCondo.",
+        ])
+        nome = arquivos.salvar_privado(
+            arquivos.CONDOMINIO, pdf, aceita_pdf=True, max_kb=settings.DOCUMENTO_MAX_KB
+        )
         db.add(Documento(
             condominio_id=condominio.id, titulo=titulo, categoria=categoria,
-            descricao=descricao,
-            arquivo_url=f"https://cdn.smartcondo.com/docs/{categoria.value}.pdf",
-            tamanho_kb=tamanho,
+            descricao=descricao, arquivo=nome, tipo_conteudo="application/pdf",
+            tamanho_kb=max(1, round(len(pdf) / 1024)),
             unidade_id=unidades[unidade].id if unidade else None,
             publicado_por_id=sindico.id,
             publicado_em=AGORA - timedelta(days=10),

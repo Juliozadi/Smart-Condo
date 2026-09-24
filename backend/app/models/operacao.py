@@ -122,8 +122,10 @@ class OrdemServico(Base, TimestampMixin):
 class Documento(Base, TimestampMixin):
     """Atas, convenção, regimento e demais arquivos do condomínio.
 
-    A tabela guarda a URL do arquivo; o armazenamento em si fica fora do
-    banco, como já acontece com as fotos da portaria.
+    O síndico envia o arquivo pela API; ele fica em uploads/condominio,
+    sem endereço público, e só sai por GET /documentos/{id}/arquivo, que
+    confere quem pode vê-lo. Antes a tabela guardava um endereço digitado,
+    que podia não existir ou ser um "javascript:" executado no clique.
     """
 
     __tablename__ = "documentos"
@@ -142,7 +144,10 @@ class Documento(Base, TimestampMixin):
         index=True,
     )
 
-    arquivo_url: Mapped[str] = mapped_column(String(500), nullable=False)
+    # Nome aleatório do arquivo em uploads/condominio. Vazio só nos
+    # registros antigos, que guardavam um endereço externo.
+    arquivo: Mapped[str | None] = mapped_column(String(100))
+    tipo_conteudo: Mapped[str | None] = mapped_column(String(40))
     tamanho_kb: Mapped[int | None] = mapped_column()
 
     # Documento de uma unidade específica (planta, por exemplo) só aparece

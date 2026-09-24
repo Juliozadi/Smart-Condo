@@ -87,7 +87,8 @@ class Settings(BaseSettings):
     # backend/, a não ser que venha um caminho absoluto.
     UPLOADS_DIR: str = "uploads"
     FOTO_MAX_KB: int = Field(default=2048, ge=50, le=10240)
-    # Documentos do cadastro do morador (RG, comprovante, escritura).
+    # Documentos do cadastro do morador (RG, comprovante, escritura) e os
+    # do condomínio que o síndico publica (atas, convenção, regimento).
     DOCUMENTO_MAX_KB: int = Field(default=10240, ge=100, le=20480)
     # Por quanto tempo vale a autorização para enviar esses documentos,
     # contada a partir do cadastro.

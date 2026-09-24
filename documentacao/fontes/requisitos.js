@@ -201,8 +201,8 @@ const requisitosFuncionais = [
   { id: 'RF032', nome: 'Publicar documento',
     atores: 'Síndico', prioridade: 'Importante',
     descricao: 'O sistema permite disponibilizar documentos do condomínio — convenção, regimento interno, atas, plantas e prestações de contas — para consulta pelos moradores.',
-    entradas: 'O síndico informa título, categoria e o endereço do arquivo. Um documento pode ser dirigido a todo o condomínio ou a uma unidade específica.',
-    saidas: 'O documento fica disponível na tela de documentos de quem tem direito de vê-lo.' },
+    entradas: 'O síndico informa título e categoria e envia o arquivo, em PDF ou imagem de até 10 MB; o tipo é conferido pelo conteúdo. Um documento pode ser dirigido a todo o condomínio ou a uma unidade específica.',
+    saidas: 'O documento aparece na tela de documentos de quem tem direito de vê-lo, e o arquivo só abre com o token dessa pessoa: o de uma unidade, só para quem mora nela.' },
 
   { id: 'RF033', nome: 'Escolher dia e forma de pagamento',
     atores: 'Morador', prioridade: 'Importante',
@@ -356,7 +356,7 @@ const requisitosNaoFuncionais = [
       verificacao: 'A Política de Privacidade e os Termos de Uso estão publicados e acessíveis a partir da tela de entrada.' },
     { id: 'RNF017', nome: 'Arquivos enviados conferidos e protegidos',
       prioridade: 'Essencial',
-      descricao: 'Todo arquivo enviado é aceito ou recusado pelos primeiros bytes do conteúdo, e não pela extensão ou pelo tipo informado pelo navegador, que quem envia escolhe. O nome gravado é aleatório e gerado pelo servidor, o que impede adivinhar o arquivo de outra pessoa e usar o nome para gravar fora da pasta. As fotos da portaria e das ocorrências e os documentos do cadastro não têm endereço público: só saem por rotas que conferem o token e quem tem direito a ver cada um.',
+      descricao: 'Todo arquivo enviado é aceito ou recusado pelos primeiros bytes do conteúdo, e não pela extensão ou pelo tipo informado pelo navegador, que quem envia escolhe. O nome gravado é aleatório e gerado pelo servidor, o que impede adivinhar o arquivo de outra pessoa e usar o nome para gravar fora da pasta. As fotos da portaria e das ocorrências, os documentos do cadastro e os documentos do condomínio não têm endereço público: só saem por rotas que conferem o token e quem tem direito a ver cada um.',
       verificacao: 'Coberto por testes que enviam um HTML com extensão .png, um executável com extensão .pdf, um arquivo vazio, um grande demais e um nome com ../, e por testes que tentam abrir a foto de um visitante como morador de outra unidade, como porteiro sem permissão, como síndico de outro condomínio e sem token — todos recusados.' },
   ]},
 

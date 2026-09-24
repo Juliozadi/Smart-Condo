@@ -334,3 +334,13 @@ def test_vencimento_antes_da_competencia_e_recusado(cliente, cenario):
                        vencimento=(date.today().replace(day=1) - timedelta(days=40)).isoformat())
     assert r.status_code == 422
     assert "antes do mês de competência" in r.text
+
+
+
+@pytest.mark.parametrize("endereco", ["javascript:alert(1)", "data:text/html,<script>", "ftp://x.com/a"])
+def test_comprovante_so_aceita_http(cliente, cenario, endereco):
+    c = gerar_cobranca(cliente, cenario["sindico"], cenario["u204"]).json()
+    r = cliente.post(f"/api/v1/financeiro/cobrancas/{c['id']}/pagamentos",
+                     json={"valor": "10.00", "forma": "pix", "comprovante_url": endereco},
+                     headers=cab(cenario["ana"]))
+    assert r.status_code == 422

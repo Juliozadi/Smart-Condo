@@ -126,7 +126,8 @@ DESCRICOES = {
     "documentos.titulo": "Título do documento",
     "documentos.descricao": "Breve explicação do conteúdo",
     "documentos.categoria": "Tipo do documento",
-    "documentos.arquivo_url": "Endereço do arquivo",
+    "documentos.arquivo": "Nome do arquivo (PDF ou imagem) enviado pelo síndico, gravado pela API sem endereço público",
+    "documentos.tipo_conteudo": "Tipo do arquivo conferido pelo conteúdo (application/pdf, image/png...)",
     "documentos.tamanho_kb": "Tamanho do arquivo em kilobytes, exibido antes do download",
     "documentos.publicado_em": "Momento da publicação",
 

@@ -104,12 +104,22 @@ def validar_data_nascimento(valor: date) -> date:
     return valor
 
 
+def validar_endereco_web(valor: str) -> str:
+    """Só http e https. Um endereço guardado vira link na tela de outra
+    pessoa; "javascript:" ou "data:" executariam código no clique."""
+    endereco = (valor or "").strip()
+    if not re.match(r"^https?://[^\s/$.?#].[^\s]*$", endereco, re.IGNORECASE):
+        raise ValueError("Informe um endereço que comece com http:// ou https://.")
+    return endereco
+
+
 CPF = Annotated[str, AfterValidator(validar_cpf)]
 CNPJ = Annotated[str, AfterValidator(validar_cnpj)]
 Telefone = Annotated[str, AfterValidator(validar_telefone)]
 UF = Annotated[str, AfterValidator(validar_uf)]
 CEP = Annotated[str, AfterValidator(validar_cep)]
 DataNascimento = Annotated[date, AfterValidator(validar_data_nascimento)]
+EnderecoWeb = Annotated[str, Field(max_length=500), AfterValidator(validar_endereco_web)]
 
 
 class SchemaBase(BaseModel):

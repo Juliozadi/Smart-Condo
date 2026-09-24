@@ -192,6 +192,35 @@
       }).catch(function() { if (falhou) falhou(); });
     },
 
+    /* Abre um arquivo protegido (documento do condomínio) numa nova aba.
+       A aba é aberta já no clique — depois do download o navegador a
+       trataria como pop-up e bloquearia — e recebe o arquivo quando ele
+       chega. Se mesmo assim não abrir, o arquivo é baixado. */
+    abrirArquivo: function(caminho, nome) {
+      var janela = global.open('', '_blank');
+      if (janela) {
+        janela.opener = null;
+        janela.document.title = 'Abrindo…';
+        janela.document.body.textContent = 'Abrindo o arquivo…';
+      }
+      return api.protegido(caminho).then(function(arquivo) {
+        if (janela && !janela.closed) {
+          janela.location.href = arquivo.url;
+        } else {
+          var link = document.createElement('a');
+          link.href = arquivo.url;
+          link.download = nome || 'documento';
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        }
+        setTimeout(function() { URL.revokeObjectURL(arquivo.url); }, 60000);
+      }, function(erro) {
+        if (janela) janela.close();
+        throw erro;
+      });
+    },
+
     /* Troca o conteúdo de "caixa" (ícone, iniciais) pela foto protegida,
        se ela abrir. Se não abrir, a caixa fica como estava. */
     trocarPorFoto: function(caixa, caminho, alt) {

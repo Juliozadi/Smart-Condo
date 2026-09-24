@@ -14,7 +14,7 @@ from decimal import Decimal
 from pydantic import Field, model_validator
 
 from app.models.enums import FormaPagamento, StatusCobranca
-from app.schemas.comuns import SchemaBase
+from app.schemas.comuns import EnderecoWeb, SchemaBase
 
 
 class PreferenciaCobrancaEntrada(SchemaBase):
@@ -69,7 +69,7 @@ class CobrancaSaida(SchemaBase):
 class PagamentoEntrada(SchemaBase):
     valor: Decimal = Field(gt=0, max_digits=10, decimal_places=2)
     forma: FormaPagamento
-    comprovante_url: str | None = Field(default=None, max_length=500)
+    comprovante_url: EnderecoWeb | None = None
     observacao: str | None = Field(default=None, max_length=500)
 
 

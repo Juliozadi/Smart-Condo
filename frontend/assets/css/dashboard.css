@@ -2005,8 +2005,10 @@ a.contato-btn { text-decoration: none; }
   font-size: 12px; font-weight: 700; color: var(--primary-texto);
   text-decoration: none; padding: 7px 14px;
   background: var(--primary-light); border-radius: var(--radius-md); flex-shrink: 0;
+  border: 0; font-family: inherit; cursor: pointer;
 }
-.link-baixar:hover { background: var(--primary-botao); color: var(--sobre-primary); }
+.link-baixar:hover:not(:disabled) { background: var(--primary-botao); color: var(--sobre-primary); }
+.link-baixar:disabled { color: var(--muted); background: var(--bg, transparent); cursor: not-allowed; }
 .card-info .glifo { width: 26px; height: 26px; }
 
 /* ── Perfil ──────────────────────────────────────────────────────── */

@@ -115,7 +115,7 @@ backend/
 | Comunicados | `/api/v1/comunicados` | Seções 11.5.4 e 11.6.4 |
 | Veículos | `/api/v1/veiculos` | Seção 8: o porteiro controla entradas e saídas |
 | Manutenção | `/api/v1/manutencao` | Ordens de serviço abertas pelo síndico |
-| Documentos | `/api/v1/documentos` | Seção 11.6: atas, convenção e regimento |
+| Documentos | `/api/v1/documentos` | Seção 11.6: atas, convenção e regimento, com o arquivo protegido |
 | Mensagens | `/api/v1/mensagens` | Seção 13.5.2: chat entre síndico, portaria e moradores |
 | Arquivos | `/api/v1/arquivos` | Fotos de perfil (as da portaria e os documentos saem pelas próprias áreas) |
 
@@ -147,6 +147,12 @@ porteiro com permissão de registrar visitantes; os documentos, só para o
 síndico do condomínio. Respostas com `Cache-Control: private, no-store`.
 As fotos passam de `FOTO_PORTARIA_DIAS` (90) e são apagadas; os documentos
 saem quando o cadastro é recusado ou o usuário é inativado.
+
+**Documentos do condomínio** — o síndico envia o arquivo (PDF ou imagem,
+até `DOCUMENTO_MAX_KB`) em `POST /documentos`, como formulário com arquivo.
+Fica em `uploads/condominio` e sai por `GET /documentos/{id}/arquivo`: o
+documento de todos, para quem é do condomínio; o de uma unidade, só para
+quem mora nela (e para o síndico).
 
 **Foto da ocorrência** — `PUT /portaria/ocorrencias/{id}/foto`, só por quem
 abriu e só até o síndico responder. Vê quem pode ver a ocorrência: quem

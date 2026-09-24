@@ -7,6 +7,24 @@ O texto escrito pelo grupo foi **preservado**. As mudanças abaixo são de
 duas naturezas: correções do que não correspondia mais ao sistema, e
 seções novas descrevendo o que foi construído desde então.
 
+## Versão 2.4 — documentos do condomínio com arquivo de verdade
+
+| Seção | O que mudou |
+|---|---|
+| 9 Requisitos funcionais | RF032: o síndico envia o arquivo (PDF ou imagem), em vez de digitar um endereço, e o arquivo só abre com o token de quem tem direito |
+| 10 Requisitos não funcionais | RNF017 passa a cobrir os documentos do condomínio |
+| 11.6.5 Tela de documentos | O texto cita a tela do síndico que publica e a abertura com o token |
+| 14 a 17 | Em documentos, arquivo_url dá lugar a arquivo e tipo_conteudo — agora 235 atributos |
+| 20 Arquitetura | Os documentos do condomínio também ficam sem endereço público |
+| 21 API REST | 99 endpoints |
+| 23 Testes | 314 casos no servidor e 57 testes de interface |
+
+**Por que mudou.** O documento era só um endereço digitado pelo síndico:
+os de demonstração apontavam para um servidor que não existe, e nada
+impedia um endereço `javascript:`, que rodaria na tela do morador ao ser
+clicado. Agora o arquivo é enviado, conferido pelo conteúdo e guardado
+fora do alcance público.
+
 ## Versão 2.3 — revisão geral
 
 | Seção | O que mudou |

@@ -74,7 +74,7 @@ const telas = [
     texto: 'Reúne avisos e comunicados enviados pelo síndico. O morador pode buscar, filtrar por categoria e visualizar o conteúdo completo de cada mensagem, marcando-as como lidas.',
     imagem: 'morador-comunicados.png', legenda: 'Comunicados recebidos pelo morador' },
   { n: '11.6.5', titulo: 'Tela de Documentos',
-    texto: 'Dá acesso aos documentos do condomínio — convenção, regimento interno, atas de assembleia e prestações de conta — além dos documentos da própria unidade, como a planta baixa. A busca e o filtro por categoria facilitam localizar um arquivo específico.',
+    texto: 'Dá acesso aos documentos do condomínio — convenção, regimento interno, atas de assembleia e prestações de conta — além dos documentos da própria unidade, como a planta baixa. A busca e o filtro por categoria facilitam localizar um arquivo específico. Os arquivos são enviados pelo síndico na tela de documentos do painel dele e abrem numa aba nova, baixados com o token de quem está conectado.',
     imagem: 'morador-documentos.png', legenda: 'Documentos do condomínio' },
   { n: '11.6.6', titulo: 'Tela de Ocorrências',
     texto: 'Permite ao morador registrar um incidente informando o tipo, a prioridade, o local e a descrição, e acompanhar a resposta do síndico. Cada morador vê apenas as ocorrências que ele mesmo abriu.',

@@ -299,19 +299,24 @@ def test_custo_negativo_e_recusado(cliente, cenario):
 
 
 # ══ DOCUMENTOS ═══════════════════════════════════════════════════════
-def publicar_doc(cliente, tok, **extra):
-    corpo = {
-        "titulo": "Convenção do Condomínio", "categoria": "convencao",
-        "arquivo_url": "https://cdn.exemplo.com/convencao.pdf",
-    }
+PDF = b"%PDF-1.4\n" + b"0" * 64 + b"\n%%EOF"
+
+
+def publicar_doc(cliente, tok, conteudo=PDF, **extra):
+    """O síndico envia o arquivo; os dados vão junto, no mesmo formulário."""
+    corpo = {"titulo": "Convenção do Condomínio", "categoria": "convencao"}
     corpo.update(extra)
-    return cliente.post("/api/v1/documentos", json=corpo, headers=cab(tok))
+    return cliente.post(
+        "/api/v1/documentos", data=corpo,
+        files={"arquivo": ("convencao.pdf", conteudo, "application/pdf")}, headers=cab(tok),
+    )
 
 
 def test_sindico_publica_e_morador_le(cliente, cenario):
-    r = publicar_doc(cliente, cenario["sindico"], tamanho_kb=820)
+    r = publicar_doc(cliente, cenario["sindico"])
     assert r.status_code == 201, r.text
     assert r.json()["publicado_por_nome"] == "Roberto Nascimento"
+    assert r.json()["tipo_conteudo"] == "application/pdf"
 
     lista = cliente.get("/api/v1/documentos", headers=cab(cenario["morador"]))
     assert lista.status_code == 200
@@ -379,3 +384,61 @@ def test_morador_nao_remove_documento(cliente, cenario):
     doc = publicar_doc(cliente, cenario["sindico"]).json()
     r = cliente.delete(f"/api/v1/documentos/{doc['id']}", headers=cab(cenario["morador"]))
     assert r.status_code == 403
+
+
+
+# ── O arquivo do documento ───────────────────────────────────────────
+def test_morador_abre_o_arquivo_com_o_token(cliente, cenario):
+    doc = publicar_doc(cliente, cenario["sindico"]).json()
+    assert doc["url"] == f"/documentos/{doc['id']}/arquivo"
+    r = cliente.get(f"/api/v1{doc['url']}", headers=cab(cenario["morador"]))
+    assert r.status_code == 200
+    assert r.content == PDF
+    assert r.headers["content-type"] == "application/pdf"
+    assert "no-store" in r.headers["cache-control"]
+    assert cliente.get(f"/api/v1{doc['url']}").status_code == 401
+
+
+def test_arquivo_de_unidade_so_abre_para_quem_mora_nela(cliente, cenario):
+    doc = publicar_doc(cliente, cenario["sindico"], titulo="Planta do 204",
+                       categoria="planta", unidade_id=cenario["u204"]).json()
+    url = f"/api/v1{doc['url']}"
+    assert cliente.get(url, headers=cab(cenario["morador"])).status_code == 200
+    assert cliente.get(url, headers=cab(cenario["sindico"])).status_code == 200
+    assert cliente.get(url, headers=cab(cenario["outro"])).status_code == 404
+    assert cliente.get(url, headers=cab(cenario["porteiro"])).status_code == 404
+
+
+def test_documento_de_outro_condominio_nao_abre(cliente, db, cenario):
+    doc = publicar_doc(cliente, cenario["sindico"]).json()
+    outra = montar_condominio(
+        cliente, db, nome="Outro", cnpj="45.997.418/0001-53",
+        email_sindico="outro@exemplo.com", cpf_sindico=CPFS[4],
+        email_admin="admin2@exemplo.com", cpf_admin=CPFS[7],
+    )
+    assert cliente.get(f"/api/v1{doc['url']}", headers=cab(outra["sindico"])).status_code == 404
+
+
+def test_arquivo_que_nao_e_pdf_nem_imagem_e_recusado(cliente, cenario):
+    r = publicar_doc(cliente, cenario["sindico"], conteudo=b"<html><script>alert(1)</script>")
+    assert r.status_code == 422
+
+
+def test_endereco_digitado_nao_e_mais_aceito(cliente, cenario):
+    """Antes o documento era um endereço livre — inclusive "javascript:",
+    executado no clique do morador. Sem arquivo, não há documento."""
+    r = cliente.post(
+        "/api/v1/documentos",
+        data={"titulo": "Convenção", "arquivo_url": "javascript:alert(document.cookie)"},
+        headers=cab(cenario["sindico"]),
+    )
+    assert r.status_code == 422
+
+
+def test_remover_apaga_o_arquivo(cliente, cenario):
+    from app.services import arquivos
+    doc = publicar_doc(cliente, cenario["sindico"]).json()
+    pasta = arquivos._pasta(arquivos.CONDOMINIO)
+    assert len(list(pasta.iterdir())) == 1
+    cliente.delete(f"/api/v1/documentos/{doc['id']}", headers=cab(cenario["sindico"]))
+    assert list(pasta.iterdir()) == []

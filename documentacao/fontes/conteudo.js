@@ -90,6 +90,8 @@ const historico = [
    'Júlio Zadi, Luan Flôres Martins, Lenini Bellodi Júnior, Juliano Araujo, João Victor Muller Miranda'],
   ['24/09/2026', '2.3', 'Foto da ocorrência, consultas do porteiro limitadas às permissões, limite de envio de códigos e correções da revisão geral',
    'Júlio Zadi, Luan Flôres Martins, Lenini Bellodi Júnior, Juliano Araujo, João Victor Muller Miranda'],
+  ['24/09/2026', '2.4', 'Documentos do condomínio enviados como arquivo pelo síndico, com acesso restrito, e validação das datas e dos endereços informados',
+   'Júlio Zadi, Luan Flôres Martins, Lenini Bellodi Júnior, Juliano Araujo, João Victor Muller Miranda'],
 ];
 
 // ── Seção 9: casos de uso ───────────────────────────────────────────

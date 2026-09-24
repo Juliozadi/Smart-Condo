@@ -132,13 +132,21 @@
       info.appendChild(descricao);
     }
 
-    var baixar = document.createElement('a');
+    // O arquivo só sai da API com o token: não dá para ser um link comum.
+    var baixar = document.createElement('button');
+    baixar.type = 'button';
     baixar.className = 'link-baixar';
-    baixar.href = doc.arquivo_url;
-    baixar.target = '_blank';
-    baixar.rel = 'noopener';
-    baixar.textContent = 'Baixar';
-    baixar.setAttribute('aria-label', 'Baixar ' + doc.titulo);
+    if (doc.url) {
+      baixar.textContent = 'Abrir';
+      baixar.setAttribute('aria-label', 'Abrir ' + doc.titulo);
+      baixar.addEventListener('click', function() {
+        api.abrirArquivo(doc.url, doc.titulo).catch(function(e) { alert(e.message); });
+      });
+    } else {
+      baixar.textContent = 'Indisponível';
+      baixar.disabled = true;
+      baixar.title = 'O síndico ainda não enviou o arquivo deste documento.';
+    }
 
     card.appendChild(icone);
     card.appendChild(info);

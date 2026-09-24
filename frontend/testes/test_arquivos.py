@@ -209,3 +209,42 @@ def test_foto_da_ocorrencia_do_morador_chega_ao_sindico(navegador):
     assert mini.evaluate("i => i.naturalWidth") > 0
     assert pg.erros == []
     ctx.close()
+
+
+def test_documento_do_sindico_chega_ao_morador(navegador):
+    """O síndico envia o PDF; o morador abre com o token, numa aba nova."""
+    ctx, pg = abrir(navegador, papel="sindico")
+    ir(pg, "pages/sindico/documentos.html", 1200)
+    titulo = f"Ata de teste {random.randint(1000, 9999)}"
+    pg.fill("#doc_titulo", titulo)
+    pg.select_option("#doc_categoria", "ata")
+    # Arquivo de outro tipo não chega a sair do navegador.
+    pg.set_input_files("#doc_arquivo", files=[
+        {"name": "ata.exe", "mimeType": "application/octet-stream", "buffer": b"MZ"}])
+    pg.click("#formDocumento button[type=submit]")
+    assert "PDF, JPG, PNG ou WebP" in pg.inner_text("#erroDocumento")
+    pg.set_input_files("#doc_arquivo", files=[
+        {"name": "ata.pdf", "mimeType": "application/pdf", "buffer": PDF}])
+    pg.click("#formDocumento button[type=submit]")
+    pg.wait_for_selector("#erroDocumento.sucesso", timeout=10000)
+    pg.locator("#tabelaDocumentos .table-row", has_text=titulo).wait_for(timeout=5000)
+    assert pg.erros == []
+    ctx.close()
+
+    ctx, pg = abrir(navegador, papel="morador")
+    ir(pg, "pages/morador/documentos.html", 1200)
+    cartao = pg.locator(".dash-card", has_text=titulo)
+    cartao.wait_for(timeout=8000)
+    with pg.expect_popup() as aba:
+        cartao.locator("button.link-baixar").click()
+    nova = aba.value
+    nova.wait_for_url("blob:**", timeout=8000)
+    # Sem o token, o mesmo caminho não entrega o arquivo.
+    status = pg.evaluate("""async (t) => {
+        const api = window.SmartCondo.api;
+        const doc = (await api.get('/documentos')).find(d => d.titulo === t);
+        return (await fetch(api.url + doc.url)).status;
+    }""", titulo)
+    assert status == 401
+    assert pg.erros == []
+    ctx.close()

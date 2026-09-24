@@ -389,11 +389,11 @@ const dicionario = [
         "descricao": "Tipo do documento — tipo enumerado categoria_documento, valores: CONVENCAO, REGIMENTO, ATA, PLANTA, PRESTACAO_CONTAS, OUTRO"
       },
       {
-        "coluna": "arquivo_url",
-        "tipo": "VARCHAR(500)",
-        "obrigatorio": "Sim",
+        "coluna": "arquivo",
+        "tipo": "VARCHAR(100)",
+        "obrigatorio": "Não",
         "chave": "",
-        "descricao": "Endereço do arquivo"
+        "descricao": "Nome do arquivo (PDF ou imagem) enviado pelo síndico, gravado pela API sem endereço público"
       },
       {
         "coluna": "tamanho_kb",
@@ -436,6 +436,13 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "tipo_conteudo",
+        "tipo": "VARCHAR(40)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Tipo do arquivo conferido pelo conteúdo (application/pdf, image/png...)"
       }
     ],
     "regras": []
