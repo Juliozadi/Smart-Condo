@@ -3,7 +3,7 @@
  * 22.1): 4,5:1 para texto normal e 3:1 para texto grande.
  *
  * Antes de rodar, deixe no ar a API (porta 8000) e o front-end
- * (porta 8080, servido de frontend/). Depois:
+ * (python servidor.py, porta 5500; outra porta vai em FRONT). Depois:
  *
  *   npm install playwright
  *   node ferramentas/contraste.js
@@ -14,7 +14,7 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
-const ORIGEM = 'http://127.0.0.1:8080';
+const ORIGEM = process.env.FRONT || 'http://127.0.0.1:5500';
 const API = 'http://127.0.0.1:8000/api/v1';
 
 // Função rodada dentro da página: mede o contraste de cada texto visível.

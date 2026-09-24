@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import exigir_condominio, exigir_papel, exigir_permissao_porteiro
 from app.core.database import get_db
+from app.core.tempo import hoje_local
 from app.models.condominio import Unidade
 from app.models.enums import Papel, StatusCobranca
 from app.models.financeiro import Cobranca, Pagamento, PreferenciaCobranca
@@ -31,7 +32,7 @@ ZERO = Decimal("0.00")
 
 
 def _hoje() -> date:
-    return date.today()
+    return hoje_local()
 
 
 def _total_pago(db: Session, cobranca_id: int) -> Decimal:

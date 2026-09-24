@@ -78,12 +78,12 @@ mesmos tokens valem 7:1 (AAA).
 
 ### Conferindo
 
-`ferramentas/contraste.js` percorre as 38 páginas nos dois temas, mede o
+`ferramentas/contraste.js` percorre todas as páginas nos dois temas, mede o
 contraste de cada texto visível e lista o que não alcança o mínimo.
 Rode sempre que mexer em cor:
 
 ```bash
-# com a API (8000) e o front-end (8080) no ar
+# com a API (8000) e o front-end (python servidor.py, 5500) no ar
 npm install playwright
 node ferramentas/contraste.js
 ```

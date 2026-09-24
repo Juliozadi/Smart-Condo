@@ -9,8 +9,9 @@ testes disparam as requisições em paralelo, contra o banco de verdade.
 from __future__ import annotations
 
 import threading
-from datetime import date, timedelta
+from datetime import timedelta
 
+from app.core.tempo import hoje_local
 from tests.fixtures import cab, cadastrar_morador, CPFS
 from tests.test_financeiro import gerar_cobranca
 from tests.test_reservas import cenario, reservar  # noqa: F401
@@ -46,7 +47,7 @@ def test_mesmo_horario_so_uma_reserva_passa(cliente, cenario):
     salao = cenario["salao"]["id"]
 
     for dias in range(10, 16):
-        dia = (date.today() + timedelta(days=dias)).isoformat()
+        dia = (hoje_local() + timedelta(days=dias)).isoformat()
         codigos = ao_mesmo_tempo(4, lambda i: reservar(
             cliente, moradores[i], salao, data=dia).status_code)
         assert sorted(codigos) == [201, 409, 409, 409], (dia, codigos)

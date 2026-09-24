@@ -41,6 +41,11 @@ class Settings(BaseSettings):
     CODIGO_INTERVALO_S: int = Field(default=60, ge=0, le=3600)
     CODIGO_MAX_POR_HORA: int = Field(default=5, ge=1, le=100)
 
+    # Fuso do condomínio: é por ele que a API decide que dia é "hoje" e se
+    # um horário "já passou". Sem isso valeria o relógio da máquina, e um
+    # servidor em UTC recusaria às 18h de Campo Grande a reserva das 19h.
+    FUSO_HORARIO: str = "America/Campo_Grande"
+
     # Com quanta antecedência o morador pode reservar um espaço.
     RESERVA_ANTECEDENCIA_MAX_DIAS: int = Field(default=180, ge=1, le=730)
 

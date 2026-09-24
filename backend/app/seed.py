@@ -20,6 +20,7 @@ from sqlalchemy import select, text
 from app.core.config import settings
 from app.core.database import Base, SessionLocal, engine
 from app.core.security import gerar_hash_senha
+from app.core.tempo import hoje_local
 from app.models.comunicado import Comunicado
 from app.models.condominio import Condominio, Unidade
 from app.models.enums import (
@@ -37,7 +38,7 @@ from app.models.usuario import PermissaoPorteiro, Usuario
 from app.services import arquivos
 
 SENHA = "smartcondo123"
-HOJE = date.today()
+HOJE = hoje_local()
 AGORA = datetime.now(timezone.utc)
 
 

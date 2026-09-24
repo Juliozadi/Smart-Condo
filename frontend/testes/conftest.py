@@ -59,7 +59,10 @@ def navegador():
 
 def abrir(navegador, largura=1280, tema="light", papel=None):
     """Nova aba no tamanho e tema pedidos; com papel, já logada."""
-    ctx = navegador.new_context(viewport={"width": largura, "height": 850}, color_scheme=tema)
+    # O navegador fica no fuso do condomínio, como o de quem mora lá: a
+    # API decide "hoje" por ele (FUSO_HORARIO), e a máquina do CI está em UTC.
+    ctx = navegador.new_context(viewport={"width": largura, "height": 850}, color_scheme=tema,
+                                timezone_id="America/Campo_Grande")
     pg = ctx.new_page()
     pg.erros = []
     pg.on("pageerror", lambda e: pg.erros.append(str(e)))

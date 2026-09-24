@@ -167,9 +167,11 @@ de sempre, para não revelar quem está cadastrado.
 mais de `RESERVA_ANTECEDENCIA_MAX_DIAS` (180) dias de antecedência,
 cobrança com competência de mais de 5 anos atrás (prazo de prescrição) ou
 mais de 12 meses à frente, vencimento antes da competência e data de
-nascimento no futuro. "Hoje" e "agora" são os do relógio do servidor:
-ao publicar, configure o fuso do servidor para o do condomínio
-(por exemplo `TZ=America/Campo_Grande`).
+nascimento no futuro. "Hoje" e "agora" são os do fuso do condomínio,
+`FUSO_HORARIO` (padrão `America/Campo_Grande`), e não os do relógio da
+máquina — o servidor em UTC fica quatro horas à frente. No Windows, a
+base de fusos vem do pacote `tzdata` (está no `requirements.txt`); sem
+ele, vale o relógio da máquina.
 
 **Envio dos documentos no cadastro** — quem acabou de se cadastrar ainda
 não pode entrar, então `POST /auth/cadastro/morador` devolve um

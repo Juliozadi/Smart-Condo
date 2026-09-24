@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import re
 from datetime import date
+
+from app.core.tempo import hoje_local
 from typing import Annotated
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
@@ -96,7 +98,7 @@ def validar_cep(valor: str) -> str:
 def validar_data_nascimento(valor: date) -> date:
     """Nem no futuro, nem de alguém com mais de 120 anos: os dois são
     erro de digitação (ano trocado, dia e mês invertidos)."""
-    hoje = date.today()
+    hoje = hoje_local()
     if valor > hoje:
         raise ValueError("A data de nascimento não pode estar no futuro.")
     if valor.year < hoje.year - 120:

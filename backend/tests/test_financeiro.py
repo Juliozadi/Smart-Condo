@@ -5,15 +5,16 @@ aviso ao síndico) e seções 13.5.4 / 13.6.4 (comunicados).
 """
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import timedelta
 
 import pytest
 
+from app.core.tempo import hoje_local
 from tests.fixtures import (
     CPFS, cab, cadastrar_morador, cadastrar_porteiro, criar_espaco, montar_condominio,
 )
 
-COMPETENCIA = date.today().replace(day=1).isoformat()
+COMPETENCIA = hoje_local().replace(day=1).isoformat()
 
 
 @pytest.fixture
@@ -37,7 +38,7 @@ def cenario(cliente, db):
     }
 
 
-FUTURO = (date.today() + timedelta(days=7)).isoformat()
+FUTURO = (hoje_local() + timedelta(days=7)).isoformat()
 
 
 def gerar_cobranca(cliente, tok, unidade_id, valor="320.00", **extra):
@@ -137,7 +138,7 @@ def test_porteiro_nao_acessa_o_financeiro(cliente, cenario):
 
 
 def test_cobranca_vencida_aparece_como_vencida(cliente, cenario):
-    ontem = (date.today() - timedelta(days=1)).isoformat()
+    ontem = (hoje_local() - timedelta(days=1)).isoformat()
     r = gerar_cobranca(cliente, cenario["sindico"], cenario["u204"], vencimento=ontem)
     assert r.json()["status"] == "vencida"
 
@@ -237,8 +238,8 @@ def test_historico_registra_meio_quem_e_quando(cliente, cenario):
 
 
 def test_resumo_do_sindico(cliente, cenario):
-    ontem = (date.today() - timedelta(days=1)).isoformat()
-    semana_que_vem = (date.today() + timedelta(days=7)).isoformat()
+    ontem = (hoje_local() - timedelta(days=1)).isoformat()
+    semana_que_vem = (hoje_local() + timedelta(days=7)).isoformat()
     gerar_cobranca(
         cliente, cenario["sindico"], cenario["u204"], valor="320.00", vencimento=semana_que_vem
     )
@@ -320,7 +321,7 @@ def test_fixado_vem_primeiro(cliente, cenario):
 # ── Datas absurdas (encontradas numa varredura com dados inválidos) ──
 @pytest.mark.parametrize("competencia,trecho", [
     ("1900-01-01", "5 anos"),
-    (f"{date.today().year + 3}-01-01", "12 meses"),
+    (f"{hoje_local().year + 3}-01-01", "12 meses"),
 ])
 def test_competencia_fora_da_faixa_e_recusada(cliente, cenario, competencia, trecho):
     r = gerar_cobranca(cliente, cenario["sindico"], cenario["u204"], competencia=competencia)
@@ -330,8 +331,8 @@ def test_competencia_fora_da_faixa_e_recusada(cliente, cenario, competencia, tre
 
 def test_vencimento_antes_da_competencia_e_recusado(cliente, cenario):
     r = gerar_cobranca(cliente, cenario["sindico"], cenario["u204"],
-                       competencia=date.today().replace(day=1).isoformat(),
-                       vencimento=(date.today().replace(day=1) - timedelta(days=40)).isoformat())
+                       competencia=hoje_local().replace(day=1).isoformat(),
+                       vencimento=(hoje_local().replace(day=1) - timedelta(days=40)).isoformat())
     assert r.status_code == 422
     assert "antes do mês de competência" in r.text
 

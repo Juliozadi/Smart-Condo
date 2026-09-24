@@ -1,15 +1,16 @@
 """Testes dos requisitos da seção 6 e da seção 13.5.3 da documentação."""
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import timedelta
 
 import pytest
 
+from app.core.tempo import hoje_local
 from tests.fixtures import (
     CPFS, cab, cadastrar_morador, cadastrar_porteiro, criar_espaco, montar_condominio,
 )
 
-AMANHA = (date.today() + timedelta(days=1)).isoformat()
+AMANHA = (hoje_local() + timedelta(days=1)).isoformat()
 
 
 @pytest.fixture
@@ -142,13 +143,13 @@ def test_reserva_cancelada_libera_o_horario(cliente, cenario):
 
 
 def test_nao_reserva_data_passada(cliente, cenario):
-    ontem = (date.today() - timedelta(days=1)).isoformat()
+    ontem = (hoje_local() - timedelta(days=1)).isoformat()
     r = reservar(cliente, cenario["ana"], cenario["salao"]["id"], data=ontem)
     assert r.status_code == 400
 
 
 def test_nao_reserva_horario_de_hoje_que_ja_passou(cliente, cenario):
-    hoje = date.today().isoformat()
+    hoje = hoje_local().isoformat()
     r = reservar(cliente, cenario["ana"], cenario["salao"]["id"], "00:00", "00:30", data=hoje)
     assert r.status_code == 400
     assert "já passou" in r.json()["detalhe"]
@@ -156,7 +157,7 @@ def test_nao_reserva_horario_de_hoje_que_ja_passou(cliente, cenario):
 
 def test_antecedencia_maxima(cliente, cenario):
     from app.core.config import settings
-    longe = (date.today() + timedelta(days=settings.RESERVA_ANTECEDENCIA_MAX_DIAS + 1)).isoformat()
+    longe = (hoje_local() + timedelta(days=settings.RESERVA_ANTECEDENCIA_MAX_DIAS + 1)).isoformat()
     r = reservar(cliente, cenario["ana"], cenario["salao"]["id"], data=longe)
     assert r.status_code == 400
     assert "antecedência" in r.json()["detalhe"]

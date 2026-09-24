@@ -15,9 +15,9 @@ seções novas descrevendo o que foi construído desde então.
 | 10 Requisitos não funcionais | RNF017 passa a cobrir os documentos do condomínio; RNF013 e RNF014 valem também para tentativas simultâneas; RNF009: trocar a senha encerra as outras sessões; RNF005 cita os valores recusados pelo banco |
 | 11.6.5 Tela de documentos | O texto cita a tela do síndico que publica e a abertura com o token |
 | 14 a 17 | Em documentos, arquivo_url dá lugar a arquivo e tipo_conteudo — agora 236 atributos. Em usuarios, entra versao_sessao |
-| 20 Arquitetura | Os documentos do condomínio também ficam sem endereço público |
+| 20 Arquitetura | Os documentos do condomínio também ficam sem endereço público; as regras de data usam o fuso do condomínio; a modelagem passa a citar 21 tabelas e 44 chaves estrangeiras (o texto ainda dizia 19 e 39) e a tabela mensagens |
 | 21 API REST | 99 endpoints |
-| 23 Testes | 335 casos no servidor, incluindo requisições simultâneas, e 59 testes de interface |
+| 23 Testes | 339 casos no servidor, incluindo requisições simultâneas, e 59 testes de interface |
 
 **Por que mudou.** O documento era só um endereço digitado pelo síndico:
 os de demonstração apontavam para um servidor que não existe, e nada
@@ -50,6 +50,12 @@ redefinição da senha aumentam; a aba em que a senha foi trocada recebe um
 token novo e continua conectada. A redefinição pelo código também desfaz
 o bloqueio por senhas erradas, já que o código prova quem é o dono da
 conta.
+
+**O "hoje" é o do condomínio.** As regras de data usavam o relógio da
+máquina. Publicado num servidor em UTC, quatro horas à frente de Campo
+Grande, às 18h a reserva das 19h seria recusada como horário que já
+passou. Agora a API usa o fuso configurado (`FUSO_HORARIO`, padrão
+`America/Campo_Grande`).
 
 **Planilhas exportadas.** As listas de moradores e de cobranças exportadas
 em CSV escreviam o texto como veio; um nome cadastrado como

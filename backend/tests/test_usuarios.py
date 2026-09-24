@@ -9,6 +9,7 @@ import re
 
 import pytest
 
+from app.core.tempo import hoje_local
 from tests.fixtures import (
     CPFS, cab, cadastrar_morador, cadastrar_porteiro, criar_condominio_como_admin,
     criar_sindico, montar_condominio, token_admin,
@@ -507,9 +508,9 @@ def test_morador_e_avisado_por_email_da_decisao(cliente, db, monkeypatch):
 
 
 def test_data_de_nascimento_no_futuro_e_recusada(cliente, db):
-    from datetime import date, timedelta
+    from datetime import timedelta
     base = montar_condominio(cliente, db)
     _, tok = cadastrar_morador(cliente, base["sindico"], base["cond"])
-    for data in ((date.today() + timedelta(days=30)).isoformat(), "1850-05-01"):
+    for data in ((hoje_local() + timedelta(days=30)).isoformat(), "1850-05-01"):
         r = cliente.patch("/api/v1/usuarios/eu", json={"data_nascimento": data}, headers=cab(tok))
         assert r.status_code == 422, data

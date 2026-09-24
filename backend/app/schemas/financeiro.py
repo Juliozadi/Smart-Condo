@@ -9,6 +9,8 @@ Documentação, seção 6 (História do Usuário):
 from __future__ import annotations
 
 from datetime import date, datetime
+
+from app.core.tempo import hoje_local
 from decimal import Decimal
 
 from pydantic import Field, model_validator
@@ -39,7 +41,7 @@ class CobrancaEntrada(SchemaBase):
 
     @model_validator(mode="after")
     def conferir_datas(self) -> "CobrancaEntrada":
-        hoje = date.today()
+        hoje = hoje_local()
         competencia = self.competencia.replace(day=1)
         # Cobrança condominial prescreve em 5 anos (Código Civil, art. 206,
         # § 5º, I); mais de um ano à frente é quase sempre ano digitado errado.
