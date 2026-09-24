@@ -148,6 +148,15 @@ síndico do condomínio. Respostas com `Cache-Control: private, no-store`.
 As fotos passam de `FOTO_PORTARIA_DIAS` (90) e são apagadas; os documentos
 saem quando o cadastro é recusado ou o usuário é inativado.
 
+**Foto da ocorrência** — `PUT /portaria/ocorrencias/{id}/foto`, só por quem
+abriu e só até o síndico responder. Vê quem pode ver a ocorrência: quem
+abriu, o síndico e o porteiro com a permissão de ocorrências.
+
+**Limite de códigos** — no máximo um código por minuto
+(`CODIGO_INTERVALO_S`) e cinco por hora (`CODIGO_MAX_POR_HORA`) por
+pessoa e finalidade. Quando o limite barra o pedido, a resposta é a mesma
+de sempre, para não revelar quem está cadastrado.
+
 **Envio dos documentos no cadastro** — quem acabou de se cadastrar ainda
 não pode entrar, então `POST /auth/cadastro/morador` devolve um
 `token_documentos`. Ele vale `TOKEN_DOCUMENTOS_MIN` (60) minutos, só serve

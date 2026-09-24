@@ -36,7 +36,7 @@
       <p class="greeting-sub">Painel Administrativo</p>
       <h2 class="greeting-name"><img src="../../assets/img/icons/shield-halved.svg" width="26" height="26" alt=""> Cadastrar Novo Porteiro</h2>
       <div class="greeting-stat-row">
-        <div class="greeting-stat"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Residencial das Palmeiras</div>
+        <div class="greeting-stat"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> <span id="nomeCondominio">Seu condomínio</span></div>
         <div class="greeting-stat"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt=""> Apenas o síndico pode cadastrar porteiros</div>
       </div>
     </div>
@@ -213,6 +213,10 @@
 
 <script src="../../assets/js/validation.js"></script>
 <script>
+  SmartCondo.api.get('/condominios/meu')
+    .then(function(c) { document.getElementById('nomeCondominio').textContent = c.nome; })
+    .catch(function() {});
+
 function validarCampoPorteiro(input) {
   limparErro(input);
   var name = input.getAttribute('name') || input.placeholder || input.id;

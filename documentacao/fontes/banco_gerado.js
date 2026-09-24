@@ -928,11 +928,11 @@ const dicionario = [
         "descricao": "Assunto da ocorrência"
       },
       {
-        "coluna": "foto_url",
-        "tipo": "VARCHAR(500)",
+        "coluna": "foto_arquivo",
+        "tipo": "VARCHAR(100)",
         "obrigatorio": "Não",
         "chave": "",
-        "descricao": "Endereço da foto anexada, quando houver"
+        "descricao": "Nome do arquivo da foto anexada por quem abriu, gravado pela API sem endereço público"
       },
       {
         "coluna": "status",

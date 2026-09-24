@@ -135,7 +135,7 @@ DESCRICOES = {
     "ocorrencias.categoria": "Assunto da ocorrência",
     "ocorrencias.local": "Onde o problema foi observado",
     "ocorrencias.prioridade": "Urgência atribuída no registro",
-    "ocorrencias.foto_url": "Endereço da foto anexada, quando houver",
+    "ocorrencias.foto_arquivo": "Nome do arquivo da foto anexada por quem abriu, gravado pela API sem endereço público",
     "ocorrencias.status": "Situação do atendimento, da abertura ao arquivamento",
     "ocorrencias.resposta": "Resposta do síndico a quem abriu a ocorrência",
     "ocorrencias.respondida_em": "Momento da resposta",

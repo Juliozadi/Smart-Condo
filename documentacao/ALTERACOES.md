@@ -7,6 +7,17 @@ O texto escrito pelo grupo foi **preservado**. As mudanças abaixo são de
 duas naturezas: correções do que não correspondia mais ao sistema, e
 seções novas descrevendo o que foi construído desde então.
 
+## Versão 2.3 — revisão geral
+
+| Seção | O que mudou |
+|---|---|
+| 9 Requisitos funcionais | RF027: a lista de placas do pátio é da portaria e do síndico. RF028: a ocorrência aceita foto |
+| 10 Requisitos não funcionais | RNF017 passa a cobrir as fotos das ocorrências |
+| 17 Dicionário de dados | Em ocorrencias, foto_url dá lugar a foto_arquivo |
+| 20 Arquitetura | Limite de envio de códigos; as permissões do porteiro valem também para consultar |
+| 21 API REST | 98 endpoints |
+| 23 Testes | 298 casos no servidor e 55 testes de interface |
+
 ## Versão 2.2 — fotos da portaria e documentos do cadastro
 
 | Seção | O que mudou |

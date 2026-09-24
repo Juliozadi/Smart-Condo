@@ -1,4 +1,4 @@
-/* AnimaÃ§Ã£o exclusiva para o Ã­cone de usuÃ¡rio na role-label */
+/* Animação exclusiva para o ícone de usuário na role-label */
 .pulse-user {
   animation: pulse-infinite 1.2s infinite cubic-bezier(.66,0,0,1);
   color: var(--primary);
@@ -21,15 +21,15 @@
   50% { transform: scale(1.18); opacity: 0.7; }
   100% { transform: scale(1); opacity: 1; }
 }
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   SMARTCONDO â€” style.css  v3.0
-   Redesign visual completo Â· Plus Jakarta Sans
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════════════════════════
+   SMARTCONDO — style.css  v3.0
+   Redesign visual completo · Plus Jakarta Sans
+   ═══════════════════════════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 img[src*="/assets/img/icons/"]{width:16px;height:16px;vertical-align:middle}
 
-/* â”€â”€ TOKENS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── TOKENS ─────────────────────────────────────────────── */
 :root {
   --primary:        #079e92;
   --primary-dark:   #068a7f;
@@ -80,13 +80,13 @@ img[src*="/assets/img/icons/"]{width:16px;height:16px;vertical-align:middle}
   --ease-smooth: cubic-bezier(.4,0,.2,1);
 }
 
-/* â”€â”€ RESET â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── RESET ──────────────────────────────────────────────── */
 *, *::before, *::after {
   margin: 0; padding: 0; box-sizing: border-box;
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-/* â”€â”€ BODY Â· FUNDO MESH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── BODY · FUNDO MESH ──────────────────────────────────── */
 body {
   background-color: var(--background);
   background-image:
@@ -103,7 +103,7 @@ body {
   padding: 32px 16px;
 }
 
-/* â”€â”€ ANIMAÃ‡Ã•ES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── ANIMAÇÕES ──────────────────────────────────────────── */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0);    }
@@ -125,9 +125,9 @@ body {
   100% { transform: scale(1.55); opacity: 0; }
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* ═══════════════════════════════════════════
    CONTAINER
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   ═══════════════════════════════════════════ */
 .container {
   width: 420px;
   background: var(--surface);
@@ -170,7 +170,7 @@ body {
   opacity: 1;
 }
 
-/* â”€â”€ LOGO AREA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── LOGO AREA ──────────────────────────────────────────── */
 .logo-area {
   display: flex;
   align-items: center;
@@ -207,7 +207,7 @@ body {
   margin-top: 2px;
 }
 
-/* â”€â”€ TÃTULOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── TÍTULOS ────────────────────────────────────────────── */
 h2 {
   font-size: 30px;
   font-weight: 800;
@@ -225,7 +225,7 @@ h2 {
   line-height: 1.55;
 }
 
-/* â”€â”€ INPUTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── INPUTS ─────────────────────────────────────────────── */
 .input-box {
   position: relative;
   margin-bottom: 14px;
@@ -261,7 +261,7 @@ h2 {
 
 .input-box:focus-within i { color: var(--primary); }
 
-/* â”€â”€ OPTIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── OPTIONS ────────────────────────────────────────────── */
 .options {
   display: flex;
   justify-content: space-between;
@@ -277,7 +277,7 @@ h2 {
 .remember { display: flex; align-items: center; gap: 7px; cursor: pointer; color: var(--text-2); }
 .remember input[type="checkbox"] { accent-color: var(--primary); width: 15px; height: 15px; }
 
-/* â”€â”€ BOTÃƒO LOGIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── BOTÃO LOGIN ────────────────────────────────────────── */
 .login-btn {
   width: 100%;
   padding: 15px;
@@ -309,7 +309,7 @@ h2 {
 .login-btn:hover::after { opacity: 1; animation: shimmer .7s linear forwards; }
 .login-btn:active { transform: translateY(0); }
 
-/* â”€â”€ SELETOR DE PERFIL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── SELETOR DE PERFIL ──────────────────────────────────── */
 .role-label {
   font-size: 17px;
   font-weight: 800;
@@ -394,7 +394,7 @@ h2 {
   box-shadow: 0 6px 20px rgba(145,100,250,.18);
 }
 
-/* â”€â”€ DIVIDER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── DIVIDER ────────────────────────────────────────────── */
 .divider {
   display: flex; align-items: center; gap: 12px;
   margin: 28px 0;
@@ -403,12 +403,12 @@ h2 {
 }
 .divider span { flex: 1; height: 1px; background: var(--border); }
 
-/* â”€â”€ REGISTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── REGISTER ───────────────────────────────────────────── */
 .register p { font-size: 14px; color: var(--muted); margin-bottom: 4px; }
 .register a { color: var(--primary-texto); font-weight: 700; text-decoration: none; }
 .register a:hover { text-decoration: underline; }
 
-/* â”€â”€ TERMS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── TERMS ──────────────────────────────────────────────── */
 .terms {
   margin-top: 22px; font-size: 12px; color: var(--muted);
   display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;
@@ -416,7 +416,7 @@ h2 {
 .terms a { color: var(--muted); text-decoration: none; }
 .terms a:hover { text-decoration: underline; color: var(--primary-texto); }
 
-/* â”€â”€ CONTACT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── CONTACT ────────────────────────────────────────────── */
 .contact { margin-top: 20px; font-size: 12px; color: var(--muted); line-height: 1.8; }
 /* Ícone e texto centrados um no outro e com respiro entre eles; antes o
    ícone ficava na linha de base, 4px acima do texto, e colado nele. */
@@ -432,7 +432,7 @@ h2 {
   text-decoration: underline;
 }
 
-/* â”€â”€ RECOVER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── RECOVER ────────────────────────────────────────────── */
 .recover-area { text-align: center; }
 
 .recover-info {
@@ -447,7 +447,7 @@ h2 {
 .recover-info i { color: var(--primary); font-size: 16px; flex-shrink: 0; }
 .recover-info img { width: 16px; height: 16px; flex-shrink: 0; align-self: flex-start; margin-top: 2px; }
 
-/* â”€â”€ BACK LINK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── BACK LINK ──────────────────────────────────────────── */
 .back-link {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
   margin-top: 22px;
@@ -459,7 +459,7 @@ h2 {
 }
 .back-link:hover { background: rgba(16,182,168,.15); transform: translateX(-2px); }
 
-/* â”€â”€ REGISTER CARDS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── REGISTER CARDS ─────────────────────────────────────── */
 .register-options { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
 
 .register-card {
@@ -481,9 +481,9 @@ h2 {
   background: linear-gradient(135deg, var(--surface), #f4fffe);
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   SKIP LINK  —  Pular para o conteÃºdo
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════════
+   SKIP LINK  —  Pular para o conteúdo
+   ═══════════════════════════════════════════ */
 .skip-link {
   position: absolute;
   top: -100%;
@@ -506,9 +506,9 @@ h2 {
   box-shadow: 0 4px 16px rgba(0,0,0,.2), 0 0 0 4px rgba(255,255,255,.5);
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* ═══════════════════════════════════════════
    MODOS DE ACESSIBILIDADE  (font-grande, alto-contraste, modo-leitura)
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   ═══════════════════════════════════════════ */
 body.font-grande {
   zoom: 1.25;
 }
@@ -572,9 +572,9 @@ body.modo-leitura .dash-greeting {
 }
 body.modo-leitura .stats-row { display: none !important; }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* ═══════════════════════════════════════════
    ACESSIBILIDADE
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   ═══════════════════════════════════════════ */
 .accessibility-widget { position: fixed; bottom: 28px; right: 28px; z-index: 999; }
 .accessibility-widget input { display: none; }
 
@@ -626,9 +626,9 @@ body.modo-leitura .stats-row { display: none !important; }
   box-shadow: 0 0 0 3px var(--primary-glow), 0 0 0 1px var(--primary);
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   FORMULÃRIOS DE CADASTRO
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════════
+   FORMULÁRIOS DE CADASTRO
+   ═══════════════════════════════════════════ */
 
 .chosen-role {
   display: inline-flex; align-items: center; gap: 8px;
@@ -895,7 +895,7 @@ body.modo-leitura .stats-row { display: none !important; }
 .cad-login-link a { color: var(--primary); font-weight: 700; text-decoration: none; }
 .cad-login-link a:hover { text-decoration: underline; }
 
-/* â”€â”€ FORM CARD (usado nos dashboards) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── FORM CARD (usado nos dashboards) ───────────────────── */
 .form-card {
   background: var(--surface);
   border-radius: var(--radius-md);
@@ -927,7 +927,7 @@ body.modo-leitura .stats-row { display: none !important; }
 .form-group select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%237a909a' d='M1 1l5 5 5-5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 13px center; padding-right: 32px; }
 .form-group select:focus, .form-group input:focus { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 3px var(--primary-glow); }
 
-/* â”€â”€ ALERT BOX â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── ALERT BOX ──────────────────────────────────────────── */
 .alert-box {
   background: linear-gradient(135deg, var(--primary-light), #d5f4f1);
   border: 1px solid rgba(16,182,168,.22);
@@ -940,7 +940,7 @@ body.modo-leitura .stats-row { display: none !important; }
 .alert-box.warning { background: linear-gradient(135deg, #fffbeb, #fef3cd); border-color: rgba(230,162,60,.28); color: var(--aviso); }
 .alert-box i { font-size: 17px; flex-shrink: 0; }
 
-/* â”€â”€ RESPONSIVE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── RESPONSIVE ─────────────────────────────────────────── */
 @media (max-width: 520px) {
   .container    { width: 100%; border-radius: var(--radius-lg); padding: 32px 22px; }
   .container-lg { width: 100%; border-radius: 0; padding: 28px 18px; }
@@ -952,11 +952,11 @@ body.modo-leitura .stats-row { display: none !important; }
   .role-buttons { grid-template-columns: 1fr; }
   h2            { font-size: 26px; }
 }
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   MULTI-STEP CADASTRO â€” CSS :target approach
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════════
+   MULTI-STEP CADASTRO — CSS :target approach
+   ═══════════════════════════════════════════ */
 
-/* Esconde todos os steps por padrÃ£o */
+/* Esconde todos os steps por padrão */
 .step-page {
   display: none;
 }
@@ -967,18 +967,18 @@ body.modo-leitura .stats-row { display: none !important; }
   animation: fadeUp .4s var(--ease-out);
 }
 
-/* Primeiro step visÃ­vel por padrÃ£o (fallback) */
+/* Primeiro step visível por padrão (fallback) */
 .step-page.default-step {
   display: block;
 }
 
-/* Quando qualquer outro step Ã© alvo, esconde o default */
+/* Quando qualquer outro step é alvo, esconde o default */
 .step-page:target ~ .step-page.default-step,
 body:has(.step-page:target) .step-page.default-step {
   display: none;
 }
 
-/* â”€â”€ BARRA DE PROGRESSO DOS STEPS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── BARRA DE PROGRESSO DOS STEPS ─────────── */
 .step-nav {
   display: flex;
   align-items: center;
@@ -1024,7 +1024,7 @@ body:has(.step-page:target) .step-page.default-step {
   transition: background .4s;
 }
 
-/* Steps ativos e concluÃ­dos por perfil */
+/* Steps ativos e concluídos por perfil */
 .step-nav-item.active   .step-nav-circle { background: linear-gradient(135deg,#13bfb0,#0da099); border-color: var(--primary); color: white; box-shadow: 0 4px 14px rgba(16,182,168,.35); }
 .step-nav-item.active   .step-nav-label  { color: var(--primary-texto); }
 .step-nav-item.done     .step-nav-circle { background: var(--primary-light); border-color: rgba(16,182,168,.4); color: var(--primary); }
@@ -1042,7 +1042,7 @@ body:has(.step-page:target) .step-page.default-step {
 .step-nav-line.done-line-p { background: linear-gradient(90deg, #409eff, rgba(64,158,255,.4)); }
 .step-nav-line.done-line-s { background: linear-gradient(90deg, #9164fa, rgba(145,100,250,.4)); }
 
-/* â”€â”€ BOTÃ•ES DE NAVEGAÃ‡ÃƒO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── BOTÕES DE NAVEGAÇÃO ────────────────────── */
 .step-nav-btns {
   display: flex;
   gap: 10px;
@@ -1087,7 +1087,7 @@ body:has(.step-page:target) .step-page.default-step {
 .step-btn-next.blue { background: linear-gradient(135deg,#5bb4ff,#2172c8); box-shadow: 0 2px 6px rgba(64,158,255,.25), 0 6px 16px rgba(64,158,255,.18); }
 .step-btn-next.blue:hover { box-shadow: 0 4px 12px rgba(64,158,255,.3), 0 10px 24px rgba(64,158,255,.22); }
 
-/* â”€â”€ CONTADOR DE STEP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── CONTADOR DE STEP ───────────────────────── */
 .step-counter {
   text-align: center;
   font-size: 11px;
@@ -1098,7 +1098,7 @@ body:has(.step-page:target) .step-page.default-step {
   letter-spacing: .6px;
 }
 
-/* â”€â”€ RESUMO FINAL ANTES DE ENVIAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── RESUMO FINAL ANTES DE ENVIAR ─────────────── */
 .summary-box {
   background: linear-gradient(135deg, var(--primary-light), #d5f4f1);
   border: 1px solid rgba(16,182,168,.2);
@@ -1134,11 +1134,11 @@ body:has(.step-page:target) .step-page.default-step {
   .step-btn-next  { font-size: 14px; }
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   IDENTIDADE VISUAL v4 â€” Contraste Aprimorado
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════════
+   IDENTIDADE VISUAL v4 — Contraste Aprimorado
+   ═══════════════════════════════════════════ */
 
-/* â”€â”€ BRAND MARK (anel decorativo no logo) â”€â”€â”€ */
+/* ── BRAND MARK (anel decorativo no logo) ─── */
 .logo-area {
   position: relative;
 }
@@ -1154,7 +1154,7 @@ body:has(.step-page:target) .step-page.default-step {
   border-radius: 2px;
 }
 
-/* â”€â”€ CONTAINER â€” FAIXA LATERAL ESQUERDA â”€â”€â”€â”€â”€ */
+/* ── CONTAINER — FAIXA LATERAL ESQUERDA ───── */
 .container::after,
 .container-lg::after {
   content: '';
@@ -1166,13 +1166,13 @@ body:has(.step-page:target) .step-page.default-step {
   opacity: .45;
 }
 
-/* â”€â”€ TÃTULOS COM UNDERLINE TEAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── TÍTULOS COM UNDERLINE TEAL ───────────── */
 h2 {
   position: relative;
   display: inline-block;
 }
 
-/* â”€â”€ REGISTER CARDS SEM DESCRIÃ‡ÃƒO â€” layout compacto â”€â”€ */
+/* ── REGISTER CARDS SEM DESCRIÇÃO — layout compacto ── */
 .register-card-compact {
   display: flex;
   align-items: center;
@@ -1217,7 +1217,7 @@ h2 {
   transform: translateX(3px);
 }
 
-/* â”€â”€ ESCOLHA DE PERFIL â€” visual pill de identidade â”€â”€ */
+/* ── ESCOLHA DE PERFIL — visual pill de identidade ── */
 .role-identity-bar {
   display: flex;
   gap: 0;
@@ -1262,7 +1262,7 @@ h2 {
   box-shadow: 0 2px 8px rgba(145,100,250,.25);
 }
 
-/* â”€â”€ TELA DE AGUARDANDO â€” Status Track â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── TELA DE AGUARDANDO — Status Track ──────── */
 .waiting-screen {
   text-align: center;
   animation: fadeUp .6s var(--ease-out);
@@ -1440,7 +1440,7 @@ input.erro:focus, select.erro:focus, textarea.erro:focus {
 }
 
 
-/* â”€â”€ ÃCONES SVG (substituem FontAwesome) â”€â”€â”€â”€â”€ */
+/* ── ÍCONES SVG (substituem FontAwesome) ───── */
 .register-card img { width: 26px; height: 26px; flex-shrink: 0; align-self: flex-start; margin-top: 2px; }
 .form-section-title img { width: 14px; height: 14px; flex-shrink: 0; }
 .cad-input-icon img { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; pointer-events: none; }

@@ -171,14 +171,14 @@ const requisitosFuncionais = [
   { id: 'RF027', nome: 'Consultar pátio e ocupação do estacionamento',
     atores: 'Síndico, Porteiro', prioridade: 'Desejável',
     descricao: 'O sistema informa quais veículos estão no condomínio neste momento e quanto do estacionamento está ocupado, comparando com o total de vagas das unidades.',
-    entradas: 'O usuário deve pertencer ao condomínio consultado.',
+    entradas: 'O usuário deve pertencer ao condomínio consultado. A lista de veículos presentes, com placa e unidade, é do síndico e do porteiro com a permissão de veículos; o morador vê apenas a ocupação em números.',
     saidas: 'A lista de veículos presentes e os números de ocupação são exibidos, calculados a partir das movimentações registradas.' },
 
   { id: 'RF028', nome: 'Abrir ocorrência',
     atores: 'Porteiro, Morador', prioridade: 'Essencial',
     descricao: 'O sistema permite registrar um problema ou reclamação — barulho, vazamento, dano em área comum — com local, descrição e prioridade.',
-    entradas: 'Quem abre informa título, descrição, local e prioridade. O porteiro precisa da permissão de registrar ocorrências.',
-    saidas: 'A ocorrência entra como "aberta" na fila do síndico, vinculada a quem abriu e, quando for o caso, à unidade.' },
+    entradas: 'Quem abre informa título, descrição, local e prioridade, e pode anexar uma foto pela câmera ou por arquivo. O porteiro precisa da permissão de registrar ocorrências.',
+    saidas: 'A ocorrência entra como "aberta" na fila do síndico, vinculada a quem abriu e, quando for o caso, à unidade. A foto só é vista por quem abriu, pelo síndico e pela portaria, e não pode ser trocada depois da resposta.' },
 
   { id: 'RF029', nome: 'Responder ocorrência',
     atores: 'Síndico', prioridade: 'Essencial',
@@ -356,7 +356,7 @@ const requisitosNaoFuncionais = [
       verificacao: 'A Política de Privacidade e os Termos de Uso estão publicados e acessíveis a partir da tela de entrada.' },
     { id: 'RNF017', nome: 'Arquivos enviados conferidos e protegidos',
       prioridade: 'Essencial',
-      descricao: 'Todo arquivo enviado é aceito ou recusado pelos primeiros bytes do conteúdo, e não pela extensão ou pelo tipo informado pelo navegador, que quem envia escolhe. O nome gravado é aleatório e gerado pelo servidor, o que impede adivinhar o arquivo de outra pessoa e usar o nome para gravar fora da pasta. As fotos da portaria e os documentos do cadastro não têm endereço público: só saem por rotas que conferem o token e quem tem direito a ver cada um.',
+      descricao: 'Todo arquivo enviado é aceito ou recusado pelos primeiros bytes do conteúdo, e não pela extensão ou pelo tipo informado pelo navegador, que quem envia escolhe. O nome gravado é aleatório e gerado pelo servidor, o que impede adivinhar o arquivo de outra pessoa e usar o nome para gravar fora da pasta. As fotos da portaria e das ocorrências e os documentos do cadastro não têm endereço público: só saem por rotas que conferem o token e quem tem direito a ver cada um.',
       verificacao: 'Coberto por testes que enviam um HTML com extensão .png, um executável com extensão .pdf, um arquivo vazio, um grande demais e um nome com ../, e por testes que tentam abrir a foto de um visitante como morador de outra unidade, como porteiro sem permissão, como síndico de outro condomínio e sem token — todos recusados.' },
   ]},
 
