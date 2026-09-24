@@ -486,3 +486,20 @@ def test_porteiro_nao_le_as_permissoes_de_outro(cliente, sindico, condominio):
     )
     r = cliente.get(f"/api/v1/usuarios/porteiros/{outro_id}/permissoes", headers=cab(tok))
     assert r.status_code == 403
+
+
+def test_morador_e_avisado_por_email_da_decisao(cliente, db, monkeypatch):
+    """A tela do cadastro promete: "você receberá confirmação por e-mail"."""
+    from app.services import notificacao
+    enviados = []
+    monkeypatch.setattr(notificacao, "notificar",
+                        lambda destino, canal, titulo, mensagem: enviados.append((destino, titulo, mensagem)))
+    base = montar_condominio(cliente, db)
+    uid, _ = cadastrar_morador(cliente, base["sindico"], base["cond"], aprovar=False)
+    r = cliente.post(f"/api/v1/usuarios/{uid}/aprovacao",
+                     json={"aprovado": False, "motivo": "Comprovante ilegível"},
+                     headers=cab(base["sindico"]))
+    assert r.status_code == 200
+    assert enviados[-1][0] == "morador@exemplo.com"
+    assert enviados[-1][1] == "Cadastro recusado"
+    assert "Comprovante ilegível" in enviados[-1][2]

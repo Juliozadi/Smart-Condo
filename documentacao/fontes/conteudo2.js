@@ -30,7 +30,7 @@ const telas = [
     imagem: 'sindico-porteiros.png', legenda: 'Gestão de porteiros, com o painel de permissões de cada um' },
 
   { n: '11.3', titulo: 'Tela de cadastro morador',
-    texto: 'A tela de cadastro do morador, inicialmente, vai pedir as credenciais, após registradas, o sistema salva e parte para a próxima etapa, que irá requisitar nome do condomínio, o bloco/torre, número de vagas na garagem, e o vínculo dele com o estabelecimento. No fim, o Acesso e Segurança, por último, a conclusão. O morador informa o código de acesso do condomínio, fornecido pelo síndico, para que o cadastro seja vinculado ao condomínio correto.',
+    texto: 'A tela de cadastro do morador, inicialmente, vai pedir as credenciais, após registradas, o sistema salva e parte para a próxima etapa, que irá requisitar nome do condomínio, o bloco/torre, e o vínculo dele com o estabelecimento. No fim, o Acesso e Segurança, com o envio dos documentos que comprovam esse vínculo (RG ou CNH e comprovante de residência) e a criação da senha, e por último, a conclusão. O morador informa o código de acesso do condomínio, fornecido pelo síndico, para que o cadastro seja vinculado ao condomínio correto.',
     imagem: 'cadastro-morador.png', legenda: 'Cadastro do morador, dividido em etapas' },
 
   { n: '11.4', titulo: 'Tela de login',

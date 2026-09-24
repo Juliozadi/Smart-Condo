@@ -53,15 +53,9 @@
 
     <div class="form-section">
       <p class="form-section-title"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt=""> Dados Pessoais <span class="section-tag obrig">Obrigatório</span></p>
-      <div class="cad-row">
-        <div class="cad-group">
-          <label for="mNome">Nome completo <span class="req">*</span></label>
-          <input type="text" id="mNome" placeholder="Como consta no documento" required>
-        </div>
-        <div class="cad-group">
-          <label for="morado_nomeSocial">Nome social</label>
-          <input id="morado_nomeSocial" type="text" placeholder="Se diferente do oficial">
-        </div>
+      <div class="cad-group">
+        <label for="mNome">Nome completo <span class="req">*</span></label>
+        <input type="text" id="mNome" placeholder="Como consta no documento" required>
       </div>
       <div class="cad-row">
         <div class="cad-group">
@@ -69,36 +63,8 @@
           <input type="text" id="mCpf" class="mask-cpf" placeholder="000.000.000-00" required maxlength="14">
         </div>
         <div class="cad-group">
-          <label for="morado_rg">RG <span class="req">*</span></label>
-          <input id="morado_rg" type="text" placeholder="00.000.000-0" required>
-        </div>
-      </div>
-      <div class="cad-row">
-        <div class="cad-group">
           <label for="mNascimento">Data de nascimento <span class="req">*</span></label>
           <input type="date" id="mNascimento" required>
-        </div>
-        <div class="cad-group">
-          <label for="morado_estadoCivil">Estado civil</label>
-          <select id="morado_estadoCivil">
-            <option value="" disabled selected>Selecione</option>
-            <option>Solteiro(a)</option><option>Casado(a)</option>
-            <option>União estável</option><option>Divorciado(a)</option><option>Viúvo(a)</option>
-          </select>
-        </div>
-      </div>
-      <div class="cad-row">
-        <div class="cad-group">
-          <label for="morado_genero">Gênero</label>
-          <select id="morado_genero">
-            <option value="" disabled selected>Selecione</option>
-            <option>Masculino</option><option>Feminino</option>
-            <option>Não-binário</option><option>Prefiro não informar</option>
-          </select>
-        </div>
-        <div class="cad-group">
-          <label for="morado_profissao">Profissão</label>
-          <input id="morado_profissao" type="text" placeholder="Ex: Engenheiro">
         </div>
       </div>
     </div>
@@ -123,29 +89,7 @@
       </div>
       <div class="info-card">
         
-        <p>O celular será usado para autenticação em duas etapas. Certifique-se de que está correto e ativo.</p>
-      </div>
-      <p style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:4px 0 12px;">Contato de Emergência <span class="req">*</span></p>
-      <div class="cad-row">
-        <div class="cad-group">
-          <label for="morado_nome">Nome <span class="req">*</span></label>
-          <input id="morado_nome" type="text" placeholder="Nome do responsável" required>
-        </div>
-        <div class="cad-group">
-          <label for="morado_parentesco">Parentesco <span class="req">*</span></label>
-          <select id="morado_parentesco" required>
-            <option value="" disabled selected>Selecione</option>
-            <option>Cônjuge / Companheiro(a)</option><option>Pai / Mãe</option>
-            <option>Filho(a)</option><option>Irmão / Irmã</option><option>Amigo(a)</option><option>Outro</option>
-          </select>
-        </div>
-      </div>
-      <div class="cad-group">
-        <label for="morado_telefoneDeEmergencia">Telefone de emergência <span class="req">*</span></label>
-        <div class="cad-input-icon">
-          <img src="../../assets/img/icons/phone.svg" width="16" height="16" alt="">
-          <input id="morado_telefoneDeEmergencia" type="tel" placeholder="(00) 90000-0000" class="mask-tel" required>
-        </div>
+        <p>O celular pode receber o código de confirmação por SMS e é o número que o síndico e a portaria usam para falar com você.</p>
       </div>
     </div>
 
@@ -222,96 +166,12 @@
           <input type="text" id="mBloco" placeholder="Ex: Bloco A">
         </div>
       </div>
-      <div class="cad-row">
-        <div class="cad-group">
-          <label for="morado_andar">Andar</label>
-          <input id="morado_andar" type="text" placeholder="Ex: 2º">
-        </div>
-        <div class="cad-group">
-          <label for="mOcupacao">Tipo de ocupação <span class="req">*</span></label>
-          <select id="mOcupacao" required>
-            <option value="" disabled selected>Selecione</option>
-            <option value="proprietario">Proprietário</option><option value="inquilino">Inquilino</option><option value="coabitante">Coabitante autorizado</option>
-          </select>
-        </div>
-      </div>
-      <div class="cad-row">
-        <div class="cad-group">
-          <label for="morado_dataDeMudanca">Data de mudança <span class="req">*</span></label>
-          <input id="morado_dataDeMudanca" type="date" required>
-        </div>
-        <div class="cad-group">
-          <label for="morado_noDeMoradores">Nº de moradores</label>
-          <select id="morado_noDeMoradores">
-            <option value="" disabled selected>Selecione</option>
-            <option>1</option><option>2</option><option>3</option><option>4</option><option>5+</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <div class="form-section">
-      <p class="form-section-title"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt=""> Veículos <span class="section-tag opc">Opcional</span></p>
       <div class="cad-group">
-          <label for="morado_quantidadeDeVeiculosACadastrar">Quantidade de veículos a cadastrar</label>
-          <select id="morado_quantidadeDeVeiculosACadastrar">
-            <option value="" disabled selected>Selecione</option>
-            <option>Nenhum</option><option>1 veículo</option><option>2 veículos</option><option>3 ou mais</option>
-          </select>
-      </div>
-      <div class="cad-row">
-        <div class="cad-group">
-          <label for="morado_placaVeiculo1">Placa — Veículo 1</label>
-          <input id="morado_placaVeiculo1" type="text" placeholder="ABC-1D23" style="text-transform:uppercase;" maxlength="8">
-        </div>
-        <div class="cad-group">
-          <label for="morado_modeloECor">Modelo e Cor</label>
-          <input id="morado_modeloECor" type="text" placeholder="Ex: Honda Civic Prata">
-        </div>
-      </div>
-      <div class="cad-row">
-        <div class="cad-group">
-          <label for="morado_placaVeiculo2">Placa — Veículo 2</label>
-          <input id="morado_placaVeiculo2" type="text" placeholder="ABC-1D23" style="text-transform:uppercase;" maxlength="8">
-        </div>
-        <div class="cad-group">
-          <label for="morado_vagaSDeGaragem">Vaga(s) de garagem</label>
-          <input id="morado_vagaSDeGaragem" type="text" placeholder="Ex: Vagas 12 e 13">
-        </div>
-      </div>
-    </div>
-
-    <div class="form-section">
-      <p class="form-section-title"> Dependentes e Animais <span class="section-tag opc">Opcional</span></p>
-      <div class="cad-row">
-        <div class="cad-group">
-          <label for="morado_menoresDe18AnosNaUnidade">Menores de 18 anos na unidade?</label>
-          <select id="morado_menoresDe18AnosNaUnidade">
-            <option value="" disabled selected>Selecione</option>
-            <option>Não</option><option>Sim — 1</option><option>Sim — 2 ou mais</option>
-          </select>
-        </div>
-        <div class="cad-group">
-          <label for="morado_idosos60NaUnidade">Idosos (60+) na unidade?</label>
-          <select id="morado_idosos60NaUnidade">
-            <option value="" disabled selected>Selecione</option>
-            <option>Não</option><option>Sim</option>
-          </select>
-        </div>
-      </div>
-      <div class="cad-row">
-        <div class="cad-group">
-          <label for="morado_animaisDeEstimacao">Animais de estimação?</label>
-          <select id="morado_animaisDeEstimacao">
-            <option value="" disabled selected>Selecione</option>
-            <option>Não</option><option>Sim — cão(ões)</option><option>Sim — gato(s)</option>
-            <option>Sim — múltiplos tipos</option>
-          </select>
-        </div>
-        <div class="cad-group">
-          <label for="morado_racaSDescricao">Raça(s) / descrição</label>
-          <input id="morado_racaSDescricao" type="text" placeholder="Ex: 2 cães — Golden e Poodle">
-        </div>
+        <label for="mOcupacao">Tipo de ocupação <span class="req">*</span></label>
+        <select id="mOcupacao" required>
+          <option value="" disabled selected>Selecione</option>
+          <option value="proprietario">Proprietário</option><option value="inquilino">Inquilino</option><option value="coabitante">Coabitante autorizado</option>
+        </select>
       </div>
     </div>
 
@@ -478,7 +338,7 @@
 
     <div class="info-card" style="margin-top:14px;">
       <img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">
-      <p>Cadastro analisado pelo síndico em até <strong>48 horas úteis</strong>. Você receberá confirmação por e-mail.</p>
+      <p>O síndico confere o cadastro e os documentos. Você recebe um <strong>e-mail</strong> quando ele aprovar ou recusar.</p>
     </div>
 
     <p class="cad-login-link">Já tem conta? <a href="../../index.html">Fazer login</a></p>
@@ -497,7 +357,6 @@
     if (stepAtual === 1) {
       var nome = document.getElementById('mNome');
       var cpf = document.getElementById('mCpf');
-      var rg = document.querySelector('#step1 input[placeholder="00.000.000-0"]');
       var dataNasc = document.getElementById('mNascimento');
       var email = document.getElementById('mEmail');
       var celular = document.getElementById('mTelefone');
@@ -507,19 +366,11 @@
       if (!nome.value.trim()) { mostrarErro(nome, 'Informe o nome completo'); valido = false; }
       if (!cpf.value.trim()) { mostrarErro(cpf, 'Informe o CPF'); valido = false; }
       else if (!validarCPF(cpf.value)) { mostrarErro(cpf, 'CPF inválido'); valido = false; }
-      if (!rg.value.trim()) { mostrarErro(rg, 'Informe o RG'); valido = false; }
       if (!dataNasc.value) { mostrarErro(dataNasc, 'Informe a data de nascimento'); valido = false; }
       if (!email.value.trim()) { mostrarErro(email, 'Informe o e-mail'); valido = false; }
       else if (!validarEmail(email.value)) { mostrarErro(email, 'E-mail inválido'); valido = false; }
       if (!celular.value.trim()) { mostrarErro(celular, 'Informe o celular'); valido = false; }
       else if (!validarTelefone(celular.value)) { mostrarErro(celular, 'Telefone inválido'); valido = false; }
-      var emergNome = document.querySelector('#step1 input[placeholder="Nome do responsável"]');
-      var emergTel = document.querySelectorAll('#step1 .mask-tel')[1];
-      var emergParent = document.getElementById('morado_parentesco');
-      if (emergNome && !emergNome.value.trim()) { mostrarErro(emergNome, 'Informe o contato de emergência'); valido = false; }
-      if (emergTel && !emergTel.value.trim()) { mostrarErro(emergTel, 'Informe o telefone de emergência'); valido = false; }
-      else if (emergTel && !validarTelefone(emergTel.value)) { mostrarErro(emergTel, 'Telefone inválido'); valido = false; }
-      if (emergParent && !emergParent.value) { mostrarErro(emergParent, 'Selecione o parentesco'); valido = false; }
       if (!valido) { alert('Corrija os erros antes de prosseguir.'); }
       return valido;
     }
@@ -527,14 +378,12 @@
       var codAcesso = document.getElementById('mCodigoCondominio');
       var apto = document.getElementById('mApartamento');
       var ocupacao = document.getElementById('mOcupacao');
-      var dataMud = document.querySelector('#step2 input[type="date"]');
       var valido = true;
       document.querySelectorAll('#step2 .erro-validacao').forEach(function(e) { e.remove(); });
       document.querySelectorAll('#step2 input, #step2 select').forEach(function(i) { i.style.borderColor = ''; });
       if (!codAcesso.value.trim()) { mostrarErro(codAcesso, 'Informe o código de acesso'); valido = false; }
       if (!apto.value.trim()) { mostrarErro(apto, 'Informe o nº do apartamento'); valido = false; }
       if (ocupacao && !ocupacao.value) { mostrarErro(ocupacao, 'Selecione a ocupação'); valido = false; }
-      if (!dataMud.value) { mostrarErro(dataMud, 'Informe a data de mudança'); valido = false; }
       if (!valido) { alert('Corrija os erros antes de prosseguir.'); }
       return valido;
     }

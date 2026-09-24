@@ -246,3 +246,32 @@ def test_administrador_nao_tem_mensagens(navegador):
     existe = pg.locator(".chat-abrir").count()
     ctx.close()
     assert existe == 0
+
+
+# ── Formulários sem campos que ninguém lê ─────────────────────────────
+def test_formularios_nao_pedem_o_que_o_sistema_nao_guarda():
+    """Os cadastros pediam RG, gênero, NIS, antecedentes criminais e outros
+    dados que nenhum código lia — dado pessoal coletado à toa, contra a
+    LGPD. Todo campo de formulário precisa ser lido por algum script."""
+    import re
+    from pathlib import Path
+    raiz = Path(__file__).resolve().parents[1]
+    js = "".join(p.read_text(encoding="utf-8") for p in (raiz / "assets" / "js").glob("*.js"))
+    orfaos = []
+    for pagina in sorted((raiz / "pages").glob("*/*.html")) + [raiz / "index.html"]:
+        html = pagina.read_text(encoding="utf-8")
+        scripts = "".join(re.findall(r"<script(?![^>]*src)[^>]*>(.*?)</script>", html, re.S))
+        for tag, attrs in re.findall(r"<(input|select|textarea)\b([^>]*)>", html):
+            # Botões e campos desativados (só informativos) não coletam nada.
+            if re.search(r'type="(hidden|submit|button)"|\bdisabled\b', attrs):
+                continue
+            nome = re.search(r'\bname="([^"]+)"', attrs)
+            if nome and nome.group(1) in scripts:
+                continue
+            ident = re.search(r'\bid="([^"]+)"', attrs)
+            # Caixas de aceite são conferidas em grupo, pela classe.
+            if ident and "_aceite" in ident.group(1):
+                continue
+            if not ident or (ident.group(1) not in scripts and ident.group(1) not in js):
+                orfaos.append(f"{pagina.relative_to(raiz)}: {ident.group(1) if ident else attrs.strip()[:40]}")
+    assert not orfaos, "Campos que nenhum script lê:\n" + "\n".join(orfaos)

@@ -116,13 +116,9 @@ def test_documentos_do_cadastro_chegam_ao_sindico(navegador):
     # Etapa 1 — dados pessoais e a foto de perfil
     pg.fill("#mNome", nome)
     pg.fill("#mCpf", cpf_valido())
-    pg.fill("#morado_rg", "12.345.678-9")
     pg.fill("#mNascimento", "1990-05-10")
     pg.fill("#mEmail", f"paula{sufixo}@exemplo.com")
     pg.fill("#mTelefone", "(67) 99999-1234")
-    pg.fill("#morado_nome", "Contato de Emergência")
-    pg.select_option("#morado_parentesco", index=1)
-    pg.fill("#morado_telefoneDeEmergencia", "(67) 99999-4321")
     pg.set_input_files("#foto-m", files=[
         {"name": "eu.png", "mimeType": "image/png", "buffer": png()}])
     assert "eu.png" in pg.inner_text("label[for=foto-m]")
@@ -133,7 +129,6 @@ def test_documentos_do_cadastro_chegam_ao_sindico(navegador):
     pg.fill("#mCodigoCondominio", "PALM-2025")
     pg.fill("#mApartamento", "505")
     pg.select_option("#mOcupacao", "proprietario")
-    pg.fill("#morado_dataDeMudanca", "2025-01-10")
     pg.evaluate("mostrarStep(3)")
     pg.wait_for_selector("#step3", state="visible")
 

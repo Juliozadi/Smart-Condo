@@ -46,7 +46,7 @@ const requisitosFuncionais = [
     atores: 'Síndico', prioridade: 'Essencial',
     descricao: 'O sistema apresenta ao síndico a fila de moradores que se cadastraram sozinhos e aguardam liberação, permitindo aprovar ou recusar cada um. A recusa exige motivo.',
     entradas: 'O cadastro deve estar na situação "aguardando aprovação" e pertencer ao condomínio do síndico.',
-    saidas: 'Aprovado, o morador passa a "ativo" e consegue entrar. Recusado, fica registrado quem avaliou, quando e por qual motivo, e o morador vê a justificativa na própria tela de espera.' },
+    saidas: 'Aprovado, o morador passa a "ativo" e consegue entrar. Recusado, fica registrado quem avaliou, quando e por qual motivo, e o morador vê a justificativa na própria tela de espera. Nos dois casos, o morador recebe um e-mail com a decisão.' },
 
   { id: 'RF007', nome: 'Cadastrar porteiro',
     atores: 'Síndico', prioridade: 'Essencial',

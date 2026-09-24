@@ -37,6 +37,7 @@ from app.services import arquivos as servico_arquivos
 from app.services import documentos_cadastro
 from app.services import usuarios as servico_usuarios
 from app.services import auth as servico_auth
+from app.services import notificacao
 from app.services.notificacao import mascarar_destino
 
 router = APIRouter(prefix="/usuarios", tags=["Usuários"])
@@ -350,6 +351,21 @@ def aprovar_usuario(
     db.commit()
     if not dados.aprovado:
         documentos_cadastro.descartar_todos(db, usuario.id)
+
+    # A tela do cadastro promete avisar por e-mail quando o síndico decidir.
+    if dados.aprovado:
+        titulo, mensagem = (
+            "Cadastro aprovado",
+            "O síndico aprovou o seu cadastro. Você já pode entrar com o seu e-mail e senha.",
+        )
+    else:
+        titulo = "Cadastro recusado"
+        mensagem = "O síndico recusou o seu cadastro."
+        if dados.motivo:
+            mensagem += f" Motivo: {dados.motivo}"
+        mensagem += " Em caso de dúvida, fale com a administração do condomínio."
+    notificacao.notificar(usuario.email, CanalVerificacao.EMAIL, titulo, mensagem)
+
     db.refresh(usuario)
     return usuario
 
