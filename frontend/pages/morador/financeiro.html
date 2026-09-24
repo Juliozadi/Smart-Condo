@@ -14,7 +14,7 @@
   <header class="app-bar">
     <div class="app-bar-inner">
       <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
-        <img src="../../assets/img/logo.png" alt="SmartCondo" class="logo-sm">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
         <span class="brand-name">Smart<strong>Condo</strong></span>
       </a>
       <div class="app-bar-right">
@@ -29,6 +29,7 @@
       <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Morador
     </a>
 
+    <h1 class="so-leitor">Financeiro</h1>
     <div class="balance-card">
       <p class="balance-label" id="balanceLabel">Situação da unidade</p>
       <p class="balance-value" id="balanceValor">—</p>
@@ -47,13 +48,13 @@
       <div class="stat-card blue"><span class="stat-value" id="totAtraso">—</span><span class="stat-label"><img src="../../assets/img/icons/xmark.svg" width="16" height="16" alt="">Em atraso</span></div>
     </div>
 
-    <p class="section-title"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt=""> Cobranças em Aberto</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt=""> Cobranças em Aberto</h2>
     <div class="list-items" id="listaAbertas"></div>
     <p class="estado-lista" id="estadoAbertas">Carregando…</p>
     <p class="form-erro" id="erroPagamento" role="alert"></p>
 
     <!-- Formas de pagamento e data da cobrança — doc, seção 6 -->
-    <p class="section-title"><img src="../../assets/img/icons/financeiro.svg" width="16" height="16" alt=""> Como Você Quer Pagar</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/financeiro.svg" width="16" height="16" alt=""> Como Você Quer Pagar</h2>
     <div class="form-card">
       <h3>Formas de pagamento disponíveis</h3>
       <form id="formPreferencia" novalidate>
@@ -107,7 +108,7 @@
       </form>
     </div>
 
-    <p class="section-title"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Histórico de Cobranças</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Histórico de Cobranças</h2>
     <div class="data-table tabela-status" id="tabelaHistorico">
       <div class="table-head cols-4"><span>Referência</span><span>Vencimento</span><span>Valor</span><span>Situação</span></div>
     </div>
@@ -183,7 +184,7 @@
 
     var info = document.createElement('div');
     info.className = 'list-info';
-    var h = document.createElement('h5');
+    var h = document.createElement('h3');
     h.textContent = c.descricao + ' — ' + competenciaLonga(c.competencia);
     var p = document.createElement('p');
     var dias = diasAte(c.vencimento);

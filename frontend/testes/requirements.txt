@@ -1,3 +1,5 @@
 # Testes de interface: rodam num navegador de verdade (Chromium).
 pytest==9.1.1
 playwright==1.63.0
+# Traz o axe-core, que audita a acessibilidade das telas (test_acessibilidade.py).
+axe-playwright-python==0.1.8

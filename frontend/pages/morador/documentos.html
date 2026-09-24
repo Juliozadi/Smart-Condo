@@ -15,7 +15,7 @@
   <header class="app-bar">
     <div class="app-bar-inner">
       <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
-        <img src="../../assets/img/logo.png" alt="SmartCondo" class="logo-sm">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
         <span class="brand-name">Smart<strong>Condo</strong></span>
       </a>
       <div class="app-bar-right">
@@ -33,7 +33,7 @@
 
     <div class="dash-greeting">
       <p class="greeting-sub">Apto 204 — João Silva</p>
-      <h2 class="greeting-name"><img src="../../assets/img/icons/folder-open.svg" width="16" height="16" alt="">Documentos</h2>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/folder-open.svg" width="16" height="16" alt="">Documentos</h1>
       <p class="greeting-condo"><img src="../../assets/img/icons/folder-open.svg" width="16" height="16" alt=""> Acesse e baixe os documentos do condomínio</p>
     </div>
 
@@ -53,6 +53,7 @@
       </select>
     </div>
 
+    <h2 class="so-leitor">Lista de documentos</h2>
     <div class="dash-grid" id="listaDocumentos"></div>
     <p class="estado-lista" id="estadoLista">Carregando…</p>
 
@@ -115,7 +116,7 @@
 
     var info = document.createElement('div');
     info.className = 'card-info';
-    var h = document.createElement('h4');
+    var h = document.createElement('h3');
     h.textContent = doc.titulo;
     var p = document.createElement('p');
     var partes = [ROTULO_CATEGORIA[doc.categoria] || doc.categoria];

@@ -12,8 +12,8 @@
   <style>
     .p-card{background:var(--surface);border-radius:var(--radius-sm);padding:24px;margin-bottom:18px;border:1px solid var(--border);box-shadow:var(--shadow-sm);transition:all .25s var(--ease-smooth);}
     .p-card:hover{box-shadow:var(--shadow-md);}
-    .p-card h3{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:18px;display:flex;align-items:center;gap:8px;}
-    .p-card h3 img{width:20px;height:20px;}
+    .p-card h2{line-height:normal;font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+    .p-card h2 img{width:20px;height:20px;}
     .p-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
     .p-field{min-height:44px;position:relative;}
     .p-field .p-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px;}
@@ -77,7 +77,7 @@
 <body class="dashboard-body layout-mobile">
   <header class="app-bar"><div class="app-bar-inner">
     <div class="app-bar-left">
-      <a href="dashboard.html" class="mobile-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""></a>
+      <a href="dashboard.html" class="mobile-back" aria-label="Voltar ao painel"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""></a>
       <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
     </div>
     <div class="app-bar-right"><span class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/user.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">João Silva</span><span class="profile-role">Morador</span></span><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
@@ -96,7 +96,7 @@
           <img src="../../assets/img/icons/user.svg" width="16" height="16" alt="" id="avatarIcon">
           <img id="avatarPreview" alt="Sua foto de perfil" style="display:none;">
         </div>
-        <label class="p-foto-btn" for="fotoArquivo" title="Enviar ou trocar a foto"><img src="../../assets/img/icons/camera.svg" width="16" height="16" alt="Enviar ou trocar a foto"></label>
+        <button type="button" class="p-foto-btn" title="Enviar ou trocar a foto" aria-label="Enviar ou trocar a foto"><img src="../../assets/img/icons/camera.svg" width="16" height="16" alt=""></button>
         <input type="file" id="fotoArquivo" accept="image/jpeg,image/png,image/webp" hidden>
       </div>
       <div class="p-name">
@@ -109,7 +109,7 @@
     </div>
 
     <div class="p-card">
-      <h3><img src="../../assets/img/icons/user.svg" width="16" height="16" alt=""> Dados Pessoais</h3>
+      <h2><img src="../../assets/img/icons/user.svg" width="16" height="16" alt=""> Dados Pessoais</h2>
       <div class="p-grid">
         <div class="p-field"><div class="p-lbl">Nome completo</div><div class="p-val" id="val-nome"><span class="p-badge"><span class="b-txt">—</span><span class="b-dot"></span></span></div><div class="p-edit"><input type="text" id="edit-nome" minlength="3" maxlength="160" aria-label="Nome completo"></div></div>
         <div class="p-field"><div class="p-lbl">CPF</div><div class="p-val" id="val-cpf"><span class="p-badge"><span class="b-txt">—</span><span class="b-dot"></span></span></div></div>
@@ -122,7 +122,7 @@
     </div>
 
     <div class="p-card">
-      <h3><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Unidade</h3>
+      <h2><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Unidade</h2>
       <div class="p-grid">
         <div class="p-field"><div class="p-lbl">Apartamento</div><div class="p-val" id="val-apto"><span class="p-badge"><span class="b-txt">—</span><span class="b-dot"></span></span></div></div>
         <div class="p-field"><div class="p-lbl">Bloco / Torre</div><div class="p-val" id="val-bloco"><span class="p-badge"><span class="b-txt">—</span><span class="b-dot"></span></span></div></div>
@@ -134,7 +134,7 @@
     </div>
 
     <div class="p-card">
-      <h3><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""> Segurança</h3>
+      <h2><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""> Segurança</h2>
       <form id="formSenha" class="p-senha" novalidate>
         <div class="p-grid">
           <div class="form-group"><label for="senhaAtual">Senha atual</label><input type="password" id="senhaAtual" autocomplete="current-password"></div>
@@ -158,7 +158,7 @@
 
   </main>
 
-  <div id="toast" class="toast">
+  <div id="toast" class="toast" role="status" aria-live="polite">
     <div class="t-icon"><img src="../../assets/img/icons/floppy-disk.svg" width="16" height="16" alt=""></div>
     <div class="t-content">
       <span class="t-title" id="toastTitle">Dados salvos</span>

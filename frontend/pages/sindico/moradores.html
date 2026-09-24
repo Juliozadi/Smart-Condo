@@ -14,7 +14,7 @@
   <header class="app-bar">
     <div class="app-bar-inner wide">
       <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
-        <img src="../../assets/img/logo.png" alt="SmartCondo" class="logo-sm">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
         <span class="brand-name">Smart<strong>Condo</strong></span>
       </a>
       <div class="app-bar-right">
@@ -27,7 +27,7 @@
     <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
     <div class="dash-greeting">
       <p class="greeting-sub">Painel Administrativo</p>
-      <h2 class="greeting-name"><img src="../../assets/img/icons/moradores.svg" width="26" height="26" alt=""> Gestão de Moradores</h2>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/moradores.svg" width="26" height="26" alt=""> Gestão de Moradores</h1>
       <p class="greeting-condo" id="resumoCondominio">Carregando…</p>
     </div>
     <div class="admin-stats">
@@ -41,7 +41,7 @@
       <span id="textoPendentes"></span>
     </div>
 
-    <p class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Ações</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Ações</h2>
     <div class="dash-grid" style="flex-direction:row;gap:10px;flex-wrap:wrap;">
       <a href="cadastrar_morador.html" class="action-btn" style="width:auto;flex:1;min-width:180px;margin-bottom:0;">
         <img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Cadastrar Morador
@@ -51,12 +51,12 @@
     <br>
 
     <div id="blocoPendentes">
-      <p class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Cadastros Aguardando Aprovação</p>
+      <h2 class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Cadastros Aguardando Aprovação</h2>
       <div class="list-items" id="listaPendentes"></div>
       <p class="estado-lista" id="estadoPendentes">Carregando…</p>
     </div>
 
-    <p class="section-title"><img src="../../assets/img/icons/moradores.svg" width="16" height="16" alt=""> Todos os Moradores</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/moradores.svg" width="16" height="16" alt=""> Todos os Moradores</h2>
     <div class="barra-acoes">
       <div class="campo-busca">
         <img src="../../assets/img/icons/moradores.svg" alt="">
@@ -233,7 +233,7 @@
 
     var info = document.createElement('div');
     info.className = 'list-info';
-    var titulo = document.createElement('h5');
+    var titulo = document.createElement('h3');
     titulo.textContent = u.nome;
     var sub = document.createElement('p');
     sub.textContent = unidadeDe(u) + ' · ' +

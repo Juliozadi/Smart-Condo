@@ -292,7 +292,7 @@ const requisitosNaoFuncionais = [
     { id: 'RNF003', nome: 'Acessibilidade',
       prioridade: 'Essencial',
       descricao: 'O sistema atende às recomendações da WCAG 2.2 no nível AA: contraste mínimo de 4,5:1 para texto normal, área mínima de toque de 24 por 24 pixels, rótulo associado a todo campo de formulário e navegação possível apenas pelo teclado. Oferece ainda tradução para Libras pelo VLibras, ajuste do tamanho da fonte, modo de alto contraste e tema escuro.',
-      verificacao: 'O contraste de todo texto visível é medido por script nos dois temas, em todas as telas, a cada alteração de cor.' },
+      verificacao: 'O contraste de todo texto visível é medido por script nos dois temas, em todas as telas, a cada alteração de cor. As demais regras da WCAG 2.1 A e AA são auditadas pelo axe-core em todas as telas, no computador e no celular, também com o menu de acessibilidade e o chat abertos; e um teste percorre a página só com a tecla Tab até abrir o menu de acessibilidade.' },
   ]},
 
   { n: '10.2', grupo: 'Confiabilidade', itens: [

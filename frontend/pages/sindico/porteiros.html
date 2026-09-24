@@ -14,7 +14,7 @@
   <header class="app-bar">
     <div class="app-bar-inner wide">
       <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
-        <img src="../../assets/img/logo.png" alt="SmartCondo" class="logo-sm">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
         <span class="brand-name">Smart<strong>Condo</strong></span>
       </a>
       <div class="app-bar-right">
@@ -27,7 +27,7 @@
     <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
     <div class="dash-greeting">
       <p class="greeting-sub">Painel Administrativo</p>
-      <h2 class="greeting-name"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt=""> Gestão de Porteiros</h2>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt=""> Gestão de Porteiros</h1>
       <p class="greeting-condo" id="resumoEquipe">Carregando…</p>
     </div>
     <div class="stats-row">
@@ -37,12 +37,12 @@
     </div>
 
     <div id="blocoPendentes">
-      <p class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Cadastros Aguardando Aprovação</p>
+      <h2 class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Cadastros Aguardando Aprovação</h2>
       <div class="list-items" id="listaPendentes"></div>
       <p class="estado-lista" id="estadoPendentes">Carregando…</p>
     </div>
 
-    <p class="section-title"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt=""> Equipe de Portaria</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt=""> Equipe de Portaria</h2>
     <div class="list-items" id="listaPorteiros"></div>
     <p class="estado-lista" id="estadoPorteiros">Carregando…</p>
     <p class="contato-status" id="contatoStatus" role="status"></p>
@@ -85,7 +85,7 @@
   function infoDe(p, texto) {
     var info = document.createElement('div');
     info.className = 'list-info';
-    var h = document.createElement('h5');
+    var h = document.createElement('h3');
     h.textContent = p.nome;
     var sub = document.createElement('p');
     sub.textContent = texto;

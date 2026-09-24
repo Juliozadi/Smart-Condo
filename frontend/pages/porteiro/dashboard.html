@@ -15,7 +15,7 @@
   <header class="app-bar">
     <div class="app-bar-inner">
       <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
-        <img src="../../assets/img/logo.png" alt="SmartCondo" class="logo-sm">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
         <span class="brand-name">Smart<strong>Condo</strong></span>
       </a>
       <div class="app-bar-right">
@@ -28,7 +28,7 @@
 
     <div class="dash-greeting">
       <p class="greeting-sub"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt="">Portaria</p>
-      <h2 class="greeting-name"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt=""><span id="saudacaoNome">…</span></h2>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt=""><span id="saudacaoNome">…</span></h1>
       <p class="greeting-condo"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> <span id="saudacaoCondominio">Carregando…</span></p>
     </div>
 
@@ -38,31 +38,31 @@
       <div class="stat-card blue"><span class="stat-value" id="totVeiculos">—</span><span class="stat-label"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">No pátio</span></div>
     </div>
 
-    <p class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Ações Rápidas</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Ações Rápidas</h2>
     <div class="dash-grid">
       <a href="visitantes.html" class="dash-card">
         <div class="card-icon icon-teal"><img src="../../assets/img/icons/person-walking-arrow-right.svg" width="16" height="16" alt="Visitantes"></div>
-        <div class="card-info"><h4>Controle de Visitantes</h4><p>Registrar entrada, saída e identificação</p></div>
+        <div class="card-info"><h3>Controle de Visitantes</h3><p>Registrar entrada, saída e identificação</p></div>
         
       </a>
       <a href="encomendas.html" class="dash-card">
         <div class="card-icon icon-yellow"><img src="../../assets/img/icons/box-archive.svg" width="16" height="16" alt="Encomendas"></div>
-        <div class="card-info"><h4>Encomendas</h4><p>Recebimento, guarda e entrega de pacotes</p></div>
+        <div class="card-info"><h3>Encomendas</h3><p>Recebimento, guarda e entrega de pacotes</p></div>
         
       </a>
       <a href="veiculos.html" class="dash-card">
         <div class="card-icon icon-blue"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="Veículos"></div>
-        <div class="card-info"><h4>Controle de Veículos</h4><p>Entrada e saída no estacionamento</p></div>
+        <div class="card-info"><h3>Controle de Veículos</h3><p>Entrada e saída no estacionamento</p></div>
         
       </a>
       <a href="ocorrencias.html" class="dash-card">
         <div class="card-icon icon-red"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt="Ocorrências"></div>
-        <div class="card-info"><h4>Registrar Ocorrência</h4><p>Incidentes, irregularidades e emergências</p></div>
+        <div class="card-info"><h3>Registrar Ocorrência</h3><p>Incidentes, irregularidades e emergências</p></div>
         
       </a>
     </div>
 
-    <p class="section-title"><img src="../../assets/img/icons/person-walking-arrow-right.svg" width="16" height="16" alt=""> Visitantes no Condomínio Agora</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/person-walking-arrow-right.svg" width="16" height="16" alt=""> Visitantes no Condomínio Agora</h2>
     <div class="list-items" id="listaVisitantes"></div>
     <p class="estado-lista" id="estadoVisitantes">Carregando…</p>
 
@@ -70,11 +70,11 @@
       <img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Registrar Novo Visitante
     </a>
 
-    <p class="section-title"><img src="../../assets/img/icons/box.svg" width="16" height="16" alt=""> Encomendas Aguardando Retirada</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/box.svg" width="16" height="16" alt=""> Encomendas Aguardando Retirada</h2>
     <div class="list-items" id="listaEncomendas"></div>
     <p class="estado-lista" id="estadoEncomendas">Carregando…</p>
 
-    <p class="section-title"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt=""> Avisos do Síndico</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt=""> Avisos do Síndico</h2>
     <div class="notif-list" id="listaAvisos"></div>
     <p class="estado-lista" id="estadoAvisos">Carregando…</p>
 
@@ -151,7 +151,7 @@
           avatar.textContent = iniciais(v.nome);
           var info = document.createElement('div');
           info.className = 'list-info';
-          var h = document.createElement('h5');
+          var h = document.createElement('h3');
           h.textContent = v.nome;
           var p = document.createElement('p');
           p.textContent = (v.unidade ? 'Apto ' + v.unidade + ' · ' : '') + v.tipo_visita +
@@ -187,7 +187,7 @@
           icone.appendChild(glifo);
           var info = document.createElement('div');
           info.className = 'list-info';
-          var h = document.createElement('h5');
+          var h = document.createElement('h3');
           h.textContent = 'Apto ' + (e.unidade || '—') + ' — ' + e.tipo_volume;
           var p = document.createElement('p');
           p.textContent = 'Remetente: ' + e.remetente + ' · Recebida em ' + dataHora(e.recebida_em);
@@ -221,7 +221,7 @@
             (c.categoria === 'urgente' ? ' alert' : (c.fixado ? ' amber' : ''));
           var corpo = document.createElement('div');
           corpo.className = 'notif-content';
-          var h = document.createElement('h5');
+          var h = document.createElement('h3');
           h.textContent = c.titulo;
           var p = document.createElement('p');
           p.textContent = c.conteudo;

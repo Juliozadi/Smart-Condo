@@ -576,7 +576,17 @@ body.modo-leitura .stats-row { display: none !important; }
    ACESSIBILIDADE
    ═══════════════════════════════════════════ */
 .accessibility-widget { position: fixed; bottom: 28px; right: 28px; z-index: 999; }
-.accessibility-widget input { display: none; }
+/* A caixa que abre o menu fica invisível, mas não com display:none: assim
+   ela ainda recebe o foco do Tab, e quem usa só o teclado alcança o menu.
+   (Antes, esta regra escondia todas as caixas do widget e o menu era
+   inalcançável pelo teclado.) */
+#access-toggle {
+  position: absolute; width: 1px; height: 1px; opacity: 0;
+  margin: 0; pointer-events: none;
+}
+#access-toggle:focus-visible + .access-button {
+  outline: 3px solid var(--primary-glow); outline-offset: 3px;
+}
 
 .access-button {
   width: 56px; height: 56px;
@@ -620,7 +630,7 @@ body.modo-leitura .stats-row { display: none !important; }
 }
 .access-menu label:hover,
 .access-menu label:focus-within { background: var(--primary-light); color: var(--primary); }
-.access-menu label input { accent-color: var(--primary); }
+.access-menu label input { accent-color: var(--primary); width: 16px; height: 16px; margin: 0; }
 .access-menu label:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px var(--primary-glow), 0 0 0 1px var(--primary);
@@ -904,7 +914,9 @@ body.modo-leitura .stats-row { display: none !important; }
   margin-bottom: 20px;
   border: 1px solid var(--border);
 }
-.form-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 18px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.form-card h3, .form-card h2.form-card-titulo { font-size: 15px; font-weight: 700; margin-bottom: 18px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+/* Nos cadastros o cartão é a seção da página (h2); o h2 global não vale. */
+.form-card h2.form-card-titulo { letter-spacing: normal; line-height: normal; }
 .form-card h3 i { color: var(--primary); }
 
 .form-row { display: grid; grid-template-columns: repeat(2,1fr); gap: 14px; }
@@ -1108,7 +1120,7 @@ body:has(.step-page:target) .step-page.default-step {
   text-align: left;
 }
 
-.summary-box h4 {
+.summary-box h3 {
   font-size: 13px; font-weight: 800;
   color: var(--primary-dark);
   text-transform: uppercase; letter-spacing: .8px;
@@ -1449,7 +1461,7 @@ input.erro:focus, select.erro:focus, textarea.erro:focus {
 .pwd-req img { width: 12px; height: 12px; flex-shrink: 0; }
 .step-alert img { width: 16px; height: 16px; flex-shrink: 0; align-self: flex-start; margin-top: 2px; }
 .info-card img { width: 16px; height: 16px; flex-shrink: 0; align-self: flex-start; margin-top: 2px; }
-.form-card h3 img { width: 16px; height: 16px; }
+.form-card h3 img, .form-card h2.form-card-titulo img { width: 16px; height: 16px; }
 .alert-box img { width: 17px; height: 17px; flex-shrink: 0; }
 .waiting-info-box img { width: 18px; height: 18px; flex-shrink: 0; align-self: flex-start; margin-top: 2px; }
 .chosen-role img { width: 16px; height: 16px; flex-shrink: 0; }
@@ -1765,3 +1777,11 @@ body.tema-escuro .tab-bar { background: rgba(21,36,39,.96); border-top-color: va
 .canal-opcao.indisponivel { opacity: .6; cursor: not-allowed; }
 @media (max-width: 400px) { .canal-opcoes { grid-template-columns: 1fr; } }
 #canaisRecuperacao { margin: 4px 0 14px; }
+
+/* Texto só para leitores de tela: some da tela, mas continua na árvore
+   de acessibilidade (display:none ou hidden o tirariam de lá também). */
+.so-leitor {
+  position: absolute !important; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}

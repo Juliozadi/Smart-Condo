@@ -13,11 +13,12 @@ seções novas descrevendo o que foi construído desde então.
 |---|---|
 | 9 Requisitos funcionais | RF032: o síndico envia o arquivo (PDF ou imagem), em vez de digitar um endereço, e o arquivo só abre com o token de quem tem direito |
 | 10 Requisitos não funcionais | RNF017 passa a cobrir os documentos do condomínio; RNF013 e RNF014 valem também para tentativas simultâneas; RNF009: trocar a senha encerra as outras sessões; RNF005 cita os valores recusados pelo banco; RNF007 exige número fixo de consultas por listagem |
+| 12.1 Boas práticas | Auditoria automática de acessibilidade com o axe-core e o que ela encontrou; RNF003 passa a citá-la |
 | 11.6.5 Tela de documentos | O texto cita a tela do síndico que publica e a abertura com o token |
 | 14 a 17 | Em documentos, arquivo_url dá lugar a arquivo e tipo_conteudo — agora 236 atributos. Em usuarios, entra versao_sessao |
 | 20 Arquitetura | Os documentos do condomínio também ficam sem endereço público; as regras de data usam o fuso do condomínio; a modelagem passa a citar 21 tabelas e 44 chaves estrangeiras (o texto ainda dizia 19 e 39) e a tabela mensagens |
 | 21 API REST | 99 endpoints |
-| 23 Testes | 349 casos no servidor, incluindo requisições simultâneas, e 59 testes de interface |
+| 23 Testes | 349 casos no servidor, incluindo requisições simultâneas, e 73 testes de interface |
 
 **Por que mudou.** O documento era só um endereço digitado pelo síndico:
 os de demonstração apontavam para um servidor que não existe, e nada
@@ -33,6 +34,17 @@ pagamento trava a cobrança até gravar. Um registro duplicado barrado pelo
 banco responde "já existe" (409), e um valor que o banco recusa — id acima
 do limite da coluna, texto com caractere nulo — responde como dado
 inválido (422), em vez de erro do servidor.
+
+**Acessibilidade de verdade pelo teclado e pelo leitor de tela.** A
+auditoria com o axe-core, em todas as telas e nos dois tamanhos, achou: o
+botão de acessibilidade não recebia o foco do teclado (uma regra de CSS
+escondia todas as caixas do widget, inclusive a que abre o menu), e o
+menu se anunciava como "menu" com itens que não eram de menu; a tabela de
+visitantes era lida sem as células; os links de voltar e de perfil
+ficavam sem texto no celular; vinte páginas não tinham título principal e
+os títulos pulavam níveis. Tudo corrigido sem mudar o visual — a posição e
+o tamanho de cada título foram medidos antes e depois —, e as opções do
+menu agora mostram se estão ligadas.
 
 **Listagens rápidas com muitos dados.** Cada linha das listagens buscava
 a sua unidade e somava os seus pagamentos no banco. Com 60 unidades e dois

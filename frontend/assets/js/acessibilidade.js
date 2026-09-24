@@ -108,14 +108,17 @@
 
     var html =
       '<div class="accessibility-widget" role="region" aria-label="Ferramentas de acessibilidade">' +
-        '<input type="checkbox" id="access-toggle" aria-label="Abrir menu de acessibilidade">' +
-        '<label for="access-toggle" class="access-button" title="Abrir ferramentas de acessibilidade" aria-label="Abrir ferramentas de acessibilidade">' +
+        '<input type="checkbox" id="access-toggle" aria-label="Abrir ferramentas de acessibilidade">' +
+        '<label for="access-toggle" class="access-button" title="Abrir ferramentas de acessibilidade">' +
           '<img src="' + BASE + 'assets/img/acessibilidade.png" class="access-icon-img" alt="" aria-hidden="true">' +
         '</label>' +
-        '<div class="access-menu" role="menu" aria-label="Opções de acessibilidade">' +
-          '<label role="menuitem" tabindex="0"><input type="checkbox" id="font-toggle"> Aumentar fonte</label>' +
-          '<label role="menuitem" tabindex="0"><input type="checkbox" id="contrast-toggle"> Alto contraste</label>' +
-          '<label role="menuitem" tabindex="0"><input type="checkbox" id="read-toggle"> Modo leitura</label>' +
+        // Um grupo de caixas de seleção, e não um "menu": o papel de menu
+        // exige itens de menu, e o leitor de tela anunciava a estrutura
+        // errada. As caixas já recebem foco e respondem ao espaço.
+        '<div class="access-menu" role="group" aria-label="Opções de acessibilidade">' +
+          '<label><input type="checkbox" id="font-toggle"> Aumentar fonte</label>' +
+          '<label><input type="checkbox" id="contrast-toggle"> Alto contraste</label>' +
+          '<label><input type="checkbox" id="read-toggle"> Modo leitura</label>' +
           '<div class="access-theme" role="radiogroup" aria-label="Modo de cor">' +
             '<span class="access-theme-label">Modo de cor</span>' +
             '<div class="access-theme-opts">' +
@@ -148,26 +151,19 @@
 
     var accessToggle = document.getElementById('access-toggle');
     if (accessToggle) {
+      // Espaço já marca a caixa; Enter também abre, como num botão.
       accessToggle.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          this.checked = !this.checked;
+        if (e.key === 'Enter') { e.preventDefault(); this.checked = !this.checked; }
+      });
+      // Esc fecha o menu e devolve o foco ao botão, de onde quer que esteja.
+      var widget = accessToggle.closest('.accessibility-widget');
+      widget.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && accessToggle.checked) {
+          accessToggle.checked = false;
+          accessToggle.focus();
         }
       });
     }
-
-    document.querySelectorAll('.access-menu label[tabindex]').forEach(function(label) {
-      label.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          var cb = this.querySelector('input[type="checkbox"]');
-          if (cb) {
-            cb.checked = !cb.checked;
-            cb.dispatchEvent(new Event('change', { bubbles: true }));
-          }
-        }
-      });
-    });
 
     if (fontToggle) {
       fontToggle.addEventListener('change', function() {

@@ -14,7 +14,7 @@
   <header class="app-bar">
     <div class="app-bar-inner">
       <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
-        <img src="../../assets/img/logo.png" alt="SmartCondo" class="logo-sm">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
         <span class="brand-name">Smart<strong>Condo</strong></span>
       </a>
       <div class="app-bar-right">
@@ -27,7 +27,7 @@
 
     <div class="dash-greeting">
       <p class="greeting-sub">Bem-vindo de volta</p>
-      <h2 class="greeting-name"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt=""><span id="saudacaoNome">…</span></h2>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/user.svg" width="16" height="16" alt=""><span id="saudacaoNome">…</span></h1>
       <p class="greeting-condo"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> <span id="saudacaoCondominio">Carregando…</span></p>
     </div>
 
@@ -38,44 +38,44 @@
     </div>
 
     <!-- Portaria: confirmações e avisos em tempo real — doc, seção 6 -->
-    <p class="section-title"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt=""> Portaria</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt=""> Portaria</h2>
     <div class="portaria-lista" id="portariaLista" aria-live="polite"></div>
     <p class="estado-lista" id="estadoPortaria">Carregando…</p>
 
-    <p class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Serviços</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Serviços</h2>
     <div class="dash-grid">
       <a href="reservas.html" class="dash-card">
         <div class="card-icon icon-teal"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt="Reservas"></div>
-        <div class="card-info"><h4>Minhas Reservas</h4><p>Salão, churrasqueira, academia, piscina</p></div>
+        <div class="card-info"><h3>Minhas Reservas</h3><p>Salão, churrasqueira, academia, piscina</p></div>
         
       </a>
       <a href="financeiro.html" class="dash-card">
         <div class="card-icon icon-yellow"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt="Financeiro"></div>
-        <div class="card-info"><h4>Financeiro</h4><p>Boletos, histórico e composição da taxa</p></div>
+        <div class="card-info"><h3>Financeiro</h3><p>Boletos, histórico e composição da taxa</p></div>
         
       </a>
       <a href="comunicados.html" class="dash-card">
         <div class="card-icon icon-blue"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt="Comunicados"></div>
-        <div class="card-info"><h4>Comunicados</h4><p>Avisos e notificações do condomínio</p></div>
+        <div class="card-info"><h3>Comunicados</h3><p>Avisos e notificações do condomínio</p></div>
         
       </a>
       <a href="documentos.html" class="dash-card">
         <div class="card-icon icon-purple"><img src="../../assets/img/icons/folder-open.svg" width="16" height="16" alt="Documentos"></div>
-        <div class="card-info"><h4>Documentos</h4><p>Atas, regimento e convenção interna</p></div>
+        <div class="card-info"><h3>Documentos</h3><p>Atas, regimento e convenção interna</p></div>
         
       </a>
       <a href="ocorrencias.html" class="dash-card">
         <div class="card-icon icon-red"><img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt="Ocorrências"></div>
-        <div class="card-info"><h4>Ocorrências</h4><p>Registrar ou acompanhar incidentes</p></div>
+        <div class="card-info"><h3>Ocorrências</h3><p>Registrar ou acompanhar incidentes</p></div>
         
       </a>
     </div>
 
-    <p class="section-title"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt=""> Comunicados Recentes</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt=""> Comunicados Recentes</h2>
     <div class="notif-list" id="listaComunicados"></div>
     <p class="estado-lista" id="estadoComunicados">Carregando…</p>
 
-    <p class="section-title"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Próximas Reservas</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Próximas Reservas</h2>
     <div class="reserve-list" id="listaReservas"></div>
     <p class="estado-lista" id="estadoReservas">Carregando…</p>
 
@@ -162,7 +162,7 @@
 
     var corpo = document.createElement('div');
     corpo.className = 'portaria-dados';
-    var titulo = document.createElement('h4');
+    var titulo = document.createElement('h3');
     titulo.textContent = dados.titulo;
     var detalhe = document.createElement('p');
     detalhe.textContent = dados.detalhe;
@@ -280,7 +280,7 @@
         ponto.className = 'notif-dot' + (c.lido ? ' read' : (c.fixado ? ' amber' : ''));
         var corpo = document.createElement('div');
         corpo.className = 'notif-content';
-        var h = document.createElement('h5');
+        var h = document.createElement('h3');
         h.textContent = c.titulo;
         var p = document.createElement('p');
         p.textContent = c.conteudo;
@@ -320,7 +320,7 @@
         data.appendChild(dia); data.appendChild(mes);
         var info = document.createElement('div');
         info.className = 'reserve-info';
-        var h = document.createElement('h5');
+        var h = document.createElement('h3');
         h.textContent = r.espaco_nome;
         var detalhe = document.createElement('p');
         detalhe.textContent = hora(r.hora_inicio) + ' – ' + hora(r.hora_fim) +
