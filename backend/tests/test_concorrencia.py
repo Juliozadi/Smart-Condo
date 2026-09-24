@@ -147,3 +147,52 @@ def test_pedidos_de_codigo_em_paralelo_geram_um_so(cliente, db, cenario):
         .where(CodigoVerificacao.finalidade == FinalidadeCodigo.RECUPERACAO_SENHA)
     )
     assert emitidos == 1
+
+
+# ── Decisões que só podem ser tomadas uma vez ────────────────────────
+def test_aprovar_e_recusar_ao_mesmo_tempo(cliente, cenario, monkeypatch):
+    """Duas abas do síndico: uma aprova, a outra recusa. Antes, as duas
+    passavam; o morador recebia os dois e-mails e o cadastro podia ficar
+    ativo com os documentos já apagados pela recusa."""
+    from app.services import notificacao
+
+    enviados = []
+    monkeypatch.setattr(notificacao, "notificar",
+                        lambda destino, canal, titulo, mensagem: enviados.append(titulo))
+    uid, _ = cadastrar_morador(
+        cliente, cenario["sindico"], cenario["cond"],
+        email="pendente@exemplo.com", cpf=CPFS[4], unidade="402", aprovar=False,
+    )
+    codigos = ao_mesmo_tempo(6, lambda i: cliente.post(
+        f"/api/v1/usuarios/{uid}/aprovacao",
+        json={"aprovado": i % 2 == 0, "motivo": "Documento ilegível"},
+        headers=cab(cenario["sindico"]),
+    ).status_code)
+    assert sorted(codigos) == [200, 409, 409, 409, 409, 409], codigos
+    assert len(enviados) == 1, enviados
+
+
+def test_aprovar_e_cancelar_a_reserva_ao_mesmo_tempo(cliente, cenario):
+    """O síndico aprova enquanto o morador cancela: só um dos dois vale."""
+    salao = cenario["salao"]["id"]
+    for dias in range(20, 25):
+        dia = (hoje_local() + timedelta(days=dias)).isoformat()
+        reserva = reservar(cliente, cenario["ana"], salao, data=dia).json()
+
+        def agir(i, rid=reserva["id"]):
+            if i % 2:
+                return cliente.delete(f"/api/v1/espacos/reservas/{rid}",
+                                      headers=cab(cenario["ana"])).status_code
+            return cliente.post(f"/api/v1/espacos/reservas/{rid}/avaliacao",
+                                json={"aprovada": True}, headers=cab(cenario["sindico"])).status_code
+
+        codigos = ao_mesmo_tempo(4, agir)
+        aprovacoes = [c for i, c in enumerate(codigos) if i % 2 == 0]
+        cancelamentos = [c for i, c in enumerate(codigos) if i % 2]
+        # Aprovar e depois cancelar é válido; aprovar ou cancelar duas
+        # vezes, não. Antes, as quatro ações respondiam 200.
+        assert aprovacoes.count(200) <= 1 and cancelamentos.count(200) == 1, (dia, codigos)
+        final = next(r for r in cliente.get("/api/v1/espacos/reservas/minhas",
+                                            headers=cab(cenario["ana"])).json()
+                     if r["id"] == reserva["id"])
+        assert final["status"] == "cancelada"

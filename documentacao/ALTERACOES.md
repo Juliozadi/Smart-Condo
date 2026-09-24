@@ -17,7 +17,7 @@ seções novas descrevendo o que foi construído desde então.
 | 14 a 17 | Em documentos, arquivo_url dá lugar a arquivo e tipo_conteudo — agora 236 atributos. Em usuarios, entra versao_sessao |
 | 20 Arquitetura | Os documentos do condomínio também ficam sem endereço público; as regras de data usam o fuso do condomínio; a modelagem passa a citar 21 tabelas e 44 chaves estrangeiras (o texto ainda dizia 19 e 39) e a tabela mensagens |
 | 21 API REST | 99 endpoints |
-| 23 Testes | 339 casos no servidor, incluindo requisições simultâneas, e 59 testes de interface |
+| 23 Testes | 343 casos no servidor, incluindo requisições simultâneas, e 59 testes de interface |
 
 **Por que mudou.** O documento era só um endereço digitado pelo síndico:
 os de demonstração apontavam para um servidor que não existe, e nada
@@ -33,6 +33,14 @@ pagamento trava a cobrança até gravar. Um registro duplicado barrado pelo
 banco responde "já existe" (409), e um valor que o banco recusa — id acima
 do limite da coluna, texto com caractere nulo — responde como dado
 inválido (422), em vez de erro do servidor.
+
+**Decisões tomadas duas vezes.** Com duas abas abertas, "aprovar" e
+"recusar" o mesmo cadastro passavam juntos, e o morador recebia os dois
+e-mails. O síndico aprovando enquanto o morador cancelava deixava a
+reserva aprovada, embora o morador tivesse recebido "cancelada". O
+visitante podia ser liberado e recusado ao mesmo tempo. Agora cada
+decisão trava o registro até ser gravada, e a segunda recebe "já foi
+respondido".
 
 **Força bruta em paralelo.** O bloqueio do login e o limite de palpites do
 código contavam as tentativas lendo o número, somando um e gravando. Com

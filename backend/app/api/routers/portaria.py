@@ -225,7 +225,7 @@ def confirmar_visitante(
     db: Session = Depends(get_db),
 ) -> VisitanteSaida:
     """"o cliente confirme se é ou não seu convidado" (seção 6)."""
-    visitante = db.get(Visitante, visitante_id)
+    visitante = db.get(Visitante, visitante_id, with_for_update=True)
     # Quem responde é o morador da unidade visitada, ninguém mais.
     if visitante is None or visitante.unidade_id != morador.unidade_id:
         raise HTTPException(
@@ -271,7 +271,7 @@ def registrar_saida(
     usuario: Usuario = Depends(exigir_permissao_porteiro("registrar_visitantes")),
     db: Session = Depends(get_db),
 ) -> VisitanteSaida:
-    visitante = db.get(Visitante, visitante_id)
+    visitante = db.get(Visitante, visitante_id, with_for_update=True)
     if visitante is None or visitante.unidade.condominio_id != usuario.condominio_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Visitante não encontrado."
@@ -300,7 +300,7 @@ def enviar_foto_visitante(
     usuario: Usuario = Depends(exigir_permissao_porteiro("registrar_visitantes")),
     db: Session = Depends(get_db),
 ) -> VisitanteSaida:
-    visitante = db.get(Visitante, visitante_id)
+    visitante = db.get(Visitante, visitante_id, with_for_update=True)
     if visitante is None or visitante.unidade.condominio_id != usuario.condominio_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Visitante não encontrado."
@@ -403,7 +403,7 @@ def confirmar_retirada(
 ) -> EncomendaSaida:
     """"o porteiro me envia... uma foto ou vídeo para que eu confirmasse a
     minha entrega ou pedido" (seção 6)."""
-    encomenda = db.get(Encomenda, encomenda_id)
+    encomenda = db.get(Encomenda, encomenda_id, with_for_update=True)
     if encomenda is None or encomenda.unidade_id != morador.unidade_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Encomenda não encontrada."
@@ -436,7 +436,7 @@ def enviar_foto_encomenda(
     usuario: Usuario = Depends(exigir_permissao_porteiro("registrar_encomendas")),
     db: Session = Depends(get_db),
 ) -> EncomendaSaida:
-    encomenda = db.get(Encomenda, encomenda_id)
+    encomenda = db.get(Encomenda, encomenda_id, with_for_update=True)
     if encomenda is None or encomenda.unidade.condominio_id != usuario.condominio_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Encomenda não encontrada."
@@ -558,6 +558,8 @@ def enviar_foto_ocorrencia(
     db: Session = Depends(get_db),
 ) -> OcorrenciaSaida:
     ocorrencia = _ocorrencia_visivel(db, usuario, ocorrencia_id)
+    # Relê travada: a resposta do síndico pode estar chegando agora.
+    db.refresh(ocorrencia, with_for_update=True)
     # Só quem abriu anexa, e só enquanto ninguém respondeu: a foto é a
     # prova do que foi relatado, e o síndico decide olhando para ela.
     if ocorrencia.aberta_por_id != usuario.id:
@@ -601,7 +603,7 @@ def responder_ocorrencia(
     sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
     db: Session = Depends(get_db),
 ) -> OcorrenciaSaida:
-    ocorrencia = db.get(Ocorrencia, ocorrencia_id)
+    ocorrencia = db.get(Ocorrencia, ocorrencia_id, with_for_update=True)
     if ocorrencia is None or ocorrencia.condominio_id != sindico.condominio_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Ocorrência não encontrada."

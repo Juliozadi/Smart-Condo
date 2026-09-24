@@ -329,6 +329,10 @@ def aprovar_usuario(
 ) -> Usuario:
     """Alimenta as telas "aguardando aprovação" do front-end."""
     usuario = _buscar_do_meu_condominio(db, sindico, usuario_id)
+    # Relê travado até o commit: com duas abas, "aprovar" e "recusar"
+    # passavam juntos pela conferência do status, e o morador recebia os
+    # dois e-mails.
+    db.refresh(usuario, with_for_update=True)
 
     if usuario.id == sindico.id:
         raise HTTPException(

@@ -330,7 +330,9 @@ def cancelar_reserva(
     morador: Usuario = Depends(exigir_papel(Papel.MORADOR)),
     db: Session = Depends(get_db),
 ) -> ReservaSaida:
-    reserva = db.get(Reserva, reserva_id)
+    # Travada até o commit: o síndico pode estar avaliando enquanto o
+    # morador cancela, e só um dos dois pode valer.
+    reserva = db.get(Reserva, reserva_id, with_for_update=True)
     # Um morador não pode nem ver nem mexer na reserva de outro.
     if reserva is None or reserva.morador_id != morador.id:
         raise HTTPException(
@@ -392,7 +394,9 @@ def avaliar_reserva(
     sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
     db: Session = Depends(get_db),
 ) -> ReservaSindicoSaida:
-    reserva = db.get(Reserva, reserva_id)
+    # Travada até o commit: o síndico pode estar avaliando enquanto o
+    # morador cancela, e só um dos dois pode valer.
+    reserva = db.get(Reserva, reserva_id, with_for_update=True)
     if reserva is None or reserva.espaco.condominio_id != sindico.condominio_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Reserva não encontrada."
