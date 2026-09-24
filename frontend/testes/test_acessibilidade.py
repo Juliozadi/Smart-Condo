@@ -87,3 +87,40 @@ def test_menu_de_acessibilidade_pelo_teclado(navegador, papel):
     assert pg.evaluate("document.activeElement.id") == "access-toggle"
     assert pg.erros == []
     ctx.close()
+
+
+FORA_DA_JANELA = """(sel) => {
+  const d = document.querySelector(sel), a = document.activeElement;
+  // BODY é o ponto em que o Tab dá a volta pelo navegador e retorna à janela.
+  return (d.contains(a) || a === document.body) ? null : (a.id || a.tagName + '.' + a.className);
+}"""
+
+
+@pytest.mark.parametrize("papel, pagina, abrir_com, janela, aberta", [
+    ("admin", "pages/admin/condominios.html", "#btnNovoCondominio", "#modal .modal-caixa",
+     "document.getElementById('modal').classList.contains('aberto')"),
+    ("sindico", "pages/sindico/dashboard.html", ".chat-abrir", ".chat-painel",
+     "!document.querySelector('.chat-painel').hidden"),
+])
+def test_janela_prende_o_foco(navegador, papel, pagina, abrir_com, janela, aberta):
+    """O Tab escapava da janela aberta para a página de trás, escondida
+    atrás do fundo escuro: 17 de 40 vezes no cadastro do administrador,
+    26 de 40 no chat."""
+    ctx, pg = abrir(navegador, papel=papel)
+    ir(pg, pagina, 900)
+    pg.click(abrir_com)
+    pg.wait_for_timeout(500)
+    fugas = []
+    for _ in range(30):
+        pg.keyboard.press("Tab")
+        fora = pg.evaluate(FORA_DA_JANELA, janela)
+        if fora:
+            fugas.append(fora)
+    assert fugas == []
+    pg.keyboard.press("Escape")
+    assert not pg.evaluate(aberta)
+    # Ao fechar, a página volta a responder e o foco volta a quem abriu.
+    assert pg.evaluate("document.querySelectorAll('[inert]').length") == 0
+    assert pg.evaluate("(s) => document.activeElement.matches(s)", abrir_com)
+    assert pg.erros == []
+    ctx.close()

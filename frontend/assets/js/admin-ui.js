@@ -79,14 +79,19 @@
     var caixaErro = document.getElementById(idErro);
     var ultimoFoco = null;
 
+    var soltarFoco = null;
+
     function abrir() {
       ultimoFoco = document.activeElement;
       fundo.classList.add('aberto');
+      if (soltarFoco) soltarFoco();
+      soltarFoco = global.SmartCondo.api.prenderFoco(fundo);
       var primeiro = form.querySelector('input, select, textarea');
       if (primeiro) primeiro.focus();
     }
 
     function fechar() {
+      if (soltarFoco) { soltarFoco(); soltarFoco = null; }
       fundo.classList.remove('aberto');
       if (ultimoFoco && ultimoFoco.focus) ultimoFoco.focus();
     }

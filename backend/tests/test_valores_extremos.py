@@ -46,3 +46,50 @@ def test_texto_com_caractere_nulo(cliente, cenario):
         headers=cab(cenario["sindico"]),
     )
     assert r.status_code == 201
+
+
+# ── Texto só com espaços ─────────────────────────────────────────────
+def test_titulo_so_com_espacos_e_recusado(cliente, cenario):
+    """Antes, "   " passava pelo mínimo de 3 caracteres e virava um
+    comunicado em branco, enviado a todos os moradores."""
+    r = cliente.post(
+        "/api/v1/comunicados",
+        json={"titulo": "   ", "conteudo": "     ", "categoria": "geral"},
+        headers=cab(cenario["sindico"]),
+    )
+    assert r.status_code == 422
+
+
+def test_espacos_das_pontas_sao_aparados(cliente, cenario):
+    r = cliente.post(
+        "/api/v1/comunicados",
+        json={"titulo": "  Aviso geral  ", "conteudo": " Conteúdo do aviso ", "categoria": "geral"},
+        headers=cab(cenario["sindico"]),
+    )
+    assert r.status_code == 201
+    assert r.json()["titulo"] == "Aviso geral"
+    assert r.json()["conteudo"] == "Conteúdo do aviso"
+
+
+def test_documento_com_titulo_so_de_espacos_e_recusado(cliente, cenario):
+    r = cliente.post(
+        "/api/v1/documentos",
+        data={"titulo": "     ", "categoria": "ata"},
+        files={"arquivo": ("ata.pdf", b"%PDF-1.4\n" + b"0" * 50, "application/pdf")},
+        headers=cab(cenario["sindico"]),
+    )
+    assert r.status_code == 422
+
+
+def test_senha_com_espaco_nas_pontas_continua_igual(cliente, cenario):
+    """A senha é a exceção: o espaço faz parte dela."""
+    r = cliente.post(
+        "/api/v1/auth/senha/trocar",
+        json={"senha_atual": "senhaforte123", "nova_senha": " com espaco 123 "},
+        headers=cab(cenario["sindico"]),
+    )
+    assert r.status_code == 200, r.text
+    assert cliente.post("/api/v1/auth/login", json={
+        "email": "sindico@exemplo.com", "senha": " com espaco 123 "}).status_code == 200
+    assert cliente.post("/api/v1/auth/login", json={
+        "email": "sindico@exemplo.com", "senha": "com espaco 123"}).status_code == 401

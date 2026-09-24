@@ -18,7 +18,7 @@ seções novas descrevendo o que foi construído desde então.
 | 14 a 17 | Em documentos, arquivo_url dá lugar a arquivo e tipo_conteudo — agora 236 atributos. Em usuarios, entra versao_sessao |
 | 20 Arquitetura | Os documentos do condomínio também ficam sem endereço público; as regras de data usam o fuso do condomínio; a modelagem passa a citar 21 tabelas e 44 chaves estrangeiras (o texto ainda dizia 19 e 39) e a tabela mensagens |
 | 21 API REST | 99 endpoints |
-| 23 Testes | 349 casos no servidor, incluindo requisições simultâneas, e 73 testes de interface |
+| 23 Testes | 353 casos no servidor, incluindo requisições simultâneas, e 75 testes de interface |
 
 **Por que mudou.** O documento era só um endereço digitado pelo síndico:
 os de demonstração apontavam para um servidor que não existe, e nada
@@ -45,6 +45,16 @@ ficavam sem texto no celular; vinte páginas não tinham título principal e
 os títulos pulavam níveis. Tudo corrigido sem mudar o visual — a posição e
 o tamanho de cada título foram medidos antes e depois —, e as opções do
 menu agora mostram se estão ligadas.
+
+**Janelas que prendem o foco.** Com a janela de cadastro do administrador
+ou o chat abertos, o Tab escapava para a página de trás, escondida atrás
+do fundo escuro (17 e 26 vezes em 40). Agora o resto da página fica
+inerte enquanto a janela está aberta, e volta ao normal ao fechar.
+
+**Texto só com espaços.** A API aceitava um comunicado com título "   ",
+que passava pelo mínimo de três caracteres e era enviado a todos os
+moradores. Agora os espaços das pontas saem antes da validação — menos na
+senha, em que o espaço faz parte dela.
 
 **Listagens rápidas com muitos dados.** Cada linha das listagens buscava
 a sua unidade e somava os seus pagamentos no banco. Com 60 unidades e dois

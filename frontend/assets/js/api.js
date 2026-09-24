@@ -192,6 +192,29 @@
       }).catch(function() { if (falhou) falhou(); });
     },
 
+    /* Prende o foco numa janela aberta por cima da página (diálogo): o
+       resto da página fica "inerte" — não recebe foco nem clique —, e o
+       Tab não escapa mais para o que está escondido atrás do fundo escuro.
+       "manter" são elementos de fora que continuam ativos (o fundo que
+       fecha a janela ao ser clicado). Devolve a função que solta. */
+    prenderFoco: function(dialogo, manter) {
+      manter = manter || [];
+      var travados = [];
+      for (var el = dialogo; el && el.parentElement; el = el.parentElement) {
+        Array.prototype.forEach.call(el.parentElement.children, function(irmao) {
+          if (irmao === el || irmao.inert || manter.indexOf(irmao) >= 0) return;
+          if (/^(SCRIPT|STYLE|LINK)$/.test(irmao.tagName)) return;
+          irmao.inert = true;
+          travados.push(irmao);
+        });
+        if (el.parentElement === document.body) break;
+      }
+      return function soltar() {
+        travados.forEach(function(irmao) { irmao.inert = false; });
+        travados = [];
+      };
+    },
+
     /* Gera e baixa uma planilha CSV (separada por ";", que é o que o Excel
        em português espera). Texto que começa com = + - @ vira fórmula ao
        abrir no Excel — e nome e e-mail são digitados pelo próprio

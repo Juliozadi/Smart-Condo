@@ -12,7 +12,7 @@ from pydantic import EmailStr, Field, model_validator
 from app.models.enums import (
     CanalVerificacao, Papel, StatusUsuario, TipoOcupacao,
 )
-from app.schemas.comuns import CPF, DataNascimento, SchemaBase, Senha, Telefone
+from app.schemas.comuns import CPF, DataNascimento, SchemaBase, Senha, SenhaDigitada, Telefone
 
 
 # ── Cadastro (seção 12) ───────────────────────────────────────────────
@@ -64,7 +64,7 @@ class ReenvioCodigo(SchemaBase):
 # ── Login (seção 12) ──────────────────────────────────────────────────
 class LoginEntrada(SchemaBase):
     email: EmailStr
-    senha: str = Field(min_length=1, max_length=72)
+    senha: SenhaDigitada = Field(min_length=1, max_length=72)
 
 
 class TokenSaida(SchemaBase):
@@ -90,7 +90,7 @@ class RedefinicaoSenha(SchemaBase):
     email: EmailStr
     codigo: str = Field(min_length=4, max_length=8)
     nova_senha: Senha
-    confirmacao_senha: str
+    confirmacao_senha: SenhaDigitada
 
     @model_validator(mode="after")
     def conferir_confirmacao(self) -> "RedefinicaoSenha":
@@ -100,7 +100,7 @@ class RedefinicaoSenha(SchemaBase):
 
 
 class TrocaSenha(SchemaBase):
-    senha_atual: str = Field(min_length=1, max_length=72)
+    senha_atual: SenhaDigitada = Field(min_length=1, max_length=72)
     nova_senha: Senha
 
 

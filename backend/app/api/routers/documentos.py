@@ -77,6 +77,15 @@ def publicar(
             status_code=status.HTTP_409_CONFLICT,
             detail="Seu usuário ainda não está vinculado a um condomínio.",
         )
+    # Formulário com arquivo não passa pelo SchemaBase: apara aqui, antes
+    # de conferir o tamanho — senão "   " passava pelo mínimo de 3.
+    titulo = titulo.strip()
+    descricao = (descricao or "").strip() or None
+    if len(titulo) < 3:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Escreva um título com pelo menos 3 caracteres.",
+        )
     if unidade_id is not None:
         unidade = db.get(Unidade, unidade_id)
         if unidade is None or unidade.condominio_id != sindico.condominio_id:
@@ -96,8 +105,8 @@ def publicar(
         condominio_id=sindico.condominio_id,
         publicado_por_id=sindico.id,
         publicado_em=datetime.now(timezone.utc),
-        titulo=titulo.strip(),
-        descricao=(descricao or "").strip() or None,
+        titulo=titulo,
+        descricao=descricao,
         categoria=categoria,
         unidade_id=unidade_id,
         arquivo=nome,

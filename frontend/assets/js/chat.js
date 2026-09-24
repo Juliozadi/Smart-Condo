@@ -127,15 +127,20 @@
 
   function avisar(texto) { avisoEl.textContent = texto || ''; avisoEl.hidden = !texto; }
 
+  var soltarFoco = null;
+
   function abrirPainel() {
     if (!painel) montarPainel();
     painel.hidden = false; fundoEl.hidden = false;
     document.body.classList.add('chat-aberto');
+    // O fundo continua clicável: clicar nele fecha o chat.
+    soltarFoco = api.prenderFoco(painel, [fundoEl]);
     mostrarContatos();
   }
 
   function fecharPainel() {
     if (!painel) return;
+    if (soltarFoco) { soltarFoco(); soltarFoco = null; }
     painel.hidden = true; fundoEl.hidden = true;
     document.body.classList.remove('chat-aberto');
     clearInterval(timerConversa); clearInterval(timerContatos);

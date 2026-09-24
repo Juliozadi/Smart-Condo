@@ -181,6 +181,7 @@
     origem: null
   };
   function fecharVisor() {
+    if (visor.soltarFoco) { visor.soltarFoco(); visor.soltarFoco = null; }
     visor.fundo.classList.remove('aberto');
     document.getElementById('visorConteudo').textContent = '';
     if (visor.url) { URL.revokeObjectURL(visor.url); visor.url = null; }
@@ -195,6 +196,7 @@
     novaAba.hidden = true;
     visor.origem = origem;
     visor.fundo.classList.add('aberto');
+    visor.soltarFoco = api.prenderFoco(visor.fundo);
     document.getElementById('visorFechar').focus();
 
     api.protegido(d.url)
