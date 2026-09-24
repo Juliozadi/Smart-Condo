@@ -13,6 +13,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import DataError, IntegrityError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.routers import (
@@ -151,6 +152,41 @@ async def erro_validacao(request: Request, exc: RequestValidationError) -> JSONR
         },
     )
 
+
+# O banco recusa o valor (classe 22 do PostgreSQL): um id acima do limite
+# da coluna integer, um número que não cabe em numeric(10,2), texto com o
+# caractere nulo. O Pydantic deixa passar — para ele é um int ou um texto
+# como outro qualquer —, mas é sempre um dado inválido de quem chamou, e
+# não uma falha do servidor. A sessão é descartada no fim da requisição,
+# então a transação que falhou não segue adiante.
+@app.exception_handler(DataError)
+async def valor_recusado_pelo_banco(request: Request, exc: DataError) -> JSONResponse:
+    logger.info("Valor recusado pelo banco em %s %s: %s",
+                request.method, request.url.path, exc.orig.__class__.__name__)
+    return JSONResponse(
+        status_code=422,
+        content={"detalhe": "Algum valor enviado não é aceito: número grande "
+                            "demais ou caractere inválido no texto."},
+    )
+
+
+# A conferência "já existe?" e a gravação não são um passo só: duas
+# requisições ao mesmo tempo (um clique duplo em "Cadastrar", duas abas)
+# passam juntas pela conferência, e a restrição do banco barra a segunda.
+# Isso é um conflito de quem chamou, e não uma falha do servidor.
+@app.exception_handler(IntegrityError)
+async def conflito_no_banco(request: Request, exc: IntegrityError) -> JSONResponse:
+    codigo = getattr(exc.orig, "sqlstate", None)
+    logger.info("Restrição do banco em %s %s: %s", request.method, request.url.path, codigo)
+    if codigo == "23505":  # unique_violation
+        detalhe = ("Esse registro já existe. Se você enviou duas vezes, "
+                   "confira a lista: o primeiro envio foi gravado.")
+    elif codigo == "23503":  # foreign_key_violation
+        detalhe = "Este registro está ligado a outros dados e não pode ser alterado assim."
+    else:
+        return JSONResponse(status_code=422,
+                            content={"detalhe": "Algum valor enviado não é aceito."})
+    return JSONResponse(status_code=409, content={"detalhe": detalhe})
 
 
 app.include_router(auth.router, prefix="/api/v1")

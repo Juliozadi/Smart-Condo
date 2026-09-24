@@ -17,13 +17,22 @@ seções novas descrevendo o que foi construído desde então.
 | 14 a 17 | Em documentos, arquivo_url dá lugar a arquivo e tipo_conteudo — agora 235 atributos |
 | 20 Arquitetura | Os documentos do condomínio também ficam sem endereço público |
 | 21 API REST | 99 endpoints |
-| 23 Testes | 314 casos no servidor e 58 testes de interface |
+| 23 Testes | 329 casos no servidor, incluindo requisições simultâneas, e 58 testes de interface |
 
 **Por que mudou.** O documento era só um endereço digitado pelo síndico:
 os de demonstração apontavam para um servidor que não existe, e nada
 impedia um endereço `javascript:`, que rodaria na tela do morador ao ser
 clicado. Agora o arquivo é enviado, conferido pelo conteúdo e guardado
 fora do alcance público.
+
+**Requisições ao mesmo tempo.** Quatro moradores pedindo o mesmo horário
+juntos conseguiam, em 16 de 20 tentativas, reservar o espaço duas vezes; e
+dois pagamentos simultâneos da mesma cobrança passavam juntos pela
+conferência do que faltava pagar. Agora a reserva trava o espaço e o
+pagamento trava a cobrança até gravar. Um registro duplicado barrado pelo
+banco responde "já existe" (409), e um valor que o banco recusa — id acima
+do limite da coluna, texto com caractere nulo — responde como dado
+inválido (422), em vez de erro do servidor.
 
 **Planilhas exportadas.** As listas de moradores e de cobranças exportadas
 em CSV escreviam o texto como veio; um nome cadastrado como

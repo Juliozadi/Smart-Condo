@@ -243,6 +243,10 @@ def solicitar_reserva(
     db: Session = Depends(get_db),
 ) -> ReservaSaida:
     espaco = _espaco_do_condominio(db, morador, dados.espaco_id)
+    # Trava o espaço até o fim da transação. Sem isso, dois moradores que
+    # pedem o mesmo horário ao mesmo tempo passam juntos pela conferência
+    # de conflito abaixo, e o espaço fica reservado duas vezes.
+    db.execute(select(EspacoComum.id).where(EspacoComum.id == espaco.id).with_for_update())
 
     if not espaco.reservavel:
         raise HTTPException(

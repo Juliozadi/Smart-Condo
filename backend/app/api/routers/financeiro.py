@@ -221,7 +221,10 @@ def registrar_pagamento(
     usuario: Usuario = Depends(exigir_papel(Papel.MORADOR, Papel.SINDICO)),
     db: Session = Depends(get_db),
 ) -> PagamentoSaida:
-    cobranca = db.get(Cobranca, cobranca_id)
+    # Travada até o fim da transação: dois pagamentos simultâneos (clique
+    # duplo, duas abas) passariam juntos pela conferência do que falta
+    # pagar, e a cobrança ficaria paga a mais.
+    cobranca = db.get(Cobranca, cobranca_id, with_for_update=True)
     if cobranca is None or cobranca.unidade.condominio_id != usuario.condominio_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Cobrança não encontrada."
