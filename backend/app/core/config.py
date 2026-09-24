@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     CODIGO_INTERVALO_S: int = Field(default=60, ge=0, le=3600)
     CODIGO_MAX_POR_HORA: int = Field(default=5, ge=1, le=100)
 
+    # Com quanta antecedência o morador pode reservar um espaço.
+    RESERVA_ANTECEDENCIA_MAX_DIAS: int = Field(default=180, ge=1, le=730)
+
     # Quantas senhas erradas seguidas antes de trancar a conta, e por
     # quanto tempo. O bloqueio é temporário de propósito: permanente,
     # bastaria errar a senha de alguém para deixá-lo de fora.

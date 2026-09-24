@@ -201,8 +201,36 @@ function fecharModal(id) {
   document.getElementById(id).classList.remove('ativo');
 }
 
+/* Limites de data que a API também cobra. Aqui eles só evitam que o
+   calendário ofereça uma data que seria recusada no envio. */
+function limitarDatas() {
+  function iso(d) {
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+  }
+  var hoje = new Date();
+  var ha120 = new Date(hoje.getFullYear() - 120, hoje.getMonth(), hoje.getDate());
+  // Nascimento: nem no futuro, nem há mais de 120 anos.
+  document.querySelectorAll('input[type="date"][id*="ascimento"]').forEach(function(c) {
+    c.max = iso(hoje);
+    c.min = iso(ha120);
+  });
+  // Reserva: de hoje até 180 dias (RESERVA_ANTECEDENCIA_MAX_DIAS na API).
+  var reserva = document.getElementById('reserv_data');
+  if (reserva) {
+    reserva.min = iso(hoje);
+    reserva.max = iso(new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 180));
+  }
+  // Competência: de 5 anos atrás até 12 meses à frente.
+  var competencia = document.getElementById('fin_competencia');
+  if (competencia) {
+    competencia.min = iso(new Date(hoje.getFullYear() - 5, hoje.getMonth(), 1)).slice(0, 7);
+    competencia.max = iso(new Date(hoje.getFullYear() + 1, hoje.getMonth(), 1)).slice(0, 7);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   initMascaras();
+  limitarDatas();
   criarModalConfirmacao();
   document.querySelectorAll('.logout-btn').forEach(function(btn) {
     btn.addEventListener('click', function(e) {

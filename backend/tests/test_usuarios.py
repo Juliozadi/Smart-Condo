@@ -503,3 +503,13 @@ def test_morador_e_avisado_por_email_da_decisao(cliente, db, monkeypatch):
     assert enviados[-1][0] == "morador@exemplo.com"
     assert enviados[-1][1] == "Cadastro recusado"
     assert "Comprovante ilegível" in enviados[-1][2]
+
+
+
+def test_data_de_nascimento_no_futuro_e_recusada(cliente, db):
+    from datetime import date, timedelta
+    base = montar_condominio(cliente, db)
+    _, tok = cadastrar_morador(cliente, base["sindico"], base["cond"])
+    for data in ((date.today() + timedelta(days=30)).isoformat(), "1850-05-01"):
+        r = cliente.patch("/api/v1/usuarios/eu", json={"data_nascimento": data}, headers=cab(tok))
+        assert r.status_code == 422, data

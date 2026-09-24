@@ -147,6 +147,21 @@ def test_nao_reserva_data_passada(cliente, cenario):
     assert r.status_code == 400
 
 
+def test_nao_reserva_horario_de_hoje_que_ja_passou(cliente, cenario):
+    hoje = date.today().isoformat()
+    r = reservar(cliente, cenario["ana"], cenario["salao"]["id"], "00:00", "00:30", data=hoje)
+    assert r.status_code == 400
+    assert "já passou" in r.json()["detalhe"]
+
+
+def test_antecedencia_maxima(cliente, cenario):
+    from app.core.config import settings
+    longe = (date.today() + timedelta(days=settings.RESERVA_ANTECEDENCIA_MAX_DIAS + 1)).isoformat()
+    r = reservar(cliente, cenario["ana"], cenario["salao"]["id"], data=longe)
+    assert r.status_code == 400
+    assert "antecedência" in r.json()["detalhe"]
+
+
 def test_hora_fim_antes_do_inicio_e_recusada(cliente, cenario):
     r = reservar(cliente, cenario["ana"], cenario["salao"]["id"], "22:00", "14:00")
     assert r.status_code == 422

@@ -157,6 +157,14 @@ abriu, o síndico e o porteiro com a permissão de ocorrências.
 pessoa e finalidade. Quando o limite barra o pedido, a resposta é a mesma
 de sempre, para não revelar quem está cadastrado.
 
+**Datas** — a API recusa reserva em horário de hoje que já passou ou com
+mais de `RESERVA_ANTECEDENCIA_MAX_DIAS` (180) dias de antecedência,
+cobrança com competência de mais de 5 anos atrás (prazo de prescrição) ou
+mais de 12 meses à frente, vencimento antes da competência e data de
+nascimento no futuro. "Hoje" e "agora" são os do relógio do servidor:
+ao publicar, configure o fuso do servidor para o do condomínio
+(por exemplo `TZ=America/Campo_Grande`).
+
 **Envio dos documentos no cadastro** — quem acabou de se cadastrar ainda
 não pode entrar, então `POST /auth/cadastro/morador` devolve um
 `token_documentos`. Ele vale `TOKEN_DOCUMENTOS_MIN` (60) minutos, só serve

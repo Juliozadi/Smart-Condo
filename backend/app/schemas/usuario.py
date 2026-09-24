@@ -12,7 +12,7 @@ from pydantic import EmailStr, Field, model_validator
 from app.models.enums import (
     CanalVerificacao, Papel, StatusUsuario, TipoOcupacao,
 )
-from app.schemas.comuns import CPF, SchemaBase, Senha, Telefone
+from app.schemas.comuns import CPF, DataNascimento, SchemaBase, Senha, Telefone
 
 
 # ── Cadastro (seção 12) ───────────────────────────────────────────────
@@ -21,7 +21,7 @@ class CadastroBase(SchemaBase):
     email: EmailStr
     cpf: CPF
     telefone: Telefone
-    data_nascimento: date | None = None
+    data_nascimento: DataNascimento | None = None
     senha: Senha
     # "o sistema salva e envia um código de confirmação pelo meio escolhido"
     canal_confirmacao: CanalVerificacao = CanalVerificacao.EMAIL
@@ -148,13 +148,13 @@ class PerfilSaida(UsuarioSaida):
     administrador enxergam.
     """
     cpf: str
-    data_nascimento: date | None = None
+    data_nascimento: DataNascimento | None = None
 
 
 class UsuarioAtualizacao(SchemaBase):
     nome: str | None = Field(default=None, min_length=3, max_length=160)
     telefone: Telefone | None = None
-    data_nascimento: date | None = None
+    data_nascimento: DataNascimento | None = None
     # A foto não entra aqui: ela só muda pelo envio do arquivo
     # (PUT /usuarios/eu/foto). Aceitar um endereço livre deixava qualquer
     # usuário apontar a própria foto para um servidor de terceiros, que

@@ -314,3 +314,23 @@ def test_fixado_vem_primeiro(cliente, cenario):
 
     r = cliente.get("/api/v1/comunicados", headers=cab(cenario["ana"]))
     assert [c["titulo"] for c in r.json()] == ["Importante", "Comum"]
+
+
+
+# ── Datas absurdas (encontradas numa varredura com dados inválidos) ──
+@pytest.mark.parametrize("competencia,trecho", [
+    ("1900-01-01", "5 anos"),
+    (f"{date.today().year + 3}-01-01", "12 meses"),
+])
+def test_competencia_fora_da_faixa_e_recusada(cliente, cenario, competencia, trecho):
+    r = gerar_cobranca(cliente, cenario["sindico"], cenario["u204"], competencia=competencia)
+    assert r.status_code == 422
+    assert trecho in r.text
+
+
+def test_vencimento_antes_da_competencia_e_recusado(cliente, cenario):
+    r = gerar_cobranca(cliente, cenario["sindico"], cenario["u204"],
+                       competencia=date.today().replace(day=1).isoformat(),
+                       vencimento=(date.today().replace(day=1) - timedelta(days=40)).isoformat())
+    assert r.status_code == 422
+    assert "antes do mês de competência" in r.text

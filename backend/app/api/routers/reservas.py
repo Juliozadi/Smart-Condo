@@ -5,13 +5,14 @@ aprova ou recusa e vê o histórico).
 """
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import exigir_condominio, exigir_papel, get_usuario_atual
+from app.core.config import settings
 from app.core.database import get_db
 from app.models.condominio import Unidade
 from app.models.enums import Papel, StatusReserva
@@ -251,6 +252,20 @@ def solicitar_reserva(
     if espaco.em_manutencao:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Este espaço está em manutenção."
+        )
+    agora = datetime.now()
+    if dados.data == agora.date() and dados.hora_inicio <= agora.time():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Esse horário de hoje já passou. Escolha um horário mais tarde.",
+        )
+    if dados.data > agora.date() + timedelta(days=settings.RESERVA_ANTECEDENCIA_MAX_DIAS):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "As reservas podem ser feitas com até "
+                f"{settings.RESERVA_ANTECEDENCIA_MAX_DIAS} dias de antecedência."
+            ),
         )
     if dados.data < date.today():
         raise HTTPException(

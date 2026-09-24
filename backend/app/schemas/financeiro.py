@@ -11,7 +11,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from decimal import Decimal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from app.models.enums import FormaPagamento, StatusCobranca
 from app.schemas.comuns import SchemaBase
@@ -36,6 +36,21 @@ class CobrancaEntrada(SchemaBase):
         default=None,
         description="Se ficar vazio, usa o dia escolhido pelo morador.",
     )
+
+    @model_validator(mode="after")
+    def conferir_datas(self) -> "CobrancaEntrada":
+        hoje = date.today()
+        competencia = self.competencia.replace(day=1)
+        # Cobrança condominial prescreve em 5 anos (Código Civil, art. 206,
+        # § 5º, I); mais de um ano à frente é quase sempre ano digitado errado.
+        if competencia < date(hoje.year - 5, hoje.month, 1):
+            raise ValueError("A competência não pode ser de mais de 5 anos atrás.")
+        limite = date(hoje.year + 1, hoje.month, 1)
+        if competencia > limite:
+            raise ValueError("A competência não pode passar de 12 meses à frente.")
+        if self.vencimento is not None and self.vencimento < competencia:
+            raise ValueError("O vencimento não pode ser antes do mês de competência.")
+        return self
 
 
 class CobrancaSaida(SchemaBase):

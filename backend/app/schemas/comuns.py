@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+from datetime import date
 from typing import Annotated
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
@@ -92,11 +93,23 @@ def validar_cep(valor: str) -> str:
     return cep
 
 
+def validar_data_nascimento(valor: date) -> date:
+    """Nem no futuro, nem de alguém com mais de 120 anos: os dois são
+    erro de digitação (ano trocado, dia e mês invertidos)."""
+    hoje = date.today()
+    if valor > hoje:
+        raise ValueError("A data de nascimento não pode estar no futuro.")
+    if valor.year < hoje.year - 120:
+        raise ValueError("Confira o ano da data de nascimento.")
+    return valor
+
+
 CPF = Annotated[str, AfterValidator(validar_cpf)]
 CNPJ = Annotated[str, AfterValidator(validar_cnpj)]
 Telefone = Annotated[str, AfterValidator(validar_telefone)]
 UF = Annotated[str, AfterValidator(validar_uf)]
 CEP = Annotated[str, AfterValidator(validar_cep)]
+DataNascimento = Annotated[date, AfterValidator(validar_data_nascimento)]
 
 
 class SchemaBase(BaseModel):
