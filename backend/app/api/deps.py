@@ -20,6 +20,12 @@ CREDENCIAL_INVALIDA = HTTPException(
     headers={"WWW-Authenticate": "Bearer"},
 )
 
+SESSAO_ENCERRADA = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="A senha desta conta foi alterada. Entre de novo.",
+    headers={"WWW-Authenticate": "Bearer"},
+)
+
 
 def get_usuario_atual(
     credencial: HTTPAuthorizationCredentials | None = Depends(esquema_bearer),
@@ -40,6 +46,12 @@ def get_usuario_atual(
     usuario = db.get(Usuario, usuario_id)
     if usuario is None:
         raise CREDENCIAL_INVALIDA
+
+    # A senha foi trocada ou redefinida depois que este token saiu: a
+    # sessão é encerrada, inclusive a de quem tivesse roubado o token.
+    # Token de antes desta regra não tem "sv" e vale como versão 0.
+    if payload.get("sv", 0) != usuario.versao_sessao:
+        raise SESSAO_ENCERRADA
 
     if usuario.status != StatusUsuario.ATIVO:
         raise HTTPException(

@@ -74,6 +74,13 @@ class Usuario(Base, TimestampMixin):
     # as tentativas por aqui.
     tentativas_login: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     bloqueado_ate: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Vai dentro de cada token. Sobe quando a senha é trocada ou redefinida,
+    # e os tokens com a versão antiga deixam de valer: quem tinha roubado
+    # uma sessão sai junto. Um contador, e não uma data, porque o horário
+    # de emissão do token só tem precisão de segundos.
+    versao_sessao: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
 
     condominio: Mapped["Condominio | None"] = relationship(
         back_populates="usuarios", foreign_keys=[condominio_id]

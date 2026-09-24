@@ -1702,6 +1702,13 @@ const dicionario = [
         "obrigatorio": "Não",
         "chave": "",
         "descricao": "Momento até o qual a conta fica bloqueada depois de sucessivas senhas erradas"
+      },
+      {
+        "coluna": "versao_sessao",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Versão da sessão, gravada em cada token; sobe quando a senha é trocada ou redefinida, e os tokens antigos deixam de valer"
       }
     ],
     "regras": []

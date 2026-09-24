@@ -34,12 +34,17 @@ def conferir_senha(senha: str, hash_armazenado: str) -> bool:
         return False
 
 
-def criar_token_acesso(subject: str, papel: str, expira_min: int | None = None) -> str:
+def criar_token_acesso(
+    subject: str, papel: str, versao_sessao: int = 0, expira_min: int | None = None
+) -> str:
     minutos = expira_min or settings.ACCESS_TOKEN_EXPIRA_MIN
     agora = datetime.now(timezone.utc)
     payload = {
         "sub": str(subject),
         "papel": papel,
+        # Versão da sessão do usuário: a troca de senha a aumenta e os
+        # tokens anteriores deixam de valer (app/api/deps.py).
+        "sv": versao_sessao,
         "iat": agora,
         "exp": agora + timedelta(minutes=minutos),
     }

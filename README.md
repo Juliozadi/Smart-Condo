@@ -175,7 +175,7 @@ backend/
 │   ├── api/routers/                   # Endpoints
 │   ├── seed.py                        # Dados de demonstração
 │   └── main.py
-└── tests/                             # 329 casos de teste
+└── tests/                             # 335 casos de teste
 ```
 
 **Total:** 43 páginas HTML, 2 arquivos CSS, 9 arquivos JS, 43 ícones SVG e
@@ -203,7 +203,7 @@ Documentação interativa da API em <http://localhost:8000/docs>.
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e
-comunicados, documentos e chat. **329 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
+comunicados, documentos e chat. **335 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
 
 ---
 

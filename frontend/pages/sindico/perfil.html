@@ -328,10 +328,12 @@
     var botao = this.querySelector('button[type=submit]');
     botao.disabled = true;
     api.post('/auth/senha/trocar', { senha_atual: atual, nova_senha: nova })
-      .then(function() {
+      .then(function(r) {
+        // As outras sessões foram encerradas; esta segue com o token novo.
+        api.sessao.abrir(r.access_token, api.sessao.usuario());
         campo('formSenha').reset();
         erro.className = 'form-erro sucesso';
-        erro.textContent = 'Senha alterada.';
+        erro.textContent = r.detalhe;
       })
       .catch(function(e) { erro.textContent = e.message; })
       .then(function() { botao.disabled = false; });

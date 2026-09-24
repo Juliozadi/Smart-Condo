@@ -94,3 +94,55 @@ def test_registro_duplicado_ao_mesmo_tempo_e_conflito(cliente, cenario):
         cliente, cenario["sindico"], unidade).status_code)
     assert codigos.count(201) == 1, codigos
     assert set(codigos) <= {201, 409}, codigos
+
+
+# ── Força bruta em paralelo ──────────────────────────────────────────
+def test_senhas_em_paralelo_respeitam_o_limite(cliente, cenario):
+    """Antes, 40 senhas enviadas juntas eram todas conferidas: cada uma
+    lia a mesma contagem de erros, e o bloqueio nunca disparava."""
+    from app.core.config import settings
+
+    codigos = ao_mesmo_tempo(15, lambda i: cliente.post(
+        "/api/v1/auth/login", json={"email": "ana@exemplo.com", "senha": f"errada{i:03d}"},
+    ).status_code)
+    assert codigos.count(401) == settings.MAX_TENTATIVAS_LOGIN, codigos
+    assert codigos.count(429) == 15 - settings.MAX_TENTATIVAS_LOGIN
+
+
+def test_palpites_do_codigo_em_paralelo_respeitam_o_limite(cliente, cenario):
+    """O código de seis dígitos da recuperação de senha aceita cinco erros.
+    Em paralelo, antes, passavam mais de trinta palpites."""
+    from app.services.auth import MAX_TENTATIVAS_CODIGO
+
+    r = cliente.post("/api/v1/auth/senha/recuperar", json={"email": "ana@exemplo.com"})
+    assert r.status_code == 200, r.text
+
+    respostas = ao_mesmo_tempo(15, lambda i: cliente.post(
+        "/api/v1/auth/senha/redefinir",
+        json={"email": "ana@exemplo.com", "codigo": f"{100000 + i}",
+              "nova_senha": "novasenha123", "confirmacao_senha": "novasenha123"},
+    ).json()["detalhe"])
+    assert respostas.count("Código incorreto.") == MAX_TENTATIVAS_CODIGO, respostas
+
+
+def test_pedidos_de_codigo_em_paralelo_geram_um_so(cliente, db, cenario):
+    """O limite é de um código por minuto. Em paralelo, antes, cada pedido
+    gerava e enviava o seu, e todos ficavam valendo."""
+    from sqlalchemy import func, select
+
+    from app.models.enums import FinalidadeCodigo
+    from app.models.usuario import CodigoVerificacao, Usuario
+
+    codigos = ao_mesmo_tempo(10, lambda i: cliente.post(
+        "/api/v1/auth/senha/recuperar", json={"email": "ana@exemplo.com"},
+    ).status_code)
+    # A resposta é sempre a mesma, para não revelar nada a quem pede.
+    assert codigos == [200] * 10
+
+    ana = db.scalar(select(Usuario).where(Usuario.email == "ana@exemplo.com"))
+    emitidos = db.scalar(
+        select(func.count()).select_from(CodigoVerificacao)
+        .where(CodigoVerificacao.usuario_id == ana.id)
+        .where(CodigoVerificacao.finalidade == FinalidadeCodigo.RECUPERACAO_SENHA)
+    )
+    assert emitidos == 1

@@ -12,12 +12,12 @@ seções novas descrevendo o que foi construído desde então.
 | Seção | O que mudou |
 |---|---|
 | 9 Requisitos funcionais | RF032: o síndico envia o arquivo (PDF ou imagem), em vez de digitar um endereço, e o arquivo só abre com o token de quem tem direito |
-| 10 Requisitos não funcionais | RNF017 passa a cobrir os documentos do condomínio |
+| 10 Requisitos não funcionais | RNF017 passa a cobrir os documentos do condomínio; RNF013 e RNF014 valem também para tentativas simultâneas; RNF009: trocar a senha encerra as outras sessões; RNF005 cita os valores recusados pelo banco |
 | 11.6.5 Tela de documentos | O texto cita a tela do síndico que publica e a abertura com o token |
-| 14 a 17 | Em documentos, arquivo_url dá lugar a arquivo e tipo_conteudo — agora 235 atributos |
+| 14 a 17 | Em documentos, arquivo_url dá lugar a arquivo e tipo_conteudo — agora 236 atributos. Em usuarios, entra versao_sessao |
 | 20 Arquitetura | Os documentos do condomínio também ficam sem endereço público |
 | 21 API REST | 99 endpoints |
-| 23 Testes | 329 casos no servidor, incluindo requisições simultâneas, e 58 testes de interface |
+| 23 Testes | 335 casos no servidor, incluindo requisições simultâneas, e 59 testes de interface |
 
 **Por que mudou.** O documento era só um endereço digitado pelo síndico:
 os de demonstração apontavam para um servidor que não existe, e nada
@@ -33,6 +33,23 @@ pagamento trava a cobrança até gravar. Um registro duplicado barrado pelo
 banco responde "já existe" (409), e um valor que o banco recusa — id acima
 do limite da coluna, texto com caractere nulo — responde como dado
 inválido (422), em vez de erro do servidor.
+
+**Força bruta em paralelo.** O bloqueio do login e o limite de palpites do
+código contavam as tentativas lendo o número, somando um e gravando. Com
+quarenta tentativas enviadas ao mesmo tempo, todas liam o mesmo número:
+as quarenta senhas eram conferidas sem bloquear a conta, e 37 palpites do
+código de recuperação de senha passavam, contra um limite de cinco. Agora
+as tentativas da mesma conta são conferidas uma por vez, e pedidos
+simultâneos de código geram um só.
+
+**Trocar a senha encerra as outras sessões.** O token dura oito horas e,
+antes, continuava valendo depois da troca de senha: quem troca a senha
+porque desconfia que alguém entrou na conta via esse alguém seguir
+conectado. Agora cada token carrega a versão da sessão, que a troca e a
+redefinição da senha aumentam; a aba em que a senha foi trocada recebe um
+token novo e continua conectada. A redefinição pelo código também desfaz
+o bloqueio por senhas erradas, já que o código prova quem é o dono da
+conta.
 
 **Planilhas exportadas.** As listas de moradores e de cobranças exportadas
 em CSV escreviam o texto como veio; um nome cadastrado como

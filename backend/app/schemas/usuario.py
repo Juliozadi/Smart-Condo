@@ -74,6 +74,12 @@ class TokenSaida(SchemaBase):
     usuario: "UsuarioSaida"
 
 
+class SenhaTrocadaSaida(SchemaBase):
+    detalhe: str
+    access_token: str
+    expira_em_min: int
+
+
 # ── Esqueci minha senha (seção 12) ────────────────────────────────────
 class SolicitacaoRecuperacao(SchemaBase):
     email: EmailStr

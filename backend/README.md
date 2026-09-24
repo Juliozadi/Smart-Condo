@@ -204,6 +204,14 @@ pagou e a data.
   própria unidade.
 - Usuários são **inativados**, nunca apagados, para o histórico de portaria,
   reservas e financeiro continuar íntegro.
+- **Trocar ou redefinir a senha encerra as outras sessões**: o token leva a
+  `versao_sessao` do usuário, que a troca aumenta. A troca pelo perfil
+  devolve um token novo, e quem trocou segue conectado.
+- Tentativas de login, palpites do código, pedidos de código, reservas e
+  pagamentos travam a linha no banco (`SELECT ... FOR UPDATE`): requisições
+  simultâneas entram uma por vez e não escapam dos limites.
+- Valor que o banco recusa (id acima do limite, caractere nulo) responde
+  **422**, e registro duplicado barrado por ele responde **409** — nunca 500.
 
 > `DEBUG=true` faz o código de confirmação voltar na resposta do cadastro,
 > para testar sem provedor de e-mail/SMS. **Nunca ligue isso em produção.**
