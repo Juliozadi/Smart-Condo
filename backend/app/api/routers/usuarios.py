@@ -495,6 +495,7 @@ def inativar_usuario(
     # Inativa em vez de apagar: o histórico de portaria, reservas e
     # financeiro precisa continuar apontando para o usuário.
     usuario.status = StatusUsuario.INATIVO
+    servico_usuarios.cancelar_reservas_futuras(db, usuario)
     db.commit()
     # Os registros ficam; os documentos do cadastro, não: sem vínculo com
     # o condomínio, acabou a finalidade de guardá-los (LGPD, art. 16).

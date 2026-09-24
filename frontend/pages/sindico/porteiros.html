@@ -258,6 +258,19 @@
     });
     contato.appendChild(alternar);
 
+    // Porteiro que saiu da equipe perde o acesso à portaria na hora.
+    if (p.status === 'ativo') {
+      var inativar = document.createElement('button');
+      inativar.type = 'button';
+      inativar.className = 'contato-btn perigo';
+      inativar.textContent = 'Inativar';
+      inativar.setAttribute('aria-label', 'Inativar ' + p.nome);
+      inativar.addEventListener('click', function() {
+        ui.inativarUsuario(p, inativar, carregar);
+      });
+      contato.appendChild(inativar);
+    }
+
     bloco.appendChild(item);
     bloco.appendChild(permissoes.elemento);
     return bloco;

@@ -64,7 +64,7 @@ const requisitosFuncionais = [
     atores: 'Síndico', prioridade: 'Essencial',
     descricao: 'O sistema permite ao síndico cadastrar, listar, editar e inativar porteiros e moradores do seu condomínio.',
     entradas: 'O usuário afetado deve pertencer ao condomínio do síndico. O síndico não pode alterar o próprio papel nem criar outro síndico.',
-    saidas: 'Os dados são atualizados. A inativação não apaga o histórico: os registros que a pessoa gerou continuam no sistema, apenas o acesso é encerrado.' },
+    saidas: 'Os dados são atualizados. A inativação não apaga o histórico: os registros que a pessoa gerou continuam no sistema, apenas o acesso é encerrado — na hora, inclusive nas sessões já abertas. As reservas futuras do morador inativado são canceladas, liberando os espaços.' },
 
   { id: 'RF010', nome: 'Manter usuários da plataforma',
     atores: 'Administrador', prioridade: 'Importante',

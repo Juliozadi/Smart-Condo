@@ -11,14 +11,14 @@ seções novas descrevendo o que foi construído desde então.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | RF032: o síndico envia o arquivo (PDF ou imagem), em vez de digitar um endereço, e o arquivo só abre com o token de quem tem direito |
+| 9 Requisitos funcionais | RF032: o síndico envia o arquivo (PDF ou imagem), em vez de digitar um endereço, e o arquivo só abre com o token de quem tem direito. RF009: a inativação encerra o acesso na hora e cancela as reservas futuras do morador |
 | 10 Requisitos não funcionais | RNF017 passa a cobrir os documentos do condomínio; RNF013 e RNF014 valem também para tentativas simultâneas; RNF009: trocar a senha encerra as outras sessões; RNF005 cita os valores recusados pelo banco; RNF007 exige número fixo de consultas por listagem |
 | 12.1 Boas práticas | Auditoria automática de acessibilidade com o axe-core e o que ela encontrou; RNF003 passa a citá-la |
 | 11.6.5 Tela de documentos | O texto cita a tela do síndico que publica e a abertura com o token |
 | 14 a 17 | Em documentos, arquivo_url dá lugar a arquivo e tipo_conteudo — agora 236 atributos. Em usuarios, entra versao_sessao |
 | 20 Arquitetura | Os documentos do condomínio também ficam sem endereço público; as regras de data usam o fuso do condomínio; a modelagem passa a citar 21 tabelas e 44 chaves estrangeiras (o texto ainda dizia 19 e 39) e a tabela mensagens |
 | 21 API REST | 99 endpoints |
-| 23 Testes | 353 casos no servidor, incluindo requisições simultâneas, e 75 testes de interface |
+| 23 Testes | 354 casos no servidor, incluindo requisições simultâneas, e 78 testes de interface |
 
 **Por que mudou.** O documento era só um endereço digitado pelo síndico:
 os de demonstração apontavam para um servidor que não existe, e nada
@@ -45,6 +45,13 @@ ficavam sem texto no celular; vinte páginas não tinham título principal e
 os títulos pulavam níveis. Tudo corrigido sem mudar o visual — a posição e
 o tamanho de cada título foram medidos antes e depois —, e as opções do
 menu agora mostram se estão ligadas.
+
+**Inativar quem saiu do condomínio.** O requisito prometia, e a API
+tinha a rota, mas nenhuma tela do síndico permitia inativar alguém: o
+morador que se mudava e o porteiro que deixava a equipe continuavam
+entrando. Agora há o botão nas listas de moradores e de porteiros, e as
+reservas futuras do morador inativado são canceladas — antes, o salão
+continuava bloqueado por quem já não morava lá.
 
 **Janelas que prendem o foco.** Com a janela de cadastro do administrador
 ou o chat abertos, o Tab escapava para a página de trás, escondida atrás

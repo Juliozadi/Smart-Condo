@@ -72,7 +72,7 @@
       </select>
     </div>
     <div class="data-table tabela-status" id="tabelaMoradores">
-      <div class="table-head cols-5"><span>Morador</span><span>Unidade</span><span>Tipo</span><span>Desde</span><span>Status</span></div>
+      <div class="table-head cols-6"><span>Morador</span><span>Unidade</span><span>Tipo</span><span>Desde</span><span>Status</span><span>Ações</span></div>
     </div>
     <p class="estado-lista" id="estadoTabela"></p>
   </main>
@@ -281,11 +281,11 @@
 
   function montarLinha(u) {
     var linha = document.createElement('div');
-    linha.className = 'table-row cols-5';
+    linha.className = 'table-row cols-6';
     linha.innerHTML =
       '<span><strong></strong><br><small class="lista-email"></small></span>' +
       '<span></span><span></span><span></span>' +
-      '<span><span class="badge"></span></span>';
+      '<span><span class="badge"></span></span><span class="acoes-linha"></span>';
     linha.children[0].firstChild.textContent = u.nome;
     linha.children[0].querySelector('.lista-email').textContent = u.email;
     linha.children[1].textContent = unidadeDe(u);
@@ -294,6 +294,22 @@
     var selo = linha.children[4].firstChild;
     selo.className = 'badge ' + (ui.CLASSE_STATUS[u.status] || 'badge-neutral');
     selo.textContent = ui.ROTULO_STATUS[u.status] || u.status;
+    // Quem se mudou precisa perder o acesso: antes não havia como.
+    if (u.status === 'ativo') {
+      var inativar = document.createElement('button');
+      inativar.type = 'button';
+      inativar.className = 'btn-acao perigo';
+      inativar.title = 'Inativar ' + u.nome;
+      inativar.setAttribute('aria-label', inativar.title);
+      var glifo = document.createElement('span');
+      glifo.className = 'glifo';
+      glifo.style.setProperty('--icone', 'url(../../assets/img/icons/xmark.svg)');
+      inativar.appendChild(glifo);
+      inativar.addEventListener('click', function() {
+        ui.inativarUsuario(u, inativar, carregar);
+      });
+      linha.children[5].appendChild(inativar);
+    }
     return linha;
   }
 

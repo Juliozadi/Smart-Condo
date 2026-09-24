@@ -1534,6 +1534,7 @@ a.contato-btn { text-decoration: none; }
   background: var(--primary-light); color: var(--primary-texto); border-color: var(--primary);
 }
 .contato-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-glow); }
+.contato-btn.perigo:hover { background: rgba(212,85,63,.12); color: var(--erro); border-color: #d4553f; }
 .contato-status {
   font-size: 12px; font-weight: 600; color: var(--primary-texto);
   min-height: 18px; margin: -10px 0 18px;
@@ -2168,4 +2169,12 @@ body.tema-escuro .chat-avatar.sindico, body.tema-escuro .chat-avatar.porteiro { 
 .chat-enviar {
   padding: 0 16px; border: none; border-radius: var(--radius-xs); cursor: pointer;
   background: var(--primary-botao); color: var(--sobre-primary); font: inherit; font-size: 14px; font-weight: 700;
+}
+
+/* Moradores do síndico: a coluna de ações (inativar) é estreita e o
+   status ganha espaço, para "Aguardando aprovação" caber inteiro. */
+#tabelaMoradores .cols-6 { grid-template-columns: 2fr .7fr 1fr .8fr 1.6fr 56px; }
+@media (max-width: 640px) {
+  #tabelaMoradores .cols-6 { grid-template-columns: minmax(0,1.3fr) 40px minmax(0,1.2fr) 40px; }
+  #tabelaMoradores .badge { white-space: normal; overflow: visible; text-overflow: clip; max-width: none; line-height: 1.25; }
 }

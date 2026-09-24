@@ -280,3 +280,34 @@ def test_nao_registra_ocupacao_em_espaco_reservavel(cliente, cenario):
         json={"pessoas": 10}, headers=cab(cenario["porteiro"]),
     )
     assert r.status_code == 400
+
+
+# ── Morador que deixa o condomínio ───────────────────────────────────
+def test_inativar_o_morador_libera_as_reservas_futuras(cliente, db, cenario):
+    """Antes, o salão continuava bloqueado pela reserva de quem já tinha se
+    mudado. As reservas passadas ficam no histórico."""
+    from datetime import time
+
+    from app.models.enums import StatusReserva
+    from app.models.espaco import Reserva
+
+    ana_id = cliente.get("/api/v1/auth/eu", headers=cab(cenario["ana"])).json()["id"]
+    salao = cenario["salao"]["id"]
+    dia = (hoje_local() + timedelta(days=10)).isoformat()
+    futura = reservar(cliente, cenario["ana"], salao, data=dia).json()
+    cliente.post(f"/api/v1/espacos/reservas/{futura['id']}/avaliacao",
+                 json={"aprovada": True}, headers=cab(cenario["sindico"]))
+    passada = Reserva(espaco_id=salao, morador_id=ana_id,
+                      data=hoje_local() - timedelta(days=10),
+                      hora_inicio=time(14), hora_fim=time(18), status=StatusReserva.APROVADA)
+    db.add(passada)
+    db.commit()
+
+    r = cliente.delete(f"/api/v1/usuarios/{ana_id}", headers=cab(cenario["sindico"]))
+    assert r.status_code == 200, r.text
+
+    db.expire_all()
+    assert db.get(Reserva, futura["id"]).status == StatusReserva.CANCELADA
+    assert db.get(Reserva, passada.id).status == StatusReserva.APROVADA
+    # O horário ficou livre para os outros.
+    assert reservar(cliente, cenario["bruno"], salao, data=dia).status_code == 201
