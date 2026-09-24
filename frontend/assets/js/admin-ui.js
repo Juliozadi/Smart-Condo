@@ -79,14 +79,19 @@
     var caixaErro = document.getElementById(idErro);
     var ultimoFoco = null;
 
+    var soltarFoco = null;
+
     function abrir() {
       ultimoFoco = document.activeElement;
       fundo.classList.add('aberto');
+      if (soltarFoco) soltarFoco();
+      soltarFoco = global.SmartCondo.api.prenderFoco(fundo);
       var primeiro = form.querySelector('input, select, textarea');
       if (primeiro) primeiro.focus();
     }
 
     function fechar() {
+      if (soltarFoco) { soltarFoco(); soltarFoco = null; }
       fundo.classList.remove('aberto');
       if (ultimoFoco && ultimoFoco.focus) ultimoFoco.focus();
     }
@@ -150,8 +155,23 @@
     return { abrir: abrir, fechar: fechar, limpar: limpar, erro: erro, aoEnviar: aoEnviar };
   }
 
+  /* Inativa um morador ou porteiro que saiu do condomínio: o acesso acaba
+     na hora e o histórico fica. Pede confirmação dizendo o que acontece. */
+  function inativarUsuario(u, botao, aoConcluir) {
+    var efeitos = u.papel === 'morador'
+      ? 'O acesso dele termina agora e as reservas futuras são canceladas, liberando os espaços.'
+      : 'O acesso dele termina agora.';
+    if (!confirm('Inativar ' + u.nome + '?\n\n' + efeitos +
+                 ' O histórico (portaria, reservas, pagamentos) é mantido.')) return;
+    if (botao) botao.disabled = true;
+    global.SmartCondo.api.remover('/usuarios/' + u.id)
+      .then(aoConcluir)
+      .catch(function(e) { if (botao) botao.disabled = false; alert(e.message); });
+  }
+
   global.SmartCondo = global.SmartCondo || {};
   global.SmartCondo.ui = {
+    inativarUsuario: inativarUsuario,
     limparTabela: limparTabela,
     aguardar: aguardar,
     semAcento: semAcento,

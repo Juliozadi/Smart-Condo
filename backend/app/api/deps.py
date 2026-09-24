@@ -20,6 +20,12 @@ CREDENCIAL_INVALIDA = HTTPException(
     headers={"WWW-Authenticate": "Bearer"},
 )
 
+SESSAO_ENCERRADA = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="A senha desta conta foi alterada. Entre de novo.",
+    headers={"WWW-Authenticate": "Bearer"},
+)
+
 
 def get_usuario_atual(
     credencial: HTTPAuthorizationCredentials | None = Depends(esquema_bearer),
@@ -40,6 +46,12 @@ def get_usuario_atual(
     usuario = db.get(Usuario, usuario_id)
     if usuario is None:
         raise CREDENCIAL_INVALIDA
+
+    # A senha foi trocada ou redefinida depois que este token saiu: a
+    # sessão é encerrada, inclusive a de quem tivesse roubado o token.
+    # Token de antes desta regra não tem "sv" e vale como versão 0.
+    if payload.get("sv", 0) != usuario.versao_sessao:
+        raise SESSAO_ENCERRADA
 
     if usuario.status != StatusUsuario.ATIVO:
         raise HTTPException(
@@ -92,20 +104,31 @@ def exigir_permissao_porteiro(nome_permissao: str) -> Callable[..., Usuario]:
                 detail="Esta ação é permitida apenas para síndico e porteiro.",
             )
 
-        permissoes = (
-            db.query(PermissaoPorteiro)
-            .filter(PermissaoPorteiro.porteiro_id == usuario.id)
-            .one_or_none()
-        )
-        # Sem registro de permissões, o porteiro não recebe acesso implícito.
-        if permissoes is None or not getattr(permissoes, nome_permissao, False):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="O síndico não liberou esta ação para o seu usuário.",
-            )
+        exigir_permissao_do_porteiro(db, usuario, nome_permissao)
         return usuario
 
     return verificar
+
+
+def porteiro_tem_permissao(db: Session, porteiro: Usuario, nome_permissao: str) -> bool:
+    permissoes = (
+        db.query(PermissaoPorteiro)
+        .filter(PermissaoPorteiro.porteiro_id == porteiro.id)
+        .one_or_none()
+    )
+    # Sem registro de permissões, o porteiro não recebe acesso implícito.
+    return permissoes is not None and bool(getattr(permissoes, nome_permissao, False))
+
+
+def exigir_permissao_do_porteiro(db: Session, usuario: Usuario, nome_permissao: str) -> None:
+    """Para rotas abertas a vários papéis: se quem chama é porteiro, ele
+    precisa da permissão. Vale também para consultar — a Política de
+    Privacidade promete que o porteiro só vê o que o síndico liberou."""
+    if usuario.papel == Papel.PORTEIRO and not porteiro_tem_permissao(db, usuario, nome_permissao):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="O síndico não liberou esta ação para o seu usuário.",
+        )
 
 
 def exigir_condominio(usuario: Usuario = Depends(get_usuario_atual)) -> Usuario:

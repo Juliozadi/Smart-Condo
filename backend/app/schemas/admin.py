@@ -10,7 +10,7 @@ from datetime import date, datetime
 from pydantic import EmailStr, Field
 
 from app.models.enums import Papel, StatusUsuario, TipoOcupacao
-from app.schemas.comuns import CPF, SchemaBase, Senha, Telefone
+from app.schemas.comuns import CPF, DataNascimento, SchemaBase, Senha, Telefone
 
 
 class UsuarioAdminEntrada(SchemaBase):
@@ -25,7 +25,7 @@ class UsuarioAdminEntrada(SchemaBase):
     cpf: CPF
     telefone: Telefone
     senha: Senha
-    data_nascimento: date | None = None
+    data_nascimento: DataNascimento | None = None
     papel: Papel
 
     # Só para morador.
@@ -38,7 +38,7 @@ class UsuarioAdminAtualizacao(SchemaBase):
     nome: str | None = Field(default=None, min_length=3, max_length=160)
     email: EmailStr | None = None
     telefone: Telefone | None = None
-    data_nascimento: date | None = None
+    data_nascimento: DataNascimento | None = None
     status: StatusUsuario | None = None
     senha: Senha | None = Field(default=None, description="Só envie para trocar a senha.")
 

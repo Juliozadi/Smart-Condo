@@ -38,6 +38,8 @@
     var rotulo  = campo.getAttribute('data-rotulo') || 'Foto';
     var dica    = campo.getAttribute('data-dica') || '';
     var nomeArq = campo.getAttribute('data-input') || 'foto';
+    var pronta  = campo.getAttribute('data-pronta') ||
+                  'Imagem pronta. Ela será enviada ao morador junto com a notificação.';
 
     campo.innerHTML =
       '<label class="captura-rotulo">' +
@@ -103,7 +105,7 @@
       bTirar.hidden = true;
       bRefaz.hidden = false;
       campo.classList.add('tem-foto');
-      avisar('Imagem pronta. Ela será enviada ao morador junto com a notificação.');
+      avisar(pronta);
       campo.dispatchEvent(new CustomEvent('foto:capturada', { bubbles: true }));
     }
 

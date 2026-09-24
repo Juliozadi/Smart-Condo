@@ -172,6 +172,31 @@ def test_porteiro_sem_permissao_nao_registra_visitante(cliente, cenario):
     assert registrar_encomenda(cliente, tok, cenario["u204"]).status_code == 201
 
 
+@pytest.mark.parametrize("permissao,rota", [
+    ("registrar_visitantes", "/api/v1/portaria/visitantes"),
+    ("registrar_encomendas", "/api/v1/portaria/encomendas"),
+    ("registrar_ocorrencias", "/api/v1/portaria/ocorrencias"),
+])
+def test_porteiro_sem_permissao_nao_consulta(cliente, cenario, permissao, rota):
+    """Sem a permissão, o porteiro também não lista — a lista de visitantes
+    traz nome e CPF de terceiros."""
+    permissoes = {
+        "registrar_visitantes": True, "registrar_encomendas": True,
+        "registrar_veiculos": True, "registrar_ocorrencias": True,
+        "acessar_financeiro": False,
+    }
+    permissoes[permissao] = False
+    _, tok = cadastrar_porteiro(
+        cliente, cenario["sindico"], cenario["cond"],
+        email="limitado2@exemplo.com", cpf=CPFS[4], permissoes=permissoes,
+    )
+    r = cliente.get(rota, headers=cab(tok))
+    assert r.status_code == 403
+    assert "não liberou" in r.json()["detalhe"]
+    # Com a permissão, o porteiro padrão lista normalmente.
+    assert cliente.get(rota, headers=cab(cenario["porteiro"])).status_code == 200
+
+
 def test_permissao_revogada_passa_a_valer(cliente, cenario):
     porteiro_id, tok = cadastrar_porteiro(
         cliente, cenario["sindico"], cenario["cond"],

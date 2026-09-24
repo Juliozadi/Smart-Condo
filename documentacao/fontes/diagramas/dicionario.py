@@ -81,6 +81,7 @@ DESCRICOES = {
     "usuarios.motivo_recusa": "Justificativa registrada pelo síndico ao recusar o cadastro; é o que o morador vê na tela de espera",
     "usuarios.tentativas_login": "Senhas erradas seguidas; zera no primeiro acesso bem-sucedido",
     "usuarios.bloqueado_ate": "Momento até o qual a conta fica bloqueada depois de sucessivas senhas erradas",
+    "usuarios.versao_sessao": "Versão da sessão, gravada em cada token; sobe quando a senha é trocada ou redefinida, e os tokens antigos deixam de valer",
 
     "codigos_verificacao.codigo_hash": "Resumo criptográfico do código enviado. O código em si não é guardado",
     "codigos_verificacao.finalidade": "Para que o código serve: confirmar o cadastro ou recuperar a senha",
@@ -126,7 +127,8 @@ DESCRICOES = {
     "documentos.titulo": "Título do documento",
     "documentos.descricao": "Breve explicação do conteúdo",
     "documentos.categoria": "Tipo do documento",
-    "documentos.arquivo_url": "Endereço do arquivo",
+    "documentos.arquivo": "Nome do arquivo (PDF ou imagem) enviado pelo síndico, gravado pela API sem endereço público",
+    "documentos.tipo_conteudo": "Tipo do arquivo conferido pelo conteúdo (application/pdf, image/png...)",
     "documentos.tamanho_kb": "Tamanho do arquivo em kilobytes, exibido antes do download",
     "documentos.publicado_em": "Momento da publicação",
 
@@ -135,7 +137,7 @@ DESCRICOES = {
     "ocorrencias.categoria": "Assunto da ocorrência",
     "ocorrencias.local": "Onde o problema foi observado",
     "ocorrencias.prioridade": "Urgência atribuída no registro",
-    "ocorrencias.foto_url": "Endereço da foto anexada, quando houver",
+    "ocorrencias.foto_arquivo": "Nome do arquivo da foto anexada por quem abriu, gravado pela API sem endereço público",
     "ocorrencias.status": "Situação do atendimento, da abertura ao arquivamento",
     "ocorrencias.resposta": "Resposta do síndico a quem abriu a ocorrência",
     "ocorrencias.respondida_em": "Momento da resposta",

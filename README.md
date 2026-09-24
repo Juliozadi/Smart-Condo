@@ -133,6 +133,7 @@ Cada pasta tem o seu próprio README com as instruções específicas.
 frontend/
 ├── index.html                         # Página de login
 ├── 404.html                           # Endereço inexistente
+├── diagnostico.html                   # Confere se a API responde
 ├── assets/
 │   ├── css/
 │   │   ├── style.css                  # Estilos globais e login
@@ -143,18 +144,21 @@ frontend/
 │   │   ├── admin-ui.js                # Modal, tabelas e formatações
 │   │   ├── validation.js              # Validações e máscaras de input
 │   │   ├── foto.js                    # Captura de foto (vídeo porteiro)
+│   │   ├── foto-perfil.js             # Envio e troca da foto de perfil
+│   │   ├── chat.js                    # Mensagens entre os perfis
+│   │   ├── permissoes.js              # O que o porteiro pode registrar
 │   │   └── acessibilidade.js          # Acessibilidade, VLibras e tema
 │   └── img/
 │       ├── logo.png
 │       ├── acessibilidade.png
-│       └── icons/                     # 47 ícones SVG
+│       └── icons/                     # 43 ícones SVG
 └── pages/
     ├── legal/                         # Termos de uso e privacidade
     ├── cadastro/                      # Cadastro de usuários (3 páginas)
     ├── login/                         # Recuperação de senha (3 páginas)
     ├── morador/                       # Módulo do morador (8 páginas)
     ├── porteiro/                      # Módulo do porteiro (7 páginas)
-    ├── sindico/                       # Módulo do síndico (13 páginas)
+    ├── sindico/                       # Módulo do síndico (14 páginas)
     └── admin/                         # Módulo do administrador (3 páginas)
 ```
 
@@ -165,17 +169,17 @@ backend/
 ├── alembic/                           # Migrações do banco
 ├── app/
 │   ├── core/                          # Configuração, banco e segurança
-│   ├── models/                        # 19 tabelas
+│   ├── models/                        # 21 tabelas
 │   ├── schemas/                       # Entrada e saída da API
 │   ├── services/                      # Regras de negócio
 │   ├── api/routers/                   # Endpoints
 │   ├── seed.py                        # Dados de demonstração
 │   └── main.py
-└── tests/                             # 216 casos de teste
+└── tests/                             # 354 casos de teste
 ```
 
-**Total:** 41 páginas HTML, 2 arquivos CSS, 7 arquivos JS, 47 ícones SVG e
-uma API com 79 endpoints.
+**Total:** 43 páginas HTML, 2 arquivos CSS, 9 arquivos JS, 43 ícones SVG e
+uma API com 99 endpoints.
 
 ---
 
@@ -195,11 +199,11 @@ uvicorn app.main:app --reload
 
 Documentação interativa da API em <http://localhost:8000/docs>.
 
-**79 endpoints**, cobrindo os casos de uso e as histórias de usuário da
+**99 endpoints**, cobrindo os casos de uso e as histórias de usuário da
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e
-comunicados. **216 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
+comunicados, documentos e chat. **354 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
 
 ---
 

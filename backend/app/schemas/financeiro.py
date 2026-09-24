@@ -9,12 +9,14 @@ Documentação, seção 6 (História do Usuário):
 from __future__ import annotations
 
 from datetime import date, datetime
+
+from app.core.tempo import hoje_local
 from decimal import Decimal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from app.models.enums import FormaPagamento, StatusCobranca
-from app.schemas.comuns import SchemaBase
+from app.schemas.comuns import EnderecoWeb, SchemaBase
 
 
 class PreferenciaCobrancaEntrada(SchemaBase):
@@ -37,6 +39,21 @@ class CobrancaEntrada(SchemaBase):
         description="Se ficar vazio, usa o dia escolhido pelo morador.",
     )
 
+    @model_validator(mode="after")
+    def conferir_datas(self) -> "CobrancaEntrada":
+        hoje = hoje_local()
+        competencia = self.competencia.replace(day=1)
+        # Cobrança condominial prescreve em 5 anos (Código Civil, art. 206,
+        # § 5º, I); mais de um ano à frente é quase sempre ano digitado errado.
+        if competencia < date(hoje.year - 5, hoje.month, 1):
+            raise ValueError("A competência não pode ser de mais de 5 anos atrás.")
+        limite = date(hoje.year + 1, hoje.month, 1)
+        if competencia > limite:
+            raise ValueError("A competência não pode passar de 12 meses à frente.")
+        if self.vencimento is not None and self.vencimento < competencia:
+            raise ValueError("O vencimento não pode ser antes do mês de competência.")
+        return self
+
 
 class CobrancaSaida(SchemaBase):
     id: int
@@ -54,7 +71,7 @@ class CobrancaSaida(SchemaBase):
 class PagamentoEntrada(SchemaBase):
     valor: Decimal = Field(gt=0, max_digits=10, decimal_places=2)
     forma: FormaPagamento
-    comprovante_url: str | None = Field(default=None, max_length=500)
+    comprovante_url: EnderecoWeb | None = None
     observacao: str | None = Field(default=None, max_length=500)
 
 

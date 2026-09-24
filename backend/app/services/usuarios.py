@@ -7,12 +7,14 @@ isso fica num lugar só.
 from __future__ import annotations
 
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.core.security import gerar_hash_senha
 from app.models.condominio import Condominio, Unidade
-from app.models.enums import Papel, StatusUsuario
+from app.core.tempo import hoje_local
+from app.models.enums import Papel, StatusReserva, StatusUsuario
+from app.models.espaco import Reserva
 from app.models.usuario import PermissaoPorteiro, Usuario
 from app.services import auth as servico_auth
 
@@ -156,11 +158,41 @@ def atualizar_usuario(db: Session, usuario: Usuario, dados) -> Usuario:
             detail="Tipo de ocupação é só para morador.",
         )
 
+    # Inativar pela edição tem o mesmo efeito de remover (remover_usuario).
+    if campos.get("status") == StatusUsuario.INATIVO:
+        _soltar_do_condominio_se_sindico(db, usuario)
+        cancelar_reservas_futuras(db, usuario)
+
     for campo, valor in campos.items():
         setattr(usuario, campo, valor)
 
     db.flush()
     return usuario
+
+
+def cancelar_reservas_futuras(db: Session, usuario: Usuario) -> int:
+    """Quem deixa o condomínio não segura mais os espaços: as reservas de
+    hoje em diante, pendentes ou aprovadas, são canceladas. Sem isso, o
+    salão continuava bloqueado por quem já tinha se mudado. As passadas
+    ficam como estão, no histórico."""
+    return db.execute(
+        update(Reserva)
+        .where(
+            Reserva.morador_id == usuario.id,
+            Reserva.status.in_((StatusReserva.PENDENTE, StatusReserva.APROVADA)),
+            Reserva.data >= hoje_local(),
+        )
+        .values(status=StatusReserva.CANCELADA)
+        .execution_options(synchronize_session=False)
+    ).rowcount
+
+
+def _soltar_do_condominio_se_sindico(db: Session, usuario: Usuario) -> None:
+    """O condomínio não pode ficar apontando para um síndico inativo."""
+    if usuario.papel == Papel.SINDICO and usuario.condominio_id:
+        condominio = db.get(Condominio, usuario.condominio_id)
+        if condominio is not None and condominio.sindico_id == usuario.id:
+            condominio.sindico_id = None
 
 
 def remover_usuario(db: Session, usuario: Usuario, quem_remove: Usuario) -> None:
@@ -175,11 +207,7 @@ def remover_usuario(db: Session, usuario: Usuario, quem_remove: Usuario) -> None
             detail="Você não pode remover o próprio usuário.",
         )
 
-    # O condomínio não pode ficar apontando para um síndico inativo.
-    if usuario.papel == Papel.SINDICO and usuario.condominio_id:
-        condominio = db.get(Condominio, usuario.condominio_id)
-        if condominio is not None and condominio.sindico_id == usuario.id:
-            condominio.sindico_id = None
-
+    _soltar_do_condominio_se_sindico(db, usuario)
+    cancelar_reservas_futuras(db, usuario)
     usuario.status = StatusUsuario.INATIVO
     db.flush()

@@ -1,15 +1,16 @@
 """Testes dos requisitos da seção 6 e da seção 13.5.3 da documentação."""
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import timedelta
 
 import pytest
 
+from app.core.tempo import hoje_local
 from tests.fixtures import (
     CPFS, cab, cadastrar_morador, cadastrar_porteiro, criar_espaco, montar_condominio,
 )
 
-AMANHA = (date.today() + timedelta(days=1)).isoformat()
+AMANHA = (hoje_local() + timedelta(days=1)).isoformat()
 
 
 @pytest.fixture
@@ -142,9 +143,24 @@ def test_reserva_cancelada_libera_o_horario(cliente, cenario):
 
 
 def test_nao_reserva_data_passada(cliente, cenario):
-    ontem = (date.today() - timedelta(days=1)).isoformat()
+    ontem = (hoje_local() - timedelta(days=1)).isoformat()
     r = reservar(cliente, cenario["ana"], cenario["salao"]["id"], data=ontem)
     assert r.status_code == 400
+
+
+def test_nao_reserva_horario_de_hoje_que_ja_passou(cliente, cenario):
+    hoje = hoje_local().isoformat()
+    r = reservar(cliente, cenario["ana"], cenario["salao"]["id"], "00:00", "00:30", data=hoje)
+    assert r.status_code == 400
+    assert "já passou" in r.json()["detalhe"]
+
+
+def test_antecedencia_maxima(cliente, cenario):
+    from app.core.config import settings
+    longe = (hoje_local() + timedelta(days=settings.RESERVA_ANTECEDENCIA_MAX_DIAS + 1)).isoformat()
+    r = reservar(cliente, cenario["ana"], cenario["salao"]["id"], data=longe)
+    assert r.status_code == 400
+    assert "antecedência" in r.json()["detalhe"]
 
 
 def test_hora_fim_antes_do_inicio_e_recusada(cliente, cenario):
@@ -264,3 +280,34 @@ def test_nao_registra_ocupacao_em_espaco_reservavel(cliente, cenario):
         json={"pessoas": 10}, headers=cab(cenario["porteiro"]),
     )
     assert r.status_code == 400
+
+
+# ── Morador que deixa o condomínio ───────────────────────────────────
+def test_inativar_o_morador_libera_as_reservas_futuras(cliente, db, cenario):
+    """Antes, o salão continuava bloqueado pela reserva de quem já tinha se
+    mudado. As reservas passadas ficam no histórico."""
+    from datetime import time
+
+    from app.models.enums import StatusReserva
+    from app.models.espaco import Reserva
+
+    ana_id = cliente.get("/api/v1/auth/eu", headers=cab(cenario["ana"])).json()["id"]
+    salao = cenario["salao"]["id"]
+    dia = (hoje_local() + timedelta(days=10)).isoformat()
+    futura = reservar(cliente, cenario["ana"], salao, data=dia).json()
+    cliente.post(f"/api/v1/espacos/reservas/{futura['id']}/avaliacao",
+                 json={"aprovada": True}, headers=cab(cenario["sindico"]))
+    passada = Reserva(espaco_id=salao, morador_id=ana_id,
+                      data=hoje_local() - timedelta(days=10),
+                      hora_inicio=time(14), hora_fim=time(18), status=StatusReserva.APROVADA)
+    db.add(passada)
+    db.commit()
+
+    r = cliente.delete(f"/api/v1/usuarios/{ana_id}", headers=cab(cenario["sindico"]))
+    assert r.status_code == 200, r.text
+
+    db.expire_all()
+    assert db.get(Reserva, futura["id"]).status == StatusReserva.CANCELADA
+    assert db.get(Reserva, passada.id).status == StatusReserva.APROVADA
+    # O horário ficou livre para os outros.
+    assert reservar(cliente, cenario["bruno"], salao, data=dia).status_code == 201

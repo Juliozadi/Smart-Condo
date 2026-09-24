@@ -45,6 +45,11 @@
     document.querySelectorAll('.profile-role').forEach(function(el) {
       el.textContent = ROTULOS[usuario.papel] || usuario.papel;
     });
+    // No celular o nome some e o link fica só com o ícone: sem isto, o
+    // leitor de tela anunciaria apenas "link".
+    document.querySelectorAll('a.profile-link').forEach(function(el) {
+      el.setAttribute('aria-label', 'Meu perfil: ' + usuario.nome);
+    });
   }
 
   function ligarLogout() {

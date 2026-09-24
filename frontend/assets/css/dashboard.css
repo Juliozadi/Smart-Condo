@@ -288,6 +288,9 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
   color: var(--muted);
   text-transform: uppercase; letter-spacing: 1px;
   margin-bottom: 14px;
+  /* É um h2 (a seção da página, para o leitor de tela); a altura de linha
+     do h2 global não vale aqui. */
+  line-height: normal;
 }
 
 /* ═══════════════════════════════════════════
@@ -345,7 +348,7 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
   border-color: rgba(16,182,168,.25);
   background: linear-gradient(160deg, var(--surface), #f6fefd);
 }
-.dash-card-sq h4 { font-size: 14px; font-weight: 700; }
+.dash-card-sq h3 { font-size: 14px; font-weight: 700; }
 .dash-card-sq p  { font-size: 11px; color: var(--muted); font-weight: 400; line-height: 1.4; }
 
 /* ── ÍCONE DOS CARDS ────────────────────────────────────── */
@@ -368,7 +371,7 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
 .icon-orange { background: linear-gradient(135deg, rgba(255,140,0,.15),   rgba(255,140,0,.06));   color: #cc7000; }
 
 .card-info { flex: 1; }
-.card-info h4 { font-size: 14px; font-weight: 700; margin-bottom: 3px; color: var(--text); }
+.card-info h3 { font-size: 14px; font-weight: 700; margin-bottom: 3px; color: var(--text); }
 .card-info p  { font-size: 12px; color: var(--muted); font-weight: 400; }
 .card-arrow   { color: var(--placeholder); font-size: 12px; }
 .card-arrow img { width: 12px; height: 12px; }
@@ -406,7 +409,7 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
 .list-avatar.purple { background: linear-gradient(135deg, #9164fa, #7a4ee0); box-shadow: 0 3px 8px rgba(145,100,250,.3); }
 
 .list-info { flex: 1 1 160px; min-width: 0; }
-.list-info h5 { font-size: 14px; font-weight: 700; margin-bottom: 2px; color: var(--text); }
+.list-info h3 { font-size: 14px; font-weight: 700; margin-bottom: 2px; color: var(--text); }
 .list-info p  { font-size: 12px; color: var(--muted); font-weight: 400; }
 
 /* ── BADGES ─────────────────────────────────────────────── */
@@ -447,7 +450,7 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
 .notif-dot.alert { background: #f56c6c; box-shadow: 0 0 0 3px rgba(245,108,108,.15); }
 .notif-dot.amber { background: #e6a23c; box-shadow: 0 0 0 3px rgba(230,162,60,.15); }
 
-.notif-content h5 { font-size: 14px; font-weight: 700; margin-bottom: 3px; color: var(--text); }
+.notif-content h3 { font-size: 14px; font-weight: 700; margin-bottom: 3px; color: var(--text); }
 .notif-content p  { font-size: 12px; color: var(--muted); font-weight: 400; line-height: 1.5; }
 .notif-time { font-size: 11px; color: var(--placeholder); font-weight: 600; margin-left: auto; flex-shrink: 0; }
 
@@ -537,7 +540,7 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
 .reserve-date .month { font-size: 10px; text-transform: uppercase; opacity: .8; margin-top: 3px; font-weight: 600; letter-spacing: .5px; }
 
 .reserve-info { flex: 1; }
-.reserve-info h5 { font-size: 15px; font-weight: 700; margin-bottom: 3px; color: var(--text); }
+.reserve-info h3 { font-size: 15px; font-weight: 700; margin-bottom: 3px; color: var(--text); }
 .reserve-info p  { font-size: 12px; color: var(--muted); font-weight: 400; }
 
 /* ═══════════════════════════════════════════
@@ -562,7 +565,7 @@ a.user-chip:hover { background: var(--primary-light); border-color: var(--primar
 }
 .space-card i     { font-size: 30px; color: var(--primary); margin-bottom: 10px; display: block; }
 .space-card img   { width: 30px; height: 30px; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; }
-.space-card h4    { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.space-card h3    { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
 .space-card p     { font-size: 11px; color: var(--muted); font-weight: 400; }
 .space-card .avail{ font-size: 11px; color: var(--sucesso); font-weight: 700; margin-top: 7px; }
 
@@ -1163,7 +1166,7 @@ body:has(.step-page:target) .step-page.default-step {
   text-align: left;
 }
 
-.summary-box h4 {
+.summary-box h3 {
   font-size: 13px; font-weight: 800;
   color: var(--primary-dark);
   text-transform: uppercase; letter-spacing: .8px;
@@ -1484,7 +1487,7 @@ body.tema-escuro .list-item::after {
   text-align: center; padding: 2px 0; text-transform: uppercase;
 }
 .portaria-dados { flex: 1; min-width: 0; }
-.portaria-dados h4 {
+.portaria-dados h3 {
   font-size: 14px; font-weight: 700; color: var(--text); margin: 0 0 3px;
 }
 .portaria-dados p { font-size: 12px; color: var(--muted); margin: 0 0 4px; line-height: 1.45; }
@@ -1531,6 +1534,7 @@ a.contato-btn { text-decoration: none; }
   background: var(--primary-light); color: var(--primary-texto); border-color: var(--primary);
 }
 .contato-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-glow); }
+.contato-btn.perigo:hover { background: rgba(212,85,63,.12); color: var(--erro); border-color: #d4553f; }
 .contato-status {
   font-size: 12px; font-weight: 600; color: var(--primary-texto);
   min-height: 18px; margin: -10px 0 18px;
@@ -1690,6 +1694,14 @@ a.contato-btn { text-decoration: none; }
   border-radius: var(--radius-xs); text-decoration: none;
   display: inline-flex; align-items: center;
 }
+
+/* ── Miniatura de foto protegida (api.miniatura) ─────────────────── */
+.miniatura-foto {
+  display: inline-block; margin-top: 8px; border-radius: var(--radius-xs);
+  overflow: hidden; border: 1px solid var(--border); line-height: 0;
+}
+.miniatura-foto img { width: 96px; height: 72px; object-fit: cover; display: block; }
+.miniatura-foto:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-glow); }
 
 /* ── Documentos do cadastro (fila de aprovação do síndico) ───────── */
 .docs-cadastro {
@@ -1982,7 +1994,7 @@ a.contato-btn { text-decoration: none; }
 
 /* ── Lista de comunicados do morador ─────────────────────────────── */
 .comunicado-item { cursor: pointer; }
-.comunicado-item.nao-lido .notif-content h5 { font-weight: 800; }
+.comunicado-item.nao-lido .notif-content h3 { font-weight: 800; }
 .comunicado-item:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-glow); }
 .comunicado-topo {
   display: flex; align-items: center; gap: 8px;
@@ -1997,8 +2009,10 @@ a.contato-btn { text-decoration: none; }
   font-size: 12px; font-weight: 700; color: var(--primary-texto);
   text-decoration: none; padding: 7px 14px;
   background: var(--primary-light); border-radius: var(--radius-md); flex-shrink: 0;
+  border: 0; font-family: inherit; cursor: pointer;
 }
-.link-baixar:hover { background: var(--primary-botao); color: var(--sobre-primary); }
+.link-baixar:hover:not(:disabled) { background: var(--primary-botao); color: var(--sobre-primary); }
+.link-baixar:disabled { color: var(--muted); background: var(--bg, transparent); cursor: not-allowed; }
 .card-info .glifo { width: 26px; height: 26px; }
 
 /* ── Perfil ──────────────────────────────────────────────────────── */
@@ -2027,6 +2041,7 @@ a.contato-btn { text-decoration: none; }
   display: flex; align-items: center; justify-content: center;
   background: var(--surface); border: 2px solid var(--border);
   box-shadow: var(--shadow-xs); cursor: pointer; transition: all .2s;
+  padding: 0; font: inherit;
 }
 .p-foto-btn:hover { border-color: var(--primary-texto); transform: scale(1.06); }
 .p-foto-btn:focus-within, .p-foto-btn:focus-visible { outline: 3px solid var(--primary-glow); }
@@ -2154,4 +2169,12 @@ body.tema-escuro .chat-avatar.sindico, body.tema-escuro .chat-avatar.porteiro { 
 .chat-enviar {
   padding: 0 16px; border: none; border-radius: var(--radius-xs); cursor: pointer;
   background: var(--primary-botao); color: var(--sobre-primary); font: inherit; font-size: 14px; font-weight: 700;
+}
+
+/* Moradores do síndico: a coluna de ações (inativar) é estreita e o
+   status ganha espaço, para "Aguardando aprovação" caber inteiro. */
+#tabelaMoradores .cols-6 { grid-template-columns: 2fr .7fr 1fr .8fr 1.6fr 56px; }
+@media (max-width: 640px) {
+  #tabelaMoradores .cols-6 { grid-template-columns: minmax(0,1.3fr) 40px minmax(0,1.2fr) 40px; }
+  #tabelaMoradores .badge { white-space: normal; overflow: visible; text-overflow: clip; max-width: none; line-height: 1.25; }
 }

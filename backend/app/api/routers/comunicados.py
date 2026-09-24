@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
 from app.api.deps import exigir_condominio, exigir_papel
@@ -120,22 +121,15 @@ def marcar_como_lido(
             status_code=status.HTTP_404_NOT_FOUND, detail="Comunicado não encontrado."
         )
 
-    ja_lido = db.scalar(
-        select(LeituraComunicado).where(
-            LeituraComunicado.comunicado_id == comunicado.id,
-            LeituraComunicado.usuario_id == usuario.id,
-        )
+    # Marcar de novo não é erro nem duplica a linha — nem quando as duas
+    # marcações chegam ao mesmo tempo: quem decide é a restrição do banco.
+    db.execute(
+        pg_insert(LeituraComunicado)
+        .values(comunicado_id=comunicado.id, usuario_id=usuario.id,
+                lido_em=datetime.now(timezone.utc))
+        .on_conflict_do_nothing(constraint="uq_leitura_por_usuario")
     )
-    # Marcar de novo não é erro nem duplica a linha.
-    if ja_lido is None:
-        db.add(
-            LeituraComunicado(
-                comunicado_id=comunicado.id,
-                usuario_id=usuario.id,
-                lido_em=datetime.now(timezone.utc),
-            )
-        )
-        db.commit()
+    db.commit()
 
     return Mensagem(detalhe="Comunicado marcado como lido.")
 

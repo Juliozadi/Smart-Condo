@@ -17,7 +17,7 @@
     <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
     <div class="dash-greeting">
       <p class="greeting-sub">Painel Administrativo</p>
-      <h2 class="greeting-name"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt=""> Ocorrências do Condomínio</h2>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt=""> Ocorrências do Condomínio</h1>
       <p class="greeting-condo">Responda os chamados abertos por moradores e porteiros</p>
     </div>
 
@@ -48,6 +48,7 @@
       </select>
     </div>
 
+    <h2 class="so-leitor">Lista de ocorrências</h2>
     <div class="list-items" id="listaOcorrencias"></div>
     <p class="estado-lista" id="estadoLista">Carregando…</p>
   </main>
@@ -186,7 +187,7 @@
 
     var info = document.createElement('div');
     info.className = 'list-info';
-    var titulo = document.createElement('h5');
+    var titulo = document.createElement('h3');
     titulo.textContent = o.titulo;
     var sub = document.createElement('p');
     var partes = [o.aberta_por_nome + (o.unidade ? ' — ' + o.unidade : '')];
@@ -200,6 +201,7 @@
     info.appendChild(titulo);
     info.appendChild(sub);
     info.appendChild(descricao);
+    if (o.foto_url) info.appendChild(api.miniatura(o.foto_url, 'Foto da ocorrência'));
     if (o.resposta) {
       var resposta = document.createElement('p');
       resposta.className = 'ocorrencia-resposta';

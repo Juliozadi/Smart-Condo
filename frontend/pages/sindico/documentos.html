@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Documentos</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script><link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-desktop">
+  <header class="app-bar"><div class="app-bar-inner wide">
+    <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
+    <div class="app-bar-right"><a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role">Síndico</span></a><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
+  </div></header>
+  <main class="dash-wrapper wide">
+    <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
+    <div class="dash-greeting">
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/folder-open.svg" width="16" height="16" alt=""> Documentos</h1>
+      <p class="greeting-condo"><img src="../../assets/img/icons/file-contract.svg" width="16" height="16" alt=""> Convenção, regimento, atas e prestações de contas</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card teal"><span class="stat-value" id="totDocumentos">—</span><span class="stat-label"><img src="../../assets/img/icons/folder-open.svg" width="16" height="16" alt="">Publicados</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totAtas">—</span><span class="stat-label"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt="">Atas</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totUnidade">—</span><span class="stat-label"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">De uma unidade</span></div>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Novo Documento</h2>
+    <div class="form-card">
+      <h3>Publicar Documento</h3>
+      <form id="formDocumento" novalidate>
+        <div class="form-group"><label for="doc_titulo">Título</label><input id="doc_titulo" type="text" required minlength="3" maxlength="180" placeholder="Ex: Ata da assembleia ordinária — março" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
+        <div class="form-row">
+          <div class="form-group"><label for="doc_categoria">Categoria</label><select id="doc_categoria" required style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"><option value="" disabled selected>Selecione</option><option value="convencao">Convenção</option><option value="regimento">Regimento interno</option><option value="ata">Ata de assembleia</option><option value="prestacao_contas">Prestação de contas</option><option value="planta">Planta</option><option value="outro">Outro</option></select></div>
+          <div class="form-group"><label for="doc_unidade">Para quem</label><select id="doc_unidade" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"><option value="" selected>Todo o condomínio</option></select></div>
+        </div>
+        <div class="form-group"><label for="doc_descricao">Descrição (opcional)</label><textarea id="doc_descricao" maxlength="1000" placeholder="Um resumo do que o documento trata" style="min-height:80px;resize:vertical;width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></textarea></div>
+        <div class="form-group"><label for="doc_arquivo">Arquivo (PDF, JPG, PNG ou WebP, até 10 MB)</label><input id="doc_arquivo" type="file" required accept="application/pdf,image/jpeg,image/png,image/webp" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
+        <p class="aviso-notificacao">
+          <img src="../../assets/img/icons/lock.svg" alt="">
+          <span>O arquivo fica guardado no sistema e só abre para quem tem acesso: o documento
+          do condomínio, para todos os moradores; o de uma unidade, só para quem mora nela.</span>
+        </p>
+        <p class="form-erro" id="erroDocumento" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;">Publicar Documento</button>
+      </form>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/folder-open.svg" width="16" height="16" alt=""> Documentos Publicados</h2>
+    <div class="data-table tabela-status" id="tabelaDocumentos">
+      <div class="table-head cols-5"><span>Título</span><span>Categoria</span><span>Para quem</span><span>Publicado</span><span>Ações</span></div>
+    </div>
+    <p class="estado-lista" id="estadoTabela">Carregando…</p>
+
+  </main>
+
+<script src="../../assets/js/validation.js"></script>
+<script>
+/* Documentos do condomínio: o síndico envia o arquivo (PDF ou imagem),
+   que fica guardado fora do alcance público. Os moradores abrem pela
+   própria tela de documentos, sempre com o token. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api;
+  var usuario = api.protegerPagina('sindico');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+
+  var MAX_BYTES = 10 * 1024 * 1024;
+  var TIPOS = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+  var ROTULO_CATEGORIA = {
+    convencao: 'Convenção', regimento: 'Regimento', ata: 'Ata',
+    planta: 'Planta', prestacao_contas: 'Prestação de contas', outro: 'Outro'
+  };
+  var CLASSE_CATEGORIA = {
+    convencao: 'badge-blue', regimento: 'badge-blue', ata: 'badge-ok',
+    planta: 'badge-pending', prestacao_contas: 'badge-ok', outro: 'badge-neutral'
+  };
+
+  function dataCurta(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + '/' + d.getFullYear();
+  }
+
+  function botaoAcao(titulo, icone, classe) {
+    var botao = document.createElement('button');
+    botao.type = 'button';
+    botao.className = 'btn-acao' + (classe ? ' ' + classe : '');
+    botao.title = titulo;
+    botao.setAttribute('aria-label', titulo);
+    var glifo = document.createElement('span');
+    glifo.className = 'glifo';
+    glifo.style.setProperty('--icone', 'url(../../assets/img/icons/' + icone + ')');
+    botao.appendChild(glifo);
+    return botao;
+  }
+
+  function montarLinha(d) {
+    var linha = document.createElement('div');
+    linha.className = 'table-row cols-5';
+    linha.innerHTML =
+      '<span><strong></strong></span><span><span class="badge"></span></span>' +
+      '<span></span><span></span><span class="acoes-linha"></span>';
+    linha.children[0].firstChild.textContent = d.titulo;
+    if (d.descricao) linha.title = d.descricao;
+    var selo = linha.children[1].firstChild;
+    selo.className = 'badge ' + (CLASSE_CATEGORIA[d.categoria] || 'badge-neutral');
+    selo.textContent = ROTULO_CATEGORIA[d.categoria] || d.categoria;
+    linha.children[2].textContent = d.unidade ? 'Unidade ' + d.unidade : 'Todos';
+    linha.children[3].textContent = dataCurta(d.publicado_em);
+
+    var acoes = linha.children[4];
+    if (d.url) {
+      var abrir = botaoAcao('Abrir ' + d.titulo, 'folder-open.svg');
+      abrir.addEventListener('click', function() {
+        api.abrirArquivo(d.url, d.titulo).catch(function(e) { alert(e.message); });
+      });
+      acoes.appendChild(abrir);
+    }
+    var remover = botaoAcao('Remover ' + d.titulo, 'xmark.svg', 'perigo');
+    remover.addEventListener('click', function() {
+      if (!confirm('Remover o documento "' + d.titulo + '"? O arquivo também será apagado.')) return;
+      remover.disabled = true;
+      api.remover('/documentos/' + d.id)
+        .then(carregar)
+        .catch(function(e) { remover.disabled = false; alert(e.message); });
+    });
+    acoes.appendChild(remover);
+    return linha;
+  }
+
+  function carregar() {
+    campo('estadoTabela').textContent = 'Carregando…';
+    return api.get('/documentos')
+      .then(function(lista) {
+        campo('totDocumentos').textContent = lista.length;
+        campo('totAtas').textContent = lista.filter(function(d) { return d.categoria === 'ata'; }).length;
+        campo('totUnidade').textContent = lista.filter(function(d) { return d.unidade; }).length;
+        var tabela = campo('tabelaDocumentos');
+        var cabecalho = tabela.querySelector('.table-head');
+        tabela.innerHTML = '';
+        tabela.appendChild(cabecalho);
+        campo('estadoTabela').textContent = lista.length ? '' : 'Nenhum documento publicado ainda.';
+        lista.forEach(function(d) { tabela.appendChild(montarLinha(d)); });
+      })
+      .catch(function(e) { campo('estadoTabela').textContent = e.message; });
+  }
+
+  function carregarUnidades() {
+    return api.get('/condominios/meu/unidades').then(function(lista) {
+      var select = campo('doc_unidade');
+      lista.forEach(function(u) {
+        var op = document.createElement('option');
+        op.value = u.id;
+        op.textContent = 'Só a unidade ' + (u.bloco && u.bloco !== 'unico' ? u.bloco + ' ' : '') + u.numero;
+        select.appendChild(op);
+      });
+    }).catch(function() {});
+  }
+
+  campo('formDocumento').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('erroDocumento');
+    erro.className = 'form-erro';
+    erro.textContent = '';
+
+    var titulo = campo('doc_titulo').value.trim();
+    var categoria = campo('doc_categoria').value;
+    var arquivo = campo('doc_arquivo').files[0];
+
+    if (titulo.length < 3) { erro.textContent = 'Escreva um título com pelo menos 3 caracteres.'; return; }
+    if (!categoria) { erro.textContent = 'Escolha a categoria do documento.'; return; }
+    if (!arquivo) { erro.textContent = 'Escolha o arquivo do documento.'; return; }
+    if (TIPOS.indexOf(arquivo.type) < 0) { erro.textContent = 'O arquivo precisa ser PDF, JPG, PNG ou WebP.'; return; }
+    if (arquivo.size > MAX_BYTES) { erro.textContent = 'O arquivo passa de 10 MB.'; return; }
+
+    var dados = new FormData();
+    dados.append('titulo', titulo);
+    dados.append('categoria', categoria);
+    var descricao = campo('doc_descricao').value.trim();
+    if (descricao) dados.append('descricao', descricao);
+    var unidade = campo('doc_unidade').value;
+    if (unidade) dados.append('unidade_id', unidade);
+    dados.append('arquivo', arquivo, arquivo.name);
+
+    var botao = this.querySelector('button[type=submit]');
+    var rotulo = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = 'Enviando…';
+
+    api.post('/documentos', dados)
+      .then(function() {
+        campo('formDocumento').reset();
+        erro.className = 'form-erro sucesso';
+        erro.textContent = 'Documento publicado. Os moradores já podem abrir.';
+        return carregar();
+      })
+      .catch(function(e) { erro.textContent = e.message; })
+      .then(function() { botao.disabled = false; botao.textContent = rotulo; });
+  });
+
+  campo('hdrName').textContent = usuario.nome;
+  carregarUnidades();
+  carregar();
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body></html>

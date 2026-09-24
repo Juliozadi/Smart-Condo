@@ -14,7 +14,7 @@
   <header class="app-bar">
     <div class="app-bar-inner wide">
       <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
-        <img src="../../assets/img/logo.png" alt="SmartCondo" class="logo-sm">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
         <span class="brand-name">Smart<strong>Condo</strong></span>
       </a>
       <div class="app-bar-right">
@@ -27,7 +27,7 @@
     <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
     <div class="dash-greeting">
       <p class="greeting-sub">Painel Administrativo</p>
-      <h2 class="greeting-name"><img src="../../assets/img/icons/moradores.svg" width="26" height="26" alt=""> Gestão de Moradores</h2>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/moradores.svg" width="26" height="26" alt=""> Gestão de Moradores</h1>
       <p class="greeting-condo" id="resumoCondominio">Carregando…</p>
     </div>
     <div class="admin-stats">
@@ -41,7 +41,7 @@
       <span id="textoPendentes"></span>
     </div>
 
-    <p class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Ações</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Ações</h2>
     <div class="dash-grid" style="flex-direction:row;gap:10px;flex-wrap:wrap;">
       <a href="cadastrar_morador.html" class="action-btn" style="width:auto;flex:1;min-width:180px;margin-bottom:0;">
         <img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Cadastrar Morador
@@ -51,12 +51,12 @@
     <br>
 
     <div id="blocoPendentes">
-      <p class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Cadastros Aguardando Aprovação</p>
+      <h2 class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Cadastros Aguardando Aprovação</h2>
       <div class="list-items" id="listaPendentes"></div>
       <p class="estado-lista" id="estadoPendentes">Carregando…</p>
     </div>
 
-    <p class="section-title"><img src="../../assets/img/icons/moradores.svg" width="16" height="16" alt=""> Todos os Moradores</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/moradores.svg" width="16" height="16" alt=""> Todos os Moradores</h2>
     <div class="barra-acoes">
       <div class="campo-busca">
         <img src="../../assets/img/icons/moradores.svg" alt="">
@@ -72,7 +72,7 @@
       </select>
     </div>
     <div class="data-table tabela-status" id="tabelaMoradores">
-      <div class="table-head cols-5"><span>Morador</span><span>Unidade</span><span>Tipo</span><span>Desde</span><span>Status</span></div>
+      <div class="table-head cols-6"><span>Morador</span><span>Unidade</span><span>Tipo</span><span>Desde</span><span>Status</span><span>Ações</span></div>
     </div>
     <p class="estado-lista" id="estadoTabela"></p>
   </main>
@@ -181,6 +181,7 @@
     origem: null
   };
   function fecharVisor() {
+    if (visor.soltarFoco) { visor.soltarFoco(); visor.soltarFoco = null; }
     visor.fundo.classList.remove('aberto');
     document.getElementById('visorConteudo').textContent = '';
     if (visor.url) { URL.revokeObjectURL(visor.url); visor.url = null; }
@@ -195,6 +196,7 @@
     novaAba.hidden = true;
     visor.origem = origem;
     visor.fundo.classList.add('aberto');
+    visor.soltarFoco = api.prenderFoco(visor.fundo);
     document.getElementById('visorFechar').focus();
 
     api.protegido(d.url)
@@ -233,7 +235,7 @@
 
     var info = document.createElement('div');
     info.className = 'list-info';
-    var titulo = document.createElement('h5');
+    var titulo = document.createElement('h3');
     titulo.textContent = u.nome;
     var sub = document.createElement('p');
     sub.textContent = unidadeDe(u) + ' · ' +
@@ -279,11 +281,11 @@
 
   function montarLinha(u) {
     var linha = document.createElement('div');
-    linha.className = 'table-row cols-5';
+    linha.className = 'table-row cols-6';
     linha.innerHTML =
       '<span><strong></strong><br><small class="lista-email"></small></span>' +
       '<span></span><span></span><span></span>' +
-      '<span><span class="badge"></span></span>';
+      '<span><span class="badge"></span></span><span class="acoes-linha"></span>';
     linha.children[0].firstChild.textContent = u.nome;
     linha.children[0].querySelector('.lista-email').textContent = u.email;
     linha.children[1].textContent = unidadeDe(u);
@@ -292,6 +294,22 @@
     var selo = linha.children[4].firstChild;
     selo.className = 'badge ' + (ui.CLASSE_STATUS[u.status] || 'badge-neutral');
     selo.textContent = ui.ROTULO_STATUS[u.status] || u.status;
+    // Quem se mudou precisa perder o acesso: antes não havia como.
+    if (u.status === 'ativo') {
+      var inativar = document.createElement('button');
+      inativar.type = 'button';
+      inativar.className = 'btn-acao perigo';
+      inativar.title = 'Inativar ' + u.nome;
+      inativar.setAttribute('aria-label', inativar.title);
+      var glifo = document.createElement('span');
+      glifo.className = 'glifo';
+      glifo.style.setProperty('--icone', 'url(../../assets/img/icons/xmark.svg)');
+      inativar.appendChild(glifo);
+      inativar.addEventListener('click', function() {
+        ui.inativarUsuario(u, inativar, carregar);
+      });
+      linha.children[5].appendChild(inativar);
+    }
     return linha;
   }
 
@@ -319,16 +337,7 @@
                    ROTULO_OCUPACAO[u.tipo_ocupacao] || '', ui.ROTULO_STATUS[u.status] || u.status,
                    desde(u.criado_em)]);
     });
-    var csv = linhas.map(function(l) {
-      return l.map(function(c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(';');
-    }).join('\r\n');
-    // O BOM faz o Excel abrir os acentos corretamente.
-    var url = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
-    var link = document.createElement('a');
-    link.href = url;
-    link.download = 'moradores.csv';
-    link.click();
-    URL.revokeObjectURL(url);
+    api.baixarCsv('moradores.csv', linhas);
   }
 
   function atualizarResumo(condominio) {

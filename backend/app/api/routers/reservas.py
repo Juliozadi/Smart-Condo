@@ -5,14 +5,16 @@ aprova ou recusa e vê o histórico).
 """
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import exigir_condominio, exigir_papel, get_usuario_atual
+from app.core.config import settings
 from app.core.database import get_db
+from app.core.tempo import agora_local
 from app.models.condominio import Unidade
 from app.models.enums import Papel, StatusReserva
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
@@ -242,6 +244,10 @@ def solicitar_reserva(
     db: Session = Depends(get_db),
 ) -> ReservaSaida:
     espaco = _espaco_do_condominio(db, morador, dados.espaco_id)
+    # Trava o espaço até o fim da transação. Sem isso, dois moradores que
+    # pedem o mesmo horário ao mesmo tempo passam juntos pela conferência
+    # de conflito abaixo, e o espaço fica reservado duas vezes.
+    db.execute(select(EspacoComum.id).where(EspacoComum.id == espaco.id).with_for_update())
 
     if not espaco.reservavel:
         raise HTTPException(
@@ -252,7 +258,21 @@ def solicitar_reserva(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Este espaço está em manutenção."
         )
-    if dados.data < date.today():
+    agora = agora_local()
+    if dados.data == agora.date() and dados.hora_inicio <= agora.time():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Esse horário de hoje já passou. Escolha um horário mais tarde.",
+        )
+    if dados.data > agora.date() + timedelta(days=settings.RESERVA_ANTECEDENCIA_MAX_DIAS):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "As reservas podem ser feitas com até "
+                f"{settings.RESERVA_ANTECEDENCIA_MAX_DIAS} dias de antecedência."
+            ),
+        )
+    if dados.data < agora.date():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Não é possível reservar uma data passada."
         )
@@ -310,7 +330,9 @@ def cancelar_reserva(
     morador: Usuario = Depends(exigir_papel(Papel.MORADOR)),
     db: Session = Depends(get_db),
 ) -> ReservaSaida:
-    reserva = db.get(Reserva, reserva_id)
+    # Travada até o commit: o síndico pode estar avaliando enquanto o
+    # morador cancela, e só um dos dois pode valer.
+    reserva = db.get(Reserva, reserva_id, with_for_update=True)
     # Um morador não pode nem ver nem mexer na reserva de outro.
     if reserva is None or reserva.morador_id != morador.id:
         raise HTTPException(
@@ -343,13 +365,14 @@ def listar_reservas_do_condominio(
         .join(EspacoComum)
         .where(EspacoComum.condominio_id == sindico.condominio_id)
         .order_by(Reserva.data.desc(), Reserva.hora_inicio)
+        .options(selectinload(Reserva.morador).selectinload(Usuario.unidade))
     )
     if status_reserva is not None:
         consulta = consulta.where(Reserva.status == status_reserva)
 
     resposta: list[ReservaSindicoSaida] = []
     for r in db.scalars(consulta).all():
-        unidade = db.get(Unidade, r.morador.unidade_id) if r.morador.unidade_id else None
+        unidade = r.morador.unidade
         resposta.append(
             ReservaSindicoSaida(
                 **_para_saida(r).model_dump(),
@@ -372,7 +395,9 @@ def avaliar_reserva(
     sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
     db: Session = Depends(get_db),
 ) -> ReservaSindicoSaida:
-    reserva = db.get(Reserva, reserva_id)
+    # Travada até o commit: o síndico pode estar avaliando enquanto o
+    # morador cancela, e só um dos dois pode valer.
+    reserva = db.get(Reserva, reserva_id, with_for_update=True)
     if reserva is None or reserva.espaco.condominio_id != sindico.condominio_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Reserva não encontrada."

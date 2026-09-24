@@ -14,7 +14,7 @@
   <header class="app-bar">
     <div class="app-bar-inner">
       <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
-        <img src="../../assets/img/logo.png" alt="SmartCondo" class="logo-sm">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
         <span class="brand-name">Smart<strong>Condo</strong></span>
       </a>
       <div class="app-bar-right">
@@ -31,7 +31,7 @@
 
     <div class="dash-greeting">
       <p class="greeting-sub" id="hdrUnidade">Carregando…</p>
-      <h2 class="greeting-name"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Reservas de Espaços</h2>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Reservas de Espaços</h1>
       <p class="greeting-condo"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Reserve os espaços comuns do condomínio</p>
     </div>
 
@@ -42,7 +42,7 @@
     </div>
 
     <!-- Ocupação em tempo real das áreas comuns — doc, seção 6 -->
-    <p class="section-title"><img src="../../assets/img/icons/moradores.svg" width="16" height="16" alt=""> Ocupação Agora</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/moradores.svg" width="16" height="16" alt=""> Ocupação Agora</h2>
     <p class="ocupacao-atualizado">
       <span class="ocupacao-pulso" aria-hidden="true"></span>
       Atualizado <span id="ocupacaoQuando">agora mesmo</span> &nbsp;·&nbsp; áreas de uso livre
@@ -50,7 +50,7 @@
     <div class="ocupacao-grid" id="ocupacaoGrid" aria-live="polite"></div>
     <p class="estado-lista" id="estadoOcupacao">Carregando…</p>
 
-    <p class="section-title"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Espaços Disponíveis</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Espaços Disponíveis</h2>
     <div class="space-grid" id="gradeEspacos"></div>
     <p class="estado-lista" id="estadoEspacos">Carregando…</p>
 
@@ -60,7 +60,7 @@
       horário em que o espaço está ocupado, mas nunca quem reservou.</span>
     </p>
 
-    <p class="section-title"><img src="../../assets/img/icons/reservas.svg" width="16" height="16" alt=""> Solicitar Nova Reserva</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/reservas.svg" width="16" height="16" alt=""> Solicitar Nova Reserva</h2>
     <div class="form-card">
       <h3>Formulário de Reserva</h3>
       <form id="formReserva" novalidate>
@@ -87,11 +87,11 @@
       </form>
     </div>
 
-    <p class="section-title"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Minhas Reservas</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Minhas Reservas</h2>
     <div class="reserve-list" id="minhasReservas"></div>
     <p class="estado-lista" id="estadoMinhas">Carregando…</p>
 
-    <p class="section-title"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Histórico</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Histórico</h2>
     <div class="data-table tabela-status" id="tabelaHistorico">
       <div class="table-head cols-4"><span>Espaço</span><span>Data</span><span>Horário</span><span>Status</span></div>
     </div>
@@ -192,7 +192,7 @@
   function cartaoEspaco(e) {
     var card = document.createElement('div');
     card.className = 'space-card';
-    var titulo = document.createElement('h4');
+    var titulo = document.createElement('h3');
     titulo.textContent = e.nome;
     var desc = document.createElement('p');
     desc.textContent = e.descricao || (e.capacidade ? 'Capacidade: ' + e.capacidade + ' pessoas' : '');
@@ -271,7 +271,7 @@
 
     var info = document.createElement('div');
     info.className = 'reserve-info';
-    var h = document.createElement('h5');
+    var h = document.createElement('h3');
     h.textContent = r.espaco_nome;
     var p = document.createElement('p');
     p.textContent = periodo(r) + (r.pessoas_estimadas ? ' · ' + r.pessoas_estimadas + ' pessoas' : '');

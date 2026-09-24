@@ -60,15 +60,11 @@
 
   function montar() {
     var entrada = el('fotoArquivo'), remover = el('fotoRemover');
-    // O botão da câmera é um <label>: abre o arquivo com o mouse, mas não
-    // recebe foco. Vira botão de verdade para quem navega pelo teclado.
+    // O botão da câmera é um <button> de verdade (foco e teclado de graça)
+    // que abre o seletor de arquivo, escondido.
     var botao = document.querySelector('.p-foto-btn');
     if (botao && entrada) {
-      botao.setAttribute('role', 'button');
-      botao.tabIndex = 0;
-      botao.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); entrada.click(); }
-      });
+      botao.addEventListener('click', function() { entrada.click(); });
     }
     if (entrada) {
       entrada.addEventListener('change', function() {

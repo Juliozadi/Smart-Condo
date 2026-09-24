@@ -9,6 +9,7 @@ import re
 
 import pytest
 
+from app.core.tempo import hoje_local
 from tests.fixtures import (
     CPFS, cab, cadastrar_morador, cadastrar_porteiro, criar_condominio_como_admin,
     criar_sindico, montar_condominio, token_admin,
@@ -486,3 +487,30 @@ def test_porteiro_nao_le_as_permissoes_de_outro(cliente, sindico, condominio):
     )
     r = cliente.get(f"/api/v1/usuarios/porteiros/{outro_id}/permissoes", headers=cab(tok))
     assert r.status_code == 403
+
+
+def test_morador_e_avisado_por_email_da_decisao(cliente, db, monkeypatch):
+    """A tela do cadastro promete: "você receberá confirmação por e-mail"."""
+    from app.services import notificacao
+    enviados = []
+    monkeypatch.setattr(notificacao, "notificar",
+                        lambda destino, canal, titulo, mensagem: enviados.append((destino, titulo, mensagem)))
+    base = montar_condominio(cliente, db)
+    uid, _ = cadastrar_morador(cliente, base["sindico"], base["cond"], aprovar=False)
+    r = cliente.post(f"/api/v1/usuarios/{uid}/aprovacao",
+                     json={"aprovado": False, "motivo": "Comprovante ilegível"},
+                     headers=cab(base["sindico"]))
+    assert r.status_code == 200
+    assert enviados[-1][0] == "morador@exemplo.com"
+    assert enviados[-1][1] == "Cadastro recusado"
+    assert "Comprovante ilegível" in enviados[-1][2]
+
+
+
+def test_data_de_nascimento_no_futuro_e_recusada(cliente, db):
+    from datetime import timedelta
+    base = montar_condominio(cliente, db)
+    _, tok = cadastrar_morador(cliente, base["sindico"], base["cond"])
+    for data in ((hoje_local() + timedelta(days=30)).isoformat(), "1850-05-01"):
+        r = cliente.patch("/api/v1/usuarios/eu", json={"data_nascimento": data}, headers=cab(tok))
+        assert r.status_code == 422, data

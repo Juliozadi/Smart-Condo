@@ -30,7 +30,7 @@
   <header class="app-bar">
     <div class="app-bar-inner">
       <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
-        <img src="../../assets/img/logo.png" alt="SmartCondo" class="logo-sm">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
         <span class="brand-name">Smart<strong>Condo</strong></span>
       </a>
       <div class="app-bar-right">
@@ -48,7 +48,7 @@
 
     <div class="dash-greeting">
       <p class="greeting-sub">Fique por dentro das novidades</p>
-      <h2 class="greeting-name"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt="">Comunicados</h2>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt="">Comunicados</h1>
       <p class="greeting-condo">Residencial das Palmeiras</p>
     </div>
 
@@ -68,7 +68,7 @@
       <button type="button" class="filtro-btn" data-filter="financeiro">Financeiro</button>
     </div>
 
-    <p class="section-title"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt=""> Comunicados</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt=""> Comunicados</h2>
     <div class="notif-list" id="listaComunicados"></div>
     <p class="estado-lista" id="estadoLista">Carregando…</p>
 
@@ -126,7 +126,7 @@
     corpo.className = 'notif-content';
     var topo = document.createElement('div');
     topo.className = 'comunicado-topo';
-    var h = document.createElement('h5');
+    var h = document.createElement('h3');
     h.textContent = c.titulo;
     var selo = document.createElement('span');
     selo.className = 'badge ' + (CLASSE_CATEGORIA[c.categoria] || 'badge-neutral');

@@ -16,7 +16,7 @@
   <header class="app-bar">
     <div class="app-bar-inner">
       <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
-        <img src="../../assets/img/logo.png" alt="SmartCondo" class="logo-sm">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
         <span class="brand-name">Smart<strong>Condo</strong></span>
       </a>
       <div class="app-bar-right">
@@ -34,7 +34,7 @@
 
     <div class="dash-greeting">
       <p class="greeting-sub"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Turno 07h – 15h · Carlos Pereira</p>
-      <h2 class="greeting-name"><img src="../../assets/img/icons/circle-exclamation.svg" width="26" height="26" alt=""> Registrar Ocorrência</h2>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/circle-exclamation.svg" width="26" height="26" alt=""> Registrar Ocorrência</h1>
       <p class="greeting-condo">Documente incidentes e irregularidades</p>
     </div>
 
@@ -45,7 +45,7 @@
     </div>
 
     <!-- Formulário -->
-    <p class="section-title"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt=""> Nova Ocorrência</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt=""> Nova Ocorrência</h2>
     <div class="form-card">
       <h3><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt=""> Dados da Ocorrência</h3>
       <form id="formOcorrencia" novalidate>
@@ -121,14 +121,12 @@
             </select>
           </div>
         </div>
-        <div class="form-group">
-          <label>Evidências fotográficas <span style="font-size:11px;color:var(--muted);font-weight:400;">(opcional)</span></label>
-          <label style="display:flex;align-items:center;gap:12px;padding:14px;border:2px dashed var(--border);border-radius:var(--radius-xs);cursor:pointer;background:var(--surface-2);" for="ocorr-p-foto">
-            <img src="../../assets/img/icons/camera.svg" width="16" height="16" alt="">
-            <div><p style="font-size:13px;color:var(--muted);font-weight:500;">Anexar imagem ou arquivo</p><p style="font-size:11px;color:var(--placeholder);">JPG, PNG, PDF · Máx. 10 MB</p></div>
-          </label>
-          <input type="file" id="ocorr-p-foto" accept="image/*,.pdf" style="display:none;">
-        </div>
+        <div class="captura-foto"
+             data-rotulo="Foto da ocorrência (opcional)"
+             data-dica="Uma imagem do que aconteceu ajuda o síndico a decidir. Só quem pode ver a ocorrência vê a foto."
+             data-icone="../../assets/img/icons/camera.svg"
+             data-pronta="Imagem pronta. Ela vai junto com a ocorrência."
+             data-input="foto_ocorrencia"></div>
         <p class="form-erro" id="erroOcorrencia" role="alert"></p>
         <button class="action-btn" type="submit" style="margin-top:4px;">
           Registrar Ocorrência
@@ -137,12 +135,12 @@
     </div>
 
     <!-- Ocorrências abertas -->
-    <p class="section-title"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt=""> Ocorrências em Aberto</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt=""> Ocorrências em Aberto</h2>
     <div class="list-items" id="listaAbertas"></div>
     <p class="estado-lista" id="estadoAbertas">Carregando…</p>
 
     <!-- Histórico -->
-    <p class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Histórico do Condomínio</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Histórico do Condomínio</h2>
     <div class="data-table tabela-status" id="tabelaHistorico">
       <div class="table-head cols-4"><span>Assunto</span><span>Local</span><span>Data</span><span>Status</span></div>
     </div>
@@ -151,6 +149,7 @@
   </main>
 
 
+  <script src="../../assets/js/foto.js"></script>
   <script src="../../assets/js/validation.js"></script>
   <script>
   /* Ocorrências pelo lado da portaria (documentação, seções 8 e 12). O
@@ -208,7 +207,7 @@
 
       var info = document.createElement('div');
       info.className = 'list-info';
-      var h = document.createElement('h5');
+      var h = document.createElement('h3');
       h.textContent = o.titulo + (o.local ? ' — ' + o.local : '');
       var p = document.createElement('p');
       p.textContent = o.descricao;
@@ -217,6 +216,7 @@
       quem.textContent = 'Aberta por ' + o.aberta_por_nome +
         (o.unidade ? ' (Apto ' + o.unidade + ')' : '') + ' em ' + dataCurta(o.criado_em);
       info.appendChild(h); info.appendChild(p); info.appendChild(quem);
+      if (o.foto_url) info.appendChild(api.miniatura(o.foto_url, 'Foto da ocorrência'));
 
       var selo = document.createElement('span');
       selo.className = 'badge ' + (CLASSE_STATUS[o.status] || 'badge-neutral');
@@ -336,11 +336,19 @@
       botao.disabled = true;
       botao.textContent = 'Registrando…';
 
+      var foto = document.querySelector('.captura-valor');
+      var fotoCapturada = foto && foto.value;
+
       api.post('/portaria/ocorrencias', corpo)
-        .then(function() {
+        .then(function(ocorrencia) {
+          return api.anexarFoto('/portaria/ocorrencias/' + ocorrencia.id + '/foto', fotoCapturada);
+        })
+        .then(function(falhaDaFoto) {
           campo('formOcorrencia').reset();
-          erro.className = 'form-erro sucesso';
-          erro.textContent = 'Ocorrência registrada. O síndico vai acompanhar.';
+          erro.className = 'form-erro' + (falhaDaFoto ? '' : ' sucesso');
+          erro.textContent = falhaDaFoto
+            ? 'Ocorrência registrada, mas a foto não foi enviada: ' + falhaDaFoto
+            : 'Ocorrência registrada. O síndico vai acompanhar.';
           return carregar();
         })
         .catch(function(e) { erro.textContent = e.message; })

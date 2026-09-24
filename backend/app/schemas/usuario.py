@@ -12,7 +12,7 @@ from pydantic import EmailStr, Field, model_validator
 from app.models.enums import (
     CanalVerificacao, Papel, StatusUsuario, TipoOcupacao,
 )
-from app.schemas.comuns import CPF, SchemaBase, Senha, Telefone
+from app.schemas.comuns import CPF, DataNascimento, SchemaBase, Senha, SenhaDigitada, Telefone
 
 
 # ── Cadastro (seção 12) ───────────────────────────────────────────────
@@ -21,7 +21,7 @@ class CadastroBase(SchemaBase):
     email: EmailStr
     cpf: CPF
     telefone: Telefone
-    data_nascimento: date | None = None
+    data_nascimento: DataNascimento | None = None
     senha: Senha
     # "o sistema salva e envia um código de confirmação pelo meio escolhido"
     canal_confirmacao: CanalVerificacao = CanalVerificacao.EMAIL
@@ -64,7 +64,7 @@ class ReenvioCodigo(SchemaBase):
 # ── Login (seção 12) ──────────────────────────────────────────────────
 class LoginEntrada(SchemaBase):
     email: EmailStr
-    senha: str = Field(min_length=1, max_length=72)
+    senha: SenhaDigitada = Field(min_length=1, max_length=72)
 
 
 class TokenSaida(SchemaBase):
@@ -72,6 +72,12 @@ class TokenSaida(SchemaBase):
     token_type: str = "bearer"
     expira_em_min: int
     usuario: "UsuarioSaida"
+
+
+class SenhaTrocadaSaida(SchemaBase):
+    detalhe: str
+    access_token: str
+    expira_em_min: int
 
 
 # ── Esqueci minha senha (seção 12) ────────────────────────────────────
@@ -84,7 +90,7 @@ class RedefinicaoSenha(SchemaBase):
     email: EmailStr
     codigo: str = Field(min_length=4, max_length=8)
     nova_senha: Senha
-    confirmacao_senha: str
+    confirmacao_senha: SenhaDigitada
 
     @model_validator(mode="after")
     def conferir_confirmacao(self) -> "RedefinicaoSenha":
@@ -94,7 +100,7 @@ class RedefinicaoSenha(SchemaBase):
 
 
 class TrocaSenha(SchemaBase):
-    senha_atual: str = Field(min_length=1, max_length=72)
+    senha_atual: SenhaDigitada = Field(min_length=1, max_length=72)
     nova_senha: Senha
 
 
@@ -148,13 +154,13 @@ class PerfilSaida(UsuarioSaida):
     administrador enxergam.
     """
     cpf: str
-    data_nascimento: date | None = None
+    data_nascimento: DataNascimento | None = None
 
 
 class UsuarioAtualizacao(SchemaBase):
     nome: str | None = Field(default=None, min_length=3, max_length=160)
     telefone: Telefone | None = None
-    data_nascimento: date | None = None
+    data_nascimento: DataNascimento | None = None
     # A foto não entra aqui: ela só muda pelo envio do arquivo
     # (PUT /usuarios/eu/foto). Aceitar um endereço livre deixava qualquer
     # usuário apontar a própria foto para um servidor de terceiros, que

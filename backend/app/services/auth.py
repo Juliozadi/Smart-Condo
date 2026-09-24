@@ -48,6 +48,30 @@ def garantir_email_e_cpf_livres(db: Session, email: str, cpf: str) -> None:
         )
 
 
+class CodigoMuitoFrequente(Exception):
+    """Pediu código novo antes do intervalo mínimo ou além do limite da hora."""
+
+
+def _pode_emitir(db: Session, usuario: Usuario, finalidade: FinalidadeCodigo) -> bool:
+    agora = _agora()
+    validade = timedelta(minutes=settings.CODIGO_VERIFICACAO_EXPIRA_MIN)
+    # A tabela guarda só a validade; a emissão é a validade menos o prazo.
+    emissoes = [
+        c.expira_em - validade
+        for c in db.scalars(
+            select(CodigoVerificacao).where(
+                CodigoVerificacao.usuario_id == usuario.id,
+                CodigoVerificacao.finalidade == finalidade,
+                CodigoVerificacao.expira_em > agora - timedelta(hours=1) + validade,
+            )
+        )
+    ]
+    if len(emissoes) >= settings.CODIGO_MAX_POR_HORA:
+        return False
+    intervalo = timedelta(seconds=settings.CODIGO_INTERVALO_S)
+    return not any(e > agora - intervalo for e in emissoes)
+
+
 def emitir_codigo(
     db: Session,
     usuario: Usuario,
@@ -57,8 +81,15 @@ def emitir_codigo(
     """Gera, guarda (em hash) e envia um novo código.
 
     Qualquer código pendente da mesma finalidade é invalidado, para que só o
-    mais recente valha.
+    mais recente valha. Levanta CodigoMuitoFrequente se o limite de
+    frequência foi atingido; nesse caso o código anterior continua valendo.
     """
+    # Trava o usuário até o commit. Pedidos simultâneos passavam todos pelo
+    # limite de frequência — dezenas de e-mails ou SMS de uma vez — e cada
+    # um deixava o seu código valendo, já que não via os dos outros.
+    db.execute(select(Usuario.id).where(Usuario.id == usuario.id).with_for_update())
+    if not _pode_emitir(db, usuario, finalidade):
+        raise CodigoMuitoFrequente()
     pendentes = db.scalars(
         select(CodigoVerificacao).where(
             CodigoVerificacao.usuario_id == usuario.id,
@@ -102,6 +133,11 @@ def validar_codigo(
             CodigoVerificacao.consumido_em.is_(None),
         )
         .order_by(CodigoVerificacao.id.desc())
+        # Travado até o commit: palpites enviados ao mesmo tempo liam todos
+        # a mesma contagem e passavam juntos — num teste, 33 palpites
+        # conferidos contra um limite de 5. Assim eles entram um por vez.
+        .with_for_update()
+        .execution_options(populate_existing=True)
     )
     if registro is None:
         raise HTTPException(
@@ -192,7 +228,15 @@ def autenticar(db: Session, email: str, senha: str) -> Usuario:
     existe um cadastro com este e-mail". Limitar por IP, que resolveria
     os dois, depende de saber o IP real atrás do proxy.
     """
-    usuario = buscar_por_email(db, email)
+    # Travado até o commit, pelo mesmo motivo do código: senhas enviadas
+    # ao mesmo tempo liam todas a mesma contagem, e o bloqueio nunca
+    # disparava (40 senhas conferidas em paralelo, contra um limite de 5).
+    usuario = db.scalar(
+        select(Usuario)
+        .where(Usuario.email == email.lower())
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
     bloqueio_venceu = False
 
     if usuario is not None:
@@ -228,11 +272,34 @@ def autenticar(db: Session, email: str, senha: str) -> Usuario:
     return usuario
 
 
+def encerrar_sessoes(usuario: Usuario) -> None:
+    """Invalida todos os tokens já emitidos para o usuário."""
+    usuario.versao_sessao = (usuario.versao_sessao or 0) + 1
+
+
 def trocar_senha(db: Session, usuario: Usuario, senha_atual: str, nova_senha: str) -> None:
+    """Exige a senha atual, e os erros contam para o mesmo bloqueio do
+    login: sem isso, quem pegasse uma sessão aberta poderia testar senhas
+    aqui à vontade."""
+    # Relê travado: o usuário veio do token, lido antes, sem trava.
+    db.refresh(usuario, with_for_update=True)
+    faltam = _minutos_de_bloqueio_restantes(usuario)
+    if faltam:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=(
+                "Muitas tentativas com a senha errada. Tente novamente em "
+                f"{faltam} minuto{'s' if faltam > 1 else ''}."
+            ),
+        )
     if not conferir_senha(senha_atual, usuario.senha_hash):
+        _contar_senha_errada(db, usuario)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="A senha atual está incorreta.",
         )
     usuario.senha_hash = gerar_hash_senha(nova_senha)
+    usuario.tentativas_login = 0
+    usuario.bloqueado_ate = None
+    encerrar_sessoes(usuario)
     db.flush()

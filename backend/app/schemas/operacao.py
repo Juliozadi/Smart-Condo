@@ -114,22 +114,15 @@ class ResumoManutencao(SchemaBase):
 
 
 # ── Documentos ───────────────────────────────────────────────────────
-class DocumentoEntrada(SchemaBase):
-    titulo: str = Field(min_length=3, max_length=180)
-    descricao: str | None = Field(default=None, max_length=1000)
-    categoria: CategoriaDocumento = CategoriaDocumento.OUTRO
-    arquivo_url: str = Field(min_length=3, max_length=500)
-    tamanho_kb: int | None = Field(default=None, ge=0)
-    # Preenchido só quando o documento é de uma unidade (planta, por exemplo).
-    unidade_id: int | None = None
-
-
 class DocumentoSaida(SchemaBase):
     id: int
     titulo: str
     descricao: str | None = None
     categoria: CategoriaDocumento
-    arquivo_url: str
+    # Caminho na API (/documentos/{id}/arquivo), que pede o token. Vazio
+    # quando o documento não tem arquivo disponível.
+    url: str | None = None
+    tipo_conteudo: str | None = None
     tamanho_kb: int | None = None
     unidade: str | None = None
     publicado_por_nome: str | None = None

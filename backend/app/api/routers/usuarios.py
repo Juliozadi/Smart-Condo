@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import exigir_papel, get_usuario_atual
 from app.core.database import get_db
@@ -37,6 +37,7 @@ from app.services import arquivos as servico_arquivos
 from app.services import documentos_cadastro
 from app.services import usuarios as servico_usuarios
 from app.services import auth as servico_auth
+from app.services import notificacao
 from app.services.notificacao import mascarar_destino
 
 router = APIRouter(prefix="/usuarios", tags=["Usuários"])
@@ -278,6 +279,7 @@ def editar_usuario(
         )
     servico_usuarios.atualizar_usuario(db, usuario, dados)
     db.commit()
+    documentos_cadastro.descartar_se_encerrado(db, usuario)
     db.refresh(usuario)
     return _para_saida_admin(db, usuario)
 
@@ -306,7 +308,11 @@ def listar_usuarios(
     sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
     db: Session = Depends(get_db),
 ) -> list[Usuario]:
-    consulta = select(Usuario).where(Usuario.condominio_id == sindico.condominio_id)
+    consulta = (
+        select(Usuario)
+        .where(Usuario.condominio_id == sindico.condominio_id)
+        .options(selectinload(Usuario.unidade))
+    )
     if papel is not None:
         consulta = consulta.where(Usuario.papel == papel)
     if status_usuario is not None:
@@ -327,6 +333,10 @@ def aprovar_usuario(
 ) -> Usuario:
     """Alimenta as telas "aguardando aprovação" do front-end."""
     usuario = _buscar_do_meu_condominio(db, sindico, usuario_id)
+    # Relê travado até o commit: com duas abas, "aprovar" e "recusar"
+    # passavam juntos pela conferência do status, e o morador recebia os
+    # dois e-mails.
+    db.refresh(usuario, with_for_update=True)
 
     if usuario.id == sindico.id:
         raise HTTPException(
@@ -349,6 +359,21 @@ def aprovar_usuario(
     db.commit()
     if not dados.aprovado:
         documentos_cadastro.descartar_todos(db, usuario.id)
+
+    # A tela do cadastro promete avisar por e-mail quando o síndico decidir.
+    if dados.aprovado:
+        titulo, mensagem = (
+            "Cadastro aprovado",
+            "O síndico aprovou o seu cadastro. Você já pode entrar com o seu e-mail e senha.",
+        )
+    else:
+        titulo = "Cadastro recusado"
+        mensagem = "O síndico recusou o seu cadastro."
+        if dados.motivo:
+            mensagem += f" Motivo: {dados.motivo}"
+        mensagem += " Em caso de dúvida, fale com a administração do condomínio."
+    notificacao.notificar(usuario.email, CanalVerificacao.EMAIL, titulo, mensagem)
+
     db.refresh(usuario)
     return usuario
 
@@ -470,6 +495,7 @@ def inativar_usuario(
     # Inativa em vez de apagar: o histórico de portaria, reservas e
     # financeiro precisa continuar apontando para o usuário.
     usuario.status = StatusUsuario.INATIVO
+    servico_usuarios.cancelar_reservas_futuras(db, usuario)
     db.commit()
     # Os registros ficam; os documentos do cadastro, não: sem vínculo com
     # o condomínio, acabou a finalidade de guardá-los (LGPD, art. 16).

@@ -7,6 +7,125 @@ O texto escrito pelo grupo foi **preservado**. As mudanças abaixo são de
 duas naturezas: correções do que não correspondia mais ao sistema, e
 seções novas descrevendo o que foi construído desde então.
 
+## Versão 2.4 — documentos do condomínio com arquivo de verdade
+
+| Seção | O que mudou |
+|---|---|
+| 9 Requisitos funcionais | RF032: o síndico envia o arquivo (PDF ou imagem), em vez de digitar um endereço, e o arquivo só abre com o token de quem tem direito. RF009: a inativação encerra o acesso na hora e cancela as reservas futuras do morador |
+| 10 Requisitos não funcionais | RNF017 passa a cobrir os documentos do condomínio; RNF013 e RNF014 valem também para tentativas simultâneas; RNF009: trocar a senha encerra as outras sessões; RNF005 cita os valores recusados pelo banco; RNF007 exige número fixo de consultas por listagem |
+| 12.1 Boas práticas | Auditoria automática de acessibilidade com o axe-core e o que ela encontrou; RNF003 passa a citá-la |
+| 11.6.5 Tela de documentos | O texto cita a tela do síndico que publica e a abertura com o token |
+| 14 a 17 | Em documentos, arquivo_url dá lugar a arquivo e tipo_conteudo — agora 236 atributos. Em usuarios, entra versao_sessao |
+| 20 Arquitetura | Os documentos do condomínio também ficam sem endereço público; as regras de data usam o fuso do condomínio; a modelagem passa a citar 21 tabelas e 44 chaves estrangeiras (o texto ainda dizia 19 e 39) e a tabela mensagens |
+| 21 API REST | 99 endpoints |
+| 23 Testes | 354 casos no servidor, incluindo requisições simultâneas, e 78 testes de interface |
+
+**Por que mudou.** O documento era só um endereço digitado pelo síndico:
+os de demonstração apontavam para um servidor que não existe, e nada
+impedia um endereço `javascript:`, que rodaria na tela do morador ao ser
+clicado. Agora o arquivo é enviado, conferido pelo conteúdo e guardado
+fora do alcance público.
+
+**Requisições ao mesmo tempo.** Quatro moradores pedindo o mesmo horário
+juntos conseguiam, em 16 de 20 tentativas, reservar o espaço duas vezes; e
+dois pagamentos simultâneos da mesma cobrança passavam juntos pela
+conferência do que faltava pagar. Agora a reserva trava o espaço e o
+pagamento trava a cobrança até gravar. Um registro duplicado barrado pelo
+banco responde "já existe" (409), e um valor que o banco recusa — id acima
+do limite da coluna, texto com caractere nulo — responde como dado
+inválido (422), em vez de erro do servidor.
+
+**Acessibilidade de verdade pelo teclado e pelo leitor de tela.** A
+auditoria com o axe-core, em todas as telas e nos dois tamanhos, achou: o
+botão de acessibilidade não recebia o foco do teclado (uma regra de CSS
+escondia todas as caixas do widget, inclusive a que abre o menu), e o
+menu se anunciava como "menu" com itens que não eram de menu; a tabela de
+visitantes era lida sem as células; os links de voltar e de perfil
+ficavam sem texto no celular; vinte páginas não tinham título principal e
+os títulos pulavam níveis. Tudo corrigido sem mudar o visual — a posição e
+o tamanho de cada título foram medidos antes e depois —, e as opções do
+menu agora mostram se estão ligadas.
+
+**Inativar quem saiu do condomínio.** O requisito prometia, e a API
+tinha a rota, mas nenhuma tela do síndico permitia inativar alguém: o
+morador que se mudava e o porteiro que deixava a equipe continuavam
+entrando. Agora há o botão nas listas de moradores e de porteiros, e as
+reservas futuras do morador inativado são canceladas — antes, o salão
+continuava bloqueado por quem já não morava lá.
+
+**Janelas que prendem o foco.** Com a janela de cadastro do administrador
+ou o chat abertos, o Tab escapava para a página de trás, escondida atrás
+do fundo escuro (17 e 26 vezes em 40). Agora o resto da página fica
+inerte enquanto a janela está aberta, e volta ao normal ao fechar.
+
+**Texto só com espaços.** A API aceitava um comunicado com título "   ",
+que passava pelo mínimo de três caracteres e era enviado a todos os
+moradores. Agora os espaços das pontas saem antes da validação — menos na
+senha, em que o espaço faz parte dela.
+
+**Listagens rápidas com muitos dados.** Cada linha das listagens buscava
+a sua unidade e somava os seus pagamentos no banco. Com 60 unidades e dois
+anos de cobranças, abrir o financeiro do síndico fazia 1.685 consultas, e
+as reservas, 399. Agora cada listagem faz no máximo nove, qualquer que seja
+o volume. A lista de contatos do chat passou também a mostrar o bloco da
+unidade, e não só o número.
+
+**Decisões tomadas duas vezes.** Com duas abas abertas, "aprovar" e
+"recusar" o mesmo cadastro passavam juntos, e o morador recebia os dois
+e-mails. O síndico aprovando enquanto o morador cancelava deixava a
+reserva aprovada, embora o morador tivesse recebido "cancelada". O
+visitante podia ser liberado e recusado ao mesmo tempo. Agora cada
+decisão trava o registro até ser gravada, e a segunda recebe "já foi
+respondido".
+
+**Força bruta em paralelo.** O bloqueio do login e o limite de palpites do
+código contavam as tentativas lendo o número, somando um e gravando. Com
+quarenta tentativas enviadas ao mesmo tempo, todas liam o mesmo número:
+as quarenta senhas eram conferidas sem bloquear a conta, e 37 palpites do
+código de recuperação de senha passavam, contra um limite de cinco. Agora
+as tentativas da mesma conta são conferidas uma por vez, e pedidos
+simultâneos de código geram um só.
+
+**Trocar a senha encerra as outras sessões.** O token dura oito horas e,
+antes, continuava valendo depois da troca de senha: quem troca a senha
+porque desconfia que alguém entrou na conta via esse alguém seguir
+conectado. Agora cada token carrega a versão da sessão, que a troca e a
+redefinição da senha aumentam; a aba em que a senha foi trocada recebe um
+token novo e continua conectada. A redefinição pelo código também desfaz
+o bloqueio por senhas erradas, já que o código prova quem é o dono da
+conta.
+
+**O "hoje" é o do condomínio.** As regras de data usavam o relógio da
+máquina. Publicado num servidor em UTC, quatro horas à frente de Campo
+Grande, às 18h a reserva das 19h seria recusada como horário que já
+passou. Agora a API usa o fuso configurado (`FUSO_HORARIO`, padrão
+`America/Campo_Grande`).
+
+**Planilhas exportadas.** As listas de moradores e de cobranças exportadas
+em CSV escreviam o texto como veio; um nome cadastrado como
+`=HYPERLINK(...)` virava fórmula ao abrir no Excel. Agora esse texto ganha
+um apóstrofo na frente, e os valores saem com vírgula decimal.
+
+## Versão 2.3 — revisão geral
+
+| Seção | O que mudou |
+|---|---|
+| 9 Requisitos funcionais | RF016 e RF034: faixas de data aceitas na reserva e na cobrança. RF006: o morador recebe e-mail com a decisão do síndico. RF027: a lista de placas do pátio é da portaria e do síndico. RF028: a ocorrência aceita foto |
+| 10 Requisitos não funcionais | RNF017 passa a cobrir as fotos das ocorrências |
+| 13.3 Tela de cadastro morador | O texto deixa de citar vagas de garagem e passa a citar os documentos; figura refeita com o formulário novo |
+| 17 Dicionário de dados | Em ocorrencias, foto_url dá lugar a foto_arquivo |
+| 20 Arquitetura | Limite de envio de códigos; as permissões do porteiro valem também para consultar |
+| 21 API REST | 98 endpoints |
+| 23 Testes | 305 casos no servidor e 56 testes de interface |
+
+**Formulários mais enxutos.** Os cadastros pediam dados que o sistema
+nunca guardava: no do morador, nome social, número do RG, estado civil,
+gênero, profissão, contato de emergência, andar, data de mudança,
+veículos e dependentes; no do porteiro, RG, endereço, turno, contrato,
+NIS/PIS, CTPS e até a certidão de antecedentes criminais, em anexo
+obrigatório. Saíram todos: a LGPD manda coletar só o necessário, e o que
+comprova o vínculo do morador são os documentos, que o síndico confere.
+
 ## Versão 2.2 — fotos da portaria e documentos do cadastro
 
 | Seção | O que mudou |

@@ -32,7 +32,8 @@ from app.schemas.documento_cadastro import DocumentoCadastroSaida
 from app.schemas.usuario import (
     CanaisSaida,
     CadastroMorador, CadastroSaida, ConfirmacaoCodigo, LoginEntrada, PerfilSaida,
-    RedefinicaoSenha, ReenvioCodigo, SolicitacaoRecuperacao, TokenSaida, TrocaSenha,
+    RedefinicaoSenha, ReenvioCodigo, SenhaTrocadaSaida, SolicitacaoRecuperacao, TokenSaida,
+    TrocaSenha,
     UsuarioSaida,
 )
 from app.services import arquivos
@@ -239,10 +240,15 @@ def reenviar_codigo(dados: ReenvioCodigo, db: Session = Depends(get_db)) -> Mens
     _exigir_canal(dados.canal)
     usuario = servico_auth.buscar_por_email(db, dados.email)
     if usuario is not None and usuario.status == StatusUsuario.AGUARDANDO_CODIGO:
-        servico_auth.emitir_codigo(
-            db, usuario, FinalidadeCodigo.CONFIRMACAO_CADASTRO, dados.canal
-        )
-        db.commit()
+        try:
+            servico_auth.emitir_codigo(
+                db, usuario, FinalidadeCodigo.CONFIRMACAO_CADASTRO, dados.canal
+            )
+            db.commit()
+        except servico_auth.CodigoMuitoFrequente:
+            # Mesma resposta: um aviso diferente revelaria que o e-mail
+            # existe. A tela já espera o intervalo antes de reenviar.
+            db.rollback()
 
     # Resposta igual em qualquer caso, para não revelar quem está cadastrado.
     return Mensagem(detalhe="Se houver um cadastro pendente, um novo código foi enviado.")
@@ -268,7 +274,7 @@ def login(dados: LoginEntrada, db: Session = Depends(get_db)) -> TokenSaida:
         )
 
     return TokenSaida(
-        access_token=criar_token_acesso(str(usuario.id), usuario.papel.value),
+        access_token=criar_token_acesso(str(usuario.id), usuario.papel.value, usuario.versao_sessao),
         expira_em_min=settings.ACCESS_TOKEN_EXPIRA_MIN,
         usuario=UsuarioSaida.model_validate(usuario),
     )
@@ -285,10 +291,13 @@ def solicitar_recuperacao(
     _exigir_canal(dados.canal)
     usuario = servico_auth.buscar_por_email(db, dados.email)
     if usuario is not None:
-        servico_auth.emitir_codigo(
-            db, usuario, FinalidadeCodigo.RECUPERACAO_SENHA, dados.canal
-        )
-        db.commit()
+        try:
+            servico_auth.emitir_codigo(
+                db, usuario, FinalidadeCodigo.RECUPERACAO_SENHA, dados.canal
+            )
+            db.commit()
+        except servico_auth.CodigoMuitoFrequente:
+            db.rollback()
 
     return Mensagem(detalhe="Se o e-mail estiver cadastrado, um código foi enviado.")
 
@@ -303,6 +312,12 @@ def redefinir_senha(dados: RedefinicaoSenha, db: Session = Depends(get_db)) -> M
 
     servico_auth.validar_codigo(db, usuario, dados.codigo, FinalidadeCodigo.RECUPERACAO_SENHA)
     usuario.senha_hash = gerar_hash_senha(dados.nova_senha)
+    # Quem recebeu o código provou que é o dono da conta: o bloqueio por
+    # senhas erradas (talvez de outra pessoa tentando entrar) sai, e as
+    # sessões abertas com a senha antiga são encerradas.
+    usuario.tentativas_login = 0
+    usuario.bloqueado_ate = None
+    servico_auth.encerrar_sessoes(usuario)
 
     db.commit()
     return Mensagem(detalhe="Senha redefinida. Faça o login com a nova senha.")
@@ -313,12 +328,18 @@ def usuario_autenticado(usuario: Usuario = Depends(get_usuario_atual)) -> Usuari
     return usuario
 
 
-@router.post("/senha/trocar", response_model=Mensagem, summary="Troca a senha estando logado")
+@router.post("/senha/trocar", response_model=SenhaTrocadaSaida, summary="Troca a senha estando logado")
 def trocar_senha(
     dados: TrocaSenha,
     usuario: Usuario = Depends(get_usuario_atual),
     db: Session = Depends(get_db),
-) -> Mensagem:
+) -> SenhaTrocadaSaida:
+    """As outras sessões são encerradas; esta continua com o token novo
+    que vai na resposta."""
     servico_auth.trocar_senha(db, usuario, dados.senha_atual, dados.nova_senha)
     db.commit()
-    return Mensagem(detalhe="Senha alterada.")
+    return SenhaTrocadaSaida(
+        detalhe="Senha alterada. As sessões abertas em outros aparelhos foram encerradas.",
+        access_token=criar_token_acesso(str(usuario.id), usuario.papel.value, usuario.versao_sessao),
+        expira_em_min=settings.ACCESS_TOKEN_EXPIRA_MIN,
+    )

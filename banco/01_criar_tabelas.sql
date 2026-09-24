@@ -247,7 +247,8 @@ CREATE TABLE usuarios (
     tentativas_login integer NOT NULL,
     bloqueado_ate timestamp with time zone,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
-    atualizado_em timestamp with time zone DEFAULT now() NOT NULL
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    versao_sessao integer DEFAULT 0 NOT NULL
 );
 CREATE SEQUENCE usuarios_id_seq
     AS integer
@@ -568,7 +569,7 @@ CREATE TABLE ocorrencias (
     categoria character varying(60) NOT NULL,
     local character varying(120),
     prioridade prioridade_ocorrencia NOT NULL,
-    foto_url character varying(500),
+    foto_arquivo character varying(100),
     status status_ocorrencia NOT NULL,
     resposta text,
     respondida_por_id integer,
@@ -653,7 +654,8 @@ CREATE TABLE documentos (
     titulo character varying(180) NOT NULL,
     descricao text,
     categoria categoria_documento NOT NULL,
-    arquivo_url character varying(500) NOT NULL,
+    arquivo character varying(100),
+    tipo_conteudo character varying(40),
     tamanho_kb integer,
     unidade_id integer,
     publicado_por_id integer,

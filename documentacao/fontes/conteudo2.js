@@ -30,7 +30,7 @@ const telas = [
     imagem: 'sindico-porteiros.png', legenda: 'Gestão de porteiros, com o painel de permissões de cada um' },
 
   { n: '11.3', titulo: 'Tela de cadastro morador',
-    texto: 'A tela de cadastro do morador, inicialmente, vai pedir as credenciais, após registradas, o sistema salva e parte para a próxima etapa, que irá requisitar nome do condomínio, o bloco/torre, número de vagas na garagem, e o vínculo dele com o estabelecimento. No fim, o Acesso e Segurança, por último, a conclusão. O morador informa o código de acesso do condomínio, fornecido pelo síndico, para que o cadastro seja vinculado ao condomínio correto.',
+    texto: 'A tela de cadastro do morador, inicialmente, vai pedir as credenciais, após registradas, o sistema salva e parte para a próxima etapa, que irá requisitar nome do condomínio, o bloco/torre, e o vínculo dele com o estabelecimento. No fim, o Acesso e Segurança, com o envio dos documentos que comprovam esse vínculo (RG ou CNH e comprovante de residência) e a criação da senha, e por último, a conclusão. O morador informa o código de acesso do condomínio, fornecido pelo síndico, para que o cadastro seja vinculado ao condomínio correto.',
     imagem: 'cadastro-morador.png', legenda: 'Cadastro do morador, dividido em etapas' },
 
   { n: '11.4', titulo: 'Tela de login',
@@ -74,7 +74,7 @@ const telas = [
     texto: 'Reúne avisos e comunicados enviados pelo síndico. O morador pode buscar, filtrar por categoria e visualizar o conteúdo completo de cada mensagem, marcando-as como lidas.',
     imagem: 'morador-comunicados.png', legenda: 'Comunicados recebidos pelo morador' },
   { n: '11.6.5', titulo: 'Tela de Documentos',
-    texto: 'Dá acesso aos documentos do condomínio — convenção, regimento interno, atas de assembleia e prestações de conta — além dos documentos da própria unidade, como a planta baixa. A busca e o filtro por categoria facilitam localizar um arquivo específico.',
+    texto: 'Dá acesso aos documentos do condomínio — convenção, regimento interno, atas de assembleia e prestações de conta — além dos documentos da própria unidade, como a planta baixa. A busca e o filtro por categoria facilitam localizar um arquivo específico. Os arquivos são enviados pelo síndico na tela de documentos do painel dele e abrem numa aba nova, baixados com o token de quem está conectado.',
     imagem: 'morador-documentos.png', legenda: 'Documentos do condomínio' },
   { n: '11.6.6', titulo: 'Tela de Ocorrências',
     texto: 'Permite ao morador registrar um incidente informando o tipo, a prioridade, o local e a descrição, e acompanhar a resposta do síndico. Cada morador vê apenas as ocorrências que ele mesmo abriu.',

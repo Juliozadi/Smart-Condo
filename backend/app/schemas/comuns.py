@@ -2,9 +2,12 @@
 from __future__ import annotations
 
 import re
+from datetime import date
+
+from app.core.tempo import hoje_local
 from typing import Annotated
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, Field
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StringConstraints
 
 def validar_forca_senha(valor: str) -> str:
     """Regras mostradas ao usuário na tela de nova senha.
@@ -19,10 +22,14 @@ def validar_forca_senha(valor: str) -> str:
     return valor
 
 
+# A senha é a exceção ao aparo de espaços do SchemaBase: um espaço no
+# começo ou no fim é parte da senha, e apará-lo a mudaria em silêncio.
+SenhaDigitada = Annotated[str, StringConstraints(strip_whitespace=False)]
+
 # O bcrypt trabalha com no máximo 72 bytes; a senha é barrada aqui antes
 # de chegar ao hash.
 Senha = Annotated[
-    str, Field(min_length=8, max_length=72), AfterValidator(validar_forca_senha)
+    SenhaDigitada, Field(min_length=8, max_length=72), AfterValidator(validar_forca_senha)
 ]
 
 
@@ -92,15 +99,40 @@ def validar_cep(valor: str) -> str:
     return cep
 
 
+def validar_data_nascimento(valor: date) -> date:
+    """Nem no futuro, nem de alguém com mais de 120 anos: os dois são
+    erro de digitação (ano trocado, dia e mês invertidos)."""
+    hoje = hoje_local()
+    if valor > hoje:
+        raise ValueError("A data de nascimento não pode estar no futuro.")
+    if valor.year < hoje.year - 120:
+        raise ValueError("Confira o ano da data de nascimento.")
+    return valor
+
+
+def validar_endereco_web(valor: str) -> str:
+    """Só http e https. Um endereço guardado vira link na tela de outra
+    pessoa; "javascript:" ou "data:" executariam código no clique."""
+    endereco = (valor or "").strip()
+    if not re.match(r"^https?://[^\s/$.?#].[^\s]*$", endereco, re.IGNORECASE):
+        raise ValueError("Informe um endereço que comece com http:// ou https://.")
+    return endereco
+
+
 CPF = Annotated[str, AfterValidator(validar_cpf)]
 CNPJ = Annotated[str, AfterValidator(validar_cnpj)]
 Telefone = Annotated[str, AfterValidator(validar_telefone)]
 UF = Annotated[str, AfterValidator(validar_uf)]
 CEP = Annotated[str, AfterValidator(validar_cep)]
+DataNascimento = Annotated[date, AfterValidator(validar_data_nascimento)]
+EnderecoWeb = Annotated[str, Field(max_length=500), AfterValidator(validar_endereco_web)]
 
 
 class SchemaBase(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    # Espaços no começo e no fim saem antes da validação: sem isso, um
+    # título "   " passava pelo mínimo de 3 caracteres e virava um
+    # comunicado em branco, enviado a todos os moradores.
+    model_config = ConfigDict(from_attributes=True, str_strip_whitespace=True)
 
 
 class Mensagem(SchemaBase):

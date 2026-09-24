@@ -14,7 +14,7 @@
   <header class="app-bar">
     <div class="app-bar-inner wide">
       <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
-        <img src="../../assets/img/logo.png" alt="SmartCondo" class="logo-sm">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
         <span class="brand-name">Smart<strong>Condo</strong></span>
       </a>
       <div class="app-bar-right">
@@ -27,7 +27,7 @@
 
     <div class="dash-greeting">
       <p class="greeting-sub">Painel Administrativo</p>
-      <h2 class="greeting-name"><img src="../../assets/img/icons/star.svg" width="26" height="26" alt=""> <span id="saudacaoNome">…</span></h2>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/star.svg" width="26" height="26" alt=""> <span id="saudacaoNome">…</span></h1>
       <p class="greeting-condo"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> <span id="saudacaoCondominio">Carregando…</span></p>
     </div>
 
@@ -43,62 +43,66 @@
       <span id="textoPendencias"></span>
     </div>
 
-    <p class="section-title"><img src="../../assets/img/icons/briefcase.svg" width="16" height="16" alt=""> Módulos de Gestão</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/briefcase.svg" width="16" height="16" alt=""> Módulos de Gestão</h2>
     <div class="dash-grid-sq">
       <a href="financeiro.html" class="dash-card-sq">
         <div class="card-icon icon-yellow"><img src="../../assets/img/icons/financeiro.svg" width="16" height="16" alt="Financeiro"></div>
-        <h4>Financeiro</h4><p>Receitas, despesas e inadimplência</p>
+        <h3>Financeiro</h3><p>Receitas, despesas e inadimplência</p>
       </a>
       <a href="moradores.html" class="dash-card-sq">
         <div class="card-icon icon-teal"><img src="../../assets/img/icons/moradores.svg" width="16" height="16" alt="Moradores"></div>
-        <h4>Moradores</h4><p>Cadastro e gestão de unidades</p>
+        <h3>Moradores</h3><p>Cadastro e gestão de unidades</p>
       </a>
       <a href="porteiros.html" class="dash-card-sq">
         <div class="card-icon icon-blue"><img src="../../assets/img/icons/porteiros.svg" width="16" height="16" alt="Porteiros"></div>
-        <h4>Porteiros</h4><p>Equipe, turnos e escalas</p>
+        <h3>Porteiros</h3><p>Equipe, turnos e escalas</p>
       </a>
       <a href="reservas.html" class="dash-card-sq">
         <div class="card-icon icon-purple"><img src="../../assets/img/icons/reservas.svg" width="16" height="16" alt="Reservas"></div>
-        <h4>Reservas</h4><p>Espaços e agendamentos</p>
+        <h3>Reservas</h3><p>Espaços e agendamentos</p>
       </a>
       <a href="comunicados.html" class="dash-card-sq">
         <div class="card-icon icon-orange"><img src="../../assets/img/icons/comunicados.svg" width="16" height="16" alt="Comunicados"></div>
-        <h4>Comunicados</h4><p>Avisos e notificações</p>
+        <h3>Comunicados</h3><p>Avisos e notificações</p>
       </a>
       <a href="manutencao.html" class="dash-card-sq">
         <div class="card-icon icon-red"><img src="../../assets/img/icons/manutencao.svg" width="16" height="16" alt="Manutenção"></div>
-        <h4>Manutenção</h4><p>Ordens de serviço e fornecedores</p>
+        <h3>Manutenção</h3><p>Ordens de serviço e fornecedores</p>
       </a>
       <a href="ocorrencias.html" class="dash-card-sq">
         <div class="card-icon icon-yellow"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt="Ocorrências"></div>
-        <h4>Ocorrências</h4><p>Chamados de moradores e porteiros</p>
+        <h3>Ocorrências</h3><p>Chamados de moradores e porteiros</p>
+      </a>
+      <a href="documentos.html" class="dash-card-sq">
+        <div class="card-icon icon-purple"><img src="../../assets/img/icons/folder-open.svg" width="16" height="16" alt="Documentos"></div>
+        <h3>Documentos</h3><p>Atas, convenção e regimento</p>
       </a>
     </div>
 
-    <p class="section-title"><img src="../../assets/img/icons/financeiro.svg" width="16" height="16" alt=""> Resumo Financeiro</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/financeiro.svg" width="16" height="16" alt=""> Resumo Financeiro</h2>
     <div class="stats-row" style="margin-bottom:26px;">
       <div class="stat-card teal"><span class="stat-value" id="finRecebido">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Recebido</span></div>
       <div class="stat-card blue"><span class="stat-value" id="finAberto">—</span><span class="stat-label"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt="">Em aberto</span></div>
       <div class="stat-card red"><span class="stat-value" id="finVencido">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt="">Vencido</span></div>
     </div>
 
-    <p class="section-title"><img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt=""> Cobranças Vencidas</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt=""> Cobranças Vencidas</h2>
     <div class="data-table tabela-status" id="tabelaVencidas">
       <div class="table-head cols-4"><span>Unidade</span><span>Competência</span><span>Valor</span><span>Situação</span></div>
     </div>
     <p class="estado-lista" id="estadoVencidas">Carregando…</p>
 
-    <p class="section-title"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Reservas Recentes</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Reservas Recentes</h2>
     <div class="data-table tabela-status" id="tabelaReservas">
       <div class="table-head cols-4"><span>Morador</span><span>Espaço</span><span>Data</span><span>Situação</span></div>
     </div>
     <p class="estado-lista" id="estadoReservas">Carregando…</p>
 
-    <p class="section-title"><img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt=""> Ocorrências em Aberto</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt=""> Ocorrências em Aberto</h2>
     <div class="list-items" id="listaOcorrencias"></div>
     <p class="estado-lista" id="estadoOcorrencias">Carregando…</p>
 
-    <p class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Ações Administrativas</p>
+    <h2 class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Ações Administrativas</h2>
     <a href="comunicados.html" class="action-btn"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt=""> Enviar Comunicado a Todos</a>
     <a href="financeiro.html" class="action-btn outline"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt=""> Gerar Boletos do Mês</a>
 
@@ -261,7 +265,7 @@
 
         var info = document.createElement('div');
         info.className = 'list-info';
-        var h = document.createElement('h5');
+        var h = document.createElement('h3');
         h.textContent = o.titulo;
         var p = document.createElement('p');
         p.textContent = (o.local ? o.local + ' · ' : '') + 'Aberta em ' + dataCurta(o.criado_em) +

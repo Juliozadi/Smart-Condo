@@ -298,6 +298,16 @@ def test_remover_o_sindico_solta_o_condominio(cliente, admin):
     assert depois.json()["sindico_nome"] is None
 
 
+def test_inativar_o_sindico_pela_edicao_tambem_solta_o_condominio(cliente, admin):
+    cond = criar_condominio_como_admin(cliente, admin)
+    sindico_id, _ = criar_sindico(cliente, admin, cond["id"], cpf=CPFS[0])
+    r = cliente.put(f"/api/v1/admin/usuarios/{sindico_id}", json={"status": "inativo"},
+                    headers=cab(admin))
+    assert r.status_code == 200, r.text
+    depois = cliente.get(f"/api/v1/admin/condominios/{cond['id']}", headers=cab(admin))
+    assert depois.json()["sindico_id"] is None
+
+
 def test_admin_nao_remove_a_si_mesmo(cliente, db, admin):
     eu = cliente.get("/api/v1/auth/eu", headers=cab(admin)).json()
     r = cliente.delete(f"/api/v1/admin/usuarios/{eu['id']}", headers=cab(admin))

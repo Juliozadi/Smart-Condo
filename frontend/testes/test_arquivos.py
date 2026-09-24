@@ -116,13 +116,9 @@ def test_documentos_do_cadastro_chegam_ao_sindico(navegador):
     # Etapa 1 — dados pessoais e a foto de perfil
     pg.fill("#mNome", nome)
     pg.fill("#mCpf", cpf_valido())
-    pg.fill("#morado_rg", "12.345.678-9")
     pg.fill("#mNascimento", "1990-05-10")
     pg.fill("#mEmail", f"paula{sufixo}@exemplo.com")
     pg.fill("#mTelefone", "(67) 99999-1234")
-    pg.fill("#morado_nome", "Contato de Emergência")
-    pg.select_option("#morado_parentesco", index=1)
-    pg.fill("#morado_telefoneDeEmergencia", "(67) 99999-4321")
     pg.set_input_files("#foto-m", files=[
         {"name": "eu.png", "mimeType": "image/png", "buffer": png()}])
     assert "eu.png" in pg.inner_text("label[for=foto-m]")
@@ -133,7 +129,6 @@ def test_documentos_do_cadastro_chegam_ao_sindico(navegador):
     pg.fill("#mCodigoCondominio", "PALM-2025")
     pg.fill("#mApartamento", "505")
     pg.select_option("#mOcupacao", "proprietario")
-    pg.fill("#morado_dataDeMudanca", "2025-01-10")
     pg.evaluate("mostrarStep(3)")
     pg.wait_for_selector("#step3", state="visible")
 
@@ -183,5 +178,93 @@ def test_documentos_do_cadastro_chegam_ao_sindico(navegador):
     cartao.locator("button.doc-chip", has_text="RG").click()
     pg.locator("#visorConteudo iframe").wait_for(timeout=5000)
     pg.click("#visorFechar")
+    assert pg.erros == []
+    ctx.close()
+
+
+def test_foto_da_ocorrencia_do_morador_chega_ao_sindico(navegador):
+    ctx, pg = abrir(navegador, papel="morador")
+    ir(pg, "pages/morador/ocorrencias.html", 1000)
+    assunto = f"Lâmpada queimada {random.randint(1000, 9999)}"
+    pg.select_option("#ocorre_tipoDeOcorrencia", index=1)
+    pg.select_option("#ocorre_prioridade", index=1)
+    pg.select_option("#ocorre_localDaOcorrencia", index=1)
+    pg.fill("#ocorre_assunto", assunto)
+    pg.fill("#ocorre_descricaoDetalhada", "A lâmpada do corredor está queimada há dias.")
+    pg.set_input_files(".captura-foto input[type=file]", files=[
+        {"name": "lampada.png", "mimeType": "image/png", "buffer": png(cor=(250, 200, 40))}])
+    pg.wait_for_selector(".captura-imagem", timeout=5000)
+    pg.click("#formOcorrencia button[type=submit]")
+    pg.wait_for_selector("#erroOcorrencia.sucesso", timeout=10000)
+    # Na lista do próprio morador, com a miniatura.
+    pg.locator(".list-item", has_text=assunto).locator(".miniatura-foto img").wait_for(timeout=8000)
+    assert pg.erros == []
+    ctx.close()
+
+    ctx, pg = abrir(navegador, papel="sindico")
+    ir(pg, "pages/sindico/ocorrencias.html", 1200)
+    mini = pg.locator(".list-item", has_text=assunto).locator(".miniatura-foto img")
+    mini.wait_for(timeout=8000)
+    assert mini.get_attribute("src").startswith("blob:")
+    assert mini.evaluate("i => i.naturalWidth") > 0
+    assert pg.erros == []
+    ctx.close()
+
+
+def test_documento_do_sindico_chega_ao_morador(navegador):
+    """O síndico envia o PDF; o morador abre com o token, numa aba nova."""
+    ctx, pg = abrir(navegador, papel="sindico")
+    ir(pg, "pages/sindico/documentos.html", 1200)
+    titulo = f"Ata de teste {random.randint(1000, 9999)}"
+    pg.fill("#doc_titulo", titulo)
+    pg.select_option("#doc_categoria", "ata")
+    # Arquivo de outro tipo não chega a sair do navegador.
+    pg.set_input_files("#doc_arquivo", files=[
+        {"name": "ata.exe", "mimeType": "application/octet-stream", "buffer": b"MZ"}])
+    pg.click("#formDocumento button[type=submit]")
+    assert "PDF, JPG, PNG ou WebP" in pg.inner_text("#erroDocumento")
+    pg.set_input_files("#doc_arquivo", files=[
+        {"name": "ata.pdf", "mimeType": "application/pdf", "buffer": PDF}])
+    pg.click("#formDocumento button[type=submit]")
+    pg.wait_for_selector("#erroDocumento.sucesso", timeout=10000)
+    pg.locator("#tabelaDocumentos .table-row", has_text=titulo).wait_for(timeout=5000)
+    assert pg.erros == []
+    ctx.close()
+
+    ctx, pg = abrir(navegador, papel="morador")
+    ir(pg, "pages/morador/documentos.html", 1200)
+    cartao = pg.locator(".dash-card", has_text=titulo)
+    cartao.wait_for(timeout=8000)
+    with pg.expect_popup() as aba:
+        cartao.locator("button.link-baixar").click()
+    nova = aba.value
+    nova.wait_for_url("blob:**", timeout=8000)
+    # Sem o token, o mesmo caminho não entrega o arquivo.
+    status = pg.evaluate("""async (t) => {
+        const api = window.SmartCondo.api;
+        const doc = (await api.get('/documentos')).find(d => d.titulo === t);
+        return (await fetch(api.url + doc.url)).status;
+    }""", titulo)
+    assert status == 401
+    assert pg.erros == []
+    ctx.close()
+
+
+def test_planilha_exportada_nao_vira_formula(navegador):
+    """Nome digitado como =HYPERLINK(...) não pode virar fórmula no Excel."""
+    ctx, pg = abrir(navegador, papel="sindico")
+    ir(pg, "pages/sindico/moradores.html", 1200)
+    with pg.expect_download() as baixado:
+        pg.evaluate("""() => window.SmartCondo.api.baixarCsv('teste.csv', [
+            ['Nome', 'Valor'], ['=HYPERLINK("http://x")', 450], ['-2+3', -5], ['Ana', '1.200,00']])""")
+    texto = open(baixado.value.path(), encoding="utf-8-sig", newline="").read()
+    assert texto.split("\r\n") == [
+        '"Nome";"Valor"', '"\'=HYPERLINK(""http://x"")";"450"', '"\'-2+3";"-5"', '"Ana";"1.200,00"']
+
+    # O botão da própria tela continua gerando a planilha.
+    with pg.expect_download() as baixado:
+        pg.get_by_role("button", name="Exportar").first.click()
+    assert baixado.value.suggested_filename == "moradores.csv"
+    assert open(baixado.value.path(), encoding="utf-8-sig", newline="").read().startswith('"Nome";"E-mail"')
     assert pg.erros == []
     ctx.close()

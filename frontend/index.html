@@ -235,16 +235,22 @@
       var div = document.getElementById("perfilDetectado");
       var texto = document.getElementById("perfilTexto");
       var icones = {
-        morador: "user.svg", porteiro: "shield-halved.svg", sindico: "star.svg"
+        morador: "user.svg", porteiro: "shield-halved.svg", sindico: "star.svg",
+        admin: "lock.svg"
       };
-      var nomes = { morador: "Morador", porteiro: "Porteiro", sindico: "Síndico" };
+      var nomes = {
+        morador: "Morador", porteiro: "Porteiro", sindico: "Síndico",
+        admin: "Administrador"
+      };
 
       div.className = "perfil-detectado visivel " + papel;
       if (texto) {
-        texto.innerHTML =
-          '<img src="assets/img/icons/' + (icones[papel] || "user.svg") +
-          '" width="16" height="16" alt="">Entrando como <strong>' +
-          (nomes[papel] || papel) + '</strong>';
+        var icone = document.createElement("img");
+        icone.src = "assets/img/icons/" + (icones[papel] || "user.svg");
+        icone.width = 16; icone.height = 16; icone.alt = "";
+        var nome = document.createElement("strong");
+        nome.textContent = nomes[papel] || papel;
+        texto.replaceChildren(icone, document.createTextNode("Entrando como "), nome);
       }
     }
 
@@ -266,6 +272,15 @@
 
       api.entrar(email, senha)
         .then(function(usuario) {
+          // "Lembrar-me" guarda só o e-mail, para vir preenchido na próxima
+          // vez. A senha nunca é guardada.
+          try {
+            if (document.getElementById("index_aceiteLembrarMe").checked) {
+              localStorage.setItem(CHAVE_EMAIL_LEMBRADO, email);
+            } else {
+              localStorage.removeItem(CHAVE_EMAIL_LEMBRADO);
+            }
+          } catch (_) {}
           mostrarPerfil(usuario.papel);
           window.location.href = api.painelDoPapel(usuario.papel);
         })
@@ -277,6 +292,16 @@
           btn.disabled = false;
         });
     }
+
+    // ── Lembrar-me ───────────────────────────────────────────────
+    var CHAVE_EMAIL_LEMBRADO = "smartcondo_email_lembrado";
+    document.addEventListener("DOMContentLoaded", function() {
+      var lembrado = null;
+      try { lembrado = localStorage.getItem(CHAVE_EMAIL_LEMBRADO); } catch (_) {}
+      if (!lembrado) return;
+      document.getElementById("emailInput").value = lembrado;
+      document.getElementById("index_aceiteLembrarMe").checked = true;
+    });
 
     // ── Mensagem ao ser mandado de volta para cá ─────────────────
     document.addEventListener("DOMContentLoaded", function() {

@@ -16,7 +16,7 @@
   <header class="app-bar" role="banner">
     <div class="app-bar-inner">
       <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
-        <img src="../../assets/img/logo.png" alt="SmartCondo" class="logo-sm">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
         <span class="brand-name">Smart<strong>Condo</strong></span>
       </a>
       <div class="app-bar-right">
@@ -99,7 +99,7 @@
     <p class="estado-lista" id="estadoPresentes">Carregando…</p>
 
     <h2 class="section-title" id="titulo-historico"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Registros de Hoje</h2>
-    <div class="data-table history-table" id="tabelaHistorico" role="region" aria-labelledby="titulo-historico">
+    <div class="data-table history-table" id="tabelaHistorico" role="table" aria-labelledby="titulo-historico">
       <div class="table-head cols-5" role="row"><span role="columnheader">Visitante</span><span role="columnheader">Apto</span><span role="columnheader">Entrada</span><span role="columnheader">Saída</span><span role="columnheader">Situação</span></div>
     </div>
     <p class="estado-lista" id="estadoHistorico"></p>
@@ -168,7 +168,7 @@
 
       var info = document.createElement('div');
       info.className = 'list-info';
-      var h = document.createElement('h5');
+      var h = document.createElement('h3');
       h.textContent = v.nome;
       var p = document.createElement('p');
       p.textContent = (v.unidade ? 'Apto ' + v.unidade + ' · ' : '') + v.tipo_visita +
@@ -206,8 +206,9 @@
       linha.className = 'table-row cols-5' + (v.status === 'dentro' ? ' status-dentro' : '');
       linha.setAttribute('role', 'row');
       linha.innerHTML =
-        '<span><strong></strong></span><span></span><span></span><span></span>' +
-        '<span><span class="badge"></span></span>';
+        '<span role="cell"><strong></strong></span><span role="cell"></span>' +
+        '<span role="cell"></span><span role="cell"></span>' +
+        '<span role="cell"><span class="badge"></span></span>';
       linha.children[0].firstChild.textContent = v.nome;
       linha.children[1].textContent = v.unidade || '—';
       linha.children[2].textContent = horaCurta(v.entrada_em);

@@ -34,6 +34,20 @@ class Settings(BaseSettings):
     # Validade do código de confirmação de cadastro e de recuperação de
     # senha (documentação, seção 12: "Cadastro" e "Esqueci minha senha").
     CODIGO_VERIFICACAO_EXPIRA_MIN: int = 15
+    # Frequência máxima de códigos por pessoa e finalidade. Sem limite,
+    # qualquer um dispara "esqueci minha senha" com o e-mail de outra
+    # pessoa sem parar — cada SMS é pago —, e cada código novo traria mais
+    # tentativas para adivinhar.
+    CODIGO_INTERVALO_S: int = Field(default=60, ge=0, le=3600)
+    CODIGO_MAX_POR_HORA: int = Field(default=5, ge=1, le=100)
+
+    # Fuso do condomínio: é por ele que a API decide que dia é "hoje" e se
+    # um horário "já passou". Sem isso valeria o relógio da máquina, e um
+    # servidor em UTC recusaria às 18h de Campo Grande a reserva das 19h.
+    FUSO_HORARIO: str = "America/Campo_Grande"
+
+    # Com quanta antecedência o morador pode reservar um espaço.
+    RESERVA_ANTECEDENCIA_MAX_DIAS: int = Field(default=180, ge=1, le=730)
 
     # Quantas senhas erradas seguidas antes de trancar a conta, e por
     # quanto tempo. O bloqueio é temporário de propósito: permanente,
@@ -78,7 +92,8 @@ class Settings(BaseSettings):
     # backend/, a não ser que venha um caminho absoluto.
     UPLOADS_DIR: str = "uploads"
     FOTO_MAX_KB: int = Field(default=2048, ge=50, le=10240)
-    # Documentos do cadastro do morador (RG, comprovante, escritura).
+    # Documentos do cadastro do morador (RG, comprovante, escritura) e os
+    # do condomínio que o síndico publica (atas, convenção, regimento).
     DOCUMENTO_MAX_KB: int = Field(default=10240, ge=100, le=20480)
     # Por quanto tempo vale a autorização para enviar esses documentos,
     # contada a partir do cadastro.

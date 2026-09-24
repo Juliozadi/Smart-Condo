@@ -141,7 +141,9 @@ class Ocorrencia(Base, TimestampMixin):
         default=PrioridadeOcorrencia.NORMAL,
         index=True,
     )
-    foto_url: Mapped[str | None] = mapped_column(String(500))
+    # Foto anexada por quem abriu, em uploads/ocorrencias; só sai por
+    # GET /portaria/ocorrencias/{id}/foto, que confere quem pode ver.
+    foto_arquivo: Mapped[str | None] = mapped_column(String(100))
 
     status: Mapped[StatusOcorrencia] = mapped_column(
         SAEnum(StatusOcorrencia, name="status_ocorrencia"),

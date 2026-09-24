@@ -116,13 +116,17 @@
         });
     });
 
-    document.getElementById('reenviarCadastro').addEventListener('click', function(e) {
+    var reenviar = document.getElementById('reenviarCadastro');
+    // O código acabou de ser enviado no cadastro.
+    SmartCondo.api.esperarReenvio(reenviar);
+    reenviar.addEventListener('click', function(e) {
       e.preventDefault();
       var link = this;
+      if (link.dataset.aguardando) return;
       link.textContent = 'Enviando...';
       SmartCondo.api
         .post('/auth/codigo/reenviar', { email: dados.email, canal: dados.canal || 'email' }, { semToken: true })
-        .then(function() { link.textContent = 'Código reenviado'; })
+        .then(function() { SmartCondo.api.esperarReenvio(link); })
         .catch(function() { link.textContent = 'Reenviar código'; });
     });
   })();

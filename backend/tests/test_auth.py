@@ -7,7 +7,8 @@ from __future__ import annotations
 
 import pytest
 
-from app.models.enums import Papel, StatusUsuario
+from app.core.config import settings
+from app.models.enums import FinalidadeCodigo, Papel, StatusUsuario
 from app.models.usuario import Usuario
 from tests.fixtures import CPFS, cab, montar_condominio, token
 
@@ -137,7 +138,8 @@ def test_o_codigo_so_pode_ser_usado_uma_vez(cliente, cenario):
     assert cliente.post("/api/v1/auth/confirmar", json=corpo).status_code == 409
 
 
-def test_reenviar_invalida_o_codigo_anterior(cliente, cenario):
+def test_reenviar_invalida_o_codigo_anterior(cliente, cenario, monkeypatch):
+    monkeypatch.setattr(settings, "CODIGO_INTERVALO_S", 0)
     antigo = cadastrar(cliente, cenario).json()["codigo_debug"]
 
     reenvio = cliente.post("/api/v1/auth/codigo/reenviar", json={"email": "joao@exemplo.com"})
@@ -147,6 +149,37 @@ def test_reenviar_invalida_o_codigo_anterior(cliente, cenario):
         "/api/v1/auth/confirmar", json={"email": "joao@exemplo.com", "codigo": antigo}
     )
     assert conf.status_code == 400
+
+
+def _codigos_emitidos(db, email, finalidade):
+    from app.models.usuario import CodigoVerificacao, Usuario
+    return db.query(CodigoVerificacao).join(Usuario).filter(
+        Usuario.email == email, CodigoVerificacao.finalidade == FinalidadeCodigo[finalidade]).count()
+
+
+def test_reenvio_seguido_nao_gera_codigo_novo(cliente, cenario, db):
+    """Um código por minuto: sem isso, dava para disparar e-mail ou SMS
+    pago sem parar para qualquer pessoa."""
+    antigo = cadastrar(cliente, cenario).json()["codigo_debug"]
+    r = cliente.post("/api/v1/auth/codigo/reenviar", json={"email": "joao@exemplo.com"})
+    # A resposta é a mesma de sempre, para não revelar quem existe...
+    assert r.status_code == 200
+    assert "Se houver" in r.json()["detalhe"]
+    # ...mas nenhum código novo saiu, e o anterior continua valendo.
+    assert _codigos_emitidos(db, "joao@exemplo.com", "CONFIRMACAO_CADASTRO") == 1
+    conf = cliente.post(
+        "/api/v1/auth/confirmar", json={"email": "joao@exemplo.com", "codigo": antigo}
+    )
+    assert conf.status_code == 200
+
+
+def test_recuperacao_tem_limite_por_hora(cliente, cenario, db, monkeypatch):
+    monkeypatch.setattr(settings, "CODIGO_INTERVALO_S", 0)
+    cadastrar_e_confirmar(cliente, cenario)
+    for _ in range(settings.CODIGO_MAX_POR_HORA + 3):
+        r = cliente.post("/api/v1/auth/senha/recuperar", json={"email": "joao@exemplo.com"})
+        assert r.status_code == 200
+    assert _codigos_emitidos(db, "joao@exemplo.com", "RECUPERACAO_SENHA") == settings.CODIGO_MAX_POR_HORA
 
 
 def test_reenvio_para_email_inexistente_nao_revela_nada(cliente):
@@ -356,6 +389,28 @@ def test_troca_de_senha_logado(cliente, cenario):
     ).status_code == 200
 
 
+def test_troca_de_senha_tambem_tranca_por_tentativas(cliente, cenario):
+    """Quem pegasse uma sessão aberta não pode testar senhas na troca."""
+    for _ in range(settings.MAX_TENTATIVAS_LOGIN):
+        r = cliente.post(
+            "/api/v1/auth/senha/trocar",
+            json={"senha_atual": "naoehessa1", "nova_senha": "novasenha456"},
+            headers=cab(cenario["sindico"]),
+        )
+        assert r.status_code == 400
+    # Trancada, nem a senha certa passa — nem aqui, nem no login.
+    certa = cliente.post(
+        "/api/v1/auth/senha/trocar",
+        json={"senha_atual": "senhaforte123", "nova_senha": "novasenha456"},
+        headers=cab(cenario["sindico"]),
+    )
+    assert certa.status_code == 429
+    assert cliente.post(
+        "/api/v1/auth/login",
+        json={"email": "sindico@exemplo.com", "senha": "senhaforte123"},
+    ).status_code == 429
+
+
 def test_saude(cliente):
     r = cliente.get("/api/v1/saude")
     assert r.status_code == 200
@@ -524,3 +579,71 @@ def test_codigo_expirado_e_queimado(cliente, db, cenario):
     db.expire_all()
     registro = db.scalar(select(CodigoVerificacao).order_by(CodigoVerificacao.id.desc()))
     assert registro.consumido_em is not None
+
+
+# ── Troca de senha encerra as outras sessões ─────────────────────────
+def test_trocar_a_senha_encerra_as_outras_sessoes(cliente, cenario):
+    """Quem troca a senha porque desconfia que alguém entrou na conta
+    espera que esse alguém saia. Antes, o token roubado valia 8 horas."""
+    roubado = token(cliente, "sindico@exemplo.com", "senhaforte123")
+    atual = cenario["sindico"]
+    assert cliente.get("/api/v1/auth/eu", headers=cab(roubado)).status_code == 200
+
+    r = cliente.post(
+        "/api/v1/auth/senha/trocar",
+        json={"senha_atual": "senhaforte123", "nova_senha": "novasenha456"},
+        headers=cab(atual),
+    )
+    assert r.status_code == 200, r.text
+    novo = r.json()["access_token"]
+
+    for antigo in (roubado, atual):
+        r = cliente.get("/api/v1/auth/eu", headers=cab(antigo))
+        assert r.status_code == 401
+        assert "senha" in r.json()["detalhe"]
+    # Quem trocou continua conectado, com o token que veio na resposta.
+    assert cliente.get("/api/v1/auth/eu", headers=cab(novo)).status_code == 200
+    # E um login novo, com a senha nova, funciona normalmente.
+    assert cliente.get(
+        "/api/v1/auth/eu", headers=cab(token(cliente, "sindico@exemplo.com", "novasenha456"))
+    ).status_code == 200
+
+
+def test_redefinir_a_senha_encerra_as_sessoes_e_o_bloqueio(cliente, cenario, db):
+    from app.core.security import gerar_hash_codigo
+    from app.models.usuario import CodigoVerificacao
+
+    aberto = cenario["sindico"]
+    # Alguém tentou adivinhar a senha e trancou a conta.
+    for _ in range(settings.MAX_TENTATIVAS_LOGIN):
+        cliente.post("/api/v1/auth/login",
+                     json={"email": "sindico@exemplo.com", "senha": "chute12345"})
+
+    cliente.post("/api/v1/auth/senha/recuperar", json={"email": "sindico@exemplo.com"})
+    registro = (
+        db.query(CodigoVerificacao)
+        .filter(CodigoVerificacao.finalidade == FinalidadeCodigo.RECUPERACAO_SENHA)
+        .order_by(CodigoVerificacao.id.desc()).first()
+    )
+    codigo = next(f"{n:06d}" for n in range(1000000)
+                  if gerar_hash_codigo(f"{n:06d}") == registro.codigo_hash)
+    r = cliente.post("/api/v1/auth/senha/redefinir", json={
+        "email": "sindico@exemplo.com", "codigo": codigo,
+        "nova_senha": "novasenha456", "confirmacao_senha": "novasenha456",
+    })
+    assert r.status_code == 200, r.text
+
+    assert cliente.get("/api/v1/auth/eu", headers=cab(aberto)).status_code == 401
+    # Quem provou ser o dono da conta pelo código não espera o bloqueio.
+    assert cliente.post("/api/v1/auth/login", json={
+        "email": "sindico@exemplo.com", "senha": "novasenha456"}).status_code == 200
+
+
+def test_senha_atual_errada_nao_encerra_nada(cliente, cenario):
+    r = cliente.post(
+        "/api/v1/auth/senha/trocar",
+        json={"senha_atual": "errada1234", "nova_senha": "novasenha456"},
+        headers=cab(cenario["sindico"]),
+    )
+    assert r.status_code == 400
+    assert cliente.get("/api/v1/auth/eu", headers=cab(cenario["sindico"])).status_code == 200

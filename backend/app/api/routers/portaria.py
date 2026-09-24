@@ -28,7 +28,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import (
-    exigir_condominio, exigir_papel, exigir_permissao_porteiro, get_usuario_atual,
+    exigir_condominio, exigir_papel, exigir_permissao_do_porteiro, exigir_permissao_porteiro,
+    porteiro_tem_permissao,
 )
 from app.core.config import settings
 from app.core.database import get_db
@@ -37,7 +38,7 @@ from app.models.enums import (
     CanalVerificacao, Papel, StatusEncomenda, StatusOcorrencia, StatusVisitante,
 )
 from app.models.portaria import Encomenda, Ocorrencia, Visitante
-from app.models.usuario import PermissaoPorteiro, Usuario
+from app.models.usuario import Usuario
 from app.schemas.portaria import (
     ConfirmacaoVisitante, EncomendaEntrada, EncomendaSaida, OcorrenciaEntrada,
     OcorrenciaSaida, RespostaOcorrencia, RetiradaEncomenda, VisitanteEntrada,
@@ -95,13 +96,13 @@ def _encomenda_saida(e: Encomenda) -> EncomendaSaida:
 
 
 # ── Fotos (vídeo porteiro e encomendas) ─────────────────────────────
-def _ler_foto_enviada(arquivo: UploadFile) -> str:
-    """Grava a foto em uploads/portaria e devolve o nome gravado."""
+def _ler_foto_enviada(arquivo: UploadFile, pasta: str = arquivos.PORTARIA) -> str:
+    """Grava a foto numa pasta privada e devolve o nome gravado."""
     # Lê só até um byte além do limite, como na foto de perfil.
     conteudo = arquivo.file.read(settings.FOTO_MAX_KB * 1024 + 1)
     try:
         return arquivos.salvar_privado(
-            arquivos.PORTARIA, conteudo, aceita_pdf=False, max_kb=settings.FOTO_MAX_KB
+            pasta, conteudo, aceita_pdf=False, max_kb=settings.FOTO_MAX_KB
         )
     except arquivos.ArquivoRecusado as erro:
         raise HTTPException(status_code=422, detail=str(erro)) from erro
@@ -115,15 +116,12 @@ def _pode_ver_foto(db: Session, usuario: Usuario, unidade: Unidade, permissao: s
     if usuario.papel == Papel.MORADOR:
         return unidade.id == usuario.unidade_id
     if usuario.papel == Papel.PORTEIRO:
-        permissoes = db.scalar(
-            select(PermissaoPorteiro).where(PermissaoPorteiro.porteiro_id == usuario.id)
-        )
-        return bool(permissoes and getattr(permissoes, permissao, False))
+        return porteiro_tem_permissao(db, usuario, permissao)
     return False
 
 
-def _entregar_foto(nome: str | None) -> FileResponse:
-    caminho = arquivos.caminho_privado(arquivos.PORTARIA, nome)
+def _entregar_foto(nome: str | None, pasta: str = arquivos.PORTARIA) -> FileResponse:
+    caminho = arquivos.caminho_privado(pasta, nome)
     if caminho is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Foto não encontrada.")
     return FileResponse(
@@ -201,6 +199,7 @@ def listar_visitantes(
     usuario: Usuario = Depends(exigir_condominio),
     db: Session = Depends(get_db),
 ) -> list[VisitanteSaida]:
+    exigir_permissao_do_porteiro(db, usuario, "registrar_visitantes")
     consulta = select(Visitante).join(Unidade).where(
         Unidade.condominio_id == usuario.condominio_id
     )
@@ -226,7 +225,7 @@ def confirmar_visitante(
     db: Session = Depends(get_db),
 ) -> VisitanteSaida:
     """"o cliente confirme se é ou não seu convidado" (seção 6)."""
-    visitante = db.get(Visitante, visitante_id)
+    visitante = db.get(Visitante, visitante_id, with_for_update=True)
     # Quem responde é o morador da unidade visitada, ninguém mais.
     if visitante is None or visitante.unidade_id != morador.unidade_id:
         raise HTTPException(
@@ -272,7 +271,7 @@ def registrar_saida(
     usuario: Usuario = Depends(exigir_permissao_porteiro("registrar_visitantes")),
     db: Session = Depends(get_db),
 ) -> VisitanteSaida:
-    visitante = db.get(Visitante, visitante_id)
+    visitante = db.get(Visitante, visitante_id, with_for_update=True)
     if visitante is None or visitante.unidade.condominio_id != usuario.condominio_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Visitante não encontrado."
@@ -301,7 +300,7 @@ def enviar_foto_visitante(
     usuario: Usuario = Depends(exigir_permissao_porteiro("registrar_visitantes")),
     db: Session = Depends(get_db),
 ) -> VisitanteSaida:
-    visitante = db.get(Visitante, visitante_id)
+    visitante = db.get(Visitante, visitante_id, with_for_update=True)
     if visitante is None or visitante.unidade.condominio_id != usuario.condominio_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Visitante não encontrado."
@@ -379,6 +378,7 @@ def listar_encomendas(
     usuario: Usuario = Depends(exigir_condominio),
     db: Session = Depends(get_db),
 ) -> list[EncomendaSaida]:
+    exigir_permissao_do_porteiro(db, usuario, "registrar_encomendas")
     consulta = select(Encomenda).join(Unidade).where(
         Unidade.condominio_id == usuario.condominio_id
     )
@@ -403,7 +403,7 @@ def confirmar_retirada(
 ) -> EncomendaSaida:
     """"o porteiro me envia... uma foto ou vídeo para que eu confirmasse a
     minha entrega ou pedido" (seção 6)."""
-    encomenda = db.get(Encomenda, encomenda_id)
+    encomenda = db.get(Encomenda, encomenda_id, with_for_update=True)
     if encomenda is None or encomenda.unidade_id != morador.unidade_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Encomenda não encontrada."
@@ -436,7 +436,7 @@ def enviar_foto_encomenda(
     usuario: Usuario = Depends(exigir_permissao_porteiro("registrar_encomendas")),
     db: Session = Depends(get_db),
 ) -> EncomendaSaida:
-    encomenda = db.get(Encomenda, encomenda_id)
+    encomenda = db.get(Encomenda, encomenda_id, with_for_update=True)
     if encomenda is None or encomenda.unidade.condominio_id != usuario.condominio_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Encomenda não encontrada."
@@ -482,18 +482,8 @@ def abrir_ocorrencia(
     usuario: Usuario = Depends(exigir_condominio),
     db: Session = Depends(get_db),
 ) -> OcorrenciaSaida:
-    if usuario.papel == Papel.PORTEIRO:
-        # O porteiro só registra ocorrência se o síndico liberou (seção 12).
-        from app.models.usuario import PermissaoPorteiro
-
-        permissoes = db.scalar(
-            select(PermissaoPorteiro).where(PermissaoPorteiro.porteiro_id == usuario.id)
-        )
-        if permissoes is None or not permissoes.registrar_ocorrencias:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="O síndico não liberou esta ação para o seu usuário.",
-            )
+    # O porteiro só registra ocorrência se o síndico liberou (seção 12).
+    exigir_permissao_do_porteiro(db, usuario, "registrar_ocorrencias")
 
     ocorrencia = Ocorrencia(
         condominio_id=usuario.condominio_id,
@@ -512,7 +502,8 @@ def _ocorrencia_saida(db: Session, o: Ocorrencia) -> OcorrenciaSaida:
     return OcorrenciaSaida(
         id=o.id, titulo=o.titulo, descricao=o.descricao, categoria=o.categoria,
         local=o.local, prioridade=o.prioridade,
-        foto_url=o.foto_url, status=o.status, aberta_por_id=o.aberta_por_id,
+        foto_url=f"/portaria/ocorrencias/{o.id}/foto" if o.foto_arquivo else None,
+        status=o.status, aberta_por_id=o.aberta_por_id,
         aberta_por_nome=o.aberta_por.nome,
         unidade=unidade.identificacao if unidade else None,
         resposta=o.resposta, respondida_em=o.respondida_em, criado_em=o.criado_em,
@@ -525,6 +516,7 @@ def listar_ocorrencias(
     usuario: Usuario = Depends(exigir_condominio),
     db: Session = Depends(get_db),
 ) -> list[OcorrenciaSaida]:
+    exigir_permissao_do_porteiro(db, usuario, "registrar_ocorrencias")
     consulta = select(Ocorrencia).where(Ocorrencia.condominio_id == usuario.condominio_id)
     # O morador acompanha só o que ele mesmo abriu.
     if usuario.papel == Papel.MORADOR:
@@ -538,6 +530,68 @@ def listar_ocorrencias(
     ]
 
 
+def _ocorrencia_visivel(db: Session, usuario: Usuario, ocorrencia_id: int) -> Ocorrencia:
+    """A ocorrência, se quem pede pode vê-la — as mesmas regras da lista."""
+    ocorrencia = db.get(Ocorrencia, ocorrencia_id)
+    visivel = ocorrencia is not None and ocorrencia.condominio_id == usuario.condominio_id and (
+        usuario.papel == Papel.SINDICO
+        or ocorrencia.aberta_por_id == usuario.id
+        or (usuario.papel == Papel.PORTEIRO
+            and porteiro_tem_permissao(db, usuario, "registrar_ocorrencias"))
+    )
+    if not visivel:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Ocorrência não encontrada."
+        )
+    return ocorrencia
+
+
+@router.put(
+    "/ocorrencias/{ocorrencia_id}/foto",
+    response_model=OcorrenciaSaida,
+    summary="Anexa uma foto à ocorrência",
+)
+def enviar_foto_ocorrencia(
+    ocorrencia_id: int,
+    arquivo: UploadFile = File(..., description="Imagem JPG, PNG ou WebP"),
+    usuario: Usuario = Depends(exigir_condominio),
+    db: Session = Depends(get_db),
+) -> OcorrenciaSaida:
+    ocorrencia = _ocorrencia_visivel(db, usuario, ocorrencia_id)
+    # Relê travada: a resposta do síndico pode estar chegando agora.
+    db.refresh(ocorrencia, with_for_update=True)
+    # Só quem abriu anexa, e só enquanto ninguém respondeu: a foto é a
+    # prova do que foi relatado, e o síndico decide olhando para ela.
+    if ocorrencia.aberta_por_id != usuario.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Só quem abriu a ocorrência pode anexar a foto.",
+        )
+    if ocorrencia.respondida_em is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A ocorrência já foi respondida; a foto não pode mais ser trocada.",
+        )
+
+    nova = _ler_foto_enviada(arquivo, arquivos.OCORRENCIAS)
+    anterior = ocorrencia.foto_arquivo
+    ocorrencia.foto_arquivo = nova
+    db.commit()
+    arquivos.apagar_privado(arquivos.OCORRENCIAS, anterior)
+    db.refresh(ocorrencia)
+    return _ocorrencia_saida(db, ocorrencia)
+
+
+@router.get("/ocorrencias/{ocorrencia_id}/foto", summary="Foto da ocorrência")
+def foto_ocorrencia(
+    ocorrencia_id: int,
+    usuario: Usuario = Depends(exigir_condominio),
+    db: Session = Depends(get_db),
+) -> FileResponse:
+    ocorrencia = _ocorrencia_visivel(db, usuario, ocorrencia_id)
+    return _entregar_foto(ocorrencia.foto_arquivo, arquivos.OCORRENCIAS)
+
+
 @router.post(
     "/ocorrencias/{ocorrencia_id}/resposta",
     response_model=OcorrenciaSaida,
@@ -549,7 +603,7 @@ def responder_ocorrencia(
     sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
     db: Session = Depends(get_db),
 ) -> OcorrenciaSaida:
-    ocorrencia = db.get(Ocorrencia, ocorrencia_id)
+    ocorrencia = db.get(Ocorrencia, ocorrencia_id, with_for_update=True)
     if ocorrencia is None or ocorrencia.condominio_id != sindico.condominio_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Ocorrência não encontrada."

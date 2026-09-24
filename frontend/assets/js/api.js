@@ -192,6 +192,81 @@
       }).catch(function() { if (falhou) falhou(); });
     },
 
+    /* Prende o foco numa janela aberta por cima da página (diálogo): o
+       resto da página fica "inerte" — não recebe foco nem clique —, e o
+       Tab não escapa mais para o que está escondido atrás do fundo escuro.
+       "manter" são elementos de fora que continuam ativos (o fundo que
+       fecha a janela ao ser clicado). Devolve a função que solta. */
+    prenderFoco: function(dialogo, manter) {
+      manter = manter || [];
+      var travados = [];
+      for (var el = dialogo; el && el.parentElement; el = el.parentElement) {
+        Array.prototype.forEach.call(el.parentElement.children, function(irmao) {
+          if (irmao === el || irmao.inert || manter.indexOf(irmao) >= 0) return;
+          if (/^(SCRIPT|STYLE|LINK)$/.test(irmao.tagName)) return;
+          irmao.inert = true;
+          travados.push(irmao);
+        });
+        if (el.parentElement === document.body) break;
+      }
+      return function soltar() {
+        travados.forEach(function(irmao) { irmao.inert = false; });
+        travados = [];
+      };
+    },
+
+    /* Gera e baixa uma planilha CSV (separada por ";", que é o que o Excel
+       em português espera). Texto que começa com = + - @ vira fórmula ao
+       abrir no Excel — e nome e e-mail são digitados pelo próprio
+       morador —, então esses ganham um apóstrofo na frente. */
+    baixarCsv: function(nomeArquivo, linhas) {
+      var csv = linhas.map(function(linha) {
+        return linha.map(function(valor) {
+          var texto = valor == null ? '' : String(valor);
+          if (typeof valor === 'string' && /^[=+\-@\t\r]/.test(texto)) texto = "'" + texto;
+          return '"' + texto.replace(/"/g, '""') + '"';
+        }).join(';');
+      }).join('\r\n');
+      // O BOM faz o Excel abrir os acentos corretamente.
+      var url = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+      var link = document.createElement('a');
+      link.href = url;
+      link.download = nomeArquivo;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
+    },
+
+    /* Abre um arquivo protegido (documento do condomínio) numa nova aba.
+       A aba é aberta já no clique — depois do download o navegador a
+       trataria como pop-up e bloquearia — e recebe o arquivo quando ele
+       chega. Se mesmo assim não abrir, o arquivo é baixado. */
+    abrirArquivo: function(caminho, nome) {
+      var janela = global.open('', '_blank');
+      if (janela) {
+        janela.opener = null;
+        janela.document.title = 'Abrindo…';
+        janela.document.body.textContent = 'Abrindo o arquivo…';
+      }
+      return api.protegido(caminho).then(function(arquivo) {
+        if (janela && !janela.closed) {
+          janela.location.href = arquivo.url;
+        } else {
+          var link = document.createElement('a');
+          link.href = arquivo.url;
+          link.download = nome || 'documento';
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        }
+        setTimeout(function() { URL.revokeObjectURL(arquivo.url); }, 60000);
+      }, function(erro) {
+        if (janela) janela.close();
+        throw erro;
+      });
+    },
+
     /* Troca o conteúdo de "caixa" (ícone, iniciais) pela foto protegida,
        se ela abrir. Se não abrir, a caixa fica como estava. */
     trocarPorFoto: function(caixa, caminho, alt) {
@@ -210,6 +285,60 @@
         img.addEventListener('error', soltar, { once: true });
         img.src = arquivo.url;
       }).catch(function() {});
+    },
+
+    /* Espera antes de deixar pedir outro código. A API só emite um código
+       por minuto por pessoa (contra disparos de e-mail e SMS); sem esta
+       espera, o clique parecia funcionar e nada chegava. */
+    esperarReenvio: function(link, segundos) {
+      var texto = 'Reenviar código';
+      var resta = segundos || 60;
+      link.dataset.aguardando = '1';
+      link.setAttribute('aria-disabled', 'true');
+      link.classList.add('link-aguardando');
+      function atualizar() {
+        if (resta <= 0) {
+          clearInterval(relogio);
+          delete link.dataset.aguardando;
+          link.removeAttribute('aria-disabled');
+          link.classList.remove('link-aguardando');
+          link.textContent = texto;
+          return;
+        }
+        link.textContent = 'Reenviar em ' + resta + ' s';
+        resta -= 1;
+      }
+      var relogio = setInterval(atualizar, 1000);
+      atualizar();
+    },
+
+    /* Envia a foto capturada (data URL) para a rota dada. Resolve com
+       null se deu certo ou não havia foto, e com a mensagem do erro se
+       falhou — o registro já existe, então a falha da foto não o desfaz. */
+    anexarFoto: function(rota, dataUrl) {
+      if (!dataUrl) return Promise.resolve(null);
+      return api.put(rota, api.arquivoDeDataUrl(dataUrl, 'foto.jpg'))
+        .then(function() { return null; }, function(e) { return e.message; });
+    },
+
+    /* Miniatura de uma foto protegida; clicar abre a imagem inteira numa
+       nova aba. Enquanto carrega, ou se não carregar, fica invisível. */
+    miniatura: function(caminho, alt) {
+      var link = document.createElement('a');
+      link.className = 'miniatura-foto';
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.hidden = true;
+      link.title = 'Abrir a foto';
+      var img = document.createElement('img');
+      img.alt = alt || 'Foto anexada';
+      link.appendChild(img);
+      api.protegido(caminho).then(function(arquivo) {
+        img.addEventListener('load', function() { link.hidden = false; }, { once: true });
+        img.src = arquivo.url;
+        link.href = arquivo.url;
+      }).catch(function() {});
+      return link;
     },
 
     /* Um data URL (a foto capturada pela câmera) como arquivo para envio. */
