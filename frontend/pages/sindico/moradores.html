@@ -319,16 +319,7 @@
                    ROTULO_OCUPACAO[u.tipo_ocupacao] || '', ui.ROTULO_STATUS[u.status] || u.status,
                    desde(u.criado_em)]);
     });
-    var csv = linhas.map(function(l) {
-      return l.map(function(c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(';');
-    }).join('\r\n');
-    // O BOM faz o Excel abrir os acentos corretamente.
-    var url = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
-    var link = document.createElement('a');
-    link.href = url;
-    link.download = 'moradores.csv';
-    link.click();
-    URL.revokeObjectURL(url);
+    api.baixarCsv('moradores.csv', linhas);
   }
 
   function atualizarResumo(condominio) {

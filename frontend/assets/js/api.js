@@ -192,6 +192,29 @@
       }).catch(function() { if (falhou) falhou(); });
     },
 
+    /* Gera e baixa uma planilha CSV (separada por ";", que é o que o Excel
+       em português espera). Texto que começa com = + - @ vira fórmula ao
+       abrir no Excel — e nome e e-mail são digitados pelo próprio
+       morador —, então esses ganham um apóstrofo na frente. */
+    baixarCsv: function(nomeArquivo, linhas) {
+      var csv = linhas.map(function(linha) {
+        return linha.map(function(valor) {
+          var texto = valor == null ? '' : String(valor);
+          if (typeof valor === 'string' && /^[=+\-@\t\r]/.test(texto)) texto = "'" + texto;
+          return '"' + texto.replace(/"/g, '""') + '"';
+        }).join(';');
+      }).join('\r\n');
+      // O BOM faz o Excel abrir os acentos corretamente.
+      var url = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+      var link = document.createElement('a');
+      link.href = url;
+      link.download = nomeArquivo;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
+    },
+
     /* Abre um arquivo protegido (documento do condomínio) numa nova aba.
        A aba é aberta já no clique — depois do download o navegador a
        trataria como pop-up e bloquearia — e recebe o arquivo quando ele

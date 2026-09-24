@@ -248,3 +248,23 @@ def test_documento_do_sindico_chega_ao_morador(navegador):
     assert status == 401
     assert pg.erros == []
     ctx.close()
+
+
+def test_planilha_exportada_nao_vira_formula(navegador):
+    """Nome digitado como =HYPERLINK(...) não pode virar fórmula no Excel."""
+    ctx, pg = abrir(navegador, papel="sindico")
+    ir(pg, "pages/sindico/moradores.html", 1200)
+    with pg.expect_download() as baixado:
+        pg.evaluate("""() => window.SmartCondo.api.baixarCsv('teste.csv', [
+            ['Nome', 'Valor'], ['=HYPERLINK("http://x")', 450], ['-2+3', -5], ['Ana', '1.200,00']])""")
+    texto = open(baixado.value.path(), encoding="utf-8-sig", newline="").read()
+    assert texto.split("\r\n") == [
+        '"Nome";"Valor"', '"\'=HYPERLINK(""http://x"")";"450"', '"\'-2+3";"-5"', '"Ana";"1.200,00"']
+
+    # O botão da própria tela continua gerando a planilha.
+    with pg.expect_download() as baixado:
+        pg.get_by_role("button", name="Exportar").first.click()
+    assert baixado.value.suggested_filename == "moradores.csv"
+    assert open(baixado.value.path(), encoding="utf-8-sig", newline="").read().startswith('"Nome";"E-mail"')
+    assert pg.erros == []
+    ctx.close()

@@ -17,13 +17,18 @@ seções novas descrevendo o que foi construído desde então.
 | 14 a 17 | Em documentos, arquivo_url dá lugar a arquivo e tipo_conteudo — agora 235 atributos |
 | 20 Arquitetura | Os documentos do condomínio também ficam sem endereço público |
 | 21 API REST | 99 endpoints |
-| 23 Testes | 314 casos no servidor e 57 testes de interface |
+| 23 Testes | 314 casos no servidor e 58 testes de interface |
 
 **Por que mudou.** O documento era só um endereço digitado pelo síndico:
 os de demonstração apontavam para um servidor que não existe, e nada
 impedia um endereço `javascript:`, que rodaria na tela do morador ao ser
 clicado. Agora o arquivo é enviado, conferido pelo conteúdo e guardado
 fora do alcance público.
+
+**Planilhas exportadas.** As listas de moradores e de cobranças exportadas
+em CSV escreviam o texto como veio; um nome cadastrado como
+`=HYPERLINK(...)` virava fórmula ao abrir no Excel. Agora esse texto ganha
+um apóstrofo na frente, e os valores saem com vírgula decimal.
 
 ## Versão 2.3 — revisão geral
 

@@ -148,22 +148,15 @@
   }
 
   function exportarCsv() {
-    var linhas = [['Unidade', 'Competencia', 'Descricao', 'Vencimento', 'Valor', 'Pago', 'Situacao']];
+    // Vírgula decimal: o Excel em português lê "410.00" como 41000.
+    function decimal(v) { return Number(v || 0).toFixed(2).replace('.', ','); }
+    var linhas = [['Unidade', 'Competência', 'Descrição', 'Vencimento', 'Valor', 'Pago', 'Situação']];
     cobrancas.forEach(function(c) {
       linhas.push([c.unidade || '', competenciaCurta(c.competencia), c.descricao,
-                   dataCurta(c.vencimento), c.valor, c.total_pago,
+                   dataCurta(c.vencimento), decimal(c.valor), decimal(c.total_pago),
                    ROTULO_STATUS[c.status] || c.status]);
     });
-    var csv = linhas.map(function(l) {
-      return l.map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(';');
-    }).join('\r\n');
-    // O BOM faz o Excel abrir os acentos corretamente.
-    var url = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
-    var link = document.createElement('a');
-    link.href = url;
-    link.download = 'cobrancas.csv';
-    link.click();
-    URL.revokeObjectURL(url);
+    api.baixarCsv('cobrancas.csv', linhas);
   }
 
   function carregarResumo() {
