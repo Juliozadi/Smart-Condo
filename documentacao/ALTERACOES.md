@@ -12,12 +12,12 @@ seções novas descrevendo o que foi construído desde então.
 | Seção | O que mudou |
 |---|---|
 | 9 Requisitos funcionais | RF032: o síndico envia o arquivo (PDF ou imagem), em vez de digitar um endereço, e o arquivo só abre com o token de quem tem direito |
-| 10 Requisitos não funcionais | RNF017 passa a cobrir os documentos do condomínio; RNF013 e RNF014 valem também para tentativas simultâneas; RNF009: trocar a senha encerra as outras sessões; RNF005 cita os valores recusados pelo banco |
+| 10 Requisitos não funcionais | RNF017 passa a cobrir os documentos do condomínio; RNF013 e RNF014 valem também para tentativas simultâneas; RNF009: trocar a senha encerra as outras sessões; RNF005 cita os valores recusados pelo banco; RNF007 exige número fixo de consultas por listagem |
 | 11.6.5 Tela de documentos | O texto cita a tela do síndico que publica e a abertura com o token |
 | 14 a 17 | Em documentos, arquivo_url dá lugar a arquivo e tipo_conteudo — agora 236 atributos. Em usuarios, entra versao_sessao |
 | 20 Arquitetura | Os documentos do condomínio também ficam sem endereço público; as regras de data usam o fuso do condomínio; a modelagem passa a citar 21 tabelas e 44 chaves estrangeiras (o texto ainda dizia 19 e 39) e a tabela mensagens |
 | 21 API REST | 99 endpoints |
-| 23 Testes | 343 casos no servidor, incluindo requisições simultâneas, e 59 testes de interface |
+| 23 Testes | 349 casos no servidor, incluindo requisições simultâneas, e 59 testes de interface |
 
 **Por que mudou.** O documento era só um endereço digitado pelo síndico:
 os de demonstração apontavam para um servidor que não existe, e nada
@@ -33,6 +33,13 @@ pagamento trava a cobrança até gravar. Um registro duplicado barrado pelo
 banco responde "já existe" (409), e um valor que o banco recusa — id acima
 do limite da coluna, texto com caractere nulo — responde como dado
 inválido (422), em vez de erro do servidor.
+
+**Listagens rápidas com muitos dados.** Cada linha das listagens buscava
+a sua unidade e somava os seus pagamentos no banco. Com 60 unidades e dois
+anos de cobranças, abrir o financeiro do síndico fazia 1.685 consultas, e
+as reservas, 399. Agora cada listagem faz no máximo nove, qualquer que seja
+o volume. A lista de contatos do chat passou também a mostrar o bloco da
+unidade, e não só o número.
 
 **Decisões tomadas duas vezes.** Com duas abas abertas, "aprovar" e
 "recusar" o mesmo cadastro passavam juntos, e o morador recebia os dois

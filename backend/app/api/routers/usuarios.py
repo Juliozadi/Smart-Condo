@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import exigir_papel, get_usuario_atual
 from app.core.database import get_db
@@ -308,7 +308,11 @@ def listar_usuarios(
     sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
     db: Session = Depends(get_db),
 ) -> list[Usuario]:
-    consulta = select(Usuario).where(Usuario.condominio_id == sindico.condominio_id)
+    consulta = (
+        select(Usuario)
+        .where(Usuario.condominio_id == sindico.condominio_id)
+        .options(selectinload(Usuario.unidade))
+    )
     if papel is not None:
         consulta = consulta.where(Usuario.papel == papel)
     if status_usuario is not None:

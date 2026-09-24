@@ -12,7 +12,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from sqlalchemy import and_, func, or_, select, update
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.models.enums import Papel, StatusUsuario
 from app.models.mensagem import Mensagem
@@ -54,7 +54,7 @@ def _entre(a: int, b: int):
 
 
 def listar_contatos(db: Session, usuario: Usuario) -> list[dict]:
-    pessoas = db.scalars(_contatos_query(usuario)).all()
+    pessoas = db.scalars(_contatos_query(usuario).options(selectinload(Usuario.unidade))).all()
     if not pessoas:
         return []
 
@@ -86,7 +86,8 @@ def listar_contatos(db: Session, usuario: Usuario) -> list[dict]:
         saida.append({
             "id": p.id, "nome": p.nome, "papel": p.papel, "telefone": p.telefone,
             "foto_url": p.foto_url,
-            "unidade": p.unidade.numero if getattr(p, "unidade", None) else None,
+            # Com o bloco: em condomínio de vários blocos há mais de um "101".
+            "unidade": p.unidade.identificacao if p.unidade else None,
             "nao_lidas": nao_lidas.get(p.id, 0),
             "ultima_mensagem": ultima.texto[:120] if ultima else None,
             "ultima_em": ultima.enviada_em if ultima else None,

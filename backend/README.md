@@ -213,6 +213,9 @@ pagou e a data.
   pagamentos e as decisões (aprovar cadastro, avaliar ou cancelar reserva,
   liberar visitante, retirar encomenda, responder ocorrência) travam a linha no banco (`SELECT ... FOR UPDATE`): requisições
   simultâneas entram uma por vez e não escapam dos limites.
+- Listagens buscam unidades, moradores e totais pagos **de uma vez**
+  (`pre_carregar`, `selectinload`, soma agrupada): o número de consultas
+  não cresce com a quantidade de itens.
 - Valor que o banco recusa (id acima do limite, caractere nulo) responde
   **422**, e registro duplicado barrado por ele responde **409** — nunca 500.
 

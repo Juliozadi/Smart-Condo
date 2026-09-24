@@ -9,7 +9,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import exigir_condominio, exigir_papel, get_usuario_atual
 from app.core.config import settings
@@ -365,13 +365,14 @@ def listar_reservas_do_condominio(
         .join(EspacoComum)
         .where(EspacoComum.condominio_id == sindico.condominio_id)
         .order_by(Reserva.data.desc(), Reserva.hora_inicio)
+        .options(selectinload(Reserva.morador).selectinload(Usuario.unidade))
     )
     if status_reserva is not None:
         consulta = consulta.where(Reserva.status == status_reserva)
 
     resposta: list[ReservaSindicoSaida] = []
     for r in db.scalars(consulta).all():
-        unidade = db.get(Unidade, r.morador.unidade_id) if r.morador.unidade_id else None
+        unidade = r.morador.unidade
         resposta.append(
             ReservaSindicoSaida(
                 **_para_saida(r).model_dump(),

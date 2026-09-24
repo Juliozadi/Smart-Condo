@@ -9,8 +9,8 @@ from datetime import date, datetime, timezone
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy import func, select, update
+from sqlalchemy.orm import Session, contains_eager
 
 from app.api.deps import exigir_condominio, exigir_papel, exigir_permissao_porteiro
 from app.core.database import get_db
@@ -50,11 +50,25 @@ def _total_pago(db: Session, cobranca_id: int) -> Decimal:
     return Decimal(total or 0)
 
 
-def _cobranca_saida(db: Session, c: Cobranca) -> CobrancaSaida:
+def _totais_pagos(db: Session, ids: list[int]) -> dict[int, Decimal]:
+    """O total pago de várias cobranças numa consulta só. Somar uma a uma
+    fazia a lista de um ano de um prédio passar de mil consultas."""
+    if not ids:
+        return {}
+    linhas = db.execute(
+        select(Pagamento.cobranca_id, func.sum(Pagamento.valor))
+        .where(Pagamento.cobranca_id.in_(ids))
+        .group_by(Pagamento.cobranca_id)
+    ).all()
+    return {cobranca_id: Decimal(total) for cobranca_id, total in linhas}
+
+
+def _cobranca_saida(db: Session, c: Cobranca, total_pago: Decimal | None = None) -> CobrancaSaida:
     return CobrancaSaida(
         id=c.id, unidade_id=c.unidade_id, unidade=c.unidade.identificacao,
         competencia=c.competencia, descricao=c.descricao, valor=c.valor,
-        vencimento=c.vencimento, status=c.status, total_pago=_total_pago(db, c.id),
+        vencimento=c.vencimento, status=c.status,
+        total_pago=_total_pago(db, c.id) if total_pago is None else total_pago,
         criado_em=c.criado_em,
     )
 
@@ -180,8 +194,10 @@ def listar_cobrancas(
     usuario: Usuario = Depends(exigir_condominio),
     db: Session = Depends(get_db),
 ) -> list[CobrancaSaida]:
-    consulta = select(Cobranca).join(Unidade).where(
-        Unidade.condominio_id == usuario.condominio_id
+    consulta = (
+        select(Cobranca).join(Unidade)
+        .options(contains_eager(Cobranca.unidade))
+        .where(Unidade.condominio_id == usuario.condominio_id)
     )
     # O morador vê apenas as cobranças da própria unidade.
     if usuario.papel == Papel.MORADOR:
@@ -194,19 +210,29 @@ def listar_cobrancas(
     if status_cobranca is not None:
         consulta = consulta.where(Cobranca.status == status_cobranca)
 
-    cobrancas = db.scalars(consulta.order_by(Cobranca.competencia.desc())).all()
-
     # Uma cobrança em aberto que passou do vencimento aparece como vencida.
-    hoje = _hoje()
-    mudou = False
-    for c in cobrancas:
-        if c.status == StatusCobranca.ABERTA and c.vencimento < hoje:
-            c.status = StatusCobranca.VENCIDA
-            mudou = True
-    if mudou:
+    # Um UPDATE só, antes de ler: marcar uma a uma e commitar depois de ler
+    # expirava os objetos, e cada cobrança era relida do banco — mais de
+    # mil consultas para a lista de um ano de um prédio.
+    marcadas = db.execute(
+        update(Cobranca)
+        .where(
+            Cobranca.status == StatusCobranca.ABERTA,
+            Cobranca.vencimento < _hoje(),
+            Cobranca.unidade_id.in_(
+                select(Unidade.id).where(Unidade.condominio_id == usuario.condominio_id)
+            ),
+        )
+        .values(status=StatusCobranca.VENCIDA)
+        .execution_options(synchronize_session=False)
+    )
+    if marcadas.rowcount:
         db.commit()
 
-    return [_cobranca_saida(db, c) for c in cobrancas]
+    cobrancas = db.scalars(consulta.order_by(Cobranca.competencia.desc())).all()
+
+    totais = _totais_pagos(db, [c.id for c in cobrancas])
+    return [_cobranca_saida(db, c, totais.get(c.id, ZERO)) for c in cobrancas]
 
 
 # ── Pagamentos ───────────────────────────────────────────────────────
@@ -339,8 +365,9 @@ def resumo(
     abertas = 0
     inadimplentes: set[int] = set()
 
+    totais = _totais_pagos(db, [c.id for c in cobrancas])
     for c in cobrancas:
-        pago = _total_pago(db, c.id)
+        pago = totais.get(c.id, ZERO)
         total_recebido += pago
         if c.status in (StatusCobranca.ABERTA, StatusCobranca.VENCIDA):
             falta = c.valor - pago

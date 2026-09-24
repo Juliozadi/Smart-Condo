@@ -11,7 +11,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import exigir_papel
-from app.core.database import get_db
+from app.core.database import get_db, pre_carregar
 from app.core.security import gerar_codigo_condominio
 from app.models.condominio import Condominio, Unidade
 from app.models.enums import Papel, StatusUsuario
@@ -289,7 +289,12 @@ def listar_usuarios(
             | Usuario.email.ilike(termo)
             | Usuario.cpf.ilike(termo)
         )
-    return [_usuario_saida(db, u) for u in db.scalars(consulta).all()]
+    usuarios = db.scalars(consulta).all()
+    carregados = (  # noqa: F841 — mantém os objetos vivos na sessão
+        pre_carregar(db, Unidade, (u.unidade_id for u in usuarios)),
+        pre_carregar(db, Condominio, (u.condominio_id for u in usuarios)),
+    )
+    return [_usuario_saida(db, u) for u in usuarios]
 
 
 @router.post(

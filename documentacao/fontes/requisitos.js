@@ -313,8 +313,8 @@ const requisitosNaoFuncionais = [
   { n: '10.3', grupo: 'Desempenho', itens: [
     { id: 'RNF007', nome: 'Tempo de resposta',
       prioridade: 'Importante',
-      descricao: 'As telas de consulta respondem em menos de um segundo em uso normal, com o banco povoado com dados de um condomínio inteiro.',
-      verificacao: 'Medido com o sistema em funcionamento, percorrendo as telas dos quatro perfis.' },
+      descricao: 'As telas de consulta respondem em menos de um segundo em uso normal, com o banco povoado com dados de um condomínio inteiro. Para isso, cada listagem faz um número fixo de consultas ao banco, qualquer que seja o número de itens: as unidades, os moradores e os totais pagos são buscados de uma vez, e não linha por linha.',
+      verificacao: 'Medido com o sistema em funcionamento, percorrendo as telas dos quatro perfis, e com um condomínio de 60 unidades e dois anos de cobranças. Testes automatizados contam as consultas de cada listagem com 3 e com 30 itens e exigem o mesmo número.' },
     { id: 'RNF008', nome: 'Índices nas colunas de busca',
       prioridade: 'Importante',
       descricao: 'As colunas usadas para filtrar e ordenar — situação, data, vínculo com condomínio e com unidade, placa, código de rastreio — têm índice, para que a consulta não precise varrer a tabela inteira à medida que o histórico cresce.',
