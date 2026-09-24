@@ -105,7 +105,7 @@ const api = {
 // ── 15 Testes automatizados (nova) ──────────────────────────────────
 const testes = {
   paragrafos: [
-    'As regras do sistema são verificadas por uma suíte de 299 casos de teste automatizados, escritos com pytest e executados contra um banco PostgreSQL real, e não contra um banco simulado. Assim, restrições de chave estrangeira e de unicidade também são exercitadas.',
+    'As regras do sistema são verificadas por uma suíte de 305 casos de teste automatizados, escritos com pytest e executados contra um banco PostgreSQL real, e não contra um banco simulado. Assim, restrições de chave estrangeira e de unicidade também são exercitadas.',
     'Os testes não conferem apenas se o caminho feliz funciona. Boa parte deles verifica justamente o que o sistema precisa recusar: um morador não pode ver a ocorrência de outro; um porteiro sem a permissão liberada pelo síndico não consegue registrar uma ocorrência; uma reserva que se sobrepõe a outra é recusada; a mensagem de conflito não revela quem reservou; e a senha nunca é gravada em texto puro.',
     'Cada vez que uma regra nova é escrita, um teste correspondente é adicionado. Isso permite alterar o código com segurança: se uma mudança quebrar uma regra antiga, a suíte acusa antes de o problema chegar à tela.',
     'A suíte é executada automaticamente a cada envio de código ao repositório, junto com duas outras verificações: a aplicação das mudanças de estrutura do banco no sentido de ida e de volta, feita com a tabela já populada, que é a situação em que uma alteração mal escrita falha; e a execução dos scripts de criação e carga do banco em um banco vazio, já que eles são mantidos manualmente e podem deixar de acompanhar uma mudança de estrutura.',
@@ -116,11 +116,11 @@ const testes = {
     ['Arquivo de teste', 'Casos', 'O que cobre'],
     ['test_auth.py', '39', 'Cadastro, código de confirmação, login, bloqueio por tentativas e recuperação de senha'],
     ['test_admin.py', '29', 'Painel do administrador e gestão da plataforma'],
-    ['test_usuarios.py', '34', 'Hierarquia de cadastro, aprovação com registro de autoria e permissões do porteiro'],
+    ['test_usuarios.py', '35', 'Hierarquia de cadastro, aprovação com registro de autoria e permissões do porteiro'],
     ['test_operacao.py', '34', 'Veículos, ordens de serviço e documentos'],
-    ['test_financeiro.py', '30', 'Cobranças, pagamentos e inadimplência'],
+    ['test_financeiro.py', '33', 'Cobranças, pagamentos e inadimplência'],
     ['test_portaria.py', '27', 'Visitantes, encomendas e ocorrências, e o que o porteiro sem permissão não consulta'],
-    ['test_reservas.py', '26', 'Espaços, agenda sigilosa e aprovação de reservas'],
+    ['test_reservas.py', '28', 'Espaços, agenda sigilosa e aprovação de reservas'],
     ['test_notificacao.py', '17', 'Entrega dos códigos por e-mail e por SMS, e o que não pode ir para o log'],
     ['test_foto.py', '12', 'Foto de perfil: tipo conferido pelo conteúdo, tamanho, nome gerado pelo servidor e remoção'],
     ['test_mensagens.py', '11', 'Chat: quem pode conversar com quem, não lidas e mensagens inválidas'],
@@ -136,7 +136,7 @@ const conclusao = [
   'A implementação do SmartCondo é crucial para elevar a qualidade e praticidade na rotina desses condomínios, trazendo fluidez no setor financeiro e possibilitando a execução de ações rotineiras, como a visualização de espaços em uso. O objetivo é facilitar a operação do gerenciamento, eliminando falhas financeiras e reduzindo significativamente intrigas internas. Para isso, o projeto visa atender a todos os usuários de modo completo e se adequar ao cotidiano, garantindo organização nas moradias e serviços.',
   'O sistema prevê funcionalidades específicas para cada tipo de usuário – administrador, síndico, porteiro e morador. O administrador opera a plataforma, cadastrando os condomínios e criando a conta do síndico de cada um. O síndico poderá gerenciar de forma prática e eficiente, incluindo o gerenciamento financeiro com notificações de pagamento e a visualização remota e sigilosa da locação de espaços. O porteiro terá recursos para notificar entregas, registrar entradas e saídas e utilizar o videoporteiro para confirmar a entrada de convidados com foto ou gravação em tempo real, fomentando a segurança. O morador poderá realizar pagamentos com opções variadas, alugar espaços de forma sigilosa, verificar a ocupação de áreas comuns e receber notificações e confirmações de entregas/convidados.',
   'Com um prazo de 2 anos, o projeto se baseia na utilização de linguagens e ferramentas robustas e escaláveis, como HTML, CSS e JavaScript no front-end, Python com FastAPI no back-end e PostgreSQL no banco de dados. Adicionalmente, o projeto demonstra um compromisso com a acessibilidade, utilizando VLibras para usuários com deficiência auditiva, e recursos de alteração de tamanho de fonte e mudança de cores (modo claro/escuro) para deficiências visuais, garantindo uma boa experiência e inclusão.',
-  'Até o momento, o sistema conta com as quatro áreas de acesso implementadas e ligadas à API, 21 tabelas em PostgreSQL, 98 endpoints, 299 casos de teste automatizados cobrindo as regras de negócio e 56 testes de interface executados em um navegador real.',
+  'Até o momento, o sistema conta com as quatro áreas de acesso implementadas e ligadas à API, 21 tabelas em PostgreSQL, 98 endpoints, 305 casos de teste automatizados cobrindo as regras de negócio e 56 testes de interface executados em um navegador real.',
   'Em suma, o SmartCondo é um projeto realista, alinhado com as necessidades do mercado e da tecnologia atual, visando transformar a gestão de condomínios de pequeno e médio porte em um processo ágil, prático, seguro e inclusivo.',
 ];
 

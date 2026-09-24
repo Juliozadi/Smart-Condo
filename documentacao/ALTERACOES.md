@@ -11,13 +11,13 @@ seções novas descrevendo o que foi construído desde então.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | RF006: o morador recebe e-mail com a decisão do síndico. RF027: a lista de placas do pátio é da portaria e do síndico. RF028: a ocorrência aceita foto |
+| 9 Requisitos funcionais | RF016 e RF034: faixas de data aceitas na reserva e na cobrança. RF006: o morador recebe e-mail com a decisão do síndico. RF027: a lista de placas do pátio é da portaria e do síndico. RF028: a ocorrência aceita foto |
 | 10 Requisitos não funcionais | RNF017 passa a cobrir as fotos das ocorrências |
 | 13.3 Tela de cadastro morador | O texto deixa de citar vagas de garagem e passa a citar os documentos; figura refeita com o formulário novo |
 | 17 Dicionário de dados | Em ocorrencias, foto_url dá lugar a foto_arquivo |
 | 20 Arquitetura | Limite de envio de códigos; as permissões do porteiro valem também para consultar |
 | 21 API REST | 98 endpoints |
-| 23 Testes | 299 casos no servidor e 56 testes de interface |
+| 23 Testes | 305 casos no servidor e 56 testes de interface |
 
 **Formulários mais enxutos.** Os cadastros pediam dados que o sistema
 nunca guardava: no do morador, nome social, número do RG, estado civil,

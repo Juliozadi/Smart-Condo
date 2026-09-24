@@ -105,7 +105,7 @@ const requisitosFuncionais = [
   { id: 'RF016', nome: 'Solicitar reserva de espaço',
     atores: 'Morador', prioridade: 'Essencial',
     descricao: 'O sistema permite ao morador reservar um espaço comum para uma data e faixa de horário.',
-    entradas: 'O espaço deve exigir reserva, a hora final deve ser posterior à inicial e não pode haver outra reserva ativa no mesmo espaço e horário.',
+    entradas: 'O espaço deve exigir reserva, a hora final deve ser posterior à inicial e não pode haver outra reserva ativa no mesmo espaço e horário. A data vai de hoje — a partir do horário atual — até 180 dias à frente.',
     saidas: 'A reserva é criada como "pendente" quando o espaço exige aprovação, ou já "aprovada" quando não exige. Choque de horário é recusado com a explicação do conflito.' },
 
   { id: 'RF017', nome: 'Aprovar ou recusar reserva',
@@ -213,7 +213,7 @@ const requisitosFuncionais = [
   { id: 'RF034', nome: 'Gerar cobrança',
     atores: 'Síndico', prioridade: 'Essencial',
     descricao: 'O sistema permite gerar a cobrança de uma unidade para determinada competência, com descrição, valor e vencimento.',
-    entradas: 'O valor precisa ser maior que zero e não pode existir outra cobrança para a mesma unidade na mesma competência.',
+    entradas: 'O valor precisa ser maior que zero e não pode existir outra cobrança para a mesma unidade na mesma competência. A competência vai de 5 anos atrás, prazo em que a cobrança condominial prescreve, até 12 meses à frente, e o vencimento não pode ser antes dela.',
     saidas: 'A cobrança é criada como "aberta" e passa a aparecer na tela financeira do morador da unidade.' },
 
   { id: 'RF035', nome: 'Registrar pagamento',
