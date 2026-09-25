@@ -36,7 +36,7 @@ const arquitetura = {
   ],
   subsecoes: [
     { n: '13.1', nome: 'Modelagem do banco de dados', paragrafos: [
-      'O banco tem 21 tabelas, ligadas por 44 chaves estrangeiras. A tabela central é usuarios, que guarda os quatro papéis do sistema em um único lugar, diferenciados por uma coluna de papel. Essa escolha evita quatro tabelas quase idênticas e permite que o login, a recuperação de senha e o perfil funcionem igual para todos.',
+      'O banco tem 22 tabelas, ligadas por 48 chaves estrangeiras. A tabela central é usuarios, que guarda os quatro papéis do sistema em um único lugar, diferenciados por uma coluna de papel. Essa escolha evita quatro tabelas quase idênticas e permite que o login, a recuperação de senha e o perfil funcionem igual para todos.',
       'Há um ponto de atenção na modelagem: condominios aponta para o síndico responsável e usuarios aponta para o condomínio, o que forma uma referência circular. Por isso, nos scripts de criação, todas as tabelas são criadas primeiro e as chaves estrangeiras só depois.',
     ], tabela: [
       ['Tabela', 'O que guarda'],
@@ -61,6 +61,7 @@ const arquitetura = {
       ['documentos', 'Atas, convenção, regimento e plantas'],
       ['documentos_cadastro', 'RG, comprovante de residência e escritura enviados no cadastro do morador'],
       ['mensagens', 'Conversas do chat entre síndico, porteiros e moradores'],
+      ['registros_alteracao', 'Quem criou, editou, inativou ou reativou cada registro, e quando'],
     ]},
     { n: '13.2', nome: 'Segurança dos dados', paragrafos: [
       'As senhas nunca são guardadas em texto puro: o sistema armazena apenas o hash gerado pelo algoritmo bcrypt, que é de mão única. Mesmo com acesso ao banco, não é possível recuperar a senha original.',
@@ -83,14 +84,14 @@ const arquitetura = {
 // ── 14 API REST (nova) ──────────────────────────────────────────────
 const api = {
   paragrafos: [
-    'A comunicação entre o front-end e o banco de dados acontece por uma API REST, com 99 endpoints distribuídos em treze módulos. Todos os endereços começam com /api/v1, o que permite publicar uma versão 2 no futuro sem quebrar as telas que já usam a versão atual.',
+    'A comunicação entre o front-end e o banco de dados acontece por uma API REST, com 102 endpoints distribuídos em treze módulos. Todos os endereços começam com /api/v1, o que permite publicar uma versão 2 no futuro sem quebrar as telas que já usam a versão atual.',
     'As mensagens de erro são padronizadas e vêm em português, para que a tela possa exibir ao usuário exatamente o que o servidor respondeu, sem precisar traduzir código de erro.',
     'O FastAPI gera automaticamente uma documentação interativa dos endpoints, acessível em /docs quando a API está no ar. Por ela é possível testar cada rota sem escrever código, o que facilita tanto o desenvolvimento quanto a demonstração do projeto.',
   ],
   tabela: [
     ['Módulo', 'Rotas', 'Responsabilidade'],
     ['auth', '11', 'Cadastro, envio dos documentos do cadastro, confirmação por código (e-mail ou SMS), login, recuperação de senha e canais disponíveis'],
-    ['admin', '12', 'Painel do administrador: condomínios e usuários da plataforma'],
+    ['admin', '15', 'Painel do administrador: condomínios, usuários e administradores da plataforma, e o histórico de alterações'],
     ['usuarios', '15', 'Cadastro de porteiros e moradores, aprovação com os documentos do cadastro, permissões e foto de perfil'],
     ['condominios', '5', 'Dados do condomínio, unidades e código de acesso'],
     ['reservas', '10', 'Espaços comuns, agenda sigilosa, reservas e ocupação'],
@@ -108,11 +109,11 @@ const api = {
 // ── 15 Testes automatizados (nova) ──────────────────────────────────
 const testes = {
   paragrafos: [
-    'As regras do sistema são verificadas por uma suíte de 354 casos de teste automatizados, escritos com pytest e executados contra um banco PostgreSQL real, e não contra um banco simulado. Assim, restrições de chave estrangeira e de unicidade também são exercitadas.',
+    'As regras do sistema são verificadas por uma suíte de 367 casos de teste automatizados, escritos com pytest e executados contra um banco PostgreSQL real, e não contra um banco simulado. Assim, restrições de chave estrangeira e de unicidade também são exercitadas.',
     'Os testes não conferem apenas se o caminho feliz funciona. Boa parte deles verifica justamente o que o sistema precisa recusar: um morador não pode ver a ocorrência de outro; um porteiro sem a permissão liberada pelo síndico não consegue registrar uma ocorrência; uma reserva que se sobrepõe a outra é recusada; a mensagem de conflito não revela quem reservou; e a senha nunca é gravada em texto puro.',
     'Uma parte dos testes dispara várias requisições ao mesmo tempo, porque a conferência e a gravação não são um passo só: sem uma trava no banco, quatro moradores pedindo o mesmo horário juntos conseguiam, na maioria das tentativas, reservar o espaço duas vezes; e quarenta senhas erradas enviadas juntas eram todas conferidas, sem que o bloqueio disparasse. Cada vez que uma regra nova é escrita, um teste correspondente é adicionado. Isso permite alterar o código com segurança: se uma mudança quebrar uma regra antiga, a suíte acusa antes de o problema chegar à tela.',
     'A suíte é executada automaticamente a cada envio de código ao repositório, junto com duas outras verificações: a aplicação das mudanças de estrutura do banco no sentido de ida e de volta, feita com a tabela já populada, que é a situação em que uma alteração mal escrita falha; e a execução dos scripts de criação e carga do banco em um banco vazio, já que eles são mantidos manualmente e podem deixar de acompanhar uma mudança de estrutura.',
-    'Além da suíte do servidor, 78 testes de interface abrem as telas em um navegador Chromium real, nos temas claro e escuro, em largura de computador e de celular. Eles conferem o que já falhou uma vez e não pode voltar: erros de JavaScript, imagens quebradas, rolagem lateral no celular, a barra superior fora do topo, títulos e cartões sem ícone, caixas claras no tema escuro, elementos marcados como escondidos que continuavam aparecendo, a logo levando ao painel de cada perfil, o medidor de força da senha, a planilha exportada que não pode transformar um nome digitado em fórmula do Excel, a troca de senha que encerra a sessão aberta em outro aparelho, as regras de acessibilidade da WCAG auditadas pelo axe-core em todas as telas, o menu de acessibilidade alcançado só com o teclado, as janelas que prendem o foco enquanto estão abertas, o síndico inativando quem saiu do condomínio e formulário que pede um dado que nenhum código lê — dado pessoal coletado à toa. Cinco deles percorrem os fluxos com arquivo de ponta a ponta: a captura pela câmera, com uma câmera simulada do navegador, a foto tirada pelo porteiro chegando ao painel do morador, a foto da ocorrência chegando ao síndico, os documentos escolhidos no cadastro chegando à fila de aprovação do síndico e o documento publicado pelo síndico abrindo para o morador. Também rodam a cada envio, com o banco, a API e o site no ar.',
+    'Além da suíte do servidor, 82 testes de interface abrem as telas em um navegador Chromium real, nos temas claro e escuro, em largura de computador e de celular. Eles conferem o que já falhou uma vez e não pode voltar: erros de JavaScript, imagens quebradas, rolagem lateral no celular, a barra superior fora do topo, títulos e cartões sem ícone, caixas claras no tema escuro, elementos marcados como escondidos que continuavam aparecendo, a logo levando ao painel de cada perfil, o medidor de força da senha, a planilha exportada que não pode transformar um nome digitado em fórmula do Excel, a troca de senha que encerra a sessão aberta em outro aparelho, as regras de acessibilidade da WCAG auditadas pelo axe-core em todas as telas, o menu de acessibilidade alcançado só com o teclado, as janelas que prendem o foco enquanto estão abertas, o síndico inativando quem saiu do condomínio, o administrador cadastrando outro administrador e vendo quem editou cada registro, as máscaras de CNPJ e telefone e formulário que pede um dado que nenhum código lê — dado pessoal coletado à toa. Cinco deles percorrem os fluxos com arquivo de ponta a ponta: a captura pela câmera, com uma câmera simulada do navegador, a foto tirada pelo porteiro chegando ao painel do morador, a foto da ocorrência chegando ao síndico, os documentos escolhidos no cadastro chegando à fila de aprovação do síndico e o documento publicado pelo síndico abrindo para o morador. Também rodam a cada envio, com o banco, a API e o site no ar.',
     'Por fim, o banco criado pelos scripts SQL manuais é comparado ao banco criado pelas migrações — tabelas, colunas, restrições, índices e tipos —, porque rodar sem erro não garante que o resultado seja o mesmo: um script que esquecesse uma tabela nova rodaria normalmente.',
   ],
   tabela: [
@@ -132,6 +133,7 @@ const testes = {
     ['test_concorrencia.py', '9', 'Requisições simultâneas: o mesmo horário não é reservado duas vezes, a mesma cobrança não é paga a mais, senhas e palpites do código em paralelo respeitam o limite e cada decisão vale uma vez só'],
     ['test_concorrencia_portaria.py', '2', 'Visitante liberado e recusado ao mesmo tempo, e retirada de encomenda registrada duas vezes: só a primeira resposta vale'],
     ['test_desempenho.py', '6', 'Cada listagem faz o mesmo número de consultas ao banco com 3 ou com 30 itens'],
+    ['test_administradores.py', '13', 'Vários administradores, histórico de quem fez cada alteração e inativação no lugar da exclusão'],
     ['test_fuso.py', '4', 'O dia de hoje é o do fuso do condomínio, e não o do relógio da máquina'],
     ['test_valores_extremos.py', '15', 'Valores que o banco recusa (id acima do limite, caractere nulo) respondem como dado inválido; texto só com espaços é recusado, e a senha não é aparada'],
     ['test_ocorrencias_fotos.py', '6', 'Foto da ocorrência: só quem abriu anexa, quem pode ver vê e a foto não muda depois da resposta'],
@@ -144,7 +146,7 @@ const conclusao = [
   'A implementação do SmartCondo é crucial para elevar a qualidade e praticidade na rotina desses condomínios, trazendo fluidez no setor financeiro e possibilitando a execução de ações rotineiras, como a visualização de espaços em uso. O objetivo é facilitar a operação do gerenciamento, eliminando falhas financeiras e reduzindo significativamente intrigas internas. Para isso, o projeto visa atender a todos os usuários de modo completo e se adequar ao cotidiano, garantindo organização nas moradias e serviços.',
   'O sistema prevê funcionalidades específicas para cada tipo de usuário – administrador, síndico, porteiro e morador. O administrador opera a plataforma, cadastrando os condomínios e criando a conta do síndico de cada um. O síndico poderá gerenciar de forma prática e eficiente, incluindo o gerenciamento financeiro com notificações de pagamento e a visualização remota e sigilosa da locação de espaços. O porteiro terá recursos para notificar entregas, registrar entradas e saídas e utilizar o videoporteiro para confirmar a entrada de convidados com foto ou gravação em tempo real, fomentando a segurança. O morador poderá realizar pagamentos com opções variadas, alugar espaços de forma sigilosa, verificar a ocupação de áreas comuns e receber notificações e confirmações de entregas/convidados.',
   'Com um prazo de 2 anos, o projeto se baseia na utilização de linguagens e ferramentas robustas e escaláveis, como HTML, CSS e JavaScript no front-end, Python com FastAPI no back-end e PostgreSQL no banco de dados. Adicionalmente, o projeto demonstra um compromisso com a acessibilidade, utilizando VLibras para usuários com deficiência auditiva, e recursos de alteração de tamanho de fonte e mudança de cores (modo claro/escuro) para deficiências visuais, garantindo uma boa experiência e inclusão.',
-  'Até o momento, o sistema conta com as quatro áreas de acesso implementadas e ligadas à API, 21 tabelas em PostgreSQL, 99 endpoints, 354 casos de teste automatizados cobrindo as regras de negócio e 78 testes de interface executados em um navegador real.',
+  'Até o momento, o sistema conta com as quatro áreas de acesso implementadas e ligadas à API, 22 tabelas em PostgreSQL, 102 endpoints, 367 casos de teste automatizados cobrindo as regras de negócio e 82 testes de interface executados em um navegador real.',
   'Em suma, o SmartCondo é um projeto realista, alinhado com as necessidades do mercado e da tecnologia atual, visando transformar a gestão de condomínios de pequeno e médio porte em um processo ágil, prático, seguro e inclusivo.',
 ];
 

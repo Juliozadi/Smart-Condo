@@ -97,15 +97,15 @@ const telas = [
     texto: 'Registra a entrada e a saída de veículos do estacionamento, identificando se é morador, visitante ou prestador. A tela mostra a ocupação do estacionamento e quais veículos estão no pátio no momento.',
     imagem: 'porteiro-veiculos.png', legenda: 'Controle de veículos' },
 
-  { n: '11.8', titulo: 'Telas do Administrador', texto: 'O administrador opera a plataforma como um todo. É ele quem cadastra os condomínios e cria a conta do síndico de cada um.', imagem: null },
+  { n: '11.8', titulo: 'Telas do Administrador', texto: 'O administrador opera a plataforma como um todo. É ele quem cadastra os condomínios e cria a conta do síndico de cada um. Pode haver mais de um administrador, e cada alteração que eles fazem fica registrada com o autor e o momento: cada linha das listas mostra, por exemplo, "Editado por Fulano em 25/09/2026 14:32", e a janela de edição traz o histórico completo. Nada é apagado: o que é excluído é inativado, e pode ser reativado.', imagem: null },
   { n: '11.8.1', titulo: 'Tela inicial (Dashboard)',
     texto: 'Reúne os indicadores da plataforma: quantos condomínios estão cadastrados e quantos usuários existem em cada papel.',
     imagem: 'admin-dashboard.png', legenda: 'Painel do administrador' },
   { n: '11.8.2', titulo: 'Tela de Condomínios',
-    texto: 'Permite cadastrar, editar e remover condomínios. Cada condomínio recebe um código de acesso, que é o que o síndico repassa aos moradores para o cadastro.',
+    texto: 'Permite cadastrar, editar, inativar e reativar condomínios. Cada condomínio recebe um código de acesso, que é o que o síndico repassa aos moradores para o cadastro; o condomínio inativo aparece no fim da lista, com o código suspenso.',
     imagem: 'admin-condominios.png', legenda: 'Gestão de condomínios' },
   { n: '11.8.3', titulo: 'Tela de Usuários',
-    texto: 'Lista todos os usuários da plataforma, com busca e filtros por condomínio, papel e situação. É por aqui que o administrador cria a conta do síndico e, quando necessário, dá suporte criando ou corrigindo porteiros e moradores.',
+    texto: 'Lista todos os usuários da plataforma, com busca e filtros por condomínio, papel e situação. É por aqui que o administrador cria a conta do síndico e de outros administradores e, quando necessário, dá suporte criando, corrigindo, inativando ou reativando porteiros e moradores.',
     imagem: 'admin-usuarios.png', legenda: 'Gestão de usuários' },
 ];
 

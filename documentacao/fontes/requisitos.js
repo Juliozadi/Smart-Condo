@@ -16,7 +16,7 @@ const requisitosFuncionais = [
     atores: 'Administrador', prioridade: 'Essencial',
     descricao: 'O sistema permite cadastrar um condomínio com razão social, CNPJ e endereço completo, e vincular a ele o síndico responsável. É o primeiro cadastro da plataforma: sem condomínio não existe unidade, e sem unidade não existe morador.',
     entradas: 'O administrador informa nome, CNPJ, CEP, logradouro, número, bairro, cidade, UF e telefone. O CNPJ é conferido pelos dígitos verificadores e não pode repetir outro já cadastrado.',
-    saidas: 'O condomínio é gravado e recebe automaticamente um código de acesso, que é o que o síndico repassa aos moradores para que se cadastrem no condomínio certo.' },
+    saidas: 'O condomínio é gravado e recebe automaticamente um código de acesso, que é o que o síndico repassa aos moradores para que se cadastrem no condomínio certo. Nada é apagado: "excluir" inativa o condomínio, que sai das telas e tem o código de acesso suspenso, mas continua guardado com reservas, cobranças e portaria, e pode ser reativado.' },
 
   { id: 'RF002', nome: 'Gerar novo código de acesso do condomínio',
     atores: 'Administrador, Síndico', prioridade: 'Importante',
@@ -68,9 +68,9 @@ const requisitosFuncionais = [
 
   { id: 'RF010', nome: 'Manter usuários da plataforma',
     atores: 'Administrador', prioridade: 'Importante',
-    descricao: 'O sistema permite ao administrador consultar e manter os usuários de qualquer condomínio, incluindo a criação da conta do síndico. Serve de apoio quando o síndico não consegue resolver sozinho.',
-    entradas: 'O administrador escolhe o condomínio e informa os dados do usuário.',
-    saidas: 'O usuário é criado, editado ou removido, e o resultado aparece imediatamente para o síndico do condomínio correspondente.' },
+    descricao: 'O sistema permite ao administrador consultar e manter os usuários de qualquer condomínio, incluindo a criação da conta do síndico, e cadastrar outros administradores. Serve de apoio quando o síndico não consegue resolver sozinho.',
+    entradas: 'O administrador escolhe o condomínio e informa os dados do usuário; para outro administrador, não há condomínio. Ninguém inativa a si mesmo, e a plataforma nunca fica sem administrador ativo.',
+    saidas: 'O usuário é criado, editado, inativado ou reativado — nunca apagado —, e o resultado aparece imediatamente para o síndico do condomínio correspondente. A senha trocada pelo administrador encerra as sessões abertas com a antiga.' },
 
   { id: 'RF011', nome: 'Autenticar-se no sistema',
     atores: 'Administrador, Síndico, Porteiro, Morador', prioridade: 'Essencial',
@@ -190,7 +190,7 @@ const requisitosFuncionais = [
     atores: 'Síndico', prioridade: 'Essencial',
     descricao: 'O sistema permite publicar avisos para todo o condomínio, classificados por categoria: geral, manutenção, financeiro, segurança, evento ou urgente.',
     entradas: 'O síndico informa título, texto e categoria.',
-    saidas: 'O comunicado passa a aparecer para todos os moradores do condomínio, ordenado pela data de publicação.' },
+    saidas: 'O comunicado passa a aparecer para todos os moradores ativos do condomínio, ordenado pela data de publicação. Removido, ele sai das telas, mas fica guardado com quem o removeu e quando.' },
 
   { id: 'RF031', nome: 'Marcar comunicado como lido',
     atores: 'Síndico, Porteiro, Morador', prioridade: 'Desejável',
@@ -202,7 +202,7 @@ const requisitosFuncionais = [
     atores: 'Síndico', prioridade: 'Importante',
     descricao: 'O sistema permite disponibilizar documentos do condomínio — convenção, regimento interno, atas, plantas e prestações de contas — para consulta pelos moradores.',
     entradas: 'O síndico informa título e categoria e envia o arquivo, em PDF ou imagem de até 10 MB; o tipo é conferido pelo conteúdo. Um documento pode ser dirigido a todo o condomínio ou a uma unidade específica.',
-    saidas: 'O documento aparece na tela de documentos de quem tem direito de vê-lo, e o arquivo só abre com o token dessa pessoa: o de uma unidade, só para quem mora nela.' },
+    saidas: 'O documento aparece na tela de documentos de quem tem direito de vê-lo, e o arquivo só abre com o token dessa pessoa: o de uma unidade, só para quem mora nela. Removido, o documento sai das telas, mas o registro e o arquivo ficam guardados.' },
 
   { id: 'RF033', nome: 'Escolher dia e forma de pagamento',
     atores: 'Morador', prioridade: 'Importante',
@@ -274,6 +274,12 @@ const requisitosFuncionais = [
     descricao: 'O sistema mostra, em cada cadastro aguardando aprovação, os documentos enviados e os obrigatórios que faltam, e permite abri-los na própria tela.',
     entradas: 'O cadastro deve ser de um morador do condomínio do síndico.',
     saidas: 'O documento é exibido — imagem ou PDF — sem ser gravado no cache do navegador. Recusado o cadastro, ou inativado o morador, os documentos são apagados.' },
+
+  { id: 'RF045', nome: 'Registrar quem fez cada alteração',
+    atores: 'Administrador, Síndico', prioridade: 'Importante',
+    descricao: 'Com mais de um administrador, cada alteração precisa mostrar quem a fez. O sistema registra quem criou, editou, inativou ou reativou condomínios, usuários, comunicados e documentos, e quando.',
+    entradas: 'O registro é feito pelo próprio sistema, na mesma operação da alteração; a edição anota os campos que mudaram (a senha aparece pelo nome, nunca pelo valor), e salvar sem mudar nada não gera registro.',
+    saidas: 'Cada linha das telas do administrador mostra a última alteração ("Editado por Fulano em 25/09/2026 14:32"), e a janela de edição traz o histórico completo.' },
 ];
 
 // ── 10 Requisitos não funcionais ────────────────────────────────────

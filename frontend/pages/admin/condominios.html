@@ -93,15 +93,9 @@
             <input type="text" id="cNumero" required maxlength="20" placeholder="Ex: 100">
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="cComplemento">Complemento</label>
-            <input type="text" id="cComplemento" maxlength="80" placeholder="Bloco, sala…">
-          </div>
-          <div class="form-group">
-            <label for="cBairro">Bairro <span class="req">*</span></label>
-            <input type="text" id="cBairro" required maxlength="100" placeholder="Ex: Centro">
-          </div>
+        <div class="form-group">
+          <label for="cBairro">Bairro <span class="req">*</span></label>
+          <input type="text" id="cBairro" required maxlength="100" placeholder="Ex: Centro">
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -134,6 +128,10 @@
           <button type="submit" class="btn-primario" id="btnSalvar">Salvar</button>
         </div>
       </form>
+      <div class="historico-edicao" id="historicoCaixa" hidden>
+        <h3>Histórico de alterações</h3>
+        <ol id="historicoLista" aria-live="polite"></ol>
+      </div>
     </div>
   </div>
 
@@ -155,13 +153,14 @@
 
   var CAMPOS = {
     cNome: 'nome', cCnpj: 'cnpj', cCep: 'cep', cLogradouro: 'logradouro',
-    cNumero: 'numero', cComplemento: 'complemento', cBairro: 'bairro',
+    cNumero: 'numero', cBairro: 'bairro',
     cCidade: 'cidade', cUf: 'uf', cTelefone: 'telefone'
   };
 
   function abrirNovo() {
     editandoId = null;
     document.getElementById('modalTitulo').lastChild.textContent = 'Novo condomínio';
+    document.getElementById('historicoCaixa').hidden = true;
     modal.limpar();
     modal.abrir();
   }
@@ -172,25 +171,43 @@
     modal.limpar();
     Object.keys(CAMPOS).forEach(function(id) {
       var el = document.getElementById(id);
-      if (el) el.value = c[CAMPOS[id]] || '';
+      if (el) {
+        el.value = c[CAMPOS[id]] || '';
+        // As máscaras agem no evento input: sem ele, CNPJ e CEP abriam
+        // crus ("04252011000110"), como o banco guarda.
+        el.dispatchEvent(new Event('input'));
+      }
     });
+    document.getElementById('historicoCaixa').hidden = false;
+    ui.mostrarHistorico(document.getElementById('historicoLista'), 'condominio', c.id);
     modal.abrir();
   }
 
   function montarLinha(c) {
     var linha = document.createElement('div');
-    linha.className = 'table-row cols-6';
+    linha.className = 'table-row cols-6' + (c.inativo ? ' inativo' : '');
     linha.innerHTML =
-      '<span><strong></strong></span><span></span><span></span><span></span>' +
+      '<span><strong></strong><small class="lista-autoria"></small></span><span></span><span></span><span></span>' +
       '<span><code class="codigo-acesso"></code></span>' +
       '<span class="acoes-linha">' +
         '<button type="button" class="btn-acao" data-acao="editar" title="Editar"><img src="../../assets/img/icons/pen.svg" alt="Editar"></button>' +
-        '<button type="button" class="btn-acao" data-acao="codigo" title="Gerar novo código de acesso"><img src="../../assets/img/icons/stamp.svg" alt="Novo código"></button>' +
-        '<button type="button" class="btn-acao perigo" data-acao="excluir" title="Excluir"><img src="../../assets/img/icons/xmark.svg" alt="Excluir"></button>' +
+        (c.inativo
+          ? '<button type="button" class="btn-acao" data-acao="reativar" title="Reativar"><img src="../../assets/img/icons/circle-check.svg" alt="Reativar"></button>'
+          : '<button type="button" class="btn-acao" data-acao="codigo" title="Gerar novo código de acesso"><img src="../../assets/img/icons/stamp.svg" alt="Novo código"></button>' +
+            '<button type="button" class="btn-acao perigo" data-acao="inativar" title="Inativar"><img src="../../assets/img/icons/xmark.svg" alt="Inativar"></button>') +
       '</span>';
 
     // textContent, e não innerHTML: nome e cidade vêm do banco.
     linha.children[0].firstChild.textContent = c.nome;
+    if (c.inativo) {
+      var selo = document.createElement('span');
+      selo.className = 'badge badge-neutral';
+      selo.textContent = 'Inativo';
+      selo.style.marginLeft = '6px';
+      linha.children[0].insertBefore(selo, linha.children[0].children[1]);
+    }
+    // "Editado por Fulano em 25/09/2026 14:32": quem mexeu por último.
+    linha.querySelector('.lista-autoria').textContent = ui.textoAlteracao(c.ultima_alteracao);
     linha.children[1].textContent = ui.formatarCnpj(c.cnpj);
     linha.children[2].textContent = c.cidade + ' - ' + c.uf;
     linha.children[3].textContent = c.sindico_nome || '—';
@@ -199,14 +216,25 @@
     linha.querySelector('[data-acao=editar]').addEventListener('click', function() {
       abrirEdicao(c);
     });
+    if (c.inativo) {
+      linha.querySelector('[data-acao=reativar]').addEventListener('click', function() {
+        if (!confirm('Reativar ' + c.nome + '?\n\nO código de acesso volta a valer para novos cadastros.')) return;
+        api.post('/admin/condominios/' + c.id + '/reativacao')
+          .then(carregar)
+          .catch(function(e) { alert(e.message); });
+      });
+      return linha;
+    }
     linha.querySelector('[data-acao=codigo]').addEventListener('click', function() {
       if (!confirm('Gerar um novo código para ' + c.nome + '?\n\nO código atual deixa de valer para novos cadastros.')) return;
       api.post('/admin/condominios/' + c.id + '/codigo-acesso')
         .then(carregar)
         .catch(function(e) { alert(e.message); });
     });
-    linha.querySelector('[data-acao=excluir]').addEventListener('click', function() {
-      if (!confirm('Excluir ' + c.nome + '?\n\nEsta ação não pode ser desfeita.')) return;
+    // Nada é apagado: o condomínio fica guardado e pode ser reativado.
+    linha.querySelector('[data-acao=inativar]').addEventListener('click', function() {
+      if (!confirm('Inativar ' + c.nome + '?\n\nEle sai das telas e o código de acesso deixa de valer. ' +
+                   'Nada é apagado: reservas, cobranças e portaria continuam guardadas, e dá para reativá-lo depois.')) return;
       api.remover('/admin/condominios/' + c.id)
         .then(carregar)
         .catch(function(e) { alert(e.message); });

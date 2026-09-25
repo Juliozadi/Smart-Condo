@@ -16,11 +16,11 @@ from sqlalchemy.orm import Session
 from app.api.deps import exigir_condominio, exigir_papel
 from app.core.database import get_db
 from app.models.comunicado import Comunicado, LeituraComunicado
-from app.models.enums import CategoriaComunicado, CanalVerificacao, Papel
+from app.models.enums import CategoriaComunicado, CanalVerificacao, Papel, StatusUsuario
 from app.models.usuario import Usuario
 from app.schemas.comuns import Mensagem
 from app.schemas.comunicado import ComunicadoEntrada, ComunicadoSaida
-from app.services import notificacao
+from app.services import notificacao, registro
 
 router = APIRouter(prefix="/comunicados", tags=["Comunicados"])
 
@@ -48,12 +48,17 @@ def publicar(
         **dados.model_dump(),
     )
     db.add(comunicado)
+    db.flush()
+    registro.registrar(db, sindico, registro.CRIOU, registro.COMUNICADO, comunicado.id)
     db.commit()
     db.refresh(comunicado)
 
+    # Só quem mora lá hoje: antes o aviso ia também para os inativados e
+    # para cadastros recusados ou ainda pendentes.
     moradores = db.scalars(
         select(Usuario).where(
-            Usuario.condominio_id == sindico.condominio_id, Usuario.papel == Papel.MORADOR
+            Usuario.condominio_id == sindico.condominio_id, Usuario.papel == Papel.MORADOR,
+            Usuario.status == StatusUsuario.ATIVO,
         )
     ).all()
     for morador in moradores:
@@ -77,7 +82,7 @@ def listar(
 ) -> list[ComunicadoSaida]:
     consulta = (
         select(Comunicado)
-        .where(Comunicado.condominio_id == usuario.condominio_id)
+        .where(Comunicado.condominio_id == usuario.condominio_id, Comunicado.inativo_em.is_(None))
         # Os fixados primeiro, depois do mais novo para o mais antigo.
         .order_by(Comunicado.fixado.desc(), Comunicado.publicado_em.desc())
     )
@@ -116,7 +121,8 @@ def marcar_como_lido(
     db: Session = Depends(get_db),
 ) -> Mensagem:
     comunicado = db.get(Comunicado, comunicado_id)
-    if comunicado is None or comunicado.condominio_id != usuario.condominio_id:
+    if (comunicado is None or comunicado.condominio_id != usuario.condominio_id
+            or comunicado.inativo_em is not None):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Comunicado não encontrado."
         )
@@ -134,17 +140,22 @@ def marcar_como_lido(
     return Mensagem(detalhe="Comunicado marcado como lido.")
 
 
-@router.delete("/{comunicado_id}", response_model=Mensagem, summary="Remove um comunicado")
+@router.delete("/{comunicado_id}", response_model=Mensagem, summary="Remove (inativa) um comunicado")
 def remover(
     comunicado_id: int,
     sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
     db: Session = Depends(get_db),
 ) -> Mensagem:
-    comunicado = db.get(Comunicado, comunicado_id)
-    if comunicado is None or comunicado.condominio_id != sindico.condominio_id:
+    comunicado = db.get(Comunicado, comunicado_id, with_for_update=True)
+    if (comunicado is None or comunicado.condominio_id != sindico.condominio_id
+            or comunicado.inativo_em is not None):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Comunicado não encontrado."
         )
-    db.delete(comunicado)
+    # Nada é apagado: o comunicado sai das telas, mas fica no banco com
+    # quem o removeu e quando.
+    comunicado.inativo_em = datetime.now(timezone.utc)
+    comunicado.inativado_por_id = sindico.id
+    registro.registrar(db, sindico, registro.INATIVOU, registro.COMUNICADO, comunicado.id)
     db.commit()
     return Mensagem(detalhe="Comunicado removido.")

@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS
+    registros_alteracao,
     documentos_cadastro,
     mensagens,
     documentos,
@@ -189,7 +190,9 @@ CREATE TABLE condominios (
     sindico_id integer,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
-    codigo_acesso character varying(20) NOT NULL
+    codigo_acesso character varying(20) NOT NULL,
+    inativo_em timestamp with time zone,
+    inativado_por_id integer
 );
 CREATE SEQUENCE condominios_id_seq
     AS integer
@@ -468,7 +471,9 @@ CREATE TABLE comunicados (
     fixado boolean NOT NULL,
     publicado_em timestamp with time zone NOT NULL,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
-    atualizado_em timestamp with time zone DEFAULT now() NOT NULL
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    inativo_em timestamp with time zone,
+    inativado_por_id integer
 );
 CREATE SEQUENCE comunicados_id_seq
     AS integer
@@ -661,7 +666,9 @@ CREATE TABLE documentos (
     publicado_por_id integer,
     publicado_em timestamp with time zone NOT NULL,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
-    atualizado_em timestamp with time zone DEFAULT now() NOT NULL
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    inativo_em timestamp with time zone,
+    inativado_por_id integer
 );
 CREATE SEQUENCE documentos_id_seq
     AS integer
@@ -723,6 +730,30 @@ ALTER TABLE ONLY documentos_cadastro
     ADD CONSTRAINT documentos_cadastro_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY documentos_cadastro
     ADD CONSTRAINT uq_documento_cadastro_tipo UNIQUE (usuario_id, tipo);
+
+-- Quem criou, editou, inativou ou reativou cada registro, e quando.
+-- Nada é apagado: "excluir" inativa (inativo_em e inativado_por_id em
+-- condominios, comunicados e documentos).
+CREATE TABLE registros_alteracao (
+    id integer NOT NULL,
+    autor_id integer,
+    acao character varying(20) NOT NULL,
+    entidade character varying(30) NOT NULL,
+    entidade_id integer NOT NULL,
+    descricao text,
+    feito_em timestamp with time zone DEFAULT now() NOT NULL
+);
+CREATE SEQUENCE registros_alteracao_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE registros_alteracao_id_seq OWNED BY registros_alteracao.id;
+ALTER TABLE ONLY registros_alteracao ALTER COLUMN id SET DEFAULT nextval('registros_alteracao_id_seq'::regclass);
+ALTER TABLE ONLY registros_alteracao
+    ADD CONSTRAINT registros_alteracao_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY cobrancas
     ADD CONSTRAINT cobrancas_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
@@ -856,6 +887,18 @@ ALTER TABLE ONLY visitantes
 ALTER TABLE ONLY visitantes
     ADD CONSTRAINT visitantes_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY registros_alteracao
+    ADD CONSTRAINT registros_alteracao_autor_id_fkey FOREIGN KEY (autor_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY comunicados
+    ADD CONSTRAINT comunicados_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY condominios
+    ADD CONSTRAINT condominios_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY documentos
+    ADD CONSTRAINT documentos_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
 CREATE INDEX ix_cobrancas_competencia ON cobrancas USING btree (competencia);
 
 CREATE INDEX ix_cobrancas_status ON cobrancas USING btree (status);
@@ -977,3 +1020,7 @@ CREATE UNIQUE INDEX ix_preferencias_cobranca_morador_id ON preferencias_cobranca
 CREATE UNIQUE INDEX ix_usuarios_cpf ON usuarios USING btree (cpf);
 
 CREATE UNIQUE INDEX ix_usuarios_email ON usuarios USING btree (email);
+
+CREATE INDEX ix_registros_alteracao_autor_id ON registros_alteracao USING btree (autor_id);
+
+CREATE INDEX ix_registros_alteracao_entidade ON registros_alteracao USING btree (entidade, entidade_id);

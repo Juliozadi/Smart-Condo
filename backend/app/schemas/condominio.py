@@ -17,7 +17,6 @@ class CondominioEntrada(SchemaBase):
     cep: CEP
     logradouro: str = Field(min_length=3, max_length=180)
     numero: str = Field(min_length=1, max_length=20)
-    complemento: str | None = Field(default=None, max_length=80)
     bairro: str = Field(min_length=2, max_length=100)
     cidade: str = Field(min_length=2, max_length=100)
     uf: UF
@@ -33,7 +32,6 @@ class CondominioSaida(SchemaBase):
     cep: str
     logradouro: str
     numero: str
-    complemento: str | None = None
     bairro: str
     cidade: str
     uf: str

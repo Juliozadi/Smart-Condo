@@ -1,7 +1,8 @@
 """Schemas do painel do administrador.
 
 O administrador opera a plataforma: cadastra os condomínios e, dentro de
-cada um, cria, edita e remove síndicos, porteiros e moradores.
+cada um, cria, edita e inativa síndicos, porteiros e moradores — e cadastra
+outros administradores. Cada alteração guarda quem a fez.
 """
 from __future__ import annotations
 
@@ -34,6 +35,26 @@ class UsuarioAdminEntrada(SchemaBase):
     tipo_ocupacao: TipoOcupacao | None = None
 
 
+class AdministradorEntrada(SchemaBase):
+    """Um administrador cadastra outro. Administrador não pertence a
+    condomínio nenhum: atravessa todos."""
+    nome: str = Field(min_length=3, max_length=160)
+    email: EmailStr
+    cpf: CPF
+    telefone: Telefone
+    senha: Senha
+    data_nascimento: DataNascimento | None = None
+
+
+class RegistroSaida(SchemaBase):
+    """Uma linha do histórico: "Editado por Fulano em 25/09 14:32"."""
+    acao: str
+    rotulo: str
+    autor_nome: str | None = None
+    feito_em: datetime
+    descricao: str | None = None
+
+
 class UsuarioAdminAtualizacao(SchemaBase):
     nome: str | None = Field(default=None, min_length=3, max_length=160)
     email: EmailStr | None = None
@@ -60,6 +81,8 @@ class UsuarioAdminSaida(SchemaBase):
     unidade: str | None = None
     tipo_ocupacao: TipoOcupacao | None = None
     criado_em: datetime
+    criado_por: str | None = None
+    ultima_alteracao: RegistroSaida | None = None
 
 
 class CondominioAdminSaida(SchemaBase):
@@ -72,7 +95,6 @@ class CondominioAdminSaida(SchemaBase):
     cep: str
     logradouro: str
     numero: str
-    complemento: str | None = None
     bairro: str
     cidade: str
     uf: str
@@ -83,6 +105,10 @@ class CondominioAdminSaida(SchemaBase):
     total_moradores: int
     total_porteiros: int
     criado_em: datetime
+    inativo: bool = False
+    inativo_em: datetime | None = None
+    criado_por: str | None = None
+    ultima_alteracao: RegistroSaida | None = None
 
 
 class ResumoPlataforma(SchemaBase):

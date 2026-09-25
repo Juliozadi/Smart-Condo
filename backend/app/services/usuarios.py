@@ -7,7 +7,7 @@ isso fica num lugar só.
 from __future__ import annotations
 
 from fastapi import HTTPException, status
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from app.core.security import gerar_hash_senha
@@ -50,7 +50,7 @@ def criar_usuario(
     if dados.papel == Papel.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Administradores não são criados por aqui.",
+            detail="Administradores são cadastrados em /admin/administradores.",
         )
     if dados.papel != Papel.MORADOR and (dados.unidade_numero or dados.tipo_ocupacao):
         raise HTTPException(
@@ -66,6 +66,11 @@ def criar_usuario(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Informe o condomínio do usuário.",
+        )
+    if condominio.inativo_em is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Este condomínio está inativo. Reative-o antes de cadastrar alguém.",
         )
 
     servico_auth.garantir_email_e_cpf_livres(db, dados.email, dados.cpf)
@@ -134,6 +139,9 @@ def atualizar_usuario(db: Session, usuario: Usuario, dados) -> Usuario:
     nova_senha = campos.pop("senha", None)
     if nova_senha:
         usuario.senha_hash = gerar_hash_senha(nova_senha)
+        # Trocada por outra pessoa (o administrador, numa conta invadida),
+        # a senha antiga não pode continuar valendo nas sessões abertas.
+        servico_auth.encerrar_sessoes(usuario)
 
     numero = campos.pop("unidade_numero", None)
     bloco = campos.pop("unidade_bloco", None)
@@ -158,10 +166,15 @@ def atualizar_usuario(db: Session, usuario: Usuario, dados) -> Usuario:
             detail="Tipo de ocupação é só para morador.",
         )
 
+    novo_status = campos.get("status")
+    if novo_status is not None and novo_status != StatusUsuario.ATIVO:
+        garantir_outro_admin_ativo(db, usuario)
     # Inativar pela edição tem o mesmo efeito de remover (remover_usuario).
-    if campos.get("status") == StatusUsuario.INATIVO:
+    if novo_status == StatusUsuario.INATIVO:
         _soltar_do_condominio_se_sindico(db, usuario)
         cancelar_reservas_futuras(db, usuario)
+    if novo_status == StatusUsuario.ATIVO and usuario.status != StatusUsuario.ATIVO:
+        _conferir_reativacao(db, usuario)
 
     for campo, valor in campos.items():
         setattr(usuario, campo, valor)
@@ -187,6 +200,84 @@ def cancelar_reservas_futuras(db: Session, usuario: Usuario) -> int:
     ).rowcount
 
 
+def travar_administradores(db: Session) -> None:
+    """Trava as linhas de todos os administradores, sempre na mesma ordem
+    (por id): duas operações simultâneas esperam uma pela outra, em vez de
+    cada uma travar um e ficar esperando o outro para sempre."""
+    db.execute(
+        select(Usuario.id).where(Usuario.papel == Papel.ADMIN)
+        .order_by(Usuario.id).with_for_update()
+    )
+
+
+def garantir_outro_admin_ativo(db: Session, usuario: Usuario) -> None:
+    """A plataforma nunca fica sem administrador ativo: sem ele, ninguém
+    mais cadastra condomínios nem reativa quem foi inativado."""
+    if usuario.papel != Papel.ADMIN or usuario.status != StatusUsuario.ATIVO:
+        return
+    # Trava todos os administradores: se A inativasse B enquanto B inativa
+    # A, cada um veria o outro ainda ativo, e não sobraria nenhum.
+    travar_administradores(db)
+    outros = db.scalar(
+        select(func.count(Usuario.id)).where(
+            Usuario.papel == Papel.ADMIN, Usuario.status == StatusUsuario.ATIVO,
+            Usuario.id != usuario.id,
+        )
+    )
+    if not outros:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Este é o único administrador ativo. Cadastre outro antes de inativá-lo.",
+        )
+
+
+def _conferir_reativacao(db: Session, usuario: Usuario) -> None:
+    """Reativar segue as regras de quem é cadastrado agora: o condomínio
+    precisa estar ativo, e só pode haver um síndico ativo nele. Antes, a
+    reativação deixava o condomínio com dois síndicos."""
+    if usuario.condominio_id is None:
+        return
+    condominio = db.get(Condominio, usuario.condominio_id)
+    if condominio is not None and condominio.inativo_em is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="O condomínio deste usuário está inativo. Reative o condomínio antes.",
+        )
+    if usuario.papel == Papel.SINDICO and condominio is not None:
+        atual = db.scalar(
+            select(Usuario).where(
+                Usuario.condominio_id == condominio.id, Usuario.papel == Papel.SINDICO,
+                Usuario.status != StatusUsuario.INATIVO, Usuario.id != usuario.id,
+            )
+        )
+        if atual is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=(f"{condominio.nome} já tem um síndico ativo ({atual.nome}). "
+                        "Inative o atual antes de reativar este."),
+            )
+        if condominio.sindico_id is None:
+            condominio.sindico_id = usuario.id
+
+
+def criar_administrador(db: Session, dados) -> Usuario:
+    """Um administrador cadastra outro: já nasce ativo e sem condomínio."""
+    servico_auth.garantir_email_e_cpf_livres(db, dados.email, dados.cpf)
+    usuario = Usuario(
+        nome=dados.nome,
+        email=dados.email.lower(),
+        cpf=dados.cpf,
+        telefone=dados.telefone,
+        data_nascimento=dados.data_nascimento,
+        senha_hash=gerar_hash_senha(dados.senha),
+        papel=Papel.ADMIN,
+        status=StatusUsuario.ATIVO,
+    )
+    db.add(usuario)
+    db.flush()
+    return usuario
+
+
 def _soltar_do_condominio_se_sindico(db: Session, usuario: Usuario) -> None:
     """O condomínio não pode ficar apontando para um síndico inativo."""
     if usuario.papel == Papel.SINDICO and usuario.condominio_id:
@@ -207,6 +298,7 @@ def remover_usuario(db: Session, usuario: Usuario, quem_remove: Usuario) -> None
             detail="Você não pode remover o próprio usuário.",
         )
 
+    garantir_outro_admin_ativo(db, usuario)
     _soltar_do_condominio_se_sindico(db, usuario)
     cancelar_reservas_futuras(db, usuario)
     usuario.status = StatusUsuario.INATIVO

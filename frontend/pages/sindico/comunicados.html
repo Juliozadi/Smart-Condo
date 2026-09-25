@@ -115,7 +115,7 @@
     glifo.style.setProperty('--icone', 'url(../../assets/img/icons/xmark.svg)');
     remover.appendChild(glifo);
     remover.addEventListener('click', function() {
-      if (!confirm('Remover o comunicado "' + c.titulo + '"?')) return;
+      if (!confirm('Remover o comunicado "' + c.titulo + '"?\n\nEle sai das telas dos moradores, mas fica guardado no sistema.')) return;
       remover.disabled = true;
       api.remover('/comunicados/' + c.id)
         .then(carregar)

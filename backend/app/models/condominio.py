@@ -12,13 +12,13 @@ from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-from app.models.base import TimestampMixin
+from app.models.base import InativacaoMixin, TimestampMixin
 
 if TYPE_CHECKING:
     from app.models.usuario import Usuario
 
 
-class Condominio(Base, TimestampMixin):
+class Condominio(Base, TimestampMixin, InativacaoMixin):
     __tablename__ = "condominios"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -35,6 +35,8 @@ class Condominio(Base, TimestampMixin):
     cep: Mapped[str] = mapped_column(String(9), nullable=False)
     logradouro: Mapped[str] = mapped_column(String(180), nullable=False)
     numero: Mapped[str] = mapped_column(String(20), nullable=False)
+    # Não é mais pedido no cadastro; a coluna fica para os endereços já
+    # gravados (nenhum dado é apagado).
     complemento: Mapped[str | None] = mapped_column(String(80))
     bairro: Mapped[str] = mapped_column(String(100), nullable=False)
     cidade: Mapped[str] = mapped_column(String(100), nullable=False)

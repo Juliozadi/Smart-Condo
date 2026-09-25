@@ -40,6 +40,7 @@ TABELAS = {
     "movimentacoes_veiculo": "As entradas e saídas de veículos registradas na portaria.",
     "mensagens": "As mensagens do chat entre síndico, porteiros e moradores do mesmo condomínio.",
     "documentos_cadastro": "Os documentos que o morador envia ao se cadastrar, para o síndico conferir antes de aprovar.",
+    "registros_alteracao": "Quem criou, editou, inativou ou reativou cada registro, e quando — o \"editado por fulano\" das telas do administrador.",
 }
 
 # O significado de cada coluna que não é identificador, vínculo ou carimbo
@@ -55,7 +56,7 @@ DESCRICOES = {
     "condominios.cep": "CEP do endereço",
     "condominios.logradouro": "Rua, avenida ou praça",
     "condominios.numero": "Número do imóvel no logradouro",
-    "condominios.complemento": "Complemento do endereço, quando houver",
+    "condominios.complemento": "Complemento do endereço dos cadastros antigos; não é mais pedido",
     "condominios.bairro": "Bairro",
     "condominios.cidade": "Cidade",
     "condominios.uf": "Sigla da unidade federativa",
@@ -199,11 +200,23 @@ DESCRICOES = {
     "mensagens.texto": "Conteúdo da mensagem, de 1 a 2.000 caracteres",
     "mensagens.enviada_em": "Momento do envio, preenchido pelo banco",
     "mensagens.lida_em": "Momento em que o destinatário abriu a conversa; vazio enquanto não lida",
+    "condominios.inativo_em": "Quando o condomínio foi inativado; vazio enquanto ativo. Nada é apagado: \"excluir\" inativa",
+    "comunicados.inativo_em": "Quando o comunicado foi removido das telas; vazio enquanto publicado. O registro fica guardado",
+    "documentos.inativo_em": "Quando o documento foi removido das telas; vazio enquanto disponível. Registro e arquivo ficam guardados",
+    "registros_alteracao.acao": "O que foi feito: criou, editou, inativou, reativou, aprovou, recusou ou gerou novo código",
+    "registros_alteracao.entidade": "Tipo do registro alterado: condominio, usuario, comunicado ou documento",
+    "registros_alteracao.entidade_id": "Identificador do registro alterado, na tabela indicada em entidade",
+    "registros_alteracao.descricao": "O que mudou, quando cabe (\"Alterou o nome e o telefone\"); a senha aparece pelo nome, nunca pelo valor",
+    "registros_alteracao.feito_em": "Momento da alteração, preenchido pelo banco",
 }
 
 # O que cada vínculo significa, quando o nome da coluna não basta.
 VINCULOS = {
     "condominios.sindico_id": "Síndico responsável pelo condomínio",
+    "condominios.inativado_por_id": "Administrador que inativou o condomínio",
+    "comunicados.inativado_por_id": "Síndico que removeu o comunicado",
+    "documentos.inativado_por_id": "Síndico que removeu o documento",
+    "registros_alteracao.autor_id": "Quem fez a alteração",
     "usuarios.avaliado_por_id": "Síndico que aprovou ou recusou este cadastro",
     "reservas.avaliada_por_id": "Síndico que aprovou ou recusou a reserva",
     "ocorrencias.aberta_por_id": "Quem registrou a ocorrência",

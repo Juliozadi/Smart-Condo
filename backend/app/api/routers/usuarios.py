@@ -35,6 +35,7 @@ from app.schemas.usuario import (
 )
 from app.services import arquivos as servico_arquivos
 from app.services import documentos_cadastro
+from app.services import registro
 from app.services import usuarios as servico_usuarios
 from app.services import auth as servico_auth
 from app.services import notificacao
@@ -255,6 +256,7 @@ def cadastrar_usuario(
 
     condominio = db.get(Condominio, sindico.condominio_id)
     usuario = servico_usuarios.criar_usuario(db, condominio, dados, sindico)
+    registro.registrar(db, sindico, registro.CRIOU, registro.USUARIO, usuario.id)
     db.commit()
     db.refresh(usuario)
     return _para_saida_admin(db, usuario)
@@ -350,6 +352,9 @@ def aprovar_usuario(
         )
 
     usuario.status = StatusUsuario.ATIVO if dados.aprovado else StatusUsuario.RECUSADO
+    registro.registrar(db, sindico, registro.APROVOU if dados.aprovado else registro.RECUSOU,
+                       registro.USUARIO, usuario.id,
+                       None if dados.aprovado else (dados.motivo or None))
     # Fica o registro de quem decidiu e quando, como em reservas e
     # ocorrências. O motivo só faz sentido na recusa; aprovar limpa o
     # que tiver sobrado de uma recusa anterior.
@@ -487,15 +492,21 @@ def inativar_usuario(
     db: Session = Depends(get_db),
 ) -> Mensagem:
     usuario = _buscar_do_meu_condominio(db, sindico, usuario_id)
+    db.refresh(usuario, with_for_update=True)
     if usuario.id == sindico.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Você não pode inativar o próprio usuário.",
         )
+    if usuario.status == StatusUsuario.INATIVO:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Este usuário já está inativo."
+        )
     # Inativa em vez de apagar: o histórico de portaria, reservas e
     # financeiro precisa continuar apontando para o usuário.
     usuario.status = StatusUsuario.INATIVO
     servico_usuarios.cancelar_reservas_futuras(db, usuario)
+    registro.registrar(db, sindico, registro.INATIVOU, registro.USUARIO, usuario.id)
     db.commit()
     # Os registros ficam; os documentos do cadastro, não: sem vínculo com
     # o condomínio, acabou a finalidade de guardá-los (LGPD, art. 16).

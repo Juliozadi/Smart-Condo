@@ -1,10 +1,17 @@
 """Painel do administrador da plataforma.
 
 O administrador cadastra os condomínios e, dentro de cada um, cria, edita e
-remove síndicos, porteiros e moradores. É o único papel que atravessa
-condomínios: os demais só enxergam o próprio.
+inativa síndicos, porteiros e moradores; também cadastra outros
+administradores. É o único papel que atravessa condomínios: os demais só
+enxergam o próprio.
+
+Nada é apagado: "excluir" inativa, e o registro pode ser reativado. Toda
+criação, edição, inativação e reativação guarda quem a fez e quando
+(registros_alteracao), e as telas mostram "Editado por fulano".
 """
 from __future__ import annotations
+
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
@@ -17,18 +24,29 @@ from app.models.condominio import Condominio, Unidade
 from app.models.enums import Papel, StatusUsuario
 from app.models.usuario import Usuario
 from app.schemas.admin import (
-    CondominioAdminSaida, ResumoPlataforma, UsuarioAdminAtualizacao,
-    UsuarioAdminEntrada, UsuarioAdminSaida,
+    AdministradorEntrada, CondominioAdminSaida, RegistroSaida, ResumoPlataforma,
+    UsuarioAdminAtualizacao, UsuarioAdminEntrada, UsuarioAdminSaida,
 )
 from app.schemas.comuns import Mensagem
 from app.schemas.condominio import CondominioEntrada
 from app.services import documentos_cadastro
+from app.services import registro
 from app.services import usuarios as servico_usuarios
 
 router = APIRouter(prefix="/admin", tags=["Administrador"])
 
 # Toda rota daqui exige o papel de administrador.
 SomenteAdmin = Depends(exigir_papel(Papel.ADMIN))
+
+ROTULOS_CONDOMINIO = {
+    "nome": "o nome", "cnpj": "o CNPJ", "cep": "o CEP", "logradouro": "o logradouro",
+    "numero": "o número", "bairro": "o bairro", "cidade": "a cidade", "uf": "a UF",
+    "telefone": "o telefone",
+}
+ROTULOS_USUARIO = {
+    "nome": "o nome", "email": "o e-mail", "telefone": "o telefone",
+    "data_nascimento": "a data de nascimento", "tipo_ocupacao": "o tipo de ocupação",
+}
 
 
 def _gerar_codigo_unico(db: Session, nome: str) -> str:
@@ -42,45 +60,77 @@ def _gerar_codigo_unico(db: Session, nome: str) -> str:
     )
 
 
-def _contar(db: Session, condominio_id: int, papel: Papel) -> int:
-    return db.scalar(
-        select(func.count(Usuario.id)).where(
-            Usuario.condominio_id == condominio_id,
-            Usuario.papel == papel,
-            Usuario.status != StatusUsuario.INATIVO,
-        )
-    ) or 0
+def _condominios_saida(db: Session, condominios) -> list[CondominioAdminSaida]:
+    """Monta a saída de vários condomínios com um número fixo de consultas:
+    contagens agrupadas, síndicos e registros de alteração de uma vez."""
+    ids = [c.id for c in condominios]
+    if not ids:
+        return []
+    unidades = dict(db.execute(
+        select(Unidade.condominio_id, func.count(Unidade.id))
+        .where(Unidade.condominio_id.in_(ids)).group_by(Unidade.condominio_id)
+    ).all())
+    pessoas = {
+        (cid, papel): total for cid, papel, total in db.execute(
+            select(Usuario.condominio_id, Usuario.papel, func.count(Usuario.id))
+            .where(Usuario.condominio_id.in_(ids), Usuario.status != StatusUsuario.INATIVO)
+            .group_by(Usuario.condominio_id, Usuario.papel)
+        ).all()
+    }
+    sindicos = {u.id: u for u in pre_carregar(db, Usuario, (c.sindico_id for c in condominios))}
+    ultimas = registro.ultimas(db, registro.CONDOMINIO, ids)
+    criadores = registro.criadores(db, registro.CONDOMINIO, ids)
+
+    saida = []
+    for c in condominios:
+        sindico = sindicos.get(c.sindico_id)
+        saida.append(CondominioAdminSaida(
+            id=c.id, nome=c.nome, cnpj=c.cnpj, codigo_acesso=c.codigo_acesso,
+            cep=c.cep, logradouro=c.logradouro, numero=c.numero,
+            bairro=c.bairro, cidade=c.cidade, uf=c.uf, telefone=c.telefone,
+            sindico_id=sindico.id if sindico else None,
+            sindico_nome=sindico.nome if sindico else None,
+            total_unidades=unidades.get(c.id, 0),
+            total_moradores=pessoas.get((c.id, Papel.MORADOR), 0),
+            total_porteiros=pessoas.get((c.id, Papel.PORTEIRO), 0),
+            criado_em=c.criado_em,
+            inativo=c.inativo_em is not None, inativo_em=c.inativo_em,
+            criado_por=criadores.get(c.id),
+            ultima_alteracao=ultimas.get(c.id),
+        ))
+    return saida
 
 
 def _condominio_saida(db: Session, c: Condominio) -> CondominioAdminSaida:
-    sindico = db.get(Usuario, c.sindico_id) if c.sindico_id else None
-    unidades = db.scalar(
-        select(func.count(Unidade.id)).where(Unidade.condominio_id == c.id)
-    ) or 0
-    return CondominioAdminSaida(
-        id=c.id, nome=c.nome, cnpj=c.cnpj, codigo_acesso=c.codigo_acesso,
-        cep=c.cep, logradouro=c.logradouro, numero=c.numero,
-        complemento=c.complemento, bairro=c.bairro, cidade=c.cidade, uf=c.uf,
-        telefone=c.telefone,
-        sindico_id=sindico.id if sindico else None,
-        sindico_nome=sindico.nome if sindico else None,
-        total_unidades=unidades,
-        total_moradores=_contar(db, c.id, Papel.MORADOR),
-        total_porteiros=_contar(db, c.id, Papel.PORTEIRO),
-        criado_em=c.criado_em,
+    return _condominios_saida(db, [c])[0]
+
+
+def _usuarios_saida(db: Session, usuarios) -> list[UsuarioAdminSaida]:
+    ids = [u.id for u in usuarios]
+    carregados = (  # noqa: F841 — mantém os objetos vivos na sessão
+        pre_carregar(db, Unidade, (u.unidade_id for u in usuarios)),
+        pre_carregar(db, Condominio, (u.condominio_id for u in usuarios)),
     )
+    ultimas = registro.ultimas(db, registro.USUARIO, ids)
+    criadores = registro.criadores(db, registro.USUARIO, ids)
+    saida = []
+    for u in usuarios:
+        condominio = db.get(Condominio, u.condominio_id) if u.condominio_id else None
+        unidade = db.get(Unidade, u.unidade_id) if u.unidade_id else None
+        saida.append(UsuarioAdminSaida(
+            id=u.id, nome=u.nome, email=u.email, cpf=u.cpf, telefone=u.telefone,
+            papel=u.papel, status=u.status, condominio_id=u.condominio_id,
+            condominio_nome=condominio.nome if condominio else None,
+            unidade=unidade.identificacao if unidade else None,
+            tipo_ocupacao=u.tipo_ocupacao, criado_em=u.criado_em,
+            criado_por=criadores.get(u.id),
+            ultima_alteracao=ultimas.get(u.id),
+        ))
+    return saida
 
 
 def _usuario_saida(db: Session, u: Usuario) -> UsuarioAdminSaida:
-    condominio = db.get(Condominio, u.condominio_id) if u.condominio_id else None
-    unidade = db.get(Unidade, u.unidade_id) if u.unidade_id else None
-    return UsuarioAdminSaida(
-        id=u.id, nome=u.nome, email=u.email, cpf=u.cpf, telefone=u.telefone,
-        papel=u.papel, status=u.status, condominio_id=u.condominio_id,
-        condominio_nome=condominio.nome if condominio else None,
-        unidade=unidade.identificacao if unidade else None,
-        tipo_ocupacao=u.tipo_ocupacao, criado_em=u.criado_em,
-    )
+    return _usuarios_saida(db, [u])[0]
 
 
 # Quem digita "Joao" precisa encontrar "João". O ilike do Postgres é
@@ -101,13 +151,28 @@ def _termo_sem_acento(busca: str) -> str:
     return f"%{busca.strip().translate(tabela)}%"
 
 
-def _buscar_condominio(db: Session, condominio_id: int) -> Condominio:
-    condominio = db.get(Condominio, condominio_id)
+def _buscar_condominio(db: Session, condominio_id: int, travar: bool = False) -> Condominio:
+    condominio = db.get(Condominio, condominio_id, with_for_update=travar)
     if condominio is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Condomínio não encontrado."
         )
     return condominio
+
+
+def _buscar_usuario(db: Session, usuario_id: int) -> Usuario:
+    """Relê o usuário travado. Se for administrador, trava antes todos os
+    administradores, na mesma ordem de garantir_outro_admin_ativo: se A e B
+    se inativassem ao mesmo tempo, cada um veria o outro ainda ativo."""
+    usuario = db.get(Usuario, usuario_id)
+    if usuario is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado."
+        )
+    if usuario.papel == Papel.ADMIN:
+        servico_usuarios.travar_administradores(db)
+    db.refresh(usuario, with_for_update=True)
+    return usuario
 
 
 # ══ Visão geral ═══════════════════════════════════════════════════════
@@ -121,7 +186,9 @@ def resumo(_: Usuario = SomenteAdmin, db: Session = Depends(get_db)) -> ResumoPl
         ) or 0
 
     return ResumoPlataforma(
-        condominios=db.scalar(select(func.count(Condominio.id))) or 0,
+        condominios=db.scalar(
+            select(func.count(Condominio.id)).where(Condominio.inativo_em.is_(None))
+        ) or 0,
         sindicos=conta_papel(Papel.SINDICO),
         porteiros=conta_papel(Papel.PORTEIRO),
         moradores=conta_papel(Papel.MORADOR),
@@ -133,6 +200,18 @@ def resumo(_: Usuario = SomenteAdmin, db: Session = Depends(get_db)) -> ResumoPl
     )
 
 
+@router.get(
+    "/historico", response_model=list[RegistroSaida], summary="Histórico de alterações de um registro"
+)
+def historico(
+    entidade: str = Query(pattern="^(condominio|usuario|comunicado|documento)$"),
+    entidade_id: int = Query(),
+    _: Usuario = SomenteAdmin,
+    db: Session = Depends(get_db),
+) -> list[dict]:
+    return registro.historico(db, entidade, entidade_id)
+
+
 # ══ Condomínios ═══════════════════════════════════════════════════════
 @router.get(
     "/condominios", response_model=list[CondominioAdminSaida], summary="Lista os condomínios"
@@ -142,7 +221,10 @@ def listar_condominios(
     _: Usuario = SomenteAdmin,
     db: Session = Depends(get_db),
 ) -> list[CondominioAdminSaida]:
-    consulta = select(Condominio).order_by(Condominio.nome)
+    # Os inativos vêm por último: continuam na lista para serem reativados.
+    consulta = select(Condominio).order_by(
+        Condominio.inativo_em.is_not(None), Condominio.nome
+    )
     if busca:
         termo = _termo_sem_acento(busca)
         consulta = consulta.where(
@@ -150,7 +232,7 @@ def listar_condominios(
             | _sem_acento(Condominio.cidade).ilike(termo)
             | Condominio.cnpj.ilike(termo)
         )
-    return [_condominio_saida(db, c) for c in db.scalars(consulta).all()]
+    return _condominios_saida(db, db.scalars(consulta).all())
 
 
 @router.post(
@@ -160,7 +242,7 @@ def listar_condominios(
     summary="Cadastra um condomínio",
 )
 def criar_condominio(
-    dados: CondominioEntrada, _: Usuario = SomenteAdmin, db: Session = Depends(get_db)
+    dados: CondominioEntrada, admin: Usuario = SomenteAdmin, db: Session = Depends(get_db)
 ) -> CondominioAdminSaida:
     if db.scalar(select(Condominio).where(Condominio.cnpj == dados.cnpj)):
         raise HTTPException(
@@ -172,6 +254,8 @@ def criar_condominio(
         **dados.model_dump(), codigo_acesso=_gerar_codigo_unico(db, dados.nome)
     )
     db.add(condominio)
+    db.flush()
+    registro.registrar(db, admin, registro.CRIOU, registro.CONDOMINIO, condominio.id)
     db.commit()
     db.refresh(condominio)
     return _condominio_saida(db, condominio)
@@ -196,10 +280,10 @@ def detalhar_condominio(
 def editar_condominio(
     condominio_id: int,
     dados: CondominioEntrada,
-    _: Usuario = SomenteAdmin,
+    admin: Usuario = SomenteAdmin,
     db: Session = Depends(get_db),
 ) -> CondominioAdminSaida:
-    condominio = _buscar_condominio(db, condominio_id)
+    condominio = _buscar_condominio(db, condominio_id, travar=True)
 
     outro = db.scalar(
         select(Condominio).where(Condominio.cnpj == dados.cnpj, Condominio.id != condominio.id)
@@ -210,8 +294,13 @@ def editar_condominio(
             detail="Já existe outro condomínio com este CNPJ.",
         )
 
-    for campo, valor in dados.model_dump().items():
+    novos = dados.model_dump()
+    descricao = registro.campos_alterados(condominio, novos, ROTULOS_CONDOMINIO)
+    for campo, valor in novos.items():
         setattr(condominio, campo, valor)
+    if descricao:
+        registro.registrar(db, admin, registro.EDITOU, registro.CONDOMINIO, condominio.id,
+                           descricao)
 
     db.commit()
     db.refresh(condominio)
@@ -219,15 +308,20 @@ def editar_condominio(
 
 
 @router.delete(
-    "/condominios/{condominio_id}", response_model=Mensagem, summary="Exclui um condomínio"
+    "/condominios/{condominio_id}", response_model=Mensagem, summary="Inativa um condomínio"
 )
-def excluir_condominio(
-    condominio_id: int, _: Usuario = SomenteAdmin, db: Session = Depends(get_db)
+def inativar_condominio(
+    condominio_id: int, admin: Usuario = SomenteAdmin, db: Session = Depends(get_db)
 ) -> Mensagem:
-    condominio = _buscar_condominio(db, condominio_id)
+    """Nada é apagado: o condomínio sai das telas e o código de acesso
+    deixa de valer, mas reservas, cobranças e portaria continuam no banco,
+    e ele pode ser reativado."""
+    condominio = _buscar_condominio(db, condominio_id, travar=True)
+    if condominio.inativo_em is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Este condomínio já está inativo."
+        )
 
-    # Apagar levaria junto reservas, cobranças e portaria por cascata.
-    # Enquanto houver gente ativa, o condomínio não sai.
     ativos = db.scalar(
         select(func.count(Usuario.id)).where(
             Usuario.condominio_id == condominio.id, Usuario.status != StatusUsuario.INATIVO
@@ -238,16 +332,36 @@ def excluir_condominio(
             status_code=status.HTTP_409_CONFLICT,
             detail=(
                 f"Este condomínio ainda tem {ativos} usuário(s) ativo(s). "
-                "Remova-os antes de excluí-lo."
+                "Inative-os antes de inativá-lo."
             ),
         )
 
-    # O síndico é apontado pelo condomínio; solta antes de apagar.
-    condominio.sindico_id = None
-    db.flush()
-    db.delete(condominio)
+    condominio.inativo_em = datetime.now(timezone.utc)
+    condominio.inativado_por_id = admin.id
+    registro.registrar(db, admin, registro.INATIVOU, registro.CONDOMINIO, condominio.id)
     db.commit()
-    return Mensagem(detalhe="Condomínio excluído.")
+    return Mensagem(detalhe="Condomínio inativado.")
+
+
+@router.post(
+    "/condominios/{condominio_id}/reativacao",
+    response_model=CondominioAdminSaida,
+    summary="Reativa um condomínio",
+)
+def reativar_condominio(
+    condominio_id: int, admin: Usuario = SomenteAdmin, db: Session = Depends(get_db)
+) -> CondominioAdminSaida:
+    condominio = _buscar_condominio(db, condominio_id, travar=True)
+    if condominio.inativo_em is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Este condomínio já está ativo."
+        )
+    condominio.inativo_em = None
+    condominio.inativado_por_id = None
+    registro.registrar(db, admin, registro.REATIVOU, registro.CONDOMINIO, condominio.id)
+    db.commit()
+    db.refresh(condominio)
+    return _condominio_saida(db, condominio)
 
 
 @router.post(
@@ -256,10 +370,11 @@ def excluir_condominio(
     summary="Gera um novo código de acesso",
 )
 def renovar_codigo(
-    condominio_id: int, _: Usuario = SomenteAdmin, db: Session = Depends(get_db)
+    condominio_id: int, admin: Usuario = SomenteAdmin, db: Session = Depends(get_db)
 ) -> CondominioAdminSaida:
-    condominio = _buscar_condominio(db, condominio_id)
+    condominio = _buscar_condominio(db, condominio_id, travar=True)
     condominio.codigo_acesso = _gerar_codigo_unico(db, condominio.nome)
+    registro.registrar(db, admin, registro.NOVO_CODIGO, registro.CONDOMINIO, condominio.id)
     db.commit()
     db.refresh(condominio)
     return _condominio_saida(db, condominio)
@@ -289,12 +404,7 @@ def listar_usuarios(
             | Usuario.email.ilike(termo)
             | Usuario.cpf.ilike(termo)
         )
-    usuarios = db.scalars(consulta).all()
-    carregados = (  # noqa: F841 — mantém os objetos vivos na sessão
-        pre_carregar(db, Unidade, (u.unidade_id for u in usuarios)),
-        pre_carregar(db, Condominio, (u.condominio_id for u in usuarios)),
-    )
-    return [_usuario_saida(db, u) for u in usuarios]
+    return _usuarios_saida(db, db.scalars(consulta).all())
 
 
 @router.post(
@@ -311,9 +421,26 @@ def criar_usuario(
 ) -> UsuarioAdminSaida:
     condominio = _buscar_condominio(db, condominio_id)
     usuario = servico_usuarios.criar_usuario(db, condominio, dados, admin)
+    registro.registrar(db, admin, registro.CRIOU, registro.USUARIO, usuario.id)
     db.commit()
     db.refresh(usuario)
     return _usuario_saida(db, usuario)
+
+
+@router.post(
+    "/administradores",
+    response_model=UsuarioAdminSaida,
+    status_code=status.HTTP_201_CREATED,
+    summary="Cadastra outro administrador",
+)
+def criar_administrador(
+    dados: AdministradorEntrada, admin: Usuario = SomenteAdmin, db: Session = Depends(get_db)
+) -> UsuarioAdminSaida:
+    novo = servico_usuarios.criar_administrador(db, dados)
+    registro.registrar(db, admin, registro.CRIOU, registro.USUARIO, novo.id)
+    db.commit()
+    db.refresh(novo)
+    return _usuario_saida(db, novo)
 
 
 @router.get(
@@ -336,32 +463,57 @@ def detalhar_usuario(
 def editar_usuario(
     usuario_id: int,
     dados: UsuarioAdminAtualizacao,
-    _: Usuario = SomenteAdmin,
+    admin: Usuario = SomenteAdmin,
     db: Session = Depends(get_db),
 ) -> UsuarioAdminSaida:
-    usuario = db.get(Usuario, usuario_id)
-    if usuario is None:
+    usuario = _buscar_usuario(db, usuario_id)
+    campos = dados.model_dump(exclude_unset=True)
+    novo_status = campos.get("status")
+    if usuario.id == admin.id and novo_status not in (None, StatusUsuario.ATIVO):
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Você não pode inativar o próprio usuário.",
         )
+
+    status_antes = usuario.status
+    descricao = registro.campos_alterados(usuario, campos, ROTULOS_USUARIO)
+    if campos.get("senha"):
+        descricao = (descricao + " e a senha") if descricao else "Alterou a senha"
+    if campos.get("unidade_numero") or campos.get("unidade_bloco"):
+        # A tela sempre manda a unidade do morador: só conta se mudou.
+        atual = db.get(Unidade, usuario.unidade_id) if usuario.unidade_id else None
+        nova = (campos.get("unidade_numero") or (atual.numero if atual else ""),
+                campos.get("unidade_bloco") or (atual.bloco if atual else "unico"))
+        if atual is None or nova != (atual.numero, atual.bloco):
+            descricao = (descricao + " e a unidade") if descricao else "Alterou a unidade"
+
     servico_usuarios.atualizar_usuario(db, usuario, dados)
+
+    if usuario.status != status_antes and usuario.status == StatusUsuario.INATIVO:
+        registro.registrar(db, admin, registro.INATIVOU, registro.USUARIO, usuario.id, descricao)
+    elif usuario.status != status_antes and status_antes == StatusUsuario.INATIVO:
+        registro.registrar(db, admin, registro.REATIVOU, registro.USUARIO, usuario.id, descricao)
+    elif descricao or usuario.status != status_antes:
+        registro.registrar(db, admin, registro.EDITOU, registro.USUARIO, usuario.id, descricao)
+
     db.commit()
     documentos_cadastro.descartar_se_encerrado(db, usuario)
     db.refresh(usuario)
     return _usuario_saida(db, usuario)
 
 
-@router.delete("/usuarios/{usuario_id}", response_model=Mensagem, summary="Remove um usuário")
+@router.delete("/usuarios/{usuario_id}", response_model=Mensagem, summary="Inativa um usuário")
 def remover_usuario(
     usuario_id: int, admin: Usuario = SomenteAdmin, db: Session = Depends(get_db)
 ) -> Mensagem:
-    usuario = db.get(Usuario, usuario_id)
-    if usuario is None:
+    usuario = _buscar_usuario(db, usuario_id)
+    if usuario.status == StatusUsuario.INATIVO:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado."
+            status_code=status.HTTP_409_CONFLICT, detail="Este usuário já está inativo."
         )
     servico_usuarios.remover_usuario(db, usuario, admin)
+    registro.registrar(db, admin, registro.INATIVOU, registro.USUARIO, usuario.id)
     db.commit()
     # Sem vínculo com o condomínio, acabou a finalidade dos documentos.
     documentos_cadastro.descartar_todos(db, usuario.id)
-    return Mensagem(detalhe="Usuário removido.")
+    return Mensagem(detalhe="Usuário inativado.")

@@ -35,7 +35,7 @@ from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico
 from app.models.financeiro import Cobranca, Pagamento, PreferenciaCobranca
 from app.models.portaria import Encomenda, Ocorrencia, Visitante
 from app.models.usuario import PermissaoPorteiro, Usuario
-from app.services import arquivos
+from app.services import arquivos, registro
 
 SENHA = "smartcondo123"
 HOJE = hoje_local()
@@ -110,7 +110,7 @@ def criar(db) -> dict:
         return u
 
     # ── Administrador da plataforma ───────────────────────────────────
-    usuario(
+    admin = usuario(
         "Administrador SmartCondo", "admin@smartcondo.com", "01740740262",
         "67999990000", Papel.ADMIN,
     )
@@ -445,6 +445,14 @@ def criar(db) -> dict:
             publicado_por_id=sindico.id,
             publicado_em=AGORA - timedelta(days=10),
         ))
+
+    # Quem criou cada registro, como se tivesse sido pelas telas: o
+    # administrador cria o condomínio e o síndico; o síndico, o resto.
+    db.flush()
+    registro.registrar(db, admin, registro.CRIOU, registro.CONDOMINIO, condominio.id)
+    for u in db.scalars(select(Usuario).where(Usuario.id != admin.id)).all():
+        autor = admin if u.papel == Papel.SINDICO else sindico
+        registro.registrar(db, autor, registro.CRIOU, registro.USUARIO, u.id)
 
     db.commit()
     return {"condominio": condominio.nome}

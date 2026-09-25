@@ -104,14 +104,20 @@ def test_busca_ignora_acento(cliente, admin):
     assert [c["nome"] for c in com_acento.json()] == ["Condomínio Açucena"]
 
 
-def test_excluir_condominio_vazio(cliente, admin):
+def test_excluir_condominio_vazio_inativa_sem_apagar(cliente, admin):
+    """Nada é apagado: "excluir" inativa. O condomínio continua no banco e
+    na lista do administrador, marcado como inativo, e pode ser reativado."""
     cond = criar_condominio_como_admin(cliente, admin)
-    assert cliente.delete(
-        f"/api/v1/admin/condominios/{cond['id']}", headers=cab(admin)
-    ).status_code == 200
-    assert cliente.get(
-        f"/api/v1/admin/condominios/{cond['id']}", headers=cab(admin)
-    ).status_code == 404
+    r = cliente.delete(f"/api/v1/admin/condominios/{cond['id']}", headers=cab(admin))
+    assert r.status_code == 200
+    assert r.json()["detalhe"] == "Condomínio inativado."
+    detalhe = cliente.get(f"/api/v1/admin/condominios/{cond['id']}", headers=cab(admin)).json()
+    assert detalhe["inativo"] is True
+    assert detalhe["ultima_alteracao"]["acao"] == "inativou"
+
+    r = cliente.post(f"/api/v1/admin/condominios/{cond['id']}/reativacao", headers=cab(admin))
+    assert r.status_code == 200
+    assert r.json()["inativo"] is False
 
 
 def test_nao_exclui_condominio_com_gente_dentro(cliente, db, admin):

@@ -89,7 +89,9 @@ def cadastrar_morador(dados: CadastroMorador, db: Session = Depends(get_db)) -> 
 
     condominio = db.scalar(
         select(Condominio).where(
-            Condominio.codigo_acesso == dados.codigo_condominio.strip().upper()
+            Condominio.codigo_acesso == dados.codigo_condominio.strip().upper(),
+            # Condomínio inativado não recebe cadastro novo.
+            Condominio.inativo_em.is_(None),
         )
     )
     if condominio is None:

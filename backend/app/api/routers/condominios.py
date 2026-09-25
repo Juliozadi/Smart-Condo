@@ -34,7 +34,9 @@ def buscar_por_codigo(codigo: str, db: Session = Depends(get_db)) -> Condominio:
     conta. Devolve só nome e cidade, para ele ver que digitou o código
     certo — e exige o código, em vez de listar todos os condomínios."""
     condominio = db.scalar(
-        select(Condominio).where(Condominio.codigo_acesso == codigo.strip().upper())
+        select(Condominio).where(
+            Condominio.codigo_acesso == codigo.strip().upper(), Condominio.inativo_em.is_(None)
+        )
     )
     if condominio is None:
         raise HTTPException(

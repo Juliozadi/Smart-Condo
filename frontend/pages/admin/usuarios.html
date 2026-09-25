@@ -37,7 +37,7 @@
     <div class="dash-greeting">
       <p class="greeting-sub">Administração da plataforma</p>
       <h1 class="greeting-name"><img src="../../assets/img/icons/moradores.svg" width="16" height="16" alt=""> Usuários</h1>
-      <p class="greeting-condo"><img src="../../assets/img/icons/moradores.svg" width="16" height="16" alt=""> Síndicos, porteiros e moradores de todos os condomínios</p>
+      <p class="greeting-condo"><img src="../../assets/img/icons/moradores.svg" width="16" height="16" alt=""> Administradores, síndicos, porteiros e moradores da plataforma</p>
     </div>
 
     <div class="barra-acoes">
@@ -50,6 +50,7 @@
       </select>
       <select id="filtroPapel" aria-label="Filtrar por papel">
         <option value="">Todos os papéis</option>
+        <option value="admin">Administrador</option>
         <option value="sindico">Síndico</option>
         <option value="porteiro">Porteiro</option>
         <option value="morador">Morador</option>
@@ -88,7 +89,7 @@
 
       <form id="formUsuario" novalidate>
         <div class="form-row">
-          <div class="form-group">
+          <div class="form-group" id="grupoCondominio">
             <label for="uCondominio">Condomínio <span class="req">*</span></label>
             <select id="uCondominio" required>
               <option value="" disabled selected>Selecione</option>
@@ -98,6 +99,7 @@
             <label for="uPapel">Papel <span class="req">*</span></label>
             <select id="uPapel" required>
               <option value="" disabled selected>Selecione</option>
+              <option value="admin">Administrador</option>
               <option value="sindico">Síndico</option>
               <option value="porteiro">Porteiro</option>
               <option value="morador">Morador</option>
@@ -179,14 +181,19 @@
           <button type="submit" class="btn-primario" id="btnSalvar">Salvar</button>
         </div>
       </form>
+      <div class="historico-edicao" id="historicoCaixa" hidden>
+        <h3>Histórico de alterações</h3>
+        <ol id="historicoLista" aria-live="polite"></ol>
+      </div>
     </div>
   </div>
 
 <script src="../../assets/js/validation.js"></script>
 <script src="../../assets/js/admin-ui.js"></script>
 <script>
-/* Gestão de usuários — o administrador cria, edita e remove síndicos,
-   porteiros e moradores em qualquer condomínio. */
+/* Gestão de usuários — o administrador cria, edita e inativa síndicos,
+   porteiros e moradores em qualquer condomínio, e cadastra outros
+   administradores. Cada linha mostra quem fez a última alteração. */
 (function() {
   var api = SmartCondo.api;
   var ui = SmartCondo.ui;
@@ -204,6 +211,8 @@
      vierem para os outros papéis. */
   function alternarCamposMorador() {
     var ehMorador = campo('uPapel').value === 'morador';
+    // Administrador não pertence a condomínio: atravessa todos.
+    campo('grupoCondominio').hidden = campo('uPapel').value === 'admin';
     campo('camposMorador').hidden = !ehMorador;
     if (!ehMorador) {
       campo('uUnidade').value = '';
@@ -222,6 +231,7 @@
     campo('uCondominio').disabled = false;
     campo('uPapel').disabled = false;
     campo('grupoStatus').hidden = true;
+    campo('historicoCaixa').hidden = true;
     campo('senhaObrigatoria').hidden = false;
     campo('dicaSenha').textContent = 'Ao menos uma letra e um número ou símbolo.';
     alternarCamposMorador();
@@ -251,6 +261,10 @@
     campo('dicaSenha').textContent = 'Deixe em branco para manter a senha atual.';
 
     alternarCamposMorador();
+    // Ninguém inativa a si mesmo por aqui (a API também recusa).
+    campo('grupoStatus').hidden = u.id === (api.sessao.usuario() || {}).id;
+    campo('historicoCaixa').hidden = false;
+    ui.mostrarHistorico(campo('historicoLista'), 'usuario', u.id);
     if (u.papel === 'morador' && u.unidade) {
       var partes = u.unidade.split(' ');
       if (partes.length > 1) {
@@ -266,20 +280,28 @@
 
   function montarLinha(u) {
     var linha = document.createElement('div');
+    var eu = u.id === (api.sessao.usuario() || {}).id;
+    var inativo = u.status === 'inativo';
     linha.className = 'table-row cols-6';
     linha.innerHTML =
-      '<span><strong></strong><br><small class="lista-email"></small></span>' +
+      '<span><strong></strong><br><small class="lista-email"></small><small class="lista-autoria"></small></span>' +
       '<span></span><span></span><span></span>' +
       '<span><span class="badge"></span></span>' +
       '<span class="acoes-linha">' +
         '<button type="button" class="btn-acao" data-acao="editar" title="Editar"><img src="../../assets/img/icons/pen.svg" alt="Editar"></button>' +
-        '<button type="button" class="btn-acao perigo" data-acao="remover" title="Remover"><img src="../../assets/img/icons/xmark.svg" alt="Remover"></button>' +
+        (inativo
+          ? '<button type="button" class="btn-acao" data-acao="reativar" title="Reativar"><img src="../../assets/img/icons/circle-check.svg" alt="Reativar"></button>'
+          : (eu ? '' : '<button type="button" class="btn-acao perigo" data-acao="inativar" title="Inativar"><img src="../../assets/img/icons/xmark.svg" alt="Inativar"></button>')) +
       '</span>';
 
     linha.children[0].firstChild.textContent = u.nome;
     linha.children[0].querySelector('.lista-email').textContent = u.email;
+    // "Editado por Fulano em 25/09/2026 14:32": quem mexeu por último.
+    linha.children[0].querySelector('.lista-autoria').textContent = ui.textoAlteracao(u.ultima_alteracao);
     linha.children[1].textContent = ui.ROTULO_PAPEL[u.papel] || u.papel;
-    linha.children[2].textContent = u.condominio_nome || '—';
+    linha.children[1].className = 'papel-usuario';
+    linha.children[1].title = linha.children[1].textContent;
+    linha.children[2].textContent = u.papel === 'admin' ? 'Toda a plataforma' : (u.condominio_nome || '—');
     linha.children[3].textContent = u.unidade || '—';
 
     var selo = linha.children[4].firstChild;
@@ -289,9 +311,18 @@
     linha.querySelector('[data-acao=editar]').addEventListener('click', function() {
       abrirEdicao(u);
     });
-    linha.querySelector('[data-acao=remover]').addEventListener('click', function() {
-      if (!confirm('Remover ' + u.nome + '?\n\nO acesso é encerrado, mas o histórico dele é mantido.')) return;
+    var inativar = linha.querySelector('[data-acao=inativar]');
+    if (inativar) inativar.addEventListener('click', function() {
+      if (!confirm('Inativar ' + u.nome + '?\n\nO acesso termina agora. Nada é apagado: o histórico ' +
+                   'fica guardado, e dá para reativar depois.')) return;
       api.remover('/admin/usuarios/' + u.id)
+        .then(carregar)
+        .catch(function(e) { alert(e.message); });
+    });
+    var reativar = linha.querySelector('[data-acao=reativar]');
+    if (reativar) reativar.addEventListener('click', function() {
+      if (!confirm('Reativar ' + u.nome + '?\n\nO acesso volta a funcionar com a senha de antes.')) return;
+      api.put('/admin/usuarios/' + u.id, { status: 'ativo' })
         .then(carregar)
         .catch(function(e) { alert(e.message); });
     });
@@ -309,9 +340,6 @@
     estado.textContent = 'Carregando…';
     api.get('/admin/usuarios' + (filtros.length ? '?' + filtros.join('&') : ''))
       .then(function(lista) {
-        // O próprio administrador não aparece na gestão dos condomínios.
-        lista = lista.filter(function(u) { return u.papel !== 'admin'; });
-
         ui.limparTabela(tabela);
         if (!lista.length) {
           estado.textContent = 'Nenhum usuário encontrado com esses filtros.';
@@ -326,13 +354,13 @@
   function carregarCondominios() {
     return api.get('/admin/condominios').then(function(lista) {
       condominios = lista;
-      [campo('filtroCondominio'), campo('uCondominio')].forEach(function(select) {
-        lista.forEach(function(c) {
-          var op = document.createElement('option');
-          op.value = c.id;
-          op.textContent = c.nome;
-          select.appendChild(op);
-        });
+      lista.forEach(function(c) {
+        var op = document.createElement('option');
+        op.value = c.id;
+        op.textContent = c.nome + (c.inativo ? ' (inativo)' : '');
+        campo('filtroCondominio').appendChild(op);
+        // Condomínio inativo não recebe cadastro novo.
+        if (!c.inativo) campo('uCondominio').appendChild(op.cloneNode(true));
       });
     });
   }
@@ -366,7 +394,7 @@
     }
 
     var condominioId = campo('uCondominio').value;
-    if (!condominioId || !papel) {
+    if (!papel || (papel !== 'admin' && !condominioId)) {
       modal.erro('Escolha o condomínio e o papel.');
       return null;
     }
@@ -384,6 +412,10 @@
       papel: papel
     };
     if (campo('uNascimento').value) corpo.data_nascimento = campo('uNascimento').value;
+    if (papel === 'admin') {
+      delete corpo.papel;
+      return api.post('/admin/administradores', corpo);
+    }
     if (papel === 'morador') {
       corpo.unidade_numero = campo('uUnidade').value.trim();
       corpo.unidade_bloco = campo('uBloco').value.trim() || 'unico';

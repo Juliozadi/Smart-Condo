@@ -92,6 +92,8 @@ const historico = [
    'Júlio Zadi, Luan Flôres Martins, Lenini Bellodi Júnior, Juliano Araujo, João Victor Muller Miranda'],
   ['24/09/2026', '2.4', 'Documentos do condomínio enviados como arquivo pelo síndico, com acesso restrito, e validação das datas e dos endereços informados',
    'Júlio Zadi, Luan Flôres Martins, Lenini Bellodi Júnior, Juliano Araujo, João Victor Muller Miranda'],
+  ['25/09/2026', '2.5', 'Vários administradores, histórico de quem fez cada alteração e inativação no lugar da exclusão; sai o complemento do cadastro de condomínio',
+   'Júlio Zadi, Luan Flôres Martins, Lenini Bellodi Júnior, Juliano Araujo, João Victor Muller Miranda'],
 ];
 
 // ── Seção 9: casos de uso ───────────────────────────────────────────

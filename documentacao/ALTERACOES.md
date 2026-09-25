@@ -7,6 +7,42 @@ O texto escrito pelo grupo foi **preservado**. As mudanças abaixo são de
 duas naturezas: correções do que não correspondia mais ao sistema, e
 seções novas descrevendo o que foi construído desde então.
 
+## Versão 2.5 — vários administradores, histórico e nada apagado
+
+| Seção | O que mudou |
+|---|---|
+| 9 Requisitos funcionais | RF001: "excluir" o condomínio o inativa, sem apagar nada. RF010: o administrador cadastra outros administradores; ninguém inativa a si mesmo e a plataforma nunca fica sem administrador. RF030 e RF032: comunicado e documento removidos ficam guardados. Novo: RF045 registrar quem fez cada alteração |
+| 11.8 Telas do Administrador | Vários administradores, autoria em cada linha, histórico na edição e inativar/reativar no lugar de excluir; sai o campo Complemento do cadastro de condomínio (os endereços já gravados continuam no banco); figuras refeitas |
+| 14 a 17 | Nova tabela registros_alteracao; condominios, comunicados e documentos ganham inativo_em e inativado_por_id — agora 22 entidades, 249 atributos e 48 relacionamentos |
+| 21 API REST | 102 endpoints: histórico de alterações, reativação de condomínio e cadastro de administrador |
+| 23 Testes | 367 casos no servidor e 82 testes de interface |
+
+**Pedidos do grupo.** O complemento saiu do cadastro de condomínio do
+administrador. Nenhum botão apaga mais nada: excluir um condomínio,
+remover um comunicado ou um documento passa a inativar — o registro sai
+das telas, mas fica no banco com quem o inativou e quando (o arquivo do
+documento também fica). E pode haver mais de um administrador: cada
+criação, edição, inativação e reativação guarda o autor, e as telas do
+administrador mostram "Editado por Fulano em 25/09/2026 14:32" em cada
+linha e o histórico completo na janela de edição.
+
+**O que continua sendo descartado, por regra da LGPD:** as fotos da
+portaria depois de 90 dias e os documentos do cadastro quando o síndico o
+recusa ou inativa o morador. São descartes automáticos, e não botões de
+excluir; a política de privacidade os promete (RNF016).
+
+**Erros achados no caminho.**
+- A senha trocada pelo administrador (numa conta invadida, por exemplo)
+  não encerrava as sessões abertas com a antiga.
+- Reativar um síndico pela edição deixava o condomínio com dois síndicos.
+- O comunicado ia por e-mail também para moradores inativados e para
+  cadastros recusados ou pendentes.
+- Dois administradores inativando um ao outro ao mesmo tempo deixavam a
+  plataforma sem nenhum — ou travavam o banco num impasse (erro 500).
+- As máscaras: o CNPJ virava "11.222.33300/0181" e todo telefone fixo
+  ganhava formato de celular, "(67) 37017-071"; ao editar um condomínio,
+  CNPJ e CEP abriam sem máscara.
+
 ## Versão 2.4 — documentos do condomínio com arquivo de verdade
 
 | Seção | O que mudou |

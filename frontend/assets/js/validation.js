@@ -82,9 +82,11 @@ function mascaraCPF(input) {
 
 function mascaraTelefone(input) {
   input.addEventListener('input', function() {
-    var v = this.value.replace(/\D/g, '').slice(0, 11);
-    v = v.replace(/^(\d{2})(\d)/, '($1) $2');
-    if (v.length > 10) v = v.replace(/(\d{5})(\d)/, '$1-$2');
+    var digitos = this.value.replace(/\D/g, '').slice(0, 11);
+    var v = digitos.replace(/^(\d{2})(\d)/, '($1) $2');
+    // Celular tem 11 dígitos (5 + 4 depois do DDD); fixo, 10 (4 + 4). A
+    // conta é pelos dígitos: pelo texto formatado, todo fixo virava celular.
+    if (digitos.length > 10) v = v.replace(/(\d{5})(\d)/, '$1-$2');
     else v = v.replace(/(\d{4})(\d)/, '$1-$2');
     this.value = v;
   });
@@ -100,10 +102,13 @@ function mascaraCEP(input) {
 
 function mascaraCNPJ(input) {
   input.addEventListener('input', function() {
+    // 00.000.000/0000-00. Cada passo se ancora no anterior: soltas, as
+    // expressões casavam no lugar errado ("11.222.33300/0181").
     var v = this.value.replace(/\D/g, '').slice(0, 14);
-    v = v.replace(/(\d{2})(\d)/, '$1.$2');
-    v = v.replace(/(\d{3})(\d)/, '$1.$2');
-    v = v.replace(/(\d{3})(\d{1,4})$/, '$1/$2');
+    v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+    v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+    v = v.replace(/^(\d{2})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3/$4');
+    v = v.replace(/\/(\d{4})(\d)/, '/$1-$2');
     this.value = v;
   });
 }

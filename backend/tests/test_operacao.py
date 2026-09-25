@@ -435,10 +435,21 @@ def test_endereco_digitado_nao_e_mais_aceito(cliente, cenario):
     assert r.status_code == 422
 
 
-def test_remover_apaga_o_arquivo(cliente, cenario):
+def test_remover_inativa_e_guarda_o_arquivo(cliente, db, cenario):
+    """Nada é apagado: o documento sai das telas e da rota do arquivo, mas
+    o registro e o arquivo ficam, com quem o removeu e quando."""
+    from app.models.operacao import Documento
     from app.services import arquivos
     doc = publicar_doc(cliente, cenario["sindico"]).json()
     pasta = arquivos._pasta(arquivos.CONDOMINIO)
+    r = cliente.delete(f"/api/v1/documentos/{doc['id']}", headers=cab(cenario["sindico"]))
+    assert r.status_code == 200
     assert len(list(pasta.iterdir())) == 1
-    cliente.delete(f"/api/v1/documentos/{doc['id']}", headers=cab(cenario["sindico"]))
-    assert list(pasta.iterdir()) == []
+    guardado = db.get(Documento, doc["id"])
+    assert guardado.inativo_em is not None and guardado.inativado_por_id is not None
+    for tok in (cenario["sindico"], cenario["morador"]):
+        assert cliente.get("/api/v1/documentos", headers=cab(tok)).json() == []
+        assert cliente.get(f"/api/v1{doc['url']}", headers=cab(tok)).status_code == 404
+    # Remover de novo não acha o que já saiu.
+    assert cliente.delete(f"/api/v1/documentos/{doc['id']}",
+                          headers=cab(cenario["sindico"])).status_code == 404

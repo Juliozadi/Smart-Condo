@@ -233,6 +233,20 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "inativo_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o comunicado foi removido das telas; vazio enquanto publicado. O registro fica guardado"
+      },
+      {
+        "coluna": "inativado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que removeu o comunicado"
       }
     ],
     "regras": []
@@ -288,7 +302,7 @@ const dicionario = [
         "tipo": "VARCHAR(80)",
         "obrigatorio": "Não",
         "chave": "",
-        "descricao": "Complemento do endereço, quando houver"
+        "descricao": "Complemento do endereço dos cadastros antigos; não é mais pedido"
       },
       {
         "coluna": "bairro",
@@ -345,6 +359,20 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Código que o morador informa para se cadastrar no condomínio certo; pode ser trocado a qualquer momento"
+      },
+      {
+        "coluna": "inativo_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o condomínio foi inativado; vazio enquanto ativo. Nada é apagado: \"excluir\" inativa"
+      },
+      {
+        "coluna": "inativado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Administrador que inativou o condomínio"
       }
     ],
     "regras": []
@@ -443,6 +471,20 @@ const dicionario = [
         "obrigatorio": "Não",
         "chave": "",
         "descricao": "Tipo do arquivo conferido pelo conteúdo (application/pdf, image/png...)"
+      },
+      {
+        "coluna": "inativo_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o documento foi removido das telas; vazio enquanto disponível. Registro e arquivo ficam guardados"
+      },
+      {
+        "coluna": "inativado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que removeu o documento"
       }
     ],
     "regras": []
@@ -1330,6 +1372,62 @@ const dicionario = [
     ]
   },
   {
+    "nome": "registros_alteracao",
+    "resumo": "Quem criou, editou, inativou ou reativou cada registro, e quando — o \"editado por fulano\" das telas do administrador.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "autor_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Quem fez a alteração"
+      },
+      {
+        "coluna": "acao",
+        "tipo": "VARCHAR(20)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "O que foi feito: criou, editou, inativou, reativou, aprovou, recusou ou gerou novo código"
+      },
+      {
+        "coluna": "entidade",
+        "tipo": "VARCHAR(30)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Tipo do registro alterado: condominio, usuario, comunicado ou documento"
+      },
+      {
+        "coluna": "entidade_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Identificador do registro alterado, na tabela indicada em entidade"
+      },
+      {
+        "coluna": "descricao",
+        "tipo": "TEXT",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "O que mudou, quando cabe (\"Alterou o nome e o telefone\"); a senha aparece pelo nome, nunca pelo valor"
+      },
+      {
+        "coluna": "feito_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da alteração, preenchido pelo banco"
+      }
+    ],
+    "regras": []
+  },
+  {
     "nome": "registros_ocupacao",
     "resumo": "A contagem de pessoas nas áreas de uso livre, registrada pela portaria, para que o morador saiba se o espaço está cheio.",
     "colunas": [
@@ -1853,6 +1951,18 @@ const relacoes = [
     "texto": "Condomínio para o qual o aviso foi publicado"
   },
   {
+    "origem": "comunicados",
+    "coluna": "inativado_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que removeu o comunicado"
+  },
+  {
+    "origem": "condominios",
+    "coluna": "inativado_por_id",
+    "destino": "usuarios",
+    "texto": "Administrador que inativou o condomínio"
+  },
+  {
     "origem": "condominios",
     "coluna": "sindico_id",
     "destino": "usuarios",
@@ -1863,6 +1973,12 @@ const relacoes = [
     "coluna": "condominio_id",
     "destino": "condominios",
     "texto": "Condomínio a que o documento pertence"
+  },
+  {
+    "origem": "documentos",
+    "coluna": "inativado_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que removeu o documento"
   },
   {
     "origem": "documentos",
@@ -2019,6 +2135,12 @@ const relacoes = [
     "coluna": "morador_id",
     "destino": "usuarios",
     "texto": "Morador dono da preferência"
+  },
+  {
+    "origem": "registros_alteracao",
+    "coluna": "autor_id",
+    "destino": "usuarios",
+    "texto": "Quem fez a alteração"
   },
   {
     "origem": "registros_ocupacao",

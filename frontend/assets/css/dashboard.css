@@ -2178,3 +2178,19 @@ body.tema-escuro .chat-avatar.sindico, body.tema-escuro .chat-avatar.porteiro { 
   #tabelaMoradores .cols-6 { grid-template-columns: minmax(0,1.3fr) 40px minmax(0,1.2fr) 40px; }
   #tabelaMoradores .badge { white-space: normal; overflow: visible; text-overflow: clip; max-width: none; line-height: 1.25; }
 }
+
+/* Autoria na linha ("Editado por Fulano em ...") e histórico na janela de
+   edição do administrador. */
+.lista-autoria {
+  display: block; font-size: 11px; color: var(--muted); font-weight: 500;
+  margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.historico-edicao { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 14px; }
+.historico-edicao h3 { font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+.historico-edicao ol { list-style: none; margin: 0; padding: 0; max-height: 180px; overflow-y: auto; }
+.historico-edicao li { font-size: 12px; color: var(--text-2); padding: 6px 0; border-bottom: 1px dashed var(--border); }
+.historico-edicao li:last-child { border-bottom: 0; }
+.table-row.inativo > span:first-child strong { color: var(--muted); }
+/* "Administrador" é longo: no celular a coluna do papel corta com
+   reticências em vez de passar por cima do selo de status. */
+.papel-usuario { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
