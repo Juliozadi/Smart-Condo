@@ -94,6 +94,8 @@ const historico = [
    'Júlio Zadi, Luan Flôres Martins, Lenini Bellodi Júnior, Juliano Araujo, João Victor Muller Miranda'],
   ['25/09/2026', '2.5', 'Vários administradores, histórico de quem fez cada alteração e inativação no lugar da exclusão; sai o complemento do cadastro de condomínio',
    'Júlio Zadi, Luan Flôres Martins, Lenini Bellodi Júnior, Juliano Araujo, João Victor Muller Miranda'],
+  ['28/09/2026', '2.6', 'Gestão dos espaços comuns pelo síndico (cadastrar, editar, inativar e reativar); o que o síndico altera também registra quem fez; regras de situação da ordem de serviço',
+   'Júlio Zadi, Luan Flôres Martins, Lenini Bellodi Júnior, Juliano Araujo, João Victor Muller Miranda'],
 ];
 
 // ── Seção 9: casos de uso ───────────────────────────────────────────

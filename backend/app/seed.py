@@ -453,6 +453,8 @@ def criar(db) -> dict:
     for u in db.scalars(select(Usuario).where(Usuario.id != admin.id)).all():
         autor = admin if u.papel == Papel.SINDICO else sindico
         registro.registrar(db, autor, registro.CRIOU, registro.USUARIO, u.id)
+    for e in espacos.values():
+        registro.registrar(db, sindico, registro.CRIOU, registro.ESPACO, e.id)
 
     db.commit()
     return {"condominio": condominio.nome}

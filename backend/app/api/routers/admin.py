@@ -43,10 +43,6 @@ ROTULOS_CONDOMINIO = {
     "numero": "o número", "bairro": "o bairro", "cidade": "a cidade", "uf": "a UF",
     "telefone": "o telefone",
 }
-ROTULOS_USUARIO = {
-    "nome": "o nome", "email": "o e-mail", "telefone": "o telefone",
-    "data_nascimento": "a data de nascimento", "tipo_ocupacao": "o tipo de ocupação",
-}
 
 
 def _gerar_codigo_unico(db: Session, nome: str) -> str:
@@ -204,7 +200,7 @@ def resumo(_: Usuario = SomenteAdmin, db: Session = Depends(get_db)) -> ResumoPl
     "/historico", response_model=list[RegistroSaida], summary="Histórico de alterações de um registro"
 )
 def historico(
-    entidade: str = Query(pattern="^(condominio|usuario|comunicado|documento)$"),
+    entidade: str = Query(pattern="^(condominio|usuario|comunicado|documento|espaco)$"),
     entidade_id: int = Query(),
     _: Usuario = SomenteAdmin,
     db: Session = Depends(get_db),
@@ -475,26 +471,7 @@ def editar_usuario(
             detail="Você não pode inativar o próprio usuário.",
         )
 
-    status_antes = usuario.status
-    descricao = registro.campos_alterados(usuario, campos, ROTULOS_USUARIO)
-    if campos.get("senha"):
-        descricao = (descricao + " e a senha") if descricao else "Alterou a senha"
-    if campos.get("unidade_numero") or campos.get("unidade_bloco"):
-        # A tela sempre manda a unidade do morador: só conta se mudou.
-        atual = db.get(Unidade, usuario.unidade_id) if usuario.unidade_id else None
-        nova = (campos.get("unidade_numero") or (atual.numero if atual else ""),
-                campos.get("unidade_bloco") or (atual.bloco if atual else "unico"))
-        if atual is None or nova != (atual.numero, atual.bloco):
-            descricao = (descricao + " e a unidade") if descricao else "Alterou a unidade"
-
-    servico_usuarios.atualizar_usuario(db, usuario, dados)
-
-    if usuario.status != status_antes and usuario.status == StatusUsuario.INATIVO:
-        registro.registrar(db, admin, registro.INATIVOU, registro.USUARIO, usuario.id, descricao)
-    elif usuario.status != status_antes and status_antes == StatusUsuario.INATIVO:
-        registro.registrar(db, admin, registro.REATIVOU, registro.USUARIO, usuario.id, descricao)
-    elif descricao or usuario.status != status_antes:
-        registro.registrar(db, admin, registro.EDITOU, registro.USUARIO, usuario.id, descricao)
+    servico_usuarios.editar_registrando(db, admin, usuario, dados)
 
     db.commit()
     documentos_cadastro.descartar_se_encerrado(db, usuario)

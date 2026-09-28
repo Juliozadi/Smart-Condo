@@ -725,6 +725,20 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "inativo_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o espaço foi inativado; vazio enquanto ativo. As reservas passadas ficam no histórico"
+      },
+      {
+        "coluna": "inativado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que inativou o espaço"
       }
     ],
     "regras": []
@@ -1401,7 +1415,7 @@ const dicionario = [
         "tipo": "VARCHAR(30)",
         "obrigatorio": "Sim",
         "chave": "",
-        "descricao": "Tipo do registro alterado: condominio, usuario, comunicado ou documento"
+        "descricao": "Tipo do registro alterado: condominio, usuario, comunicado, documento ou espaco"
       },
       {
         "coluna": "entidade_id",
@@ -2021,6 +2035,12 @@ const relacoes = [
     "coluna": "condominio_id",
     "destino": "condominios",
     "texto": "Condomínio a que o espaço pertence"
+  },
+  {
+    "origem": "espacos_comuns",
+    "coluna": "inativado_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que inativou o espaço"
   },
   {
     "origem": "leituras_comunicado",

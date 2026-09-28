@@ -17,6 +17,12 @@ from app.models.enums import Papel, StatusReserva, StatusUsuario
 from app.models.espaco import Reserva
 from app.models.usuario import PermissaoPorteiro, Usuario
 from app.services import auth as servico_auth
+from app.services import registro
+
+ROTULOS_USUARIO = {
+    "nome": "o nome", "email": "o e-mail", "telefone": "o telefone",
+    "data_nascimento": "a data de nascimento", "tipo_ocupacao": "o tipo de ocupação",
+}
 
 
 def obter_ou_criar_unidade(
@@ -180,6 +186,36 @@ def atualizar_usuario(db: Session, usuario: Usuario, dados) -> Usuario:
         setattr(usuario, campo, valor)
 
     db.flush()
+    return usuario
+
+
+def editar_registrando(db: Session, autor: Usuario, usuario: Usuario, dados) -> Usuario:
+    """Edita e deixa registrado quem fez e o que mudou. Serve ao
+    administrador e ao síndico: o histórico é o mesmo para os dois."""
+    campos = dados.model_dump(exclude_unset=True)
+    status_antes = usuario.status
+    descricao = registro.campos_alterados(usuario, campos, ROTULOS_USUARIO)
+    if campos.get("senha"):
+        descricao = (descricao + " e a senha") if descricao else "Alterou a senha"
+    if campos.get("unidade_numero") or campos.get("unidade_bloco"):
+        # A tela sempre manda a unidade do morador: só conta se mudou.
+        atual = db.get(Unidade, usuario.unidade_id) if usuario.unidade_id else None
+        nova = (campos.get("unidade_numero") or (atual.numero if atual else ""),
+                campos.get("unidade_bloco") or (atual.bloco if atual else "unico"))
+        if atual is None or nova != (atual.numero, atual.bloco):
+            descricao = (descricao + " e a unidade") if descricao else "Alterou a unidade"
+
+    atualizar_usuario(db, usuario, dados)
+
+    if usuario.status != status_antes and usuario.status == StatusUsuario.INATIVO:
+        acao = registro.INATIVOU
+    elif usuario.status != status_antes and status_antes == StatusUsuario.INATIVO:
+        acao = registro.REATIVOU
+    elif descricao or usuario.status != status_antes:
+        acao = registro.EDITOU
+    else:
+        return usuario
+    registro.registrar(db, autor, acao, registro.USUARIO, usuario.id, descricao)
     return usuario
 
 

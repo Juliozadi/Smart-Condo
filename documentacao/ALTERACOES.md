@@ -7,6 +7,32 @@ O texto escrito pelo grupo foi **preservado**. As mudanças abaixo são de
 duas naturezas: correções do que não correspondia mais ao sistema, e
 seções novas descrevendo o que foi construído desde então.
 
+## Versão 2.6 — espaços comuns pelo síndico e autoria também do síndico
+
+| Seção | O que mudou |
+|---|---|
+| 9 Requisitos funcionais | RF015: o síndico cadastra, edita, marca em manutenção, inativa e reativa os espaços pela tela; inativar cancela as reservas de hoje em diante. RF045: o registro de quem fez inclui o síndico e os espaços |
+| 13.5.3 Tela de reservas do síndico | Nova seção Espaços Comuns, com a autoria de cada espaço; nova figura |
+| 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id — agora 251 atributos e 49 relacionamentos |
+| 21 API REST | 105 endpoints: editar, inativar e reativar espaço |
+| 23 Testes | 381 casos no servidor e 84 testes de interface |
+
+**Erros achados.**
+- Não havia tela para cadastrar espaço comum: só a carga de demonstração
+  criava espaços, e um condomínio novo ficava sem nada para reservar.
+  Também não havia como editar um espaço, nem pô-lo em manutenção depois
+  de criado.
+- O que o síndico fazia não registrava quem fez: editar, inativar e
+  reativar morador ou porteiro, cadastrar porteiro, mudar as permissões do
+  porteiro e gerar novo código de acesso. O administrador via só "Criado
+  por…" e não a última alteração.
+- O síndico inativava morador e porteiro, mas não tinha como reativá-los
+  pela tela.
+- Ordem de serviço: pelo Salvar, uma ordem concluída virava cancelada (o
+  botão Cancelar OS proibia isso) e uma cancelada virava concluída;
+  cancelar duas vezes respondia como se tivesse cancelado. E a tela não
+  conseguia apagar o fornecedor nem o custo real depois de preenchidos.
+
 ## Versão 2.5 — vários administradores, histórico e nada apagado
 
 | Seção | O que mudou |

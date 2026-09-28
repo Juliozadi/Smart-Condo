@@ -269,6 +269,16 @@
         ui.inativarUsuario(p, inativar, carregar);
       });
       contato.appendChild(inativar);
+    } else if (p.status === 'inativo') {
+      var reativar = document.createElement('button');
+      reativar.type = 'button';
+      reativar.className = 'contato-btn';
+      reativar.textContent = 'Reativar';
+      reativar.setAttribute('aria-label', 'Reativar ' + p.nome);
+      reativar.addEventListener('click', function() {
+        ui.reativarUsuario(p, reativar, carregar);
+      });
+      contato.appendChild(reativar);
     }
 
     bloco.appendChild(item);

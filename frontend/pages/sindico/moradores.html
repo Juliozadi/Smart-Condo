@@ -309,6 +309,16 @@
         ui.inativarUsuario(u, inativar, carregar);
       });
       linha.children[5].appendChild(inativar);
+    } else if (u.status === 'inativo') {
+      var reativar = document.createElement('button');
+      reativar.type = 'button';
+      reativar.className = 'pill-acao aprovar';
+      reativar.textContent = 'Reativar';
+      reativar.setAttribute('aria-label', 'Reativar ' + u.nome);
+      reativar.addEventListener('click', function() {
+        ui.reativarUsuario(u, reativar, carregar);
+      });
+      linha.children[5].appendChild(reativar);
     }
     return linha;
   }

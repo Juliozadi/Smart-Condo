@@ -1,7 +1,7 @@
 """Registro de alterações: quem criou, editou, inativou ou reativou.
 
-Toda ação de administrador (e as do síndico sobre cadastros, comunicados e
-documentos) chama registrar() na mesma transação da alteração: se a
+Toda ação de administrador e de síndico sobre cadastros, permissões,
+comunicados, documentos e espaços chama registrar() na mesma transação: se a
 alteração não for gravada, o registro também não é.
 """
 from __future__ import annotations
@@ -26,6 +26,7 @@ CONDOMINIO = "condominio"
 USUARIO = "usuario"
 COMUNICADO = "comunicado"
 DOCUMENTO = "documento"
+ESPACO = "espaco"
 
 ROTULO_ACAO = {
     CRIOU: "Criado", EDITOU: "Editado", INATIVOU: "Inativado", REATIVOU: "Reativado",

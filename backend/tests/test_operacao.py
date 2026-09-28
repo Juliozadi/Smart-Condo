@@ -266,6 +266,35 @@ def test_nao_cancela_ordem_concluida(cliente, cenario):
     assert r.status_code == 409
 
 
+def test_salvar_nao_desfaz_a_regra_do_cancelar(cliente, cenario):
+    """Concluída não vira cancelada pelo Salvar, nem cancelada vira
+    concluída; e cancelar de novo avisa em vez de fingir que cancelou."""
+    h = cab(cenario["sindico"])
+    feita = abrir_os(cliente, cenario["sindico"]).json()
+    url = f"/api/v1/manutencao/{feita['id']}"
+    cliente.put(url, json={"status": "concluida"}, headers=h)
+    assert cliente.put(url, json={"status": "cancelada"}, headers=h).status_code == 409
+
+    cancelada = abrir_os(cliente, cenario["sindico"]).json()
+    url = f"/api/v1/manutencao/{cancelada['id']}"
+    assert cliente.delete(url, headers=h).status_code == 200
+    assert cliente.delete(url, headers=h).status_code == 409
+    assert cliente.put(url, json={"status": "concluida"}, headers=h).status_code == 409
+    # Reabrir continua valendo.
+    r = cliente.put(url, json={"status": "aberta"}, headers=h)
+    assert r.status_code == 200 and r.json()["status"] == "aberta"
+
+
+def test_salvar_limpa_fornecedor_e_custo(cliente, cenario):
+    os_ = abrir_os(cliente, cenario["sindico"], fornecedor="Elétrica Silva").json()
+    url = f"/api/v1/manutencao/{os_['id']}"
+    cliente.put(url, json={"custo_real": "100.00"}, headers=cab(cenario["sindico"]))
+    r = cliente.put(url, json={"fornecedor": None, "custo_real": None},
+                    headers=cab(cenario["sindico"]))
+    assert r.status_code == 200
+    assert r.json()["fornecedor"] is None and r.json()["custo_real"] is None
+
+
 def test_filtros_de_status_e_prioridade(cliente, cenario):
     abrir_os(cliente, cenario["sindico"], tipo="Hidráulica", prioridade="urgente")
     abrir_os(cliente, cenario["sindico"], tipo="Pintura", prioridade="baixa")

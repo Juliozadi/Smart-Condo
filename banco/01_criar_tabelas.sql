@@ -324,7 +324,9 @@ CREATE TABLE espacos_comuns (
     uso_livre boolean NOT NULL,
     em_manutencao boolean NOT NULL,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
-    atualizado_em timestamp with time zone DEFAULT now() NOT NULL
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    inativo_em timestamp with time zone,
+    inativado_por_id integer
 );
 CREATE SEQUENCE espacos_comuns_id_seq
     AS integer
@@ -898,6 +900,9 @@ ALTER TABLE ONLY condominios
 
 ALTER TABLE ONLY documentos
     ADD CONSTRAINT documentos_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY espacos_comuns
+    ADD CONSTRAINT espacos_comuns_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
 
 CREATE INDEX ix_cobrancas_competencia ON cobrancas USING btree (competencia);
 

@@ -215,9 +215,19 @@
       .catch(function(e) { if (botao) botao.disabled = false; alert(e.message); });
   }
 
+  // Nada é apagado: quem foi inativado por engano (ou voltou) é reativado.
+  function reativarUsuario(u, botao, aoConcluir) {
+    if (!confirm('Reativar ' + u.nome + '?\n\nO acesso volta a funcionar com a mesma senha.')) return;
+    if (botao) botao.disabled = true;
+    global.SmartCondo.api.put('/usuarios/' + u.id, { status: 'ativo' })
+      .then(aoConcluir)
+      .catch(function(e) { if (botao) botao.disabled = false; alert(e.message); });
+  }
+
   global.SmartCondo = global.SmartCondo || {};
   global.SmartCondo.ui = {
     inativarUsuario: inativarUsuario,
+    reativarUsuario: reativarUsuario,
     textoAlteracao: textoAlteracao,
     mostrarHistorico: mostrarHistorico,
     limparTabela: limparTabela,

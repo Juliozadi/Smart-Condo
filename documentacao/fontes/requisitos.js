@@ -99,8 +99,8 @@ const requisitosFuncionais = [
   { id: 'RF015', nome: 'Cadastrar espaço comum',
     atores: 'Síndico', prioridade: 'Importante',
     descricao: 'O sistema permite cadastrar os espaços do condomínio — salão de festas, churrasqueira, academia, piscina — indicando capacidade, se exigem reserva e se exigem aprovação do síndico.',
-    entradas: 'O síndico informa nome, capacidade e as regras de uso do espaço.',
-    saidas: 'O espaço passa a aparecer para os moradores, na agenda de reservas ou no painel de ocupação, conforme as regras definidas.' },
+    entradas: 'O síndico informa nome, tipo (reservável ou de uso livre), capacidade e descrição, e pode marcar o espaço como em manutenção. Depois, pela mesma tela, edita, inativa ou reativa o espaço.',
+    saidas: 'O espaço passa a aparecer para os moradores, na agenda de reservas ou no painel de ocupação, conforme as regras definidas. Em manutenção, não aceita novas reservas. Nada é apagado: inativado, o espaço sai das telas, as reservas de hoje em diante são canceladas e o histórico fica guardado; reativado, volta a aparecer. Cada alteração registra quem a fez.' },
 
   { id: 'RF016', nome: 'Solicitar reserva de espaço',
     atores: 'Morador', prioridade: 'Essencial',
@@ -277,7 +277,7 @@ const requisitosFuncionais = [
 
   { id: 'RF045', nome: 'Registrar quem fez cada alteração',
     atores: 'Administrador, Síndico', prioridade: 'Importante',
-    descricao: 'Com mais de um administrador, cada alteração precisa mostrar quem a fez. O sistema registra quem criou, editou, inativou ou reativou condomínios, usuários, comunicados e documentos, e quando.',
+    descricao: 'Com mais de um administrador, cada alteração precisa mostrar quem a fez. O sistema registra quem criou, editou, inativou ou reativou condomínios, usuários, comunicados, documentos e espaços comuns, e quando — seja o administrador, seja o síndico (inclusive as permissões do porteiro e o novo código de acesso).',
     entradas: 'O registro é feito pelo próprio sistema, na mesma operação da alteração; a edição anota os campos que mudaram (a senha aparece pelo nome, nunca pelo valor), e salvar sem mudar nada não gera registro.',
     saidas: 'Cada linha das telas do administrador mostra a última alteração ("Editado por Fulano em 25/09/2026 14:32"), e a janela de edição traz o histórico completo.' },
 ];

@@ -107,6 +107,7 @@ def cadastrar_porteiro(
     codigo = servico_auth.emitir_codigo(
         db, porteiro, FinalidadeCodigo.CONFIRMACAO_CADASTRO, dados.canal_confirmacao
     )
+    registro.registrar(db, sindico, registro.CRIOU, registro.USUARIO, porteiro.id)
     db.commit()
     db.refresh(porteiro)
 
@@ -209,15 +210,26 @@ def definir_permissoes(
         )
 
     permissoes = db.scalar(
-        select(PermissaoPorteiro).where(PermissaoPorteiro.porteiro_id == porteiro.id)
+        select(PermissaoPorteiro)
+        .where(PermissaoPorteiro.porteiro_id == porteiro.id)
+        .with_for_update()
     )
     if permissoes is None:
         permissoes = PermissaoPorteiro(porteiro_id=porteiro.id)
         db.add(permissoes)
 
+    rotulos = {a["chave"]: a["rotulo"].lower() for a in ACOES_DO_PORTEIRO}
+    liberou, bloqueou = [], []
     for campo, valor in dados.model_dump().items():
+        if bool(getattr(permissoes, campo, None)) != valor:
+            (liberou if valor else bloqueou).append(rotulos.get(campo, campo))
         setattr(permissoes, campo, valor)
     permissoes.definidas_por_id = sindico.id
+    if liberou or bloqueou:
+        partes = ([f"liberou {', '.join(liberou)}"] if liberou else []) + \
+                 ([f"bloqueou {', '.join(bloqueou)}"] if bloqueou else [])
+        registro.registrar(db, sindico, registro.EDITOU, registro.USUARIO, porteiro.id,
+                           "Alterou as permissões: " + "; ".join(partes))
 
     db.commit()
     db.refresh(permissoes)
@@ -279,7 +291,9 @@ def editar_usuario(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Você pode editar apenas porteiros e moradores.",
         )
-    servico_usuarios.atualizar_usuario(db, usuario, dados)
+    # Trava a linha: o administrador pode estar editando o mesmo cadastro.
+    db.refresh(usuario, with_for_update=True)
+    servico_usuarios.editar_registrando(db, sindico, usuario, dados)
     db.commit()
     documentos_cadastro.descartar_se_encerrado(db, usuario)
     db.refresh(usuario)

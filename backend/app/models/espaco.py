@@ -21,14 +21,14 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-from app.models.base import TimestampMixin
+from app.models.base import InativacaoMixin, TimestampMixin
 from app.models.enums import StatusReserva
 
 if TYPE_CHECKING:
     from app.models.usuario import Usuario
 
 
-class EspacoComum(Base, TimestampMixin):
+class EspacoComum(Base, TimestampMixin, InativacaoMixin):
     __tablename__ = "espacos_comuns"
 
     id: Mapped[int] = mapped_column(primary_key=True)

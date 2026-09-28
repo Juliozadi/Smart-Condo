@@ -20,6 +20,7 @@ from app.models.usuario import Usuario
 from app.schemas.condominio import (
     CondominioPorCodigo, CondominioSaida, UnidadeEntrada, UnidadeSaida,
 )
+from app.services import registro
 
 router = APIRouter(prefix="/condominios", tags=["Condomínio"])
 
@@ -142,6 +143,7 @@ def renovar_codigo_acesso(
         )
 
     condominio.codigo_acesso = codigo
+    registro.registrar(db, sindico, registro.NOVO_CODIGO, registro.CONDOMINIO, condominio.id)
     db.commit()
     db.refresh(condominio)
     return condominio

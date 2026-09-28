@@ -40,13 +40,32 @@ def _saida(db: Session, os_: OrdemServico) -> OrdemServicoSaida:
     )
 
 
-def _buscar(db: Session, usuario: Usuario, ordem_id: int) -> OrdemServico:
-    ordem = db.get(OrdemServico, ordem_id)
+def _buscar(db: Session, usuario: Usuario, ordem_id: int,
+            travar: bool = False) -> OrdemServico:
+    ordem = db.get(OrdemServico, ordem_id, with_for_update=travar or None)
     if ordem is None or ordem.condominio_id != usuario.condominio_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Ordem de serviço não encontrada."
         )
     return ordem
+
+
+def _conferir_mudanca(ordem: OrdemServico, novo_status) -> None:
+    """Concluída não vira cancelada, cancelada não vira concluída: para
+    trocar uma pela outra, reabra primeiro. Vale para as duas portas
+    (Salvar e Cancelar OS), senão uma desfazia a regra da outra."""
+    if novo_status == StatusOrdemServico.CANCELADA:
+        if ordem.status == StatusOrdemServico.CONCLUIDA:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Uma ordem concluída não pode ser cancelada.",
+            )
+    elif novo_status == StatusOrdemServico.CONCLUIDA:
+        if ordem.status == StatusOrdemServico.CANCELADA:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Uma ordem cancelada não pode ser concluída. Reabra-a antes.",
+            )
 
 
 @router.post(
@@ -136,10 +155,12 @@ def atualizar(
     sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
     db: Session = Depends(get_db),
 ) -> OrdemServicoSaida:
-    ordem = _buscar(db, sindico, ordem_id)
+    # Trava a linha: com duas abas abertas, Salvar e Cancelar OS se cruzam.
+    ordem = _buscar(db, sindico, ordem_id, travar=True)
     campos = dados.model_dump(exclude_unset=True)
 
     novo_status = campos.get("status")
+    _conferir_mudanca(ordem, novo_status)
     if novo_status == StatusOrdemServico.CONCLUIDA and ordem.concluida_em is None:
         ordem.concluida_em = datetime.now(timezone.utc)
     # Reabrir limpa a data de conclusão, senão ela ficaria mentindo.
@@ -160,12 +181,12 @@ def cancelar(
     sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
     db: Session = Depends(get_db),
 ) -> Mensagem:
-    ordem = _buscar(db, sindico, ordem_id)
-    if ordem.status == StatusOrdemServico.CONCLUIDA:
+    ordem = _buscar(db, sindico, ordem_id, travar=True)
+    if ordem.status == StatusOrdemServico.CANCELADA:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Uma ordem concluída não pode ser cancelada.",
+            status_code=status.HTTP_409_CONFLICT, detail="Esta ordem já está cancelada."
         )
+    _conferir_mudanca(ordem, StatusOrdemServico.CANCELADA)
     # Cancela em vez de apagar: o histórico de manutenção fica íntegro.
     ordem.status = StatusOrdemServico.CANCELADA
     db.commit()
