@@ -79,3 +79,19 @@ def test_so_o_sindico_corrige_e_cancela(cliente, cenario):
                             json={"motivo": "Engano"}).status_code == 403
     assert cliente.put(url(c), headers=cab(cenario["sindico"]),
                        json={"valor": None}).status_code == 422
+
+
+def test_sindico_registra_pagamento_recebido_fora_do_app(cliente, cenario, monkeypatch):
+    """O morador pagou o boleto no banco: o síndico registra, a cobrança
+    fecha, e o aviso vai para o morador — não para o próprio síndico."""
+    from app.services import notificacao
+    enviados = []
+    monkeypatch.setattr(notificacao, "notificar",
+                        lambda destino, canal, titulo, mensagem: enviados.append(destino))
+    c = gerar_cobranca(cliente, cenario["sindico"], cenario["u204"], valor="320.00").json()
+    r = cliente.post(url(c) + "/pagamentos", headers=cab(cenario["sindico"]),
+                     json={"valor": "320.00", "forma": "boleto", "observacao": "Pago no banco"})
+    assert r.status_code == 201, r.text
+    assert enviados == ["ana@exemplo.com"]
+    lista = cliente.get("/api/v1/financeiro/cobrancas", headers=cab(cenario["ana"])).json()
+    assert next(x for x in lista if x["id"] == c["id"])["status"] == "paga"

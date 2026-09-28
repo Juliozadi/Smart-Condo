@@ -22,3 +22,20 @@ def test_sindico_corrige_o_valor_e_a_linha_mostra_quem(navegador):
     pg.wait_for_timeout(1200)
     assert pg.erros == []
     ctx.close()
+
+
+def test_sindico_registra_pagamento_recebido(navegador):
+    ctx, pg = abrir(navegador, papel="sindico")
+    ir(pg, "pages/sindico/financeiro.html", 1500)
+    botao = pg.locator("#tabelaCobrancas .btn-acao-mini").last
+    titulo = botao.get_attribute("title")
+    botao.click()
+    pg.fill("#pValor", "1.00")
+    pg.select_option("#pForma", "boleto")
+    pg.fill("#pObservacao", "Pago no banco")
+    pg.click("#btnRegistrarPagamento")
+    pg.wait_for_timeout(1500)
+    linha = pg.locator("#tabelaCobrancas .table-row", has=pg.locator(f'[title="{titulo}"]'))
+    assert "Já pago: R$ 1,00" in (linha.get_attribute("title") or "")
+    assert pg.erros == []
+    ctx.close()

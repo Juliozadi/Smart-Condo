@@ -80,7 +80,7 @@
   <!-- Correção e cancelamento de uma cobrança lançada errada -->
   <div class="modal-fundo" id="modalCobranca" role="dialog" aria-modal="true" aria-labelledby="cobrancaTitulo">
     <div class="modal-caixa">
-      <h2 class="modal-titulo" id="cobrancaTitulo"><img src="../../assets/img/icons/file-invoice-dollar.svg" alt="">Corrigir cobrança</h2>
+      <h2 class="modal-titulo" id="cobrancaTitulo"><img src="../../assets/img/icons/file-invoice-dollar.svg" alt="">Cobrança</h2>
       <p class="modal-sub" id="cobrancaSub"></p>
       <form id="formCorrecao" novalidate>
         <div class="form-group">
@@ -101,7 +101,36 @@
         <div class="modal-acoes">
           <button type="button" class="btn-secundario perigo-texto" id="btnCancelarCobranca">Cancelar cobrança</button>
           <button type="button" class="btn-secundario" id="btnCancelar">Fechar</button>
-          <button type="submit" class="btn-primario">Salvar</button>
+          <button type="submit" class="btn-primario">Salvar correção</button>
+        </div>
+      </form>
+
+      <!-- O morador pagou fora do app (boleto no banco, depósito): o síndico
+           registra, a cobrança fecha e o morador é avisado. -->
+      <form id="formPagamento" class="historico-edicao" novalidate>
+        <h3>Registrar pagamento recebido</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="pValor">Valor recebido (R$) <span class="req">*</span></label>
+            <input type="number" id="pValor" min="0.01" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label for="pForma">Forma <span class="req">*</span></label>
+            <select id="pForma" required>
+              <option value="boleto">Boleto</option>
+              <option value="pix">Pix</option>
+              <option value="cartao">Cartão</option>
+              <option value="debito_automatico">Débito automático</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="pObservacao">Observação</label>
+          <input type="text" id="pObservacao" maxlength="500" placeholder="Ex: pago no banco em 05/10">
+        </div>
+        <p class="modal-erro" id="pagamentoErro" role="alert"></p>
+        <div class="modal-acoes">
+          <button type="submit" class="btn-primario" id="btnRegistrarPagamento">Registrar pagamento</button>
         </div>
       </form>
     </div>
@@ -159,7 +188,7 @@
       var corrigir = document.createElement('button');
       corrigir.type = 'button';
       corrigir.className = 'btn-acao btn-acao-mini';
-      corrigir.title = 'Corrigir a cobrança de ' + (c.unidade || '') + ' ' + competenciaCurta(c.competencia);
+      corrigir.title = 'Corrigir ou registrar pagamento: ' + (c.unidade || '') + ' ' + competenciaCurta(c.competencia);
       corrigir.setAttribute('aria-label', corrigir.title);
       var img = document.createElement('img');
       img.src = '../../assets/img/icons/pen.svg';
@@ -312,6 +341,9 @@
     campo('cVencimento').value = c.vencimento;
     // Com pagamento, não cancela: corrige o valor.
     campo('btnCancelarCobranca').hidden = Number(c.total_pago) > 0;
+    campo('formPagamento').reset();
+    campo('pagamentoErro').textContent = '';
+    campo('pValor').value = (Number(c.valor) - Number(c.total_pago || 0)).toFixed(2);
     modal.abrir();
   }
 
@@ -332,6 +364,27 @@
   }, function() {
     modal.fechar();
     recarregar();
+  });
+
+  campo('formPagamento').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('pagamentoErro');
+    var valor = campo('pValor').value;
+    if (!valor || Number(valor) <= 0) {
+      erro.textContent = 'Informe o valor recebido.';
+      return;
+    }
+    var botao = campo('btnRegistrarPagamento');
+    botao.disabled = true;
+    erro.textContent = '';
+    api.post('/financeiro/cobrancas/' + corrigindo.id + '/pagamentos', {
+      valor: Number(valor),
+      forma: campo('pForma').value,
+      observacao: campo('pObservacao').value.trim() || null
+    })
+      .then(function() { modal.fechar(); recarregar(); })
+      .catch(function(e) { erro.textContent = e.message; })
+      .then(function() { botao.disabled = false; });
   });
 
   campo('btnCancelarCobranca').addEventListener('click', function() {

@@ -407,14 +407,23 @@ def registrar_pagamento(
             Usuario.status == StatusUsuario.ATIVO,
         )
     )
-    if sindico is not None:
-        notificacao.notificar(
-            sindico.email, CanalVerificacao.EMAIL,
-            "Pagamento recebido",
-            f"Unidade {cobranca.unidade.identificacao}: R$ {pagamento.valor} "
-            f"por {pagamento.forma.value}, pago por {usuario.nome} "
-            f"em {pagamento.pago_em:%d/%m/%Y}.",
-        )
+    texto = (f"Unidade {cobranca.unidade.identificacao}: R$ {pagamento.valor} "
+             f"por {pagamento.forma.value}, registrado por {usuario.nome} "
+             f"em {pagamento.pago_em:%d/%m/%Y}.")
+    if usuario.papel == Papel.SINDICO:
+        # O síndico registrou o que recebeu fora do app (boleto, depósito):
+        # quem fica sabendo são os moradores da unidade, não ele mesmo.
+        moradores = db.scalars(
+            select(Usuario).where(
+                Usuario.unidade_id == cobranca.unidade_id, Usuario.papel == Papel.MORADOR,
+                Usuario.status == StatusUsuario.ATIVO,
+            )
+        ).all()
+        for morador in moradores:
+            notificacao.notificar(morador.email, CanalVerificacao.EMAIL,
+                                  "Pagamento registrado", texto)
+    elif sindico is not None:
+        notificacao.notificar(sindico.email, CanalVerificacao.EMAIL, "Pagamento recebido", texto)
 
     return PagamentoSaida(
         id=pagamento.id, cobranca_id=pagamento.cobranca_id, valor=pagamento.valor,

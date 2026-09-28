@@ -220,7 +220,7 @@ const requisitosFuncionais = [
     atores: 'Síndico, Morador', prioridade: 'Essencial',
     descricao: 'O sistema registra o pagamento de uma cobrança, com valor, data e forma utilizada, e atualiza a situação da cobrança.',
     entradas: 'A cobrança deve existir e estar em aberto. O valor precisa ser maior que zero.',
-    saidas: 'O pagamento entra no histórico da cobrança e, quando o total pago alcança o valor devido, a cobrança passa a "paga".' },
+    saidas: 'O pagamento entra no histórico da cobrança e, quando o total pago alcança o valor devido, a cobrança passa a "paga". O pagamento feito pelo morador no app avisa o síndico; o recebido fora do app (boleto no banco, depósito) o síndico registra pela tela, e quem é avisado são os moradores da unidade.' },
 
   { id: 'RF036', nome: 'Consultar indicadores financeiros',
     atores: 'Síndico', prioridade: 'Importante',

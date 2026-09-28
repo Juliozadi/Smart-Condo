@@ -11,12 +11,12 @@ seções novas descrevendo o que foi construído desde então.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | RF034: o síndico corrige ou cancela a cobrança lançada errada. RF003: o síndico edita andar e vagas da unidade. RF017 e RF018: reserva cujo horário já passou só pode ser recusada, e o morador não cancela a que já aconteceu. RF021: o aviso do visitante vai só para quem mora lá agora. RF015: o síndico cadastra, edita, marca em manutenção, inativa e reativa os espaços pela tela; inativar cancela as reservas de hoje em diante. RF045: o registro de quem fez inclui o síndico e os espaços |
+| 9 Requisitos funcionais | RF034: o síndico corrige ou cancela a cobrança lançada errada. RF035: o síndico registra pela tela o pagamento recebido fora do app. RF003: o síndico edita andar e vagas da unidade. RF017 e RF018: reserva cujo horário já passou só pode ser recusada, e o morador não cancela a que já aconteceu. RF021: o aviso do visitante vai só para quem mora lá agora. RF015: o síndico cadastra, edita, marca em manutenção, inativa e reativa os espaços pela tela; inativar cancela as reservas de hoje em diante. RF045: o registro de quem fez inclui o síndico e os espaços |
 | 13.5.8 Tela de moradores e unidades | Nova seção na documentação, com a autoria de cada cadastro e as unidades com andar e vagas; duas figuras |
 | 13.5.3 Tela de reservas do síndico | Nova seção Espaços Comuns, com a autoria de cada espaço; nova figura |
 | 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id; usuarios ganha unidade_desde — agora 252 atributos e 49 relacionamentos |
 | 21 API REST | 108 endpoints: editar, inativar e reativar espaço; editar andar e vagas da unidade; corrigir e cancelar cobrança |
-| 23 Testes | 399 casos no servidor e 87 testes de interface |
+| 23 Testes | 400 casos no servidor e 88 testes de interface |
 
 **Erros achados.**
 - Não havia tela para cadastrar espaço comum: só a carga de demonstração
@@ -54,6 +54,11 @@ seções novas descrevendo o que foi construído desde então.
   impede lançar a certa no mesmo mês (a restrição única passou a ignorar
   as canceladas). O painel do morador também deixou de somar a cancelada
   como pendente.
+- A API aceitava que o síndico registrasse um pagamento (o boleto pago no
+  banco), mas a tela dele não tinha essa opção: a cobrança ficava em
+  aberto mesmo paga. A janela da cobrança ganhou "Registrar pagamento
+  recebido", e o aviso vai para os moradores da unidade, não para o
+  próprio síndico.
 - As vagas de garagem somam a capacidade do estacionamento, mas nenhuma
   tela as preenchia: fora da demonstração, a portaria via sempre 0 vagas.
   O síndico passa a editar andar e vagas de cada unidade.
