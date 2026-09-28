@@ -61,6 +61,10 @@ const telas = [
     texto: 'Lista os chamados abertos por moradores e porteiros, ordenados pelo que ainda está em aberto e pela urgência. O síndico responde e muda a situação da ocorrência, e a resposta aparece para quem abriu.',
     imagem: 'sindico-ocorrencias.png', legenda: 'Ocorrências do condomínio' },
 
+  { n: '11.5.8', titulo: 'Tela de moradores e unidades',
+    texto: 'Reúne os cadastros aguardando aprovação, com os documentos enviados, e a lista de todos os moradores, com busca, filtro por situação e exportação em CSV. Cada linha mostra quem mexeu por último no cadastro — o próprio síndico, o administrador ou o morador no perfil —, e o síndico inativa quem se mudou e reativa quem voltou. Mais abaixo ficam as unidades, com andar, vagas de garagem e quantos moradores ativos há em cada uma; as vagas somam a capacidade do estacionamento que a portaria acompanha.',
+    imagem: 'sindico-moradores.png', legenda: 'Moradores do condomínio',
+    imagem2: 'sindico-unidades.png', legenda2: 'Unidades e vagas de garagem' },
   { n: '11.6', titulo: 'Telas do Morador', texto: null, imagem: null },
   { n: '11.6.1', titulo: 'Tela inicial (Dashboard)',
     texto: 'A tela inicial do morador exibe uma saudação com o nome do usuário, o nome do condomínio e atalhos principais para reservas, financeiro e comunicados. Também mostra um resumo das próximas reservas e dos últimos avisos do síndico, além de uma barra inferior de navegação para facilitar o acesso às demais funções. No topo aparece a portaria: é onde o morador confirma ou recusa o visitante e a encomenda registrados pelo porteiro.',

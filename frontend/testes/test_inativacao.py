@@ -30,6 +30,7 @@ def test_sindico_inativa_um_morador(navegador):
     assert "reservas futuras são canceladas" in avisos[0]
     linha = pg.locator("#tabelaMoradores .table-row", has_text="Bruno Cardoso")
     assert "Inativo" in linha.inner_text()
+    assert "Inativado por Roberto Nascimento em" in linha.inner_text()
     assert linha.get_by_role("button", name="Inativar Bruno Cardoso").count() == 0
     # O acesso acabou na hora, inclusive a sessão que já estava aberta.
     r = pg.request.get(f"{API}/auth/eu", headers={"Authorization": f"Bearer {tok_bruno}"})
@@ -41,6 +42,7 @@ def test_sindico_inativa_um_morador(navegador):
     pg.wait_for_timeout(1200)
     linha = pg.locator("#tabelaMoradores .table-row", has_text="Bruno Cardoso")
     assert "Ativo" in linha.inner_text()
+    assert "Reativado por Roberto Nascimento em" in linha.inner_text()
     assert entrar(pg, "bruno@smartcondo.com").status == 200
     assert pg.erros == []
     ctx.close()

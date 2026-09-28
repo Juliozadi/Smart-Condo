@@ -446,13 +446,19 @@ def criar(db) -> dict:
             publicado_em=AGORA - timedelta(days=10),
         ))
 
-    # Quem criou cada registro, como se tivesse sido pelas telas: o
-    # administrador cria o condomínio e o síndico; o síndico, o resto.
+    # Quem fez cada registro, como se tivesse sido pelas telas: o
+    # administrador cria o condomínio e o síndico; o síndico cadastra os
+    # porteiros e aprova os moradores, que se cadastram sozinhos pelo
+    # código de acesso. O cadastro ainda pendente não tem registro.
     db.flush()
     registro.registrar(db, admin, registro.CRIOU, registro.CONDOMINIO, condominio.id)
-    for u in db.scalars(select(Usuario).where(Usuario.id != admin.id)).all():
-        autor = admin if u.papel == Papel.SINDICO else sindico
-        registro.registrar(db, autor, registro.CRIOU, registro.USUARIO, u.id)
+    for u in db.scalars(select(Usuario).where(Usuario.id != admin.id).order_by(Usuario.id)).all():
+        if u.papel == Papel.SINDICO:
+            registro.registrar(db, admin, registro.CRIOU, registro.USUARIO, u.id)
+        elif u.papel == Papel.PORTEIRO:
+            registro.registrar(db, sindico, registro.CRIOU, registro.USUARIO, u.id)
+        elif u.status == StatusUsuario.ATIVO:
+            registro.registrar(db, sindico, registro.APROVOU, registro.USUARIO, u.id)
     for e in espacos.values():
         registro.registrar(db, sindico, registro.CRIOU, registro.ESPACO, e.id)
 

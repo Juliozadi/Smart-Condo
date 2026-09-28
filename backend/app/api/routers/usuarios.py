@@ -32,6 +32,7 @@ from app.schemas.admin import (
 from app.schemas.usuario import (
     AprovacaoUsuario, CadastroPorteiro, CadastroSaida, PerfilSaida,
     PermissoesPorteiroEntrada, PermissoesPorteiroSaida, UsuarioAtualizacao, UsuarioSaida,
+    UsuarioSindicoSaida,
 )
 from app.services import arquivos as servico_arquivos
 from app.services import documentos_cadastro
@@ -315,7 +316,7 @@ def _para_saida_admin(db: Session, u: Usuario) -> UsuarioAdminSaida:
 
 
 # ── Administração dos cadastros ──────────────────────────────────────
-@router.get("", response_model=list[UsuarioSaida], summary="Lista os usuários do condomínio")
+@router.get("", response_model=list[UsuarioSindicoSaida], summary="Lista os usuários do condomínio")
 def listar_usuarios(
     papel: Papel | None = Query(default=None, description="Filtra por papel."),
     status_usuario: StatusUsuario | None = Query(
@@ -323,7 +324,7 @@ def listar_usuarios(
     ),
     sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
     db: Session = Depends(get_db),
-) -> list[Usuario]:
+) -> list[UsuarioSindicoSaida]:
     consulta = (
         select(Usuario)
         .where(Usuario.condominio_id == sindico.condominio_id)
@@ -333,7 +334,14 @@ def listar_usuarios(
         consulta = consulta.where(Usuario.papel == papel)
     if status_usuario is not None:
         consulta = consulta.where(Usuario.status == status_usuario)
-    return list(db.scalars(consulta.order_by(Usuario.nome)).all())
+    usuarios = db.scalars(consulta.order_by(Usuario.nome)).all()
+    ultimas = registro.ultimas(db, registro.USUARIO, (u.id for u in usuarios))
+    return [
+        UsuarioSindicoSaida.model_validate(u).model_copy(
+            update={"ultima_alteracao": ultimas.get(u.id)}
+        )
+        for u in usuarios
+    ]
 
 
 @router.post(
@@ -449,8 +457,14 @@ def atualizar_perfil(
     usuario: Usuario = Depends(get_usuario_atual),
     db: Session = Depends(get_db),
 ) -> Usuario:
-    for campo, valor in dados.model_dump(exclude_unset=True).items():
+    novos = dados.model_dump(exclude_unset=True)
+    # Fica no histórico como as edições do síndico e do administrador.
+    descricao = registro.campos_alterados(usuario, novos, servico_usuarios.ROTULOS_USUARIO)
+    for campo, valor in novos.items():
         setattr(usuario, campo, valor)
+    if descricao:
+        registro.registrar(db, usuario, registro.EDITOU, registro.USUARIO, usuario.id,
+                           descricao + " no próprio perfil")
     db.commit()
     db.refresh(usuario)
     return usuario

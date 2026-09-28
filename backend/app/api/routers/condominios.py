@@ -8,17 +8,17 @@ cadastro de unidades pelo síndico e a conferência do código de acesso, que
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import exigir_papel, get_usuario_atual
 from app.core.database import get_db
 from app.core.security import gerar_codigo_condominio
 from app.models.condominio import Condominio, Unidade
-from app.models.enums import Papel
+from app.models.enums import Papel, StatusUsuario
 from app.models.usuario import Usuario
 from app.schemas.condominio import (
-    CondominioPorCodigo, CondominioSaida, UnidadeEntrada, UnidadeSaida,
+    CondominioPorCodigo, CondominioSaida, UnidadeAtualizacao, UnidadeEntrada, UnidadeSaida,
 )
 from app.services import registro
 
@@ -68,16 +68,27 @@ def meu_condominio(
 @router.get("/meu/unidades", response_model=list[UnidadeSaida], summary="Unidades do condomínio")
 def listar_unidades(
     usuario: Usuario = Depends(get_usuario_atual), db: Session = Depends(get_db)
-) -> list[Unidade]:
+) -> list[UnidadeSaida]:
     if usuario.condominio_id is None:
         return []
-    return list(
-        db.scalars(
-            select(Unidade)
-            .where(Unidade.condominio_id == usuario.condominio_id)
-            .order_by(Unidade.bloco, Unidade.numero)
-        ).all()
-    )
+    unidades = db.scalars(
+        select(Unidade)
+        .where(Unidade.condominio_id == usuario.condominio_id)
+        .order_by(Unidade.bloco, Unidade.numero)
+    ).all()
+    saida = [UnidadeSaida.model_validate(u) for u in unidades]
+    if usuario.papel != Papel.SINDICO:
+        return saida
+    # O síndico vê quantos moram em cada uma e quem mexeu por último.
+    moradores = dict(db.execute(
+        select(Usuario.unidade_id, func.count(Usuario.id))
+        .where(Usuario.condominio_id == usuario.condominio_id,
+               Usuario.papel == Papel.MORADOR, Usuario.status == StatusUsuario.ATIVO)
+        .group_by(Usuario.unidade_id)
+    ).all())
+    ultimas = registro.ultimas(db, registro.UNIDADE, (u.id for u in unidades))
+    return [u.model_copy(update={"total_moradores": moradores.get(u.id, 0),
+                                 "ultima_alteracao": ultimas.get(u.id)}) for u in saida]
 
 
 @router.post(
@@ -110,9 +121,43 @@ def cadastrar_unidade(
 
     unidade = Unidade(condominio_id=sindico.condominio_id, **dados.model_dump())
     db.add(unidade)
+    db.flush()
+    registro.registrar(db, sindico, registro.CRIOU, registro.UNIDADE, unidade.id)
     db.commit()
     db.refresh(unidade)
     return unidade
+
+
+ROTULOS_UNIDADE = {"andar": "o andar", "vagas_garagem": "as vagas de garagem"}
+
+
+@router.put(
+    "/meu/unidades/{unidade_id}", response_model=UnidadeSaida, summary="Edita andar e vagas"
+)
+def editar_unidade(
+    unidade_id: int,
+    dados: UnidadeAtualizacao,
+    sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
+    db: Session = Depends(get_db),
+) -> UnidadeSaida:
+    """As vagas somam a capacidade do estacionamento que a portaria vê;
+    antes nenhuma tela as preenchia, e o condomínio ficava com 0 vagas."""
+    unidade = db.get(Unidade, unidade_id, with_for_update=True)
+    if unidade is None or unidade.condominio_id != sindico.condominio_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Unidade não encontrada."
+        )
+    novos = dados.model_dump(exclude_unset=True)
+    descricao = registro.campos_alterados(unidade, novos, ROTULOS_UNIDADE)
+    for campo, valor in novos.items():
+        setattr(unidade, campo, valor)
+    if descricao:
+        registro.registrar(db, sindico, registro.EDITOU, registro.UNIDADE, unidade.id, descricao)
+    db.commit()
+    db.refresh(unidade)
+    return UnidadeSaida.model_validate(unidade).model_copy(
+        update={"ultima_alteracao": registro.ultimas(db, registro.UNIDADE, [unidade.id]).get(unidade.id)}
+    )
 
 
 @router.post(

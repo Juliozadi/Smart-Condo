@@ -1415,7 +1415,7 @@ const dicionario = [
         "tipo": "VARCHAR(30)",
         "obrigatorio": "Sim",
         "chave": "",
-        "descricao": "Tipo do registro alterado: condominio, usuario, comunicado, documento ou espaco"
+        "descricao": "Tipo do registro alterado: condominio, usuario, comunicado, documento, espaco ou unidade"
       },
       {
         "coluna": "entidade_id",

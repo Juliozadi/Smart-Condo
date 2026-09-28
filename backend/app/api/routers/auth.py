@@ -39,6 +39,7 @@ from app.schemas.usuario import (
 from app.services import arquivos
 from app.services import auth as servico_auth
 from app.services import documentos_cadastro
+from app.services import registro
 from app.services.notificacao import mascarar_destino
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
@@ -320,6 +321,9 @@ def redefinir_senha(dados: RedefinicaoSenha, db: Session = Depends(get_db)) -> M
     usuario.tentativas_login = 0
     usuario.bloqueado_ate = None
     servico_auth.encerrar_sessoes(usuario)
+    # O autor é o próprio usuário: quem provou a identidade foi o código.
+    registro.registrar(db, usuario, registro.EDITOU, registro.USUARIO, usuario.id,
+                       "Redefiniu a senha pelo código de recuperação")
 
     db.commit()
     return Mensagem(detalhe="Senha redefinida. Faça o login com a nova senha.")
@@ -339,6 +343,8 @@ def trocar_senha(
     """As outras sessões são encerradas; esta continua com o token novo
     que vai na resposta."""
     servico_auth.trocar_senha(db, usuario, dados.senha_atual, dados.nova_senha)
+    registro.registrar(db, usuario, registro.EDITOU, registro.USUARIO, usuario.id,
+                       "Alterou a própria senha")
     db.commit()
     return SenhaTrocadaSaida(
         detalhe="Senha alterada. As sessões abertas em outros aparelhos foram encerradas.",

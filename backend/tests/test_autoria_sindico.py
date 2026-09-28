@@ -83,3 +83,35 @@ def test_sindico_gera_novo_codigo_com_registro(cliente, db):
     assert r.status_code == 200, r.text
     ultimo = historico(cliente, base["admin"], "condominio", base["cond"]["id"])[0]
     assert (ultimo["acao"], ultimo["autor_nome"]) == ("novo_codigo", nome_sindico(cliente, base))
+
+
+def test_sindico_ve_quem_mexeu_por_ultimo_inclusive_o_administrador(cliente, db):
+    base = montar_condominio(cliente, db)
+    morador_id, _ = cadastrar_morador(cliente, base["sindico"], base["cond"])
+    r = cliente.put(f"/api/v1/admin/usuarios/{morador_id}", headers=cab(base["admin"]),
+                    json={"telefone": "(67) 98888-1111"})
+    assert r.status_code == 200, r.text
+    lista = cliente.get("/api/v1/usuarios", headers=cab(base["sindico"])).json()
+    linha = next(u for u in lista if u["id"] == morador_id)
+    admin = cliente.get("/api/v1/auth/eu", headers=cab(base["admin"])).json()["nome"]
+    assert linha["ultima_alteracao"]["acao"] == "editou"
+    assert linha["ultima_alteracao"]["autor_nome"] == admin
+
+
+def test_o_proprio_usuario_tambem_fica_no_historico(cliente, db):
+    """Nome, telefone e senha trocados pelo próprio usuário aparecem no
+    histórico que o síndico e o administrador veem."""
+    base = montar_condominio(cliente, db)
+    morador_id, tok = cadastrar_morador(cliente, base["sindico"], base["cond"])
+    r = cliente.patch("/api/v1/usuarios/eu", headers=cab(tok),
+                      json={"telefone": "(67) 97777-1234", "nome": "João Silva"})
+    assert r.status_code == 200, r.text
+    ultimo = historico(cliente, base["admin"], "usuario", morador_id)[0]
+    assert (ultimo["autor_nome"], ultimo["descricao"]) == (
+        "João Silva", "Alterou o telefone no próprio perfil")
+
+    r = cliente.post("/api/v1/auth/senha/trocar", headers=cab(tok),
+                     json={"senha_atual": "senhaforte123", "nova_senha": "outrasenha456"})
+    assert r.status_code == 200, r.text
+    assert historico(cliente, base["admin"], "usuario", morador_id)[0]["descricao"] == \
+        "Alterou a própria senha"

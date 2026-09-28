@@ -75,7 +75,54 @@
       <div class="table-head cols-6"><span>Morador</span><span>Unidade</span><span>Tipo</span><span>Desde</span><span>Status</span><span>Ações</span></div>
     </div>
     <p class="estado-lista" id="estadoTabela"></p>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Unidades e Vagas</h2>
+    <p class="secao-ajuda">As vagas de garagem somam a capacidade do estacionamento que a portaria acompanha.</p>
+    <div class="barra-acoes">
+      <button type="button" class="btn-novo" id="btnNovaUnidade">
+        <img src="../../assets/img/icons/plus.svg" alt="">Nova unidade
+      </button>
+    </div>
+    <div class="data-table" id="tabelaUnidades">
+      <div class="table-head"><span>Unidade</span><span>Andar</span><span>Vagas</span><span>Moradores</span><span></span></div>
+    </div>
+    <p class="estado-lista" id="estadoUnidades">Carregando…</p>
   </main>
+
+  <!-- Cadastro e edição de unidade -->
+  <div class="modal-fundo" id="modalUnidade" role="dialog" aria-modal="true" aria-labelledby="unidadeTitulo">
+    <div class="modal-caixa">
+      <h2 class="modal-titulo" id="unidadeTitulo"><img src="../../assets/img/icons/building.svg" alt="">Nova unidade</h2>
+      <p class="modal-sub" id="unidadeSub">Número e bloco não mudam depois: moradores, cobranças e portaria apontam para eles.</p>
+      <form id="formUnidade" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="uNumero">Número <span class="req">*</span></label>
+            <input type="text" id="uNumero" required maxlength="20" placeholder="Ex: 204">
+          </div>
+          <div class="form-group">
+            <label for="uBloco">Bloco</label>
+            <input type="text" id="uBloco" maxlength="20" placeholder="Deixe vazio se não houver">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="uAndar">Andar</label>
+            <input type="number" id="uAndar" min="0" max="200" step="1" placeholder="Ex: 2">
+          </div>
+          <div class="form-group">
+            <label for="uVagas">Vagas de garagem</label>
+            <input type="number" id="uVagas" min="0" max="20" step="1" placeholder="0">
+          </div>
+        </div>
+        <p class="modal-erro" id="unidadeErro" role="alert"></p>
+        <div class="modal-acoes">
+          <button type="button" class="btn-secundario" id="btnCancelar">Cancelar</button>
+          <button type="submit" class="btn-primario">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- Visualizador dos documentos do cadastro. O arquivo só sai da API
        com o token do síndico, então é baixado e mostrado daqui. -->
@@ -283,11 +330,13 @@
     var linha = document.createElement('div');
     linha.className = 'table-row cols-6';
     linha.innerHTML =
-      '<span><strong></strong><br><small class="lista-email"></small></span>' +
+      '<span><strong></strong><br><small class="lista-email"></small><small class="lista-autoria"></small></span>' +
       '<span></span><span></span><span></span>' +
       '<span><span class="badge"></span></span><span class="acoes-linha"></span>';
     linha.children[0].firstChild.textContent = u.nome;
     linha.children[0].querySelector('.lista-email').textContent = u.email;
+    // Quem mexeu por último: o síndico ou o administrador.
+    linha.children[0].querySelector('.lista-autoria').textContent = ui.textoAlteracao(u.ultima_alteracao);
     linha.children[1].textContent = unidadeDe(u);
     linha.children[2].textContent = ROTULO_OCUPACAO[u.tipo_ocupacao] || '—';
     linha.children[3].textContent = desde(u.criado_em);
@@ -403,13 +452,97 @@
   var usuario = api.sessao.usuario();
   if (usuario) campo('hdrName').textContent = usuario.nome;
 
+  /* ── Unidades e vagas ─────────────────────────────────────────────
+     As vagas somam a capacidade do estacionamento; antes nenhuma tela as
+     preenchia e o condomínio ficava com 0 vagas. */
+  var nomeCondominio = '';
+  var modalUnidade = ui.modal('modalUnidade', 'formUnidade', 'unidadeErro');
+  var editandoUnidade = null;
+
+  function abrirUnidade(u) {
+    editandoUnidade = u;
+    campo('unidadeTitulo').lastChild.textContent = u ? 'Unidade ' + u.identificacao : 'Nova unidade';
+    modalUnidade.limpar();
+    campo('uNumero').disabled = campo('uBloco').disabled = !!u;
+    if (u) {
+      campo('uNumero').value = u.numero;
+      campo('uBloco').value = u.bloco === 'unico' ? '' : u.bloco;
+      campo('uAndar').value = u.andar === null || u.andar === undefined ? '' : u.andar;
+      campo('uVagas').value = u.vagas_garagem;
+    }
+    modalUnidade.abrir();
+    if (u) campo('uAndar').focus();
+  }
+
+  function linhaUnidade(u) {
+    var linha = document.createElement('div');
+    linha.className = 'table-row';
+    linha.innerHTML = '<span><strong></strong><small class="lista-autoria"></small></span>' +
+      '<span></span><span></span><span></span><span class="acoes-linha"></span>';
+    linha.children[0].firstChild.textContent = u.identificacao;
+    linha.children[0].querySelector('.lista-autoria').textContent = ui.textoAlteracao(u.ultima_alteracao);
+    linha.children[1].textContent = u.andar === null || u.andar === undefined ? '—' : u.andar + 'º';
+    linha.children[2].textContent = u.vagas_garagem;
+    linha.children[3].textContent = u.total_moradores || 0;
+    var editar = document.createElement('button');
+    editar.type = 'button';
+    editar.className = 'btn-acao';
+    editar.title = 'Editar unidade ' + u.identificacao;
+    editar.setAttribute('aria-label', editar.title);
+    var img = document.createElement('img');
+    img.src = '../../assets/img/icons/pen.svg';
+    img.alt = '';
+    editar.appendChild(img);
+    editar.addEventListener('click', function() { abrirUnidade(u); });
+    linha.children[4].appendChild(editar);
+    return linha;
+  }
+
+  function carregarUnidades() {
+    return api.get('/condominios/meu/unidades').then(function(unidades) {
+      var tabela = campo('tabelaUnidades');
+      ui.limparTabela(tabela);
+      unidades.forEach(function(u) {
+        u.identificacao = u.bloco === 'unico' ? u.numero : u.bloco + ' ' + u.numero;
+        tabela.appendChild(linhaUnidade(u));
+      });
+      campo('estadoUnidades').textContent = unidades.length ? '' :
+        'Nenhuma unidade ainda. Elas também são criadas quando o morador se cadastra.';
+      if (nomeCondominio) {
+        campo('resumoCondominio').textContent = nomeCondominio + ' · ' + unidades.length + ' unidades';
+      }
+    }).catch(function(e) { campo('estadoUnidades').textContent = e.message; });
+  }
+
+  campo('btnNovaUnidade').addEventListener('click', function() { abrirUnidade(null); });
+
+  modalUnidade.aoEnviar(function() {
+    var andar = campo('uAndar').value, vagas = campo('uVagas').value;
+    var corpo = {
+      andar: andar === '' ? null : parseInt(andar, 10),
+      vagas_garagem: vagas === '' ? 0 : parseInt(vagas, 10)
+    };
+    if (editandoUnidade) {
+      return api.put('/condominios/meu/unidades/' + editandoUnidade.id, corpo);
+    }
+    var numero = campo('uNumero').value.trim();
+    if (!numero) {
+      modalUnidade.erro('Informe o número da unidade.');
+      return null;
+    }
+    corpo.numero = numero;
+    corpo.bloco = campo('uBloco').value.trim() || 'unico';
+    return api.post('/condominios/meu/unidades', corpo);
+  }, function() {
+    modalUnidade.fechar();
+    carregarUnidades();
+  });
+
   api.get('/condominios/meu')
     .then(function(c) {
-      return api.get('/condominios/meu/unidades').then(function(unidades) {
-        campo('resumoCondominio').textContent = c.nome + ' · ' + unidades.length + ' unidades';
-      }, function() {
-        campo('resumoCondominio').textContent = c.nome;
-      });
+      nomeCondominio = c.nome;
+      campo('resumoCondominio').textContent = c.nome;
+      return carregarUnidades();
     })
     .catch(function() { campo('resumoCondominio').textContent = ''; });
 

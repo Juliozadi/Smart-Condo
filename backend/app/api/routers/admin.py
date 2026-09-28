@@ -200,7 +200,7 @@ def resumo(_: Usuario = SomenteAdmin, db: Session = Depends(get_db)) -> ResumoPl
     "/historico", response_model=list[RegistroSaida], summary="Histórico de alterações de um registro"
 )
 def historico(
-    entidade: str = Query(pattern="^(condominio|usuario|comunicado|documento|espaco)$"),
+    entidade: str = Query(pattern="^(condominio|usuario|comunicado|documento|espaco|unidade)$"),
     entidade_id: int = Query(),
     _: Usuario = SomenteAdmin,
     db: Session = Depends(get_db),

@@ -12,6 +12,7 @@ from pydantic import EmailStr, Field, model_validator
 from app.models.enums import (
     CanalVerificacao, Papel, StatusUsuario, TipoOcupacao,
 )
+from app.schemas.admin import RegistroSaida
 from app.schemas.comuns import CPF, DataNascimento, SchemaBase, Senha, SenhaDigitada, Telefone
 
 
@@ -144,6 +145,12 @@ class UsuarioSaida(SchemaBase):
     # usuário recusado precisa saber o motivo.
     avaliado_em: datetime | None = None
     motivo_recusa: str | None = None
+
+
+class UsuarioSindicoSaida(UsuarioSaida):
+    """A lista do síndico: também diz quem mexeu por último no cadastro —
+    ele, outro síndico antes dele ou o administrador."""
+    ultima_alteracao: RegistroSaida | None = None
 
 
 class PerfilSaida(UsuarioSaida):

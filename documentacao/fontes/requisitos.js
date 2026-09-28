@@ -28,7 +28,7 @@ const requisitosFuncionais = [
     atores: 'Síndico', prioridade: 'Essencial',
     descricao: 'O sistema permite cadastrar e consultar as unidades (apartamentos ou casas) do condomínio, com bloco, número, andar e quantidade de vagas de garagem.',
     entradas: 'O síndico informa número e, quando houver, bloco. A combinação de condomínio, bloco e número não pode repetir.',
-    saidas: 'A unidade fica disponível para ser vinculada a moradores, cobranças, encomendas, visitantes e ocorrências.' },
+    saidas: 'A unidade fica disponível para ser vinculada a moradores, cobranças, encomendas, visitantes e ocorrências. Depois, o síndico edita o andar e as vagas de garagem, que somam a capacidade do estacionamento; número e bloco não mudam, porque moradores, cobranças e portaria apontam para eles. Cada alteração registra quem a fez.' },
 
   { id: 'RF004', nome: 'Cadastrar-se como morador',
     atores: 'Morador', prioridade: 'Essencial',
@@ -277,9 +277,9 @@ const requisitosFuncionais = [
 
   { id: 'RF045', nome: 'Registrar quem fez cada alteração',
     atores: 'Administrador, Síndico', prioridade: 'Importante',
-    descricao: 'Com mais de um administrador, cada alteração precisa mostrar quem a fez. O sistema registra quem criou, editou, inativou ou reativou condomínios, usuários, comunicados, documentos e espaços comuns, e quando — seja o administrador, seja o síndico (inclusive as permissões do porteiro e o novo código de acesso).',
+    descricao: 'Com mais de um administrador, cada alteração precisa mostrar quem a fez. O sistema registra quem criou, editou, inativou ou reativou condomínios, usuários, comunicados, documentos e espaços comuns, e quando — seja o administrador, seja o síndico (inclusive as permissões do porteiro e o novo código de acesso), seja o próprio usuário no perfil e na troca de senha.',
     entradas: 'O registro é feito pelo próprio sistema, na mesma operação da alteração; a edição anota os campos que mudaram (a senha aparece pelo nome, nunca pelo valor), e salvar sem mudar nada não gera registro.',
-    saidas: 'Cada linha das telas do administrador mostra a última alteração ("Editado por Fulano em 25/09/2026 14:32"), e a janela de edição traz o histórico completo.' },
+    saidas: 'Cada linha das telas do administrador mostra a última alteração ("Editado por Fulano em 25/09/2026 14:32"), e a janela de edição traz o histórico completo. As listas de moradores, porteiros e espaços do síndico também mostram quem mexeu por último, inclusive quando foi o administrador.' },
 ];
 
 // ── 10 Requisitos não funcionais ────────────────────────────────────

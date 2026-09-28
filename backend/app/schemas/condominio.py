@@ -60,6 +60,22 @@ class UnidadeEntrada(SchemaBase):
 class UnidadeSaida(UnidadeEntrada):
     id: int
     condominio_id: int
+    # Só para o síndico: quantos moradores ativos e quem mexeu por último.
+    total_moradores: int | None = None
+    ultima_alteracao: RegistroSaida | None = None
+
+
+class UnidadeAtualizacao(SchemaBase):
+    """Andar e vagas. Número e bloco não mudam: moradores, cobranças e a
+    portaria apontam para a unidade por eles."""
+    andar: int | None = Field(default=None, ge=0, le=200)
+    vagas_garagem: int | None = Field(default=None, ge=0, le=20)
+
+    @model_validator(mode="after")
+    def _vagas_nao_nulas(self):
+        if "vagas_garagem" in self.model_fields_set and self.vagas_garagem is None:
+            raise ValueError("Informe o número de vagas (0 se não houver).")
+        return self
 
 
 class EspacoEntrada(SchemaBase):

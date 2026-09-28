@@ -27,6 +27,7 @@ USUARIO = "usuario"
 COMUNICADO = "comunicado"
 DOCUMENTO = "documento"
 ESPACO = "espaco"
+UNIDADE = "unidade"
 
 ROTULO_ACAO = {
     CRIOU: "Criado", EDITOU: "Editado", INATIVOU: "Inativado", REATIVOU: "Reativado",

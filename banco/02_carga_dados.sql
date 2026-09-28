@@ -138,19 +138,18 @@ INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, desc
 INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (2, 1, 'criou', 'usuario', 2, NULL);
 INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (3, 2, 'criou', 'usuario', 3, NULL);
 INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (4, 2, 'criou', 'usuario', 4, NULL);
-INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (5, 2, 'criou', 'usuario', 5, NULL);
-INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (6, 2, 'criou', 'usuario', 6, NULL);
-INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (7, 2, 'criou', 'usuario', 7, NULL);
-INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (8, 2, 'criou', 'usuario', 8, NULL);
-INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (9, 2, 'criou', 'usuario', 9, NULL);
-INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (10, 2, 'criou', 'espaco', 1, NULL);
-INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (11, 2, 'criou', 'espaco', 2, NULL);
-INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (12, 2, 'criou', 'espaco', 3, NULL);
-INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (13, 2, 'criou', 'espaco', 4, NULL);
-INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (14, 2, 'criou', 'espaco', 5, NULL);
-INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (15, 2, 'criou', 'espaco', 6, NULL);
-INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (16, 2, 'criou', 'espaco', 7, NULL);
-INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (17, 2, 'criou', 'espaco', 8, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (5, 2, 'aprovou', 'usuario', 5, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (6, 2, 'aprovou', 'usuario', 6, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (7, 2, 'aprovou', 'usuario', 7, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (8, 2, 'aprovou', 'usuario', 8, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (9, 2, 'criou', 'espaco', 1, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (10, 2, 'criou', 'espaco', 2, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (11, 2, 'criou', 'espaco', 3, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (12, 2, 'criou', 'espaco', 4, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (13, 2, 'criou', 'espaco', 5, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (14, 2, 'criou', 'espaco', 6, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (15, 2, 'criou', 'espaco', 7, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (16, 2, 'criou', 'espaco', 8, NULL);
 
 SELECT setval('condominios_id_seq', (SELECT COALESCE(MAX(id), 1) FROM condominios));
 

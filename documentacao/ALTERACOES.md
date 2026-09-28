@@ -11,11 +11,12 @@ seções novas descrevendo o que foi construído desde então.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | RF017 e RF018: reserva cujo horário já passou só pode ser recusada, e o morador não cancela a que já aconteceu. RF021: o aviso do visitante vai só para quem mora lá agora. RF015: o síndico cadastra, edita, marca em manutenção, inativa e reativa os espaços pela tela; inativar cancela as reservas de hoje em diante. RF045: o registro de quem fez inclui o síndico e os espaços |
+| 9 Requisitos funcionais | RF003: o síndico edita andar e vagas da unidade. RF017 e RF018: reserva cujo horário já passou só pode ser recusada, e o morador não cancela a que já aconteceu. RF021: o aviso do visitante vai só para quem mora lá agora. RF015: o síndico cadastra, edita, marca em manutenção, inativa e reativa os espaços pela tela; inativar cancela as reservas de hoje em diante. RF045: o registro de quem fez inclui o síndico e os espaços |
+| 13.5.8 Tela de moradores e unidades | Nova seção na documentação, com a autoria de cada cadastro e as unidades com andar e vagas; duas figuras |
 | 13.5.3 Tela de reservas do síndico | Nova seção Espaços Comuns, com a autoria de cada espaço; nova figura |
 | 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id — agora 251 atributos e 49 relacionamentos |
-| 21 API REST | 105 endpoints: editar, inativar e reativar espaço |
-| 23 Testes | 387 casos no servidor e 84 testes de interface |
+| 21 API REST | 106 endpoints: editar, inativar e reativar espaço; editar andar e vagas da unidade |
+| 23 Testes | 392 casos no servidor e 85 testes de interface |
 
 **Erros achados.**
 - Não havia tela para cadastrar espaço comum: só a carga de demonstração
@@ -43,6 +44,15 @@ seções novas descrevendo o que foi construído desde então.
 - Veículos: dois registros de entrada da mesma placa ao mesmo tempo
   (clique duplo, dois porteiros) passavam juntos, e o carro aparecia duas
   vezes no pátio. Agora a placa é travada durante o registro.
+- As vagas de garagem somam a capacidade do estacionamento, mas nenhuma
+  tela as preenchia: fora da demonstração, a portaria via sempre 0 vagas.
+  O síndico passa a editar andar e vagas de cada unidade.
+- O síndico não via quem tinha mexido num morador ou porteiro (por
+  exemplo, o administrador); agora as listas dele mostram "Editado por…".
+  A troca de nome, telefone e senha pelo próprio usuário também entra no
+  histórico. Na carga de demonstração, os moradores aparecem como
+  aprovados pelo síndico (eles se cadastram sozinhos), e não como criados
+  por ele.
 - Reservas: o síndico aprovava uma reserva esquecida na fila depois da
   data, e o morador cancelava uma reserva que já tinha acontecido,
   reescrevendo o histórico.
