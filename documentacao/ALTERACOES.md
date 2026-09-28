@@ -14,9 +14,9 @@ seções novas descrevendo o que foi construído desde então.
 | 9 Requisitos funcionais | RF003: o síndico edita andar e vagas da unidade. RF017 e RF018: reserva cujo horário já passou só pode ser recusada, e o morador não cancela a que já aconteceu. RF021: o aviso do visitante vai só para quem mora lá agora. RF015: o síndico cadastra, edita, marca em manutenção, inativa e reativa os espaços pela tela; inativar cancela as reservas de hoje em diante. RF045: o registro de quem fez inclui o síndico e os espaços |
 | 13.5.8 Tela de moradores e unidades | Nova seção na documentação, com a autoria de cada cadastro e as unidades com andar e vagas; duas figuras |
 | 13.5.3 Tela de reservas do síndico | Nova seção Espaços Comuns, com a autoria de cada espaço; nova figura |
-| 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id — agora 251 atributos e 49 relacionamentos |
+| 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id; usuarios ganha unidade_desde — agora 252 atributos e 49 relacionamentos |
 | 21 API REST | 106 endpoints: editar, inativar e reativar espaço; editar andar e vagas da unidade |
-| 23 Testes | 392 casos no servidor e 85 testes de interface |
+| 23 Testes | 394 casos no servidor e 86 testes de interface |
 
 **Erros achados.**
 - Não havia tela para cadastrar espaço comum: só a carga de demonstração
@@ -40,7 +40,10 @@ seções novas descrevendo o que foi construído desde então.
   se mudado.
 - O morador novo via os visitantes (nome, CPF e foto) e as encomendas de
   quem morava no apartamento antes dele. Agora vê o que chegou desde o
-  próprio cadastro, mais as encomendas que ainda aguardam retirada.
+  próprio cadastro, mais as encomendas que ainda aguardam retirada. O
+  mesmo vale para o morador transferido de apartamento e para quem saiu
+  e voltou: a referência é desde quando ele mora na unidade
+  (usuarios.unidade_desde), e não a data do cadastro.
 - Veículos: dois registros de entrada da mesma placa ao mesmo tempo
   (clique duplo, dois porteiros) passavam juntos, e o carro aparecia duas
   vezes no pátio. Agora a placa é travada durante o registro.
@@ -56,6 +59,14 @@ seções novas descrevendo o que foi construído desde então.
 - Reservas: o síndico aprovava uma reserva esquecida na fila depois da
   data, e o morador cancelava uma reserva que já tinha acontecido,
   reescrevendo o histórico.
+- Nada marcava a reserva como realizada: a aprovada do mês passado
+  continuava "em aberto" para o morador, e a pendente esquecida ficava
+  pendente para sempre. Agora, ao consultar, a aprovada cujo horário
+  terminou vira concluída, e a pendente cujo horário chegou sem avaliação
+  vira recusada, com o motivo.
+- "Próximas reservas" no painel do morador mostrava as mais distantes: a
+  lista vinha da mais recente para a mais antiga e o painel pegava as três
+  primeiras. Agora aparecem as mais perto de hoje.
 
 ## Versão 2.5 — vários administradores, histórico e nada apagado
 

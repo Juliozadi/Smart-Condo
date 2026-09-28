@@ -10,7 +10,7 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
-    Boolean, Date, DateTime, Enum as SAEnum, ForeignKey, Integer, String, Text,
+    Boolean, Date, DateTime, Enum as SAEnum, ForeignKey, Integer, String, Text, func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -50,6 +50,11 @@ class Usuario(Base, TimestampMixin):
     # Só o morador tem unidade; porteiro e síndico ficam sem.
     unidade_id: Mapped[int | None] = mapped_column(
         ForeignKey("unidades.id", ondelete="SET NULL"), index=True
+    )
+    # Desde quando mora na unidade atual: o morador transferido não vê os
+    # visitantes e as encomendas de quem estava lá antes dele.
+    unidade_desde: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     tipo_ocupacao: Mapped[TipoOcupacao | None] = mapped_column(
         SAEnum(TipoOcupacao, name="tipo_ocupacao")

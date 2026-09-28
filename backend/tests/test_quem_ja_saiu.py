@@ -130,3 +130,42 @@ def test_morador_novo_nao_ve_os_visitantes_e_encomendas_do_anterior(cliente, db)
     # O síndico continua vendo tudo.
     todos = cliente.get("/api/v1/portaria/visitantes", headers=cab(base["sindico"])).json()
     assert {v["id"] for v in todos} == {antigo["id"], novo["id"]}
+
+
+def test_transferido_e_reativado_so_veem_o_que_chegou_depois(cliente, db):
+    """O morador transferido de apartamento não vê os visitantes de quem
+    estava no novo antes dele; quem saiu e voltou não vê o que chegou para
+    outro morador no meio tempo."""
+    from tests.test_portaria import registrar_visitante
+
+    base = montar_condominio(cliente, db)
+    ana_id, ana = cadastrar_morador(cliente, base["sindico"], base["cond"],
+                                    email="ana@exemplo.com", cpf=CPFS[1], unidade="204")
+    _, porteiro = cadastrar_porteiro(cliente, base["sindico"], base["cond"], cpf=CPFS[2])
+    unidades = cliente.get("/api/v1/condominios/meu/unidades", headers=cab(base["sindico"])).json()
+    cliente.post("/api/v1/condominios/meu/unidades", headers=cab(base["sindico"]),
+                 json={"numero": "305"})
+    u305 = next(u["id"] for u in cliente.get("/api/v1/condominios/meu/unidades",
+                                            headers=cab(base["sindico"])).json()
+                if u["numero"] == "305")
+    u204 = next(u["id"] for u in unidades if u["numero"] == "204")
+
+    antes_da_mudanca = registrar_visitante(cliente, porteiro, u305).json()
+    r = cliente.put(f"/api/v1/usuarios/{ana_id}", headers=cab(base["sindico"]),
+                    json={"unidade_numero": "305"})
+    assert r.status_code == 200, r.text
+    depois = registrar_visitante(cliente, porteiro, u305).json()
+    vistos = [v["id"] for v in cliente.get("/api/v1/portaria/visitantes", headers=cab(ana)).json()]
+    assert vistos == [depois["id"]]
+    assert antes_da_mudanca["id"] not in vistos
+
+    # Sai, chega visitante para a unidade, volta: não vê o do meio tempo.
+    cliente.delete(f"/api/v1/usuarios/{ana_id}", headers=cab(base["sindico"]))
+    no_meio = registrar_visitante(cliente, porteiro, u305).json()
+    assert cliente.put(f"/api/v1/usuarios/{ana_id}", headers=cab(base["sindico"]),
+                       json={"status": "ativo"}).status_code == 200
+    ana = cliente.post("/api/v1/auth/login", json={
+        "email": "ana@exemplo.com", "senha": "senhaforte123"}).json()["access_token"]
+    vistos = [v["id"] for v in cliente.get("/api/v1/portaria/visitantes", headers=cab(ana)).json()]
+    assert no_meio["id"] not in vistos
+    assert u204  # a unidade antiga continua existindo

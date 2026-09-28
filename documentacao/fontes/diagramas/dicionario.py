@@ -82,6 +82,7 @@ DESCRICOES = {
     "usuarios.motivo_recusa": "Justificativa registrada pelo síndico ao recusar o cadastro; é o que o morador vê na tela de espera",
     "usuarios.tentativas_login": "Senhas erradas seguidas; zera no primeiro acesso bem-sucedido",
     "usuarios.bloqueado_ate": "Momento até o qual a conta fica bloqueada depois de sucessivas senhas erradas",
+    "usuarios.unidade_desde": "Desde quando mora na unidade atual; renovado na transferência e na reativação. O morador só vê os visitantes e as encomendas a partir daqui",
     "usuarios.versao_sessao": "Versão da sessão, gravada em cada token; sobe quando a senha é trocada ou redefinida, e os tokens antigos deixam de valer",
 
     "codigos_verificacao.codigo_hash": "Resumo criptográfico do código enviado. O código em si não é guardado",

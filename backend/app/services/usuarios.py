@@ -6,6 +6,8 @@ isso fica num lugar só.
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from fastapi import HTTPException, status
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
@@ -164,7 +166,10 @@ def atualizar_usuario(db: Session, usuario: Usuario, dados) -> Usuario:
             numero or (atual.numero if atual else ""),
             bloco or (atual.bloco if atual else "unico"),
         )
-        usuario.unidade_id = unidade.id
+        if unidade.id != usuario.unidade_id:
+            usuario.unidade_id = unidade.id
+            # Mudou de apartamento: o histórico da portaria recomeça daqui.
+            usuario.unidade_desde = datetime.now(timezone.utc)
 
     if campos.get("tipo_ocupacao") and usuario.papel != Papel.MORADOR:
         raise HTTPException(
@@ -181,6 +186,9 @@ def atualizar_usuario(db: Session, usuario: Usuario, dados) -> Usuario:
         cancelar_reservas_futuras(db, usuario)
     if novo_status == StatusUsuario.ATIVO and usuario.status != StatusUsuario.ATIVO:
         _conferir_reativacao(db, usuario)
+        # Quem saiu e voltou não vê o que chegou para outro morador no meio tempo.
+        if usuario.status == StatusUsuario.INATIVO:
+            usuario.unidade_desde = datetime.now(timezone.utc)
 
     for campo, valor in campos.items():
         setattr(usuario, campo, valor)

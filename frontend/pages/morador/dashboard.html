@@ -300,6 +300,11 @@
       var ativas = lista.filter(function(r) {
         return r.status === 'pendente' || r.status === 'aprovada';
       });
+      // A API manda da mais recente para a mais antiga; "próximas" são as
+      // mais perto de hoje, então a ordem se inverte.
+      ativas.sort(function(a, b) {
+        return (a.data + a.hora_inicio) < (b.data + b.hora_inicio) ? -1 : 1;
+      });
       campo('totReservas').textContent = ativas.length;
 
       var caixa = campo('listaReservas');

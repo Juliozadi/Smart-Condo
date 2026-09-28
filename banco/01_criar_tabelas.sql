@@ -251,7 +251,8 @@ CREATE TABLE usuarios (
     bloqueado_ate timestamp with time zone,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
-    versao_sessao integer DEFAULT 0 NOT NULL
+    versao_sessao integer DEFAULT 0 NOT NULL,
+    unidade_desde timestamp with time zone DEFAULT now() NOT NULL
 );
 CREATE SEQUENCE usuarios_id_seq
     AS integer

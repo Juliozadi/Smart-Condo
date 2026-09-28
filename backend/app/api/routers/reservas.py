@@ -8,7 +8,7 @@ from __future__ import annotations
 from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select, update
+from sqlalchemy import and_, or_, select, update
 from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import exigir_condominio, exigir_papel, get_usuario_atual
@@ -59,6 +59,41 @@ def _ja_comecou(reserva: Reserva) -> bool:
     return reserva.data < agora.date() or (
         reserva.data == agora.date() and reserva.hora_inicio <= agora.time()
     )
+
+
+MOTIVO_SEM_AVALIACAO = "O horário chegou sem a avaliação do síndico."
+
+
+def _encerrar_passadas(db: Session, condominio_id: int) -> None:
+    """Nada marcava a reserva como realizada: a aprovada do mês passado
+    continuava "em aberto" para o morador, e a pendente esquecida ficava
+    pendente para sempre. Como a cobrança vencida, isso se acerta na
+    consulta: a aprovada cujo horário terminou vira concluída, e a
+    pendente cujo horário chegou sem avaliação vira recusada."""
+    agora = agora_local()
+    hoje, hora = agora.date(), agora.time()
+    do_condominio = select(EspacoComum.id).where(EspacoComum.condominio_id == condominio_id)
+    db.execute(
+        update(Reserva)
+        .where(
+            Reserva.espaco_id.in_(do_condominio),
+            Reserva.status == StatusReserva.APROVADA,
+            or_(Reserva.data < hoje, and_(Reserva.data == hoje, Reserva.hora_fim <= hora)),
+        )
+        .values(status=StatusReserva.CONCLUIDA)
+        .execution_options(synchronize_session=False)
+    )
+    db.execute(
+        update(Reserva)
+        .where(
+            Reserva.espaco_id.in_(do_condominio),
+            Reserva.status == StatusReserva.PENDENTE,
+            or_(Reserva.data < hoje, and_(Reserva.data == hoje, Reserva.hora_inicio <= hora)),
+        )
+        .values(status=StatusReserva.RECUSADA, motivo_recusa=MOTIVO_SEM_AVALIACAO)
+        .execution_options(synchronize_session=False)
+    )
+    db.commit()
 
 
 def _para_saida(reserva: Reserva) -> ReservaSaida:
@@ -448,6 +483,7 @@ def solicitar_reserva(
 def minhas_reservas(
     morador: Usuario = Depends(exigir_papel(Papel.MORADOR)), db: Session = Depends(get_db)
 ) -> list[ReservaSaida]:
+    _encerrar_passadas(db, morador.condominio_id)
     reservas = db.scalars(
         select(Reserva)
         .where(Reserva.morador_id == morador.id)
@@ -500,6 +536,7 @@ def listar_reservas_do_condominio(
     sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
     db: Session = Depends(get_db),
 ) -> list[ReservaSindicoSaida]:
+    _encerrar_passadas(db, sindico.condominio_id)
     consulta = (
         select(Reserva)
         .join(EspacoComum)

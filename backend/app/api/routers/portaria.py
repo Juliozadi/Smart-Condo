@@ -113,17 +113,18 @@ def _ler_foto_enviada(arquivo: UploadFile, pasta: str = arquivos.PORTARIA) -> st
         raise HTTPException(status_code=422, detail=str(erro)) from erro
 
 
-# O morador vê o que chegou para a unidade desde que ele se cadastrou: o
-# morador novo não vê os visitantes (nome, CPF, foto) nem as encomendas de
-# quem morava lá antes. A encomenda que ainda aguarda retirada aparece,
-# porque o volume está na portaria e ele pode dizer que não é dele.
+# O morador vê o que chegou para a unidade desde que passou a morar nela
+# (usuarios.unidade_desde): o morador novo, o transferido e o que voltou não
+# veem os visitantes (nome, CPF, foto) nem as encomendas de quem estava lá
+# antes. A encomenda que ainda aguarda retirada aparece, porque o volume
+# está na portaria e ele pode dizer que não é dele.
 def _visitante_do_morador(v: Visitante, morador: Usuario) -> bool:
-    return v.unidade_id == morador.unidade_id and v.criado_em >= morador.criado_em
+    return v.unidade_id == morador.unidade_id and v.criado_em >= morador.unidade_desde
 
 
 def _encomenda_do_morador(e: Encomenda, morador: Usuario) -> bool:
     return e.unidade_id == morador.unidade_id and (
-        e.criado_em >= morador.criado_em or e.status == StatusEncomenda.AGUARDANDO_RETIRADA
+        e.criado_em >= morador.unidade_desde or e.status == StatusEncomenda.AGUARDANDO_RETIRADA
     )
 
 
@@ -223,11 +224,11 @@ def listar_visitantes(
     consulta = select(Visitante).join(Unidade).where(
         Unidade.condominio_id == usuario.condominio_id
     )
-    # O morador só enxerga os visitantes da própria unidade, desde o cadastro.
+    # O morador só enxerga os visitantes da própria unidade, desde que mora nela.
     if usuario.papel == Papel.MORADOR:
         consulta = consulta.where(
             Visitante.unidade_id == usuario.unidade_id,
-            Visitante.criado_em >= usuario.criado_em,
+            Visitante.criado_em >= usuario.unidade_desde,
         )
     if status_visitante is not None:
         consulta = consulta.where(Visitante.status == status_visitante)
@@ -409,7 +410,7 @@ def listar_encomendas(
     if usuario.papel == Papel.MORADOR:
         consulta = consulta.where(
             Encomenda.unidade_id == usuario.unidade_id,
-            (Encomenda.criado_em >= usuario.criado_em)
+            (Encomenda.criado_em >= usuario.unidade_desde)
             | (Encomenda.status == StatusEncomenda.AGUARDANDO_RETIRADA),
         )
     if status_encomenda is not None:

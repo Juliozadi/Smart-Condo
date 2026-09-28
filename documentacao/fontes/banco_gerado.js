@@ -1821,6 +1821,13 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Versão da sessão, gravada em cada token; sobe quando a senha é trocada ou redefinida, e os tokens antigos deixam de valer"
+      },
+      {
+        "coluna": "unidade_desde",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Desde quando mora na unidade atual; renovado na transferência e na reativação. O morador só vê os visitantes e as encomendas a partir daqui"
       }
     ],
     "regras": []

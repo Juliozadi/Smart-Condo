@@ -151,6 +151,9 @@ INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, desc
 INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (15, 2, 'criou', 'espaco', 7, NULL);
 INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (16, 2, 'criou', 'espaco', 8, NULL);
 
+-- Os moradores moram na unidade desde o cadastro (e não desde a carga).
+UPDATE usuarios SET unidade_desde = criado_em;
+
 SELECT setval('condominios_id_seq', (SELECT COALESCE(MAX(id), 1) FROM condominios));
 
 SELECT setval('unidades_id_seq', (SELECT COALESCE(MAX(id), 1) FROM unidades));

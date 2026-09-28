@@ -329,7 +329,9 @@
     campo('estadoMinhas').textContent = 'Carregando…';
     return api.get('/espacos/reservas/minhas')
       .then(function(lista) {
-        var ativas = lista.filter(function(r) { return ATIVAS.indexOf(r.status) >= 0; });
+        // As em aberto da mais próxima para a mais distante.
+        var ativas = lista.filter(function(r) { return ATIVAS.indexOf(r.status) >= 0; })
+          .sort(function(a, b) { return (a.data + a.hora_inicio) < (b.data + b.hora_inicio) ? -1 : 1; });
         var encerradas = lista.filter(function(r) { return ATIVAS.indexOf(r.status) < 0; });
 
         campo('totAprovadas').textContent =

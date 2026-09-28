@@ -338,3 +338,32 @@ def test_reserva_que_ja_passou_nao_e_aprovada_nem_cancelada(cliente, cenario, db
     assert r.status_code == 200 and r.json()["status"] == "recusada"
     r = cliente.delete(f"/api/v1/espacos/reservas/{aprovada['id']}", headers=cab(cenario["bruno"]))
     assert r.status_code == 409
+
+
+def test_reservas_passadas_se_encerram_sozinhas(cliente, cenario, db):
+    """A aprovada do mês passado não fica "em aberto" para sempre: vira
+    concluída. A pendente cujo horário chegou sem avaliação vira recusada,
+    com o motivo para o morador."""
+    from sqlalchemy import update
+
+    from app.models.espaco import Reserva
+
+    aprovada = reservar(cliente, cenario["ana"], cenario["salao"]["id"]).json()
+    cliente.post(f"/api/v1/espacos/reservas/{aprovada['id']}/avaliacao",
+                 headers=cab(cenario["sindico"]), json={"aprovada": True})
+    esquecida = reservar(cliente, cenario["ana"], cenario["salao"]["id"],
+                         inicio="08:00", fim="12:00").json()
+    futura = reservar(cliente, cenario["bruno"], cenario["salao"]["id"],
+                      data=(hoje_local() + timedelta(days=3)).isoformat()).json()
+    db.execute(update(Reserva).where(Reserva.id.in_([aprovada["id"], esquecida["id"]]))
+               .values(data=hoje_local() - timedelta(days=30)))
+    db.commit()
+
+    minhas = {r["id"]: r for r in cliente.get("/api/v1/espacos/reservas/minhas",
+                                              headers=cab(cenario["ana"])).json()}
+    assert minhas[aprovada["id"]]["status"] == "concluida"
+    assert minhas[esquecida["id"]]["status"] == "recusada"
+    assert "sem a avaliação" in minhas[esquecida["id"]]["motivo_recusa"]
+    todas = {r["id"]: r["status"] for r in cliente.get(
+        "/api/v1/espacos/reservas", headers=cab(cenario["sindico"])).json()}
+    assert todas[futura["id"]] == "pendente"
