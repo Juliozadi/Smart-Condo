@@ -11,12 +11,12 @@ seções novas descrevendo o que foi construído desde então.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | RF003: o síndico edita andar e vagas da unidade. RF017 e RF018: reserva cujo horário já passou só pode ser recusada, e o morador não cancela a que já aconteceu. RF021: o aviso do visitante vai só para quem mora lá agora. RF015: o síndico cadastra, edita, marca em manutenção, inativa e reativa os espaços pela tela; inativar cancela as reservas de hoje em diante. RF045: o registro de quem fez inclui o síndico e os espaços |
+| 9 Requisitos funcionais | RF034: o síndico corrige ou cancela a cobrança lançada errada. RF003: o síndico edita andar e vagas da unidade. RF017 e RF018: reserva cujo horário já passou só pode ser recusada, e o morador não cancela a que já aconteceu. RF021: o aviso do visitante vai só para quem mora lá agora. RF015: o síndico cadastra, edita, marca em manutenção, inativa e reativa os espaços pela tela; inativar cancela as reservas de hoje em diante. RF045: o registro de quem fez inclui o síndico e os espaços |
 | 13.5.8 Tela de moradores e unidades | Nova seção na documentação, com a autoria de cada cadastro e as unidades com andar e vagas; duas figuras |
 | 13.5.3 Tela de reservas do síndico | Nova seção Espaços Comuns, com a autoria de cada espaço; nova figura |
 | 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id; usuarios ganha unidade_desde — agora 252 atributos e 49 relacionamentos |
-| 21 API REST | 106 endpoints: editar, inativar e reativar espaço; editar andar e vagas da unidade |
-| 23 Testes | 394 casos no servidor e 86 testes de interface |
+| 21 API REST | 108 endpoints: editar, inativar e reativar espaço; editar andar e vagas da unidade; corrigir e cancelar cobrança |
+| 23 Testes | 399 casos no servidor e 87 testes de interface |
 
 **Erros achados.**
 - Não havia tela para cadastrar espaço comum: só a carga de demonstração
@@ -47,6 +47,13 @@ seções novas descrevendo o que foi construído desde então.
 - Veículos: dois registros de entrada da mesma placa ao mesmo tempo
   (clique duplo, dois porteiros) passavam juntos, e o carro aparecia duas
   vezes no pátio. Agora a placa é travada durante o registro.
+- A cobrança lançada errada não tinha correção nem cancelamento (a
+  situação "cancelada" existia, mas nada a usava): a unidade ficava em
+  atraso para sempre. Agora o síndico corrige descrição, valor e
+  vencimento, ou cancela com um motivo; a cancelada fica guardada e não
+  impede lançar a certa no mesmo mês (a restrição única passou a ignorar
+  as canceladas). O painel do morador também deixou de somar a cancelada
+  como pendente.
 - As vagas de garagem somam a capacidade do estacionamento, mas nenhuma
   tela as preenchia: fora da demonstração, a portaria via sempre 0 vagas.
   O síndico passa a editar andar e vagas de cada unidade.

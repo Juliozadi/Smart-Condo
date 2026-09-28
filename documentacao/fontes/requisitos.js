@@ -213,8 +213,8 @@ const requisitosFuncionais = [
   { id: 'RF034', nome: 'Gerar cobrança',
     atores: 'Síndico', prioridade: 'Essencial',
     descricao: 'O sistema permite gerar a cobrança de uma unidade para determinada competência, com descrição, valor e vencimento.',
-    entradas: 'O valor precisa ser maior que zero e não pode existir outra cobrança para a mesma unidade na mesma competência. A competência vai de 5 anos atrás, prazo em que a cobrança condominial prescreve, até 12 meses à frente, e o vencimento não pode ser antes dela.',
-    saidas: 'A cobrança é criada como "aberta" e passa a aparecer na tela financeira do morador da unidade.' },
+    entradas: 'O valor precisa ser maior que zero e não pode existir outra cobrança, que não esteja cancelada, para a mesma unidade na mesma competência. A competência vai de 5 anos atrás, prazo em que a cobrança condominial prescreve, até 12 meses à frente, e o vencimento não pode ser antes dela.',
+    saidas: 'A cobrança é criada como "aberta" e passa a aparecer na tela financeira do morador da unidade. Lançada errada, o síndico corrige a descrição, o valor (nunca abaixo do que já foi pago) e o vencimento, ou a cancela com um motivo, se ainda não tiver pagamento. Nada é apagado: a cancelada fica guardada, e cada correção e cancelamento registra quem fez.' },
 
   { id: 'RF035', nome: 'Registrar pagamento',
     atores: 'Síndico, Morador', prioridade: 'Essencial',
@@ -277,7 +277,7 @@ const requisitosFuncionais = [
 
   { id: 'RF045', nome: 'Registrar quem fez cada alteração',
     atores: 'Administrador, Síndico', prioridade: 'Importante',
-    descricao: 'Com mais de um administrador, cada alteração precisa mostrar quem a fez. O sistema registra quem criou, editou, inativou ou reativou condomínios, usuários, comunicados, documentos e espaços comuns, e quando — seja o administrador, seja o síndico (inclusive as permissões do porteiro e o novo código de acesso), seja o próprio usuário no perfil e na troca de senha.',
+    descricao: 'Com mais de um administrador, cada alteração precisa mostrar quem a fez. O sistema registra quem criou, editou, inativou ou reativou condomínios, usuários, comunicados, documentos, espaços comuns, unidades e cobranças, e quando — seja o administrador, seja o síndico (inclusive as permissões do porteiro e o novo código de acesso), seja o próprio usuário no perfil e na troca de senha.',
     entradas: 'O registro é feito pelo próprio sistema, na mesma operação da alteração; a edição anota os campos que mudaram (a senha aparece pelo nome, nunca pelo valor), e salvar sem mudar nada não gera registro.',
     saidas: 'Cada linha das telas do administrador mostra a última alteração ("Editado por Fulano em 25/09/2026 14:32"), e a janela de edição traz o histórico completo. As listas de moradores, porteiros e espaços do síndico também mostram quem mexeu por último, inclusive quando foi o administrador.' },
 ];

@@ -343,7 +343,8 @@
   /* ── Valor em aberto ────────────────────────────────────────────── */
   function carregarFinanceiro() {
     return api.get('/financeiro/cobrancas').then(function(lista) {
-      var devendo = lista.filter(function(c) { return c.status !== 'paga'; });
+      // Só a aberta e a vencida: a cancelada não é dívida.
+      var devendo = lista.filter(function(c) { return c.status === 'aberta' || c.status === 'vencida'; });
       var total = devendo.reduce(function(soma, c) {
         return soma + (Number(c.valor) - Number(c.total_pago || 0));
       }, 0);

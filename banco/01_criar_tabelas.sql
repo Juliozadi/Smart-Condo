@@ -436,8 +436,8 @@ ALTER SEQUENCE cobrancas_id_seq OWNED BY cobrancas.id;
 ALTER TABLE ONLY cobrancas ALTER COLUMN id SET DEFAULT nextval('cobrancas_id_seq'::regclass);
 ALTER TABLE ONLY cobrancas
     ADD CONSTRAINT cobrancas_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY cobrancas
-    ADD CONSTRAINT uq_cobranca_competencia UNIQUE (unidade_id, competencia);
+-- Uma cobrança por unidade e mês, sem contar as canceladas.
+CREATE UNIQUE INDEX uq_cobranca_competencia ON cobrancas USING btree (unidade_id, competencia) WHERE (status <> 'CANCELADA'::status_cobranca);
 
 CREATE TABLE pagamentos (
     id integer NOT NULL,

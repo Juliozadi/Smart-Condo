@@ -20,6 +20,7 @@ REATIVOU = "reativou"
 NOVO_CODIGO = "novo_codigo"
 APROVOU = "aprovou"
 RECUSOU = "recusou"
+CANCELOU = "cancelou"
 
 # Entidades
 CONDOMINIO = "condominio"
@@ -28,10 +29,11 @@ COMUNICADO = "comunicado"
 DOCUMENTO = "documento"
 ESPACO = "espaco"
 UNIDADE = "unidade"
+COBRANCA = "cobranca"
 
 ROTULO_ACAO = {
     CRIOU: "Criado", EDITOU: "Editado", INATIVOU: "Inativado", REATIVOU: "Reativado",
-    NOVO_CODIGO: "Novo código de acesso", APROVOU: "Aprovado", RECUSOU: "Recusado",
+    NOVO_CODIGO: "Novo código de acesso", APROVOU: "Aprovado", RECUSOU: "Recusado", CANCELOU: "Cancelado",
 }
 
 

@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     CheckConstraint, Date, DateTime, Enum as SAEnum, ForeignKey, Integer, Numeric,
-    String, Text, UniqueConstraint,
+    Index, String, Text, text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -56,7 +56,10 @@ class Cobranca(Base, TimestampMixin):
 
     __tablename__ = "cobrancas"
     __table_args__ = (
-        UniqueConstraint("unidade_id", "competencia", name="uq_cobranca_competencia"),
+        # Uma cobrança por unidade e mês — sem contar a cancelada, que fica
+        # guardada e não impede lançar a correta.
+        Index("uq_cobranca_competencia", "unidade_id", "competencia", unique=True,
+              postgresql_where=text("status <> 'CANCELADA'")),
         CheckConstraint("valor > 0", name="ck_cobranca_valor_positivo"),
     )
 

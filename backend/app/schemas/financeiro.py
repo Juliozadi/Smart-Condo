@@ -16,6 +16,7 @@ from decimal import Decimal
 from pydantic import Field, model_validator
 
 from app.models.enums import FormaPagamento, StatusCobranca
+from app.schemas.admin import RegistroSaida
 from app.schemas.comuns import EnderecoWeb, SchemaBase
 
 
@@ -55,6 +56,24 @@ class CobrancaEntrada(SchemaBase):
         return self
 
 
+class CobrancaAtualizacao(SchemaBase):
+    """Correção de uma cobrança lançada errada. Só o que veio muda."""
+    descricao: str | None = Field(default=None, min_length=3, max_length=180)
+    valor: Decimal | None = Field(default=None, gt=0, max_digits=10, decimal_places=2)
+    vencimento: date | None = None
+
+    @model_validator(mode="after")
+    def _sem_nulos(self) -> "CobrancaAtualizacao":
+        for campo in self.model_fields_set:
+            if getattr(self, campo) is None:
+                raise ValueError(f"O campo {campo} não pode ficar vazio.")
+        return self
+
+
+class CancelamentoCobranca(SchemaBase):
+    motivo: str = Field(min_length=3, max_length=300)
+
+
 class CobrancaSaida(SchemaBase):
     id: int
     unidade_id: int
@@ -66,6 +85,8 @@ class CobrancaSaida(SchemaBase):
     status: StatusCobranca
     total_pago: Decimal
     criado_em: datetime
+    # Só para o síndico: "Editado por Fulano em ...".
+    ultima_alteracao: RegistroSaida | None = None
 
 
 class PagamentoEntrada(SchemaBase):

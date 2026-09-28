@@ -72,8 +72,7 @@ const dicionario = [
       }
     ],
     "regras": [
-      "CHECK ((valor > (0)::numeric))",
-      "UNIQUE (unidade_id, competencia)"
+      "CHECK ((valor > (0)::numeric))"
     ]
   },
   {
@@ -1408,14 +1407,14 @@ const dicionario = [
         "tipo": "VARCHAR(20)",
         "obrigatorio": "Sim",
         "chave": "",
-        "descricao": "O que foi feito: criou, editou, inativou, reativou, aprovou, recusou ou gerou novo código"
+        "descricao": "O que foi feito: criou, editou, inativou, reativou, aprovou, recusou, cancelou ou gerou novo código"
       },
       {
         "coluna": "entidade",
         "tipo": "VARCHAR(30)",
         "obrigatorio": "Sim",
         "chave": "",
-        "descricao": "Tipo do registro alterado: condominio, usuario, comunicado, documento, espaco ou unidade"
+        "descricao": "Tipo do registro alterado: condominio, usuario, comunicado, documento, espaco, unidade ou cobranca"
       },
       {
         "coluna": "entidade_id",

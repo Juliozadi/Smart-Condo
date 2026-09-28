@@ -77,13 +77,44 @@
 
   </main>
 
+  <!-- Correção e cancelamento de uma cobrança lançada errada -->
+  <div class="modal-fundo" id="modalCobranca" role="dialog" aria-modal="true" aria-labelledby="cobrancaTitulo">
+    <div class="modal-caixa">
+      <h2 class="modal-titulo" id="cobrancaTitulo"><img src="../../assets/img/icons/file-invoice-dollar.svg" alt="">Corrigir cobrança</h2>
+      <p class="modal-sub" id="cobrancaSub"></p>
+      <form id="formCorrecao" novalidate>
+        <div class="form-group">
+          <label for="cDescricao">Descrição <span class="req">*</span></label>
+          <input type="text" id="cDescricao" required minlength="3" maxlength="180">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cValor">Valor (R$) <span class="req">*</span></label>
+            <input type="number" id="cValor" min="0.01" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label for="cVencimento">Vencimento <span class="req">*</span></label>
+            <input type="date" id="cVencimento" required>
+          </div>
+        </div>
+        <p class="modal-erro" id="correcaoErro" role="alert"></p>
+        <div class="modal-acoes">
+          <button type="button" class="btn-secundario perigo-texto" id="btnCancelarCobranca">Cancelar cobrança</button>
+          <button type="button" class="btn-secundario" id="btnCancelar">Fechar</button>
+          <button type="submit" class="btn-primario">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
 <script src="../../assets/js/validation.js"></script>
+<script src="../../assets/js/admin-ui.js"></script>
 <script>
 /* Financeiro do síndico: indicadores de GET /financeiro/resumo, geração
    de cobranças e a lista do que está aberto, vencido ou pago. */
 (function() {
   'use strict';
-  var api = window.SmartCondo.api;
+  var api = window.SmartCondo.api, ui = window.SmartCondo.ui;
   var usuario = api.protegerPagina('sindico');
   if (!usuario) return;
 
@@ -118,9 +149,25 @@
     var linha = document.createElement('div');
     linha.className = 'table-row cols-6';
     linha.innerHTML =
-      '<span><strong></strong></span><span></span><span></span><span></span>' +
+      '<span><strong></strong><small class="lista-autoria"></small></span><span></span><span></span><span></span>' +
       '<span></span><span><span class="badge"></span></span>';
     linha.children[0].firstChild.textContent = c.unidade || '—';
+    linha.children[0].querySelector('.lista-autoria').textContent = ui.textoAlteracao(c.ultima_alteracao);
+    // Aberta ou vencida: dá para corrigir o valor, o vencimento e a
+    // descrição, ou cancelar a que foi lançada por engano.
+    if (c.status === 'aberta' || c.status === 'vencida') {
+      var corrigir = document.createElement('button');
+      corrigir.type = 'button';
+      corrigir.className = 'btn-acao btn-acao-mini';
+      corrigir.title = 'Corrigir a cobrança de ' + (c.unidade || '') + ' ' + competenciaCurta(c.competencia);
+      corrigir.setAttribute('aria-label', corrigir.title);
+      var img = document.createElement('img');
+      img.src = '../../assets/img/icons/pen.svg';
+      img.alt = '';
+      corrigir.appendChild(img);
+      corrigir.addEventListener('click', function() { abrirCorrecao(c); });
+      linha.children[0].firstChild.after(corrigir);
+    }
     linha.children[1].textContent = competenciaCurta(c.competencia);
     linha.children[2].textContent = c.descricao;
     linha.children[3].textContent = dataCurta(c.vencimento);
@@ -249,6 +296,58 @@
       botao.textContent = rotulo;
       return Promise.all([carregarResumo(), carregarCobrancas()]);
     });
+  });
+
+  var modal = ui.modal('modalCobranca', 'formCorrecao', 'correcaoErro');
+  var corrigindo = null;
+
+  function abrirCorrecao(c) {
+    corrigindo = c;
+    modal.limpar();
+    campo('cobrancaSub').textContent = (c.unidade || '') + ' · competência ' +
+      competenciaCurta(c.competencia) +
+      (Number(c.total_pago) > 0 ? ' · já pago ' + dinheiro(c.total_pago) : '');
+    campo('cDescricao').value = c.descricao;
+    campo('cValor').value = Number(c.valor).toFixed(2);
+    campo('cVencimento').value = c.vencimento;
+    // Com pagamento, não cancela: corrige o valor.
+    campo('btnCancelarCobranca').hidden = Number(c.total_pago) > 0;
+    modal.abrir();
+  }
+
+  function recarregar() {
+    return Promise.all([carregarResumo(), carregarCobrancas()]);
+  }
+
+  modal.aoEnviar(function() {
+    var descricao = campo('cDescricao').value.trim();
+    var valor = campo('cValor').value;
+    var vencimento = campo('cVencimento').value;
+    if (descricao.length < 3 || !valor || !vencimento) {
+      modal.erro('Preencha a descrição, o valor e o vencimento.');
+      return null;
+    }
+    return api.put('/financeiro/cobrancas/' + corrigindo.id,
+                   { descricao: descricao, valor: Number(valor), vencimento: vencimento });
+  }, function() {
+    modal.fechar();
+    recarregar();
+  });
+
+  campo('btnCancelarCobranca').addEventListener('click', function() {
+    var motivo = prompt('Motivo do cancelamento (fica no histórico):', '');
+    if (motivo === null) return;
+    motivo = motivo.trim();
+    if (motivo.length < 3) {
+      modal.erro('Informe o motivo do cancelamento.');
+      return;
+    }
+    var botao = this;
+    botao.disabled = true;
+    api.post('/financeiro/cobrancas/' + corrigindo.id + '/cancelamento', { motivo: motivo })
+      .then(function() { modal.fechar(); recarregar(); })
+      .catch(function(e) { modal.erro(e.message); })
+      .then(function() { botao.disabled = false; });
   });
 
   campo('filtroStatus').addEventListener('change', aplicarFiltro);

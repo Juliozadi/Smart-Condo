@@ -175,11 +175,11 @@ backend/
 │   ├── api/routers/                   # Endpoints
 │   ├── seed.py                        # Dados de demonstração
 │   └── main.py
-└── tests/                             # 394 casos de teste
+└── tests/                             # 399 casos de teste
 ```
 
 **Total:** 43 páginas HTML, 2 arquivos CSS, 9 arquivos JS, 43 ícones SVG e
-uma API com 106 endpoints.
+uma API com 108 endpoints.
 
 ---
 
@@ -199,11 +199,11 @@ uvicorn app.main:app --reload
 
 Documentação interativa da API em <http://localhost:8000/docs>.
 
-**106 endpoints**, cobrindo os casos de uso e as histórias de usuário da
+**108 endpoints**, cobrindo os casos de uso e as histórias de usuário da
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e
-comunicados, documentos e chat. **394 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
+comunicados, documentos e chat. **399 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
 
 ---
 

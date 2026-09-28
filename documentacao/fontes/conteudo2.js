@@ -52,7 +52,7 @@ const telas = [
     texto: 'Na tela de comunicados, o Síndico pode fazer comunicados sobre qualquer assunto que lhe vê importância de repassar aos moradores. O comunicado vai para todos os moradores do condomínio e pode ser fixado no topo da lista.',
     imagem: 'sindico-comunicados.png', legenda: 'Publicação de comunicados' },
   { n: '11.5.5', titulo: 'Tela financeira',
-    texto: 'Reúne os indicadores do condomínio — total recebido, em aberto, vencido e quantas unidades estão em atraso — e permite gerar a cobrança mensal de todas as unidades de uma vez. Cada cobrança usa o dia de vencimento que o próprio morador escolheu.',
+    texto: 'Reúne os indicadores do condomínio — total recebido, em aberto, vencido e quantas unidades estão em atraso — e permite gerar a cobrança mensal de todas as unidades de uma vez. Cada cobrança usa o dia de vencimento que o próprio morador escolheu. A cobrança aberta ou vencida pode ser corrigida (descrição, valor e vencimento) ou cancelada com um motivo, e a linha mostra quem mexeu por último.',
     imagem: 'sindico-financeiro.png', legenda: 'Gestão financeira do condomínio' },
   { n: '11.5.6', titulo: 'Tela de manutenção',
     texto: 'Permite abrir ordens de serviço com tipo, prioridade, local, fornecedor e custo estimado, e acompanhar cada uma até a conclusão, registrando o custo real gasto.',
