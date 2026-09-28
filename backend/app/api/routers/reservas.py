@@ -53,6 +53,14 @@ def _espacos_saida(db: Session, espacos, com_autoria: bool) -> list[EspacoSaida]
     ]
 
 
+def _ja_comecou(reserva: Reserva) -> bool:
+    """A reserva de ontem, ou a de hoje cujo horário já chegou."""
+    agora = agora_local()
+    return reserva.data < agora.date() or (
+        reserva.data == agora.date() and reserva.hora_inicio <= agora.time()
+    )
+
+
 def _para_saida(reserva: Reserva) -> ReservaSaida:
     return ReservaSaida(
         id=reserva.id,
@@ -468,6 +476,12 @@ def cancelar_reserva(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Esta reserva não pode mais ser cancelada."
         )
+    # A que já aconteceu fica no histórico como estava.
+    if _ja_comecou(reserva):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Esta reserva já começou e não pode mais ser cancelada.",
+        )
 
     reserva.status = StatusReserva.CANCELADA
     db.commit()
@@ -532,6 +546,12 @@ def avaliar_reserva(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Esta reserva já foi avaliada.",
+        )
+    # Aprovar depois da hora não faz sentido; recusar limpa a fila.
+    if dados.aprovada and _ja_comecou(reserva):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="O horário desta reserva já passou. Ela só pode ser recusada.",
         )
 
     reserva.status = StatusReserva.APROVADA if dados.aprovada else StatusReserva.RECUSADA

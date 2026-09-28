@@ -11,11 +11,11 @@ seções novas descrevendo o que foi construído desde então.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | RF015: o síndico cadastra, edita, marca em manutenção, inativa e reativa os espaços pela tela; inativar cancela as reservas de hoje em diante. RF045: o registro de quem fez inclui o síndico e os espaços |
+| 9 Requisitos funcionais | RF017 e RF018: reserva cujo horário já passou só pode ser recusada, e o morador não cancela a que já aconteceu. RF021: o aviso do visitante vai só para quem mora lá agora. RF015: o síndico cadastra, edita, marca em manutenção, inativa e reativa os espaços pela tela; inativar cancela as reservas de hoje em diante. RF045: o registro de quem fez inclui o síndico e os espaços |
 | 13.5.3 Tela de reservas do síndico | Nova seção Espaços Comuns, com a autoria de cada espaço; nova figura |
 | 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id — agora 251 atributos e 49 relacionamentos |
 | 21 API REST | 105 endpoints: editar, inativar e reativar espaço |
-| 23 Testes | 381 casos no servidor e 84 testes de interface |
+| 23 Testes | 387 casos no servidor e 84 testes de interface |
 
 **Erros achados.**
 - Não havia tela para cadastrar espaço comum: só a carga de demonstração
@@ -32,6 +32,20 @@ seções novas descrevendo o que foi construído desde então.
   botão Cancelar OS proibia isso) e uma cancelada virava concluída;
   cancelar duas vezes respondia como se tivesse cancelado. E a tela não
   conseguia apagar o fornecedor nem o custo real depois de preenchidos.
+- Quem já saiu continuava recebendo: o aviso de visitante e de encomenda
+  ia também para o morador que se mudou (inativado) ou teve o cadastro
+  recusado, e o aviso de pagamento podia ir para o síndico antigo.
+- O vencimento da cobrança usava o dia escolhido pelo morador que já tinha
+  se mudado.
+- O morador novo via os visitantes (nome, CPF e foto) e as encomendas de
+  quem morava no apartamento antes dele. Agora vê o que chegou desde o
+  próprio cadastro, mais as encomendas que ainda aguardam retirada.
+- Veículos: dois registros de entrada da mesma placa ao mesmo tempo
+  (clique duplo, dois porteiros) passavam juntos, e o carro aparecia duas
+  vezes no pátio. Agora a placa é travada durante o registro.
+- Reservas: o síndico aprovava uma reserva esquecida na fila depois da
+  data, e o morador cancelava uma reserva que já tinha acontecido,
+  reescrevendo o histórico.
 
 ## Versão 2.5 — vários administradores, histórico e nada apagado
 

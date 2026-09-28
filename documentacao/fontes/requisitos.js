@@ -111,13 +111,13 @@ const requisitosFuncionais = [
   { id: 'RF017', nome: 'Aprovar ou recusar reserva',
     atores: 'Síndico', prioridade: 'Essencial',
     descricao: 'O sistema apresenta ao síndico as reservas pendentes e permite aprovar ou recusar cada uma, registrando quem avaliou e quando.',
-    entradas: 'A reserva deve estar pendente e pertencer a um espaço do condomínio do síndico.',
+    entradas: 'A reserva deve estar pendente e pertencer a um espaço do condomínio do síndico. Se o horário já passou, ela só pode ser recusada.',
     saidas: 'A reserva passa a "aprovada" ou "recusada", e o morador vê o resultado na sua lista de reservas.' },
 
   { id: 'RF018', nome: 'Cancelar a própria reserva',
     atores: 'Morador', prioridade: 'Importante',
     descricao: 'O sistema permite ao morador cancelar uma reserva que ele mesmo fez.',
-    entradas: 'A reserva deve ser do próprio morador e ainda não ter sido concluída.',
+    entradas: 'A reserva deve ser do próprio morador e o horário dela ainda não pode ter começado: a que já aconteceu fica no histórico como está.',
     saidas: 'A reserva passa a "cancelada" e o horário volta a ficar livre para outros moradores.' },
 
   { id: 'RF019', nome: 'Consultar a agenda dos espaços',
@@ -136,7 +136,7 @@ const requisitosFuncionais = [
     atores: 'Porteiro', prioridade: 'Essencial',
     descricao: 'O sistema permite registrar a chegada de um visitante, vinculando-o à unidade visitada e avisando o morador para que confirme.',
     entradas: 'O porteiro informa nome do visitante, documento e a unidade de destino, e pode tirar uma foto pela câmera ou enviar uma imagem. É preciso ter a permissão de registrar visitantes.',
-    saidas: 'O visitante é registrado como "aguardando confirmação" e o morador da unidade recebe o aviso, com a foto no painel para reconhecer quem está na portaria. A foto só é vista pelo morador da unidade, pelo síndico e pela portaria, e não pode ser trocada depois que o morador responde.' },
+    saidas: 'O visitante é registrado como "aguardando confirmação" e o morador da unidade recebe o aviso, com a foto no painel para reconhecer quem está na portaria. A foto só é vista pelo morador da unidade, pelo síndico e pela portaria, e não pode ser trocada depois que o morador responde. O aviso vai só para quem mora lá agora, e o morador que chega depois não vê os visitantes de quem morava antes.' },
 
   { id: 'RF022', nome: 'Confirmar ou recusar visitante',
     atores: 'Morador', prioridade: 'Essencial',

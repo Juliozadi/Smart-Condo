@@ -311,3 +311,30 @@ def test_inativar_o_morador_libera_as_reservas_futuras(cliente, db, cenario):
     assert db.get(Reserva, passada.id).status == StatusReserva.APROVADA
     # O horário ficou livre para os outros.
     assert reservar(cliente, cenario["bruno"], salao, data=dia).status_code == 201
+
+
+def test_reserva_que_ja_passou_nao_e_aprovada_nem_cancelada(cliente, cenario, db):
+    """Uma reserva esquecida na fila era aprovada dois dias depois, e o
+    morador cancelava a que já tinha acontecido, reescrevendo o histórico."""
+    from sqlalchemy import update
+
+    from app.models.espaco import Reserva
+
+    pendente = reservar(cliente, cenario["ana"], cenario["salao"]["id"]).json()
+    aprovada = reservar(cliente, cenario["bruno"], cenario["salao"]["id"],
+                        inicio="08:00", fim="12:00").json()
+    cliente.post(f"/api/v1/espacos/reservas/{aprovada['id']}/avaliacao",
+                 headers=cab(cenario["sindico"]), json={"aprovada": True})
+    ontem = hoje_local() - timedelta(days=1)
+    db.execute(update(Reserva).where(Reserva.id.in_([pendente["id"], aprovada["id"]]))
+               .values(data=ontem))
+    db.commit()
+
+    url = f"/api/v1/espacos/reservas/{pendente['id']}/avaliacao"
+    assert cliente.post(url, headers=cab(cenario["sindico"]),
+                        json={"aprovada": True}).status_code == 409
+    r = cliente.post(url, headers=cab(cenario["sindico"]),
+                     json={"aprovada": False, "motivo": "Passou da data"})
+    assert r.status_code == 200 and r.json()["status"] == "recusada"
+    r = cliente.delete(f"/api/v1/espacos/reservas/{aprovada['id']}", headers=cab(cenario["bruno"]))
+    assert r.status_code == 409

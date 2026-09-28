@@ -109,7 +109,7 @@ const api = {
 // ── 15 Testes automatizados (nova) ──────────────────────────────────
 const testes = {
   paragrafos: [
-    'As regras do sistema são verificadas por uma suíte de 381 casos de teste automatizados, escritos com pytest e executados contra um banco PostgreSQL real, e não contra um banco simulado. Assim, restrições de chave estrangeira e de unicidade também são exercitadas.',
+    'As regras do sistema são verificadas por uma suíte de 387 casos de teste automatizados, escritos com pytest e executados contra um banco PostgreSQL real, e não contra um banco simulado. Assim, restrições de chave estrangeira e de unicidade também são exercitadas.',
     'Os testes não conferem apenas se o caminho feliz funciona. Boa parte deles verifica justamente o que o sistema precisa recusar: um morador não pode ver a ocorrência de outro; um porteiro sem a permissão liberada pelo síndico não consegue registrar uma ocorrência; uma reserva que se sobrepõe a outra é recusada; a mensagem de conflito não revela quem reservou; e a senha nunca é gravada em texto puro.',
     'Uma parte dos testes dispara várias requisições ao mesmo tempo, porque a conferência e a gravação não são um passo só: sem uma trava no banco, quatro moradores pedindo o mesmo horário juntos conseguiam, na maioria das tentativas, reservar o espaço duas vezes; e quarenta senhas erradas enviadas juntas eram todas conferidas, sem que o bloqueio disparasse. Cada vez que uma regra nova é escrita, um teste correspondente é adicionado. Isso permite alterar o código com segurança: se uma mudança quebrar uma regra antiga, a suíte acusa antes de o problema chegar à tela.',
     'A suíte é executada automaticamente a cada envio de código ao repositório, junto com duas outras verificações: a aplicação das mudanças de estrutura do banco no sentido de ida e de volta, feita com a tabela já populada, que é a situação em que uma alteração mal escrita falha; e a execução dos scripts de criação e carga do banco em um banco vazio, já que eles são mantidos manualmente e podem deixar de acompanhar uma mudança de estrutura.',
@@ -124,17 +124,18 @@ const testes = {
     ['test_operacao.py', '42', 'Veículos, ordens de serviço (concluída não vira cancelada, nem o contrário) e documentos do condomínio: envio do arquivo, tipos aceitos e quem pode abrir'],
     ['test_financeiro.py', '36', 'Cobranças, pagamentos e inadimplência'],
     ['test_portaria.py', '27', 'Visitantes, encomendas e ocorrências, e o que o porteiro sem permissão não consulta'],
-    ['test_reservas.py', '29', 'Espaços, agenda sigilosa e aprovação de reservas'],
+    ['test_reservas.py', '30', 'Espaços, agenda sigilosa e aprovação de reservas'],
     ['test_espacos.py', '8', 'O síndico cadastra, edita, inativa e reativa espaços; a inativação cancela as reservas futuras e nada é apagado'],
     ['test_notificacao.py', '17', 'Entrega dos códigos por e-mail e por SMS, e o que não pode ir para o log'],
     ['test_foto.py', '12', 'Foto de perfil: tipo conferido pelo conteúdo, tamanho, nome gerado pelo servidor e remoção'],
     ['test_mensagens.py', '11', 'Chat: quem pode conversar com quem, não lidas e mensagens inválidas'],
     ['test_documentos_cadastro.py', '19', 'Documentos do cadastro: autorização de envio, tipos aceitos, acesso só do síndico e descarte na recusa e na inativação'],
     ['test_portaria_fotos.py', '15', 'Fotos de visitantes e encomendas: quem pode ver, tipo conferido e prazo de guarda'],
-    ['test_concorrencia.py', '9', 'Requisições simultâneas: o mesmo horário não é reservado duas vezes, a mesma cobrança não é paga a mais, senhas e palpites do código em paralelo respeitam o limite e cada decisão vale uma vez só'],
+    ['test_concorrencia.py', '10', 'Requisições simultâneas: o mesmo horário não é reservado duas vezes, a mesma placa não entra duas vezes, a mesma cobrança não é paga a mais, senhas e palpites do código em paralelo respeitam o limite e cada decisão vale uma vez só'],
     ['test_concorrencia_portaria.py', '2', 'Visitante liberado e recusado ao mesmo tempo, e retirada de encomenda registrada duas vezes: só a primeira resposta vale'],
     ['test_desempenho.py', '6', 'Cada listagem faz o mesmo número de consultas ao banco com 3 ou com 30 itens'],
     ['test_administradores.py', '13', 'Vários administradores, histórico de quem fez cada alteração e inativação no lugar da exclusão'],
+    ['test_quem_ja_saiu.py', '4', 'Quem se mudou ou deixou de ser síndico não recebe mais avisos; o morador novo não vê os visitantes e as encomendas do anterior; o vencimento segue quem mora lá'],
     ['test_autoria_sindico.py', '4', 'O que o síndico faz (editar, inativar, reativar, permissões do porteiro, novo código) também registra quem fez'],
     ['test_fuso.py', '4', 'O dia de hoje é o do fuso do condomínio, e não o do relógio da máquina'],
     ['test_valores_extremos.py', '15', 'Valores que o banco recusa (id acima do limite, caractere nulo) respondem como dado inválido; texto só com espaços é recusado, e a senha não é aparada'],
@@ -148,7 +149,7 @@ const conclusao = [
   'A implementação do SmartCondo é crucial para elevar a qualidade e praticidade na rotina desses condomínios, trazendo fluidez no setor financeiro e possibilitando a execução de ações rotineiras, como a visualização de espaços em uso. O objetivo é facilitar a operação do gerenciamento, eliminando falhas financeiras e reduzindo significativamente intrigas internas. Para isso, o projeto visa atender a todos os usuários de modo completo e se adequar ao cotidiano, garantindo organização nas moradias e serviços.',
   'O sistema prevê funcionalidades específicas para cada tipo de usuário – administrador, síndico, porteiro e morador. O administrador opera a plataforma, cadastrando os condomínios e criando a conta do síndico de cada um. O síndico poderá gerenciar de forma prática e eficiente, incluindo o gerenciamento financeiro com notificações de pagamento e a visualização remota e sigilosa da locação de espaços. O porteiro terá recursos para notificar entregas, registrar entradas e saídas e utilizar o videoporteiro para confirmar a entrada de convidados com foto ou gravação em tempo real, fomentando a segurança. O morador poderá realizar pagamentos com opções variadas, alugar espaços de forma sigilosa, verificar a ocupação de áreas comuns e receber notificações e confirmações de entregas/convidados.',
   'Com um prazo de 2 anos, o projeto se baseia na utilização de linguagens e ferramentas robustas e escaláveis, como HTML, CSS e JavaScript no front-end, Python com FastAPI no back-end e PostgreSQL no banco de dados. Adicionalmente, o projeto demonstra um compromisso com a acessibilidade, utilizando VLibras para usuários com deficiência auditiva, e recursos de alteração de tamanho de fonte e mudança de cores (modo claro/escuro) para deficiências visuais, garantindo uma boa experiência e inclusão.',
-  'Até o momento, o sistema conta com as quatro áreas de acesso implementadas e ligadas à API, 22 tabelas em PostgreSQL, 105 endpoints, 381 casos de teste automatizados cobrindo as regras de negócio e 84 testes de interface executados em um navegador real.',
+  'Até o momento, o sistema conta com as quatro áreas de acesso implementadas e ligadas à API, 22 tabelas em PostgreSQL, 105 endpoints, 387 casos de teste automatizados cobrindo as regras de negócio e 84 testes de interface executados em um navegador real.',
   'Em suma, o SmartCondo é um projeto realista, alinhado com as necessidades do mercado e da tecnologia atual, visando transformar a gestão de condomínios de pequeno e médio porte em um processo ágil, prático, seguro e inclusivo.',
 ];
 

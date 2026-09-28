@@ -138,6 +138,12 @@
     return ('0' + d.dia).slice(-2) + '/' + ('0' + d.mes).slice(-2);
   }
   function hora(h) { return (h || '').slice(0, 5).replace(':', 'h'); }
+  function jaComecou(r) {
+    var d = new Date();
+    var hoje = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+    var agora = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    return r.data < hoje || (r.data === hoje && (r.hora_inicio || '').slice(0, 5) <= agora);
+  }
   function periodo(r) { return hora(r.hora_inicio) + '–' + hora(r.hora_fim); }
 
   function quem(r) {
@@ -173,6 +179,11 @@
     var nao = document.createElement('button');
     nao.type = 'button'; nao.className = 'pill-acao recusar'; nao.textContent = 'Recusar';
     acoes.appendChild(sim); acoes.appendChild(nao);
+    // O horário já passou: aprovar não faz sentido, só recusar (limpa a fila).
+    if (jaComecou(r)) {
+      sim.hidden = true;
+      sub.textContent += ' · horário já passou';
+    }
 
     function decidir(aprovada, motivo) {
       sim.disabled = nao.disabled = true;

@@ -196,3 +196,28 @@ def test_aprovar_e_cancelar_a_reserva_ao_mesmo_tempo(cliente, cenario):
                                             headers=cab(cenario["ana"])).json()
                      if r["id"] == reserva["id"])
         assert final["status"] == "cancelada"
+
+
+def test_mesma_placa_nao_entra_duas_vezes_ao_mesmo_tempo(cliente, cenario, monkeypatch):
+    """Clique duplo em Entrada, ou dois porteiros: os dois pedidos passavam
+    juntos pela conferência da última movimentação, e o pátio ficava com
+    o carro duas vezes. Uma pausa depois da conferência garante que os
+    pedidos se sobreponham."""
+    import time
+    from datetime import datetime as _datetime
+
+    from app.api.routers import veiculos
+
+    class Lento(_datetime):
+        @classmethod
+        def now(cls, tz=None):
+            time.sleep(0.3)
+            return _datetime.now(tz)
+
+    monkeypatch.setattr(veiculos, "datetime", Lento)
+    corpo = {"placa": "ABC1D23", "tipo": "entrada", "categoria": "visitante"}
+    respostas = ao_mesmo_tempo(4, lambda i: cliente.post(
+        "/api/v1/veiculos", json=corpo, headers=cab(cenario["sindico"])).status_code)
+    assert sorted(respostas) == [201, 409, 409, 409]
+    patio = cliente.get("/api/v1/veiculos/patio", headers=cab(cenario["sindico"])).json()
+    assert [v["placa"] for v in patio] == ["ABC1D23"]

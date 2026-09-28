@@ -35,7 +35,7 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.models.condominio import Unidade
 from app.models.enums import (
-    CanalVerificacao, Papel, StatusEncomenda, StatusOcorrencia, StatusVisitante,
+    CanalVerificacao, Papel, StatusEncomenda, StatusOcorrencia, StatusUsuario, StatusVisitante,
 )
 from app.models.portaria import Encomenda, Ocorrencia, Visitante
 from app.models.usuario import Usuario
@@ -63,9 +63,14 @@ def _unidade_do_condominio(db: Session, usuario: Usuario, unidade_id: int) -> Un
 
 
 def _avisar_moradores(db: Session, unidade: Unidade, titulo: str, mensagem: str) -> None:
-    """Notifica quem mora na unidade."""
+    """Notifica quem mora na unidade agora: o morador que se mudou
+    (inativado) ou teve o cadastro recusado não recebe mais os visitantes e
+    as encomendas do apartamento."""
     moradores = db.scalars(
-        select(Usuario).where(Usuario.unidade_id == unidade.id, Usuario.papel == Papel.MORADOR)
+        select(Usuario).where(
+            Usuario.unidade_id == unidade.id, Usuario.papel == Papel.MORADOR,
+            Usuario.status == StatusUsuario.ATIVO,
+        )
     ).all()
     for morador in moradores:
         notificacao.notificar(morador.email, CanalVerificacao.EMAIL, titulo, mensagem)
@@ -108,13 +113,28 @@ def _ler_foto_enviada(arquivo: UploadFile, pasta: str = arquivos.PORTARIA) -> st
         raise HTTPException(status_code=422, detail=str(erro)) from erro
 
 
-def _pode_ver_foto(db: Session, usuario: Usuario, unidade: Unidade, permissao: str) -> bool:
+# O morador vê o que chegou para a unidade desde que ele se cadastrou: o
+# morador novo não vê os visitantes (nome, CPF, foto) nem as encomendas de
+# quem morava lá antes. A encomenda que ainda aguarda retirada aparece,
+# porque o volume está na portaria e ele pode dizer que não é dele.
+def _visitante_do_morador(v: Visitante, morador: Usuario) -> bool:
+    return v.unidade_id == morador.unidade_id and v.criado_em >= morador.criado_em
+
+
+def _encomenda_do_morador(e: Encomenda, morador: Usuario) -> bool:
+    return e.unidade_id == morador.unidade_id and (
+        e.criado_em >= morador.criado_em or e.status == StatusEncomenda.AGUARDANDO_RETIRADA
+    )
+
+
+def _pode_ver_foto(db: Session, usuario: Usuario, unidade: Unidade, permissao: str,
+                   do_morador: bool) -> bool:
     if unidade.condominio_id != usuario.condominio_id:
         return False
     if usuario.papel == Papel.SINDICO:
         return True
     if usuario.papel == Papel.MORADOR:
-        return unidade.id == usuario.unidade_id
+        return do_morador
     if usuario.papel == Papel.PORTEIRO:
         return porteiro_tem_permissao(db, usuario, permissao)
     return False
@@ -203,9 +223,12 @@ def listar_visitantes(
     consulta = select(Visitante).join(Unidade).where(
         Unidade.condominio_id == usuario.condominio_id
     )
-    # O morador só enxerga os visitantes da própria unidade.
+    # O morador só enxerga os visitantes da própria unidade, desde o cadastro.
     if usuario.papel == Papel.MORADOR:
-        consulta = consulta.where(Visitante.unidade_id == usuario.unidade_id)
+        consulta = consulta.where(
+            Visitante.unidade_id == usuario.unidade_id,
+            Visitante.criado_em >= usuario.criado_em,
+        )
     if status_visitante is not None:
         consulta = consulta.where(Visitante.status == status_visitante)
 
@@ -227,7 +250,7 @@ def confirmar_visitante(
     """"o cliente confirme se é ou não seu convidado" (seção 6)."""
     visitante = db.get(Visitante, visitante_id, with_for_update=True)
     # Quem responde é o morador da unidade visitada, ninguém mais.
-    if visitante is None or visitante.unidade_id != morador.unidade_id:
+    if visitante is None or not _visitante_do_morador(visitante, morador):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Visitante não encontrado."
         )
@@ -331,7 +354,8 @@ def foto_visitante(
     visitante = db.get(Visitante, visitante_id)
     # 404 também para quem não pode ver: não confirma que o registro existe.
     if visitante is None or not _pode_ver_foto(
-        db, usuario, visitante.unidade, "registrar_visitantes"
+        db, usuario, visitante.unidade, "registrar_visitantes",
+        do_morador=_visitante_do_morador(visitante, usuario),
     ):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Foto não encontrada.")
     return _entregar_foto(visitante.foto_arquivo)
@@ -383,7 +407,11 @@ def listar_encomendas(
         Unidade.condominio_id == usuario.condominio_id
     )
     if usuario.papel == Papel.MORADOR:
-        consulta = consulta.where(Encomenda.unidade_id == usuario.unidade_id)
+        consulta = consulta.where(
+            Encomenda.unidade_id == usuario.unidade_id,
+            (Encomenda.criado_em >= usuario.criado_em)
+            | (Encomenda.status == StatusEncomenda.AGUARDANDO_RETIRADA),
+        )
     if status_encomenda is not None:
         consulta = consulta.where(Encomenda.status == status_encomenda)
 
@@ -404,7 +432,7 @@ def confirmar_retirada(
     """"o porteiro me envia... uma foto ou vídeo para que eu confirmasse a
     minha entrega ou pedido" (seção 6)."""
     encomenda = db.get(Encomenda, encomenda_id, with_for_update=True)
-    if encomenda is None or encomenda.unidade_id != morador.unidade_id:
+    if encomenda is None or not _encomenda_do_morador(encomenda, morador):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Encomenda não encontrada."
         )
@@ -464,7 +492,8 @@ def foto_encomenda(
 ) -> FileResponse:
     encomenda = db.get(Encomenda, encomenda_id)
     if encomenda is None or not _pode_ver_foto(
-        db, usuario, encomenda.unidade, "registrar_encomendas"
+        db, usuario, encomenda.unidade, "registrar_encomendas",
+        do_morador=_encomenda_do_morador(encomenda, usuario),
     ):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Foto não encontrada.")
     return _entregar_foto(encomenda.foto_arquivo)

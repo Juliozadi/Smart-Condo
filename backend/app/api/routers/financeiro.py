@@ -16,7 +16,7 @@ from app.api.deps import exigir_condominio, exigir_papel, exigir_permissao_porte
 from app.core.database import get_db
 from app.core.tempo import hoje_local
 from app.models.condominio import Unidade
-from app.models.enums import Papel, StatusCobranca
+from app.models.enums import Papel, StatusCobranca, StatusUsuario
 from app.models.financeiro import Cobranca, Pagamento, PreferenciaCobranca
 from app.models.usuario import Usuario
 from app.schemas.financeiro import (
@@ -75,16 +75,19 @@ def _cobranca_saida(db: Session, c: Cobranca, total_pago: Decimal | None = None)
 
 def _dia_de_vencimento(db: Session, unidade_id: int, competencia: date) -> date:
     """Usa o dia que o morador escolheu (seção 6)."""
-    morador = db.scalar(
-        select(Usuario).where(Usuario.unidade_id == unidade_id, Usuario.papel == Papel.MORADOR)
-    )
-    dia = 10
-    if morador is not None:
-        preferencia = db.scalar(
-            select(PreferenciaCobranca).where(PreferenciaCobranca.morador_id == morador.id)
+    # Só quem mora lá agora: a preferência de quem se mudou não vale mais.
+    # Com mais de um morador, vale a do primeiro cadastrado que escolheu.
+    preferencia = db.scalar(
+        select(PreferenciaCobranca)
+        .join(Usuario, Usuario.id == PreferenciaCobranca.morador_id)
+        .where(
+            Usuario.unidade_id == unidade_id, Usuario.papel == Papel.MORADOR,
+            Usuario.status == StatusUsuario.ATIVO,
         )
-        if preferencia is not None:
-            dia = preferencia.dia_vencimento
+        .order_by(Usuario.id)
+        .limit(1)
+    )
+    dia = preferencia.dia_vencimento if preferencia is not None else 10
 
     # O dia é limitado a 28 na entrada, mas o clamp protege dados antigos.
     ultimo_dia = calendar.monthrange(competencia.year, competencia.month)[1]
@@ -298,9 +301,11 @@ def registrar_pagamento(
 
     # "o próprio sistema me notificar com qual meio o pagamento foi realizado,
     # por quem e a data do pagamento" (seção 6).
+    # O síndico atual: o antigo continua no banco, inativado.
     sindico = db.scalar(
         select(Usuario).where(
-            Usuario.condominio_id == usuario.condominio_id, Usuario.papel == Papel.SINDICO
+            Usuario.condominio_id == usuario.condominio_id, Usuario.papel == Papel.SINDICO,
+            Usuario.status == StatusUsuario.ATIVO,
         )
     )
     if sindico is not None:

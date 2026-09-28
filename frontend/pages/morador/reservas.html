@@ -133,6 +133,11 @@
     var d = new Date();
     return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
   }
+  function jaComecou(r) {
+    var d = new Date();
+    var agora = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    return r.data < hoje() || (r.data === hoje() && (r.hora_inicio || '').slice(0, 5) <= agora);
+  }
 
   // ── Ocupação em tempo real ──────────────────────────────────────
   var desdeAtualizacao = 0;
@@ -289,7 +294,8 @@
 
     card.appendChild(data); card.appendChild(info); card.appendChild(selo);
 
-    if (ATIVAS.indexOf(r.status) >= 0) {
+    // A que já começou não se cancela mais: fica no histórico como está.
+    if (ATIVAS.indexOf(r.status) >= 0 && !jaComecou(r)) {
       var cancelar = document.createElement('button');
       cancelar.type = 'button';
       cancelar.className = 'pill-acao recusar';

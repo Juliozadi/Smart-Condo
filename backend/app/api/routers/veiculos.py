@@ -73,6 +73,15 @@ def registrar_movimentacao(
             detail="Informe a unidade do morador.",
         )
 
+    # Trava a placa até o fim da transação: dois pedidos ao mesmo tempo
+    # (clique duplo, dois porteiros) passavam juntos pela conferência
+    # abaixo, e o carro entrava duas vezes. Não há linha para travar
+    # antes da primeira entrada, por isso a trava é por chave.
+    db.execute(
+        select(func.pg_advisory_xact_lock(
+            usuario.condominio_id, func.hashtext(dados.placa)
+        ))
+    )
     # Duas entradas seguidas (ou duas saídas) deixariam o pátio errado.
     ultima = db.scalar(
         select(MovimentacaoVeiculo)
