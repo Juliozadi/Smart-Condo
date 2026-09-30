@@ -647,3 +647,53 @@ def test_senha_atual_errada_nao_encerra_nada(cliente, cenario):
     )
     assert r.status_code == 400
     assert cliente.get("/api/v1/auth/eu", headers=cab(cenario["sindico"])).status_code == 200
+
+
+def _envelhecer_cadastro(db, email):
+    """Como se o cadastro tivesse sido feito há 2 horas, sem confirmar."""
+    from datetime import datetime, timedelta, timezone
+
+    from sqlalchemy import update
+
+    from app.models.usuario import CodigoVerificacao
+    antes = datetime.now(timezone.utc) - timedelta(hours=2)
+    usuario = db.query(Usuario).filter(Usuario.email == email).one()
+    db.execute(update(Usuario).where(Usuario.id == usuario.id).values(criado_em=antes))
+    db.execute(update(CodigoVerificacao).where(CodigoVerificacao.usuario_id == usuario.id)
+               .values(expira_em=antes))
+    db.commit()
+    return usuario.id
+
+
+def test_cadastro_nunca_confirmado_nao_prende_o_cpf(cliente, cenario, db):
+    """Errou o e-mail, o código não chegou: antes o CPF ficava preso para
+    sempre ("Já existe um cadastro com este CPF"). Passado o prazo, o novo
+    cadastro retoma o antigo, que nunca foi uma conta."""
+    errado = cadastrar(cliente, cenario, email="joao@exemplo.con")
+    assert errado.status_code == 201
+    # Logo em seguida ainda é recusado: o código enviado pode estar chegando.
+    r = cadastrar(cliente, cenario, email="joao@exemplo.com")
+    assert r.status_code == 409 and "esperando a confirmação" in r.json()["detalhe"]
+
+    antigo_id = _envelhecer_cadastro(db, "joao@exemplo.con")
+    r = cadastrar(cliente, cenario, email="joao@exemplo.com")
+    assert r.status_code == 201, r.text
+    assert r.json()["usuario"]["id"] == antigo_id
+    assert r.json()["usuario"]["email"] == "joao@exemplo.com"
+    conf = cliente.post("/api/v1/auth/confirmar", json={
+        "email": "joao@exemplo.com", "codigo": r.json()["codigo_debug"]})
+    assert conf.status_code == 200, conf.text
+
+
+def test_conta_confirmada_continua_protegida(cliente, cenario, db):
+    cadastrar_e_confirmar(cliente, cenario)
+    email = dados_morador(cenario)["email"].lower()
+    usuario_id = db.query(Usuario).filter(Usuario.email == email).one().id
+    from datetime import datetime, timedelta, timezone
+
+    from sqlalchemy import update
+    db.execute(update(Usuario).where(Usuario.id == usuario_id)
+               .values(criado_em=datetime.now(timezone.utc) - timedelta(days=30)))
+    db.commit()
+    r = cadastrar(cliente, cenario, email="outro@exemplo.com")
+    assert r.status_code == 409 and "CPF" in r.json()["detalhe"]

@@ -11,6 +11,8 @@ admin.py) e o síndico cadastra porteiros e moradores do seu condomínio
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy import select
@@ -86,7 +88,7 @@ def _resposta_cadastro(usuario: Usuario, codigo: str, canal: CanalVerificacao) -
 )
 def cadastrar_morador(dados: CadastroMorador, db: Session = Depends(get_db)) -> CadastroSaida:
     _exigir_canal(dados.canal_confirmacao)
-    servico_auth.garantir_email_e_cpf_livres(db, dados.email, dados.cpf)
+    abandonado = servico_auth.cadastro_abandonado(db, dados.email, dados.cpf)
 
     condominio = db.scalar(
         select(Condominio).where(
@@ -120,7 +122,7 @@ def cadastrar_morador(dados: CadastroMorador, db: Session = Depends(get_db)) -> 
         db.add(unidade)
         db.flush()
 
-    usuario = Usuario(
+    campos = dict(
         nome=dados.nome,
         email=dados.email.lower(),
         cpf=dados.cpf,
@@ -133,7 +135,19 @@ def cadastrar_morador(dados: CadastroMorador, db: Session = Depends(get_db)) -> 
         unidade_id=unidade.id,
         tipo_ocupacao=dados.tipo_ocupacao,
     )
-    db.add(usuario)
+    if abandonado is not None:
+        # Retoma o cadastro que nunca foi confirmado: os documentos enviados
+        # nele eram de outra tentativa (talvez de outra pessoa) e saem.
+        documentos_cadastro.descartar_todos(db, abandonado.id)
+        usuario = abandonado
+        for campo, valor in campos.items():
+            setattr(usuario, campo, valor)
+        agora = datetime.now(timezone.utc)
+        usuario.criado_em = agora
+        usuario.unidade_desde = agora
+    else:
+        usuario = Usuario(**campos)
+        db.add(usuario)
     db.flush()
 
     codigo = servico_auth.emitir_codigo(

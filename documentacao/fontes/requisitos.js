@@ -34,7 +34,7 @@ const requisitosFuncionais = [
     atores: 'Morador', prioridade: 'Essencial',
     descricao: 'O sistema permite que o morador se cadastre sozinho, sem depender do síndico, informando o código de acesso do condomínio e a unidade em que mora.',
     entradas: 'O morador informa nome, CPF, e-mail, telefone, data de nascimento, senha, o código de acesso do condomínio e a unidade. O CPF é conferido pelos dígitos verificadores. E-mail e CPF não podem repetir outro cadastro.',
-    saidas: 'A conta é criada com a situação "aguardando código". Um código de confirmação é enviado ao morador, e o acesso só é liberado depois da confirmação e da aprovação do síndico.' },
+    saidas: 'A conta é criada com a situação "aguardando código". Um código de confirmação é enviado ao morador, e o acesso só é liberado depois da confirmação e da aprovação do síndico. O cadastro nunca confirmado não prende o e-mail nem o CPF: passada uma hora, um novo cadastro com eles retoma o antigo, que nunca chegou a ser uma conta, e os documentos enviados nele são descartados.' },
 
   { id: 'RF005', nome: 'Confirmar cadastro com código',
     atores: 'Administrador, Síndico, Porteiro, Morador', prioridade: 'Essencial',
