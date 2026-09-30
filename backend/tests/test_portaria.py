@@ -397,3 +397,32 @@ def test_morador_nao_responde_ocorrencia(cliente, cenario):
         headers=cab(cenario["ana"]),
     )
     assert r.status_code == 403
+
+
+def test_visitante_sem_resposta_expira(cliente, cenario, db):
+    """O morador não respondeu: depois de 2 horas o visitante deixa de
+    aparecer como aguardando na portaria, e não é confirmado dias depois
+    (a entrada seria registrada na hora da confirmação)."""
+    from datetime import datetime, timedelta, timezone
+
+    from sqlalchemy import update
+
+    from app.models.portaria import Visitante
+
+    antigo = registrar_visitante(cliente, cenario["porteiro"], cenario["u204"]).json()
+    recente = registrar_visitante(cliente, cenario["porteiro"], cenario["u204"]).json()
+    from app.models.usuario import Usuario
+    agora = datetime.now(timezone.utc)
+    db.execute(update(Usuario).where(Usuario.email == "ana@exemplo.com")
+               .values(unidade_desde=agora - timedelta(days=1)))
+    db.execute(update(Visitante).where(Visitante.id == antigo["id"])
+               .values(criado_em=agora - timedelta(hours=3)))
+    db.commit()
+
+    r = cliente.post(f"/api/v1/portaria/visitantes/{antigo['id']}/confirmacao",
+                     json={"confirmado": True}, headers=cab(cenario["ana"]))
+    assert r.status_code == 409
+    lista = {v["id"]: v["status"] for v in cliente.get(
+        "/api/v1/portaria/visitantes", headers=cab(cenario["porteiro"])).json()}
+    assert lista[antigo["id"]] == "sem_resposta"
+    assert lista[recente["id"]] == "aguardando_confirmacao"

@@ -141,8 +141,8 @@ const requisitosFuncionais = [
   { id: 'RF022', nome: 'Confirmar ou recusar visitante',
     atores: 'Morador', prioridade: 'Essencial',
     descricao: 'O sistema permite ao morador autorizar ou recusar a entrada de quem foi anunciado pela portaria.',
-    entradas: 'O visitante deve estar vinculado à unidade do morador e aguardando confirmação.',
-    saidas: 'Confirmado, o visitante passa a "dentro" e a portaria libera a entrada. Recusado, fica registrado como "recusado", com hora e responsável.' },
+    entradas: 'O visitante deve estar vinculado à unidade do morador e aguardando confirmação há menos de 2 horas.',
+    saidas: 'Confirmado, o visitante passa a "dentro" e a portaria libera a entrada. Recusado, fica registrado como "recusado", com hora e responsável. Sem resposta em 2 horas, passa a "sem resposta": sai do painel da portaria e não pode mais ser confirmado.' },
 
   { id: 'RF023', nome: 'Registrar saída do visitante',
     atores: 'Porteiro', prioridade: 'Importante',

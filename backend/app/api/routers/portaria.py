@@ -24,7 +24,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.api.deps import (
@@ -51,6 +51,28 @@ router = APIRouter(prefix="/portaria", tags=["Portaria"])
 
 def _agora() -> datetime:
     return datetime.now(timezone.utc)
+
+
+# Quanto o visitante espera a resposta do morador. Depois disso ele vira
+# "sem resposta": não fica aguardando para sempre no painel da portaria, e
+# o morador não o confirma dias depois (a entrada seria registrada na hora).
+PRAZO_RESPOSTA = timedelta(hours=2)
+
+
+def _expirar_sem_resposta(db: Session, condominio_id: int) -> None:
+    db.execute(
+        update(Visitante)
+        .where(
+            Visitante.status == StatusVisitante.AGUARDANDO_CONFIRMACAO,
+            Visitante.criado_em < _agora() - PRAZO_RESPOSTA,
+            Visitante.unidade_id.in_(
+                select(Unidade.id).where(Unidade.condominio_id == condominio_id)
+            ),
+        )
+        .values(status=StatusVisitante.SEM_RESPOSTA)
+        .execution_options(synchronize_session=False)
+    )
+    db.commit()
 
 
 def _unidade_do_condominio(db: Session, usuario: Usuario, unidade_id: int) -> Unidade:
@@ -221,6 +243,7 @@ def listar_visitantes(
     db: Session = Depends(get_db),
 ) -> list[VisitanteSaida]:
     exigir_permissao_do_porteiro(db, usuario, "registrar_visitantes")
+    _expirar_sem_resposta(db, usuario.condominio_id)
     consulta = select(Visitante).join(Unidade).where(
         Unidade.condominio_id == usuario.condominio_id
     )
@@ -254,6 +277,14 @@ def confirmar_visitante(
     if visitante is None or not _visitante_do_morador(visitante, morador):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Visitante não encontrado."
+        )
+    if (visitante.status == StatusVisitante.AGUARDANDO_CONFIRMACAO
+            and visitante.criado_em < _agora() - PRAZO_RESPOSTA):
+        visitante.status = StatusVisitante.SEM_RESPOSTA
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Passou o tempo de resposta: o visitante já não está esperando na portaria.",
         )
     if visitante.status != StatusVisitante.AGUARDANDO_CONFIRMACAO:
         raise HTTPException(

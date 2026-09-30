@@ -155,7 +155,8 @@ CREATE TYPE status_visitante AS ENUM (
     'CONFIRMADO',
     'RECUSADO',
     'DENTRO',
-    'SAIU'
+    'SAIU',
+    'SEM_RESPOSTA'
 );
 
 CREATE TYPE tipo_documento_cadastro AS ENUM (

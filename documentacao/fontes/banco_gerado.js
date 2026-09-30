@@ -1896,7 +1896,7 @@ const dicionario = [
         "tipo": "ENUM",
         "obrigatorio": "Sim",
         "chave": "",
-        "descricao": "Situação da visita, do anúncio à saída — tipo enumerado status_visitante, valores: AGUARDANDO_CONFIRMACAO, CONFIRMADO, RECUSADO, DENTRO, SAIU"
+        "descricao": "Situação da visita, do anúncio à saída — tipo enumerado status_visitante, valores: AGUARDANDO_CONFIRMACAO, CONFIRMADO, RECUSADO, DENTRO, SAIU, SEM_RESPOSTA"
       },
       {
         "coluna": "entrada_em",
@@ -2305,7 +2305,7 @@ const enumerados = [
   },
   {
     "nome": "status_visitante",
-    "valores": "AGUARDANDO_CONFIRMACAO, CONFIRMADO, RECUSADO, DENTRO, SAIU"
+    "valores": "AGUARDANDO_CONFIRMACAO, CONFIRMADO, RECUSADO, DENTRO, SAIU, SEM_RESPOSTA"
   },
   {
     "nome": "tipo_documento_cadastro",
