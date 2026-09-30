@@ -25,7 +25,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
 from sqlalchemy import select, update
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, contains_eager, selectinload
 
 from app.api.deps import (
     exigir_condominio, exigir_papel, exigir_permissao_do_porteiro, exigir_permissao_porteiro,
@@ -40,7 +40,7 @@ from app.models.enums import (
 from app.models.portaria import Encomenda, Ocorrencia, Visitante
 from app.models.usuario import Usuario
 from app.schemas.portaria import (
-    ConfirmacaoVisitante, EncomendaEntrada, EncomendaSaida, OcorrenciaEntrada,
+    ConfirmacaoVisitante, EncomendaEntrada, EncomendaSaida, EntregaEncomenda, OcorrenciaEntrada,
     OcorrenciaSaida, RespostaOcorrencia, RetiradaEncomenda, VisitanteEntrada,
     VisitanteSaida,
 )
@@ -118,7 +118,9 @@ def _encomenda_saida(e: Encomenda) -> EncomendaSaida:
         codigo_rastreio=e.codigo_rastreio, observacoes=e.observacoes,
         foto_url=f"/portaria/encomendas/{e.id}/foto" if e.foto_arquivo else None,
         status=e.status, recebida_em=e.recebida_em,
-        retirada_em=e.retirada_em, criado_em=e.criado_em,
+        retirada_em=e.retirada_em, retirado_por_nome=e.retirado_por_nome,
+        entregue_por_nome=e.entregue_por.nome if e.entregue_por else None,
+        criado_em=e.criado_em,
     )
 
 
@@ -447,6 +449,9 @@ def listar_encomendas(
     if status_encomenda is not None:
         consulta = consulta.where(Encomenda.status == status_encomenda)
 
+    consulta = consulta.options(
+        contains_eager(Encomenda.unidade), selectinload(Encomenda.entregue_por)
+    )
     return [_encomenda_saida(e) for e in db.scalars(consulta.order_by(Encomenda.id.desc())).all()]
 
 
@@ -482,6 +487,43 @@ def confirmar_retirada(
 
     db.commit()
     db.refresh(encomenda)
+    return _encomenda_saida(encomenda)
+
+
+@router.post(
+    "/encomendas/{encomenda_id}/entrega",
+    response_model=EncomendaSaida,
+    summary="A portaria entrega a encomenda em mãos",
+)
+def entregar_encomenda(
+    encomenda_id: int,
+    dados: EntregaEncomenda,
+    usuario: Usuario = Depends(exigir_permissao_porteiro("registrar_encomendas")),
+    db: Session = Depends(get_db),
+) -> EncomendaSaida:
+    """Só o morador, pelo app, dava baixa: entregue em mãos, a encomenda
+    ficava "aguardando retirada" para sempre no painel da portaria. Os
+    moradores da unidade são avisados de quem levou."""
+    encomenda = db.get(Encomenda, encomenda_id, with_for_update=True)
+    if encomenda is None or encomenda.unidade.condominio_id != usuario.condominio_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Encomenda não encontrada."
+        )
+    if encomenda.status != StatusEncomenda.AGUARDANDO_RETIRADA:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Esta encomenda já foi respondida."
+        )
+    encomenda.status = StatusEncomenda.RETIRADA
+    encomenda.retirada_em = _agora()
+    encomenda.entregue_por_id = usuario.id
+    encomenda.retirado_por_nome = dados.retirado_por_nome
+    db.commit()
+    db.refresh(encomenda)
+    _avisar_moradores(
+        db, encomenda.unidade, "Encomenda retirada na portaria",
+        f"{encomenda.tipo_volume} de {encomenda.remetente}: entregue a "
+        f"{dados.retirado_por_nome} por {usuario.nome}.",
+    )
     return _encomenda_saida(encomenda)
 
 

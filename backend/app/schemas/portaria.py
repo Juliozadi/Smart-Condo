@@ -71,11 +71,19 @@ class EncomendaSaida(SchemaBase):
     status: StatusEncomenda
     recebida_em: datetime
     retirada_em: datetime | None = None
+    # Entregue em mãos na portaria: a quem e por quem.
+    retirado_por_nome: str | None = None
+    entregue_por_nome: str | None = None
     criado_em: datetime
 
 
 class RetiradaEncomenda(SchemaBase):
     confirmada: bool
+
+
+class EntregaEncomenda(SchemaBase):
+    """O porteiro entrega em mãos e anota quem levou."""
+    retirado_por_nome: str = Field(min_length=3, max_length=120)
 
 
 # ── Ocorrências ──────────────────────────────────────────────────────

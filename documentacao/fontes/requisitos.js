@@ -157,10 +157,10 @@ const requisitosFuncionais = [
     saidas: 'A encomenda fica como "aguardando retirada" e aparece no painel do morador, com a foto quando houver.' },
 
   { id: 'RF025', nome: 'Confirmar retirada de encomenda',
-    atores: 'Morador', prioridade: 'Importante',
-    descricao: 'O sistema registra que a encomenda foi entregue ao morador, guardando quem retirou e quando.',
+    atores: 'Morador, Porteiro', prioridade: 'Importante',
+    descricao: 'O sistema registra que a encomenda foi entregue ao morador, guardando quem retirou e quando. O morador confirma pelo app; entregue em mãos, é o porteiro quem dá baixa.',
     entradas: 'A encomenda deve pertencer à unidade do morador e estar aguardando retirada.',
-    saidas: 'A encomenda passa a "retirada", com data, hora e responsável, e sai da lista de pendências da portaria.' },
+    saidas: 'A encomenda passa a "retirada", com data, hora e responsável, e sai da lista de pendências da portaria. Na entrega em mãos ficam o nome de quem levou e o porteiro que entregou, e os moradores da unidade são avisados.' },
 
   { id: 'RF026', nome: 'Registrar entrada e saída de veículos',
     atores: 'Porteiro', prioridade: 'Importante',

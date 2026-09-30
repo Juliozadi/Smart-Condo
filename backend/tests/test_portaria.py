@@ -426,3 +426,32 @@ def test_visitante_sem_resposta_expira(cliente, cenario, db):
         "/api/v1/portaria/visitantes", headers=cab(cenario["porteiro"])).json()}
     assert lista[antigo["id"]] == "sem_resposta"
     assert lista[recente["id"]] == "aguardando_confirmacao"
+
+
+def test_porteiro_entrega_em_maos_e_o_morador_e_avisado(cliente, cenario, monkeypatch):
+    """Só o morador dava baixa pelo app: entregue em mãos, a encomenda
+    ficava aguardando retirada para sempre."""
+    from app.services import notificacao
+    avisos = []
+    monkeypatch.setattr(notificacao, "notificar",
+                        lambda destino, canal, titulo, mensagem: avisos.append((destino, mensagem)))
+    e = registrar_encomenda(cliente, cenario["porteiro"], cenario["u204"]).json()
+    avisos.clear()
+    url = f"/api/v1/portaria/encomendas/{e['id']}/entrega"
+    assert cliente.post(url, headers=cab(cenario["ana"]),
+                        json={"retirado_por_nome": "Ana"}).status_code == 403
+    r = cliente.post(url, headers=cab(cenario["porteiro"]),
+                     json={"retirado_por_nome": "Pedro (filho da Ana)"})
+    assert r.status_code == 200, r.text
+    corpo = r.json()
+    assert corpo["status"] == "retirada" and corpo["retirado_por_nome"] == "Pedro (filho da Ana)"
+    assert corpo["entregue_por_nome"] == "Carlos Pereira"
+    assert [a[0] for a in avisos] == ["ana@exemplo.com"]
+    assert "Pedro (filho da Ana)" in avisos[0][1]
+    # Não entrega duas vezes, e o morador não confirma depois.
+    assert cliente.post(url, headers=cab(cenario["porteiro"]),
+                        json={"retirado_por_nome": "Outro"}).status_code == 409
+    assert cliente.post(f"/api/v1/portaria/encomendas/{e['id']}/retirada",
+                        headers=cab(cenario["ana"]), json={"confirmada": True}).status_code == 409
+    da_ana = cliente.get("/api/v1/portaria/encomendas", headers=cab(cenario["ana"])).json()
+    assert da_ana[0]["retirado_por_nome"] == "Pedro (filho da Ana)"

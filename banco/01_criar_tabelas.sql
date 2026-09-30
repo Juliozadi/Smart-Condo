@@ -554,7 +554,9 @@ CREATE TABLE encomendas (
     retirada_em timestamp with time zone,
     retirada_por_id integer,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
-    atualizado_em timestamp with time zone DEFAULT now() NOT NULL
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    entregue_por_id integer,
+    retirado_por_nome character varying(120)
 );
 CREATE SEQUENCE encomendas_id_seq
     AS integer
@@ -800,6 +802,9 @@ ALTER TABLE ONLY encomendas
 
 ALTER TABLE ONLY encomendas
     ADD CONSTRAINT encomendas_retirada_por_id_fkey FOREIGN KEY (retirada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY encomendas
+    ADD CONSTRAINT encomendas_entregue_por_id_fkey FOREIGN KEY (entregue_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY encomendas
     ADD CONSTRAINT encomendas_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;

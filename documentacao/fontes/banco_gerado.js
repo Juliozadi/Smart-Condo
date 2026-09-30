@@ -625,14 +625,14 @@ const dicionario = [
         "tipo": "TIMESTAMPTZ",
         "obrigatorio": "Não",
         "chave": "",
-        "descricao": "Momento em que o morador retirou"
+        "descricao": "Momento da retirada, pelo app ou em mãos na portaria"
       },
       {
         "coluna": "retirada_por_id",
         "tipo": "INTEGER",
         "obrigatorio": "Não",
         "chave": "FK",
-        "descricao": "Morador que retirou"
+        "descricao": "Morador que confirmou a retirada pelo app"
       },
       {
         "coluna": "criado_em",
@@ -647,6 +647,20 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "entregue_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Porteiro que entregou em mãos na portaria"
+      },
+      {
+        "coluna": "retirado_por_nome",
+        "tipo": "VARCHAR(120)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Nome de quem levou a encomenda entregue em mãos (pode não ter cadastro)"
       }
     ],
     "regras": []
@@ -2020,6 +2034,12 @@ const relacoes = [
   },
   {
     "origem": "encomendas",
+    "coluna": "entregue_por_id",
+    "destino": "usuarios",
+    "texto": "Porteiro que entregou em mãos na portaria"
+  },
+  {
+    "origem": "encomendas",
     "coluna": "registrada_por_id",
     "destino": "usuarios",
     "texto": "Porteiro que recebeu a encomenda"
@@ -2028,7 +2048,7 @@ const relacoes = [
     "origem": "encomendas",
     "coluna": "retirada_por_id",
     "destino": "usuarios",
-    "texto": "Morador que retirou"
+    "texto": "Morador que confirmou a retirada pelo app"
   },
   {
     "origem": "encomendas",
