@@ -16,7 +16,7 @@ seções novas descrevendo o que foi construído desde então.
 | 13.5.3 Tela de reservas do síndico | Nova seção Espaços Comuns, com a autoria de cada espaço; nova figura |
 | 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id; usuarios ganha unidade_desde — agora 252 atributos e 49 relacionamentos |
 | 21 API REST | 108 endpoints: editar, inativar e reativar espaço; editar andar e vagas da unidade; corrigir e cancelar cobrança |
-| 23 Testes | 400 casos no servidor e 88 testes de interface |
+| 23 Testes | 401 casos no servidor e 88 testes de interface |
 
 **Erros achados.**
 - Não havia tela para cadastrar espaço comum: só a carga de demonstração
@@ -54,6 +54,9 @@ seções novas descrevendo o que foi construído desde então.
   impede lançar a certa no mesmo mês (a restrição única passou a ignorar
   as canceladas). O painel do morador também deixou de somar a cancelada
   como pendente.
+- Chat: a mensagem de quem foi inativado continuava contando como não
+  lida, mas a conversa sai da lista e não abre mais — o contador ficava
+  preso para sempre. Agora conta só o que vem de contatos válidos.
 - A API aceitava que o síndico registrasse um pagamento (o boleto pago no
   banco), mas a tela dele não tinha essa opção: a cobrança ficava em
   aberto mesmo paga. A janela da cobrança ganhou "Registrar pagamento

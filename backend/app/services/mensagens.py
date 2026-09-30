@@ -130,7 +130,11 @@ def enviar(db: Session, usuario: Usuario, outro: Usuario, texto: str) -> Mensage
 
 
 def total_nao_lidas(db: Session, usuario: Usuario) -> int:
+    """Só de quem ainda aparece na lista de contatos: a mensagem de quem
+    saiu (inativado) não abre mais, e ficava presa no contador para sempre."""
+    contatos = _contatos_query(usuario).with_only_columns(Usuario.id)
     return db.scalar(
         select(func.count()).select_from(Mensagem)
-        .where(Mensagem.destinatario_id == usuario.id, Mensagem.lida_em.is_(None))
+        .where(Mensagem.destinatario_id == usuario.id, Mensagem.lida_em.is_(None),
+               Mensagem.remetente_id.in_(contatos))
     ) or 0

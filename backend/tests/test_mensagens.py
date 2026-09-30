@@ -98,3 +98,16 @@ def test_nao_manda_mensagem_para_si_mesmo(cliente, cen):
 
 def test_exige_sessao(cliente):
     assert cliente.get("/api/v1/mensagens/contatos").status_code == 401
+
+
+def test_nao_lidas_de_quem_saiu_nao_ficam_presas_no_contador(cliente, cen):
+    """O porteiro mandou mensagem e foi inativado: a conversa sai da lista e
+    não abre mais, então a mensagem não pode seguir contando como não lida
+    — o contador ficava preso em 1 para sempre."""
+    enviar(cliente, cen["porteiro"], cen["sindico_id"], "Portão da garagem travou")
+    enviar(cliente, cen["morador"], cen["sindico_id"], "Boa tarde")
+    assert cliente.get("/api/v1/mensagens/nao-lidas",
+                       headers=cab(cen["sindico"])).json()["total"] == 2
+    cliente.delete(f"/api/v1/usuarios/{cen['porteiro_id']}", headers=cab(cen["sindico"]))
+    assert cliente.get("/api/v1/mensagens/nao-lidas",
+                       headers=cab(cen["sindico"])).json()["total"] == 1
