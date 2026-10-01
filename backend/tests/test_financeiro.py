@@ -138,8 +138,11 @@ def test_porteiro_nao_acessa_o_financeiro(cliente, cenario):
 
 
 def test_cobranca_vencida_aparece_como_vencida(cliente, cenario):
-    ontem = (hoje_local() - timedelta(days=1)).isoformat()
-    r = gerar_cobranca(cliente, cenario["sindico"], cenario["u204"], vencimento=ontem)
+    ontem = hoje_local() - timedelta(days=1)
+    # A competência é a do mês de ontem: no dia 1º, ontem é do mês anterior,
+    # e vencimento antes da competência é recusado (com razão).
+    r = gerar_cobranca(cliente, cenario["sindico"], cenario["u204"], vencimento=ontem.isoformat(),
+                       competencia=ontem.replace(day=1).isoformat())
     assert r.json()["status"] == "vencida"
 
 
@@ -243,7 +246,8 @@ def test_resumo_do_sindico(cliente, cenario):
     gerar_cobranca(
         cliente, cenario["sindico"], cenario["u204"], valor="320.00", vencimento=semana_que_vem
     )
-    gerar_cobranca(cliente, cenario["sindico"], cenario["u301"], valor="410.00", vencimento=ontem)
+    gerar_cobranca(cliente, cenario["sindico"], cenario["u301"], valor="410.00", vencimento=ontem,
+                   competencia=(hoje_local() - timedelta(days=1)).replace(day=1).isoformat())
 
     r = cliente.get("/api/v1/financeiro/resumo", headers=cab(cenario["sindico"]))
     assert r.status_code == 200

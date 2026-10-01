@@ -16,7 +16,7 @@ seções novas descrevendo o que foi construído desde então.
 | 13.5.3 Tela de reservas do síndico | Nova seção Espaços Comuns, com a autoria de cada espaço; nova figura |
 | 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id; usuarios ganha unidade_desde; encomendas ganha entregue_por_id e retirado_por_nome — agora 254 atributos e 50 relacionamentos |
 | 21 API REST | 109 endpoints: entrega da encomenda em mãos; editar, inativar e reativar espaço; editar andar e vagas da unidade; corrigir e cancelar cobrança |
-| 23 Testes | 405 casos no servidor e 89 testes de interface |
+| 23 Testes | 408 casos no servidor e 89 testes de interface |
 
 **Erros achados.**
 - Não havia tela para cadastrar espaço comum: só a carga de demonstração
@@ -54,6 +54,14 @@ seções novas descrevendo o que foi construído desde então.
   impede lançar a certa no mesmo mês (a restrição única passou a ignorar
   as canceladas). O painel do morador também deixou de somar a cancelada
   como pendente.
+- Segurança: as rotas abertas não tinham limite por origem. O código de
+  acesso do condomínio (cerca de um milhão de combinações, com o prefixo
+  tirado do nome) podia ser adivinhado por um script em poucas horas, e
+  cada cadastro novo disparava e-mails e SMS sem limite. Agora consulta
+  do código, cadastro, login, confirmação e recuperação de senha têm
+  limite de pedidos por IP (RNF014).
+- Testes do financeiro falhavam todo dia 1º: o vencimento "ontem" caía no
+  mês anterior à competência, que a regra recusa (corretamente).
 - O cadastro que nunca confirmou o código prendia o e-mail e o CPF para
   sempre: quem errou o e-mail não recebia o código e não conseguia se
   cadastrar de novo, e quem digitasse o CPF de outra pessoa impedia o

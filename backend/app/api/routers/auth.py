@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import esquema_bearer, get_usuario_atual
 from app.core.config import settings
+from app.core.limite import limitar
 from app.core.database import get_db
 from app.core.security import (
     criar_token_acesso, criar_token_documentos, gerar_hash_senha, ler_token_documentos,
@@ -85,6 +86,7 @@ def _resposta_cadastro(usuario: Usuario, codigo: str, canal: CanalVerificacao) -
     response_model=CadastroSaida,
     status_code=status.HTTP_201_CREATED,
     summary="Cadastra um morador",
+    dependencies=[Depends(limitar("cadastro", 10))],
 )
 def cadastrar_morador(dados: CadastroMorador, db: Session = Depends(get_db)) -> CadastroSaida:
     _exigir_canal(dados.canal_confirmacao)
@@ -232,6 +234,7 @@ def enviar_foto_cadastro(
     "/confirmar",
     response_model=UsuarioSaida,
     summary="Confirma o cadastro com o código recebido",
+    dependencies=[Depends(limitar("codigo", 30))],
 )
 def confirmar_cadastro(dados: ConfirmacaoCodigo, db: Session = Depends(get_db)) -> Usuario:
     usuario = servico_auth.buscar_por_email(db, dados.email)
@@ -252,7 +255,8 @@ def confirmar_cadastro(dados: ConfirmacaoCodigo, db: Session = Depends(get_db)) 
     return usuario
 
 
-@router.post("/codigo/reenviar", response_model=Mensagem, summary="Reenvia o código de cadastro")
+@router.post("/codigo/reenviar", response_model=Mensagem, summary="Reenvia o código de cadastro",
+             dependencies=[Depends(limitar("envio_codigo", 10))])
 def reenviar_codigo(dados: ReenvioCodigo, db: Session = Depends(get_db)) -> Mensagem:
     _exigir_canal(dados.canal)
     usuario = servico_auth.buscar_por_email(db, dados.email)
@@ -271,7 +275,8 @@ def reenviar_codigo(dados: ReenvioCodigo, db: Session = Depends(get_db)) -> Mens
     return Mensagem(detalhe="Se houver um cadastro pendente, um novo código foi enviado.")
 
 
-@router.post("/login", response_model=TokenSaida, summary="Efetua a sessão do usuário")
+@router.post("/login", response_model=TokenSaida, summary="Efetua a sessão do usuário",
+             dependencies=[Depends(limitar("login", 30))])
 def login(dados: LoginEntrada, db: Session = Depends(get_db)) -> TokenSaida:
     usuario = servico_auth.autenticar(db, dados.email, dados.senha)
 
@@ -301,6 +306,7 @@ def login(dados: LoginEntrada, db: Session = Depends(get_db)) -> TokenSaida:
     "/senha/recuperar",
     response_model=Mensagem,
     summary="Solicita o código de recuperação de senha",
+    dependencies=[Depends(limitar("envio_codigo", 10))],
 )
 def solicitar_recuperacao(
     dados: SolicitacaoRecuperacao, db: Session = Depends(get_db)
@@ -319,7 +325,8 @@ def solicitar_recuperacao(
     return Mensagem(detalhe="Se o e-mail estiver cadastrado, um código foi enviado.")
 
 
-@router.post("/senha/redefinir", response_model=Mensagem, summary="Redefine a senha com o código")
+@router.post("/senha/redefinir", response_model=Mensagem, summary="Redefine a senha com o código",
+             dependencies=[Depends(limitar("codigo", 30))])
 def redefinir_senha(dados: RedefinicaoSenha, db: Session = Depends(get_db)) -> Mensagem:
     usuario = servico_auth.buscar_por_email(db, dados.email)
     if usuario is None:

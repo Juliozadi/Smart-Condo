@@ -50,6 +50,14 @@ def schema_de_teste():
 
 
 @pytest.fixture(autouse=True)
+def zerar_limite_por_origem():
+    """Todos os testes vêm do mesmo "IP": cada um começa sem pedidos contados."""
+    from app.core import limite
+    limite.zerar()
+    yield
+
+
+@pytest.fixture(autouse=True)
 def limpar_tabelas(schema_de_teste):
     """Cada teste começa com as tabelas vazias."""
     yield

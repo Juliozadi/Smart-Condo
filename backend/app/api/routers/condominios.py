@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import exigir_papel, get_usuario_atual
 from app.core.database import get_db
+from app.core.limite import limitar
 from app.core.security import gerar_codigo_condominio
 from app.models.condominio import Condominio, Unidade
 from app.models.enums import Papel, StatusUsuario
@@ -29,6 +30,9 @@ router = APIRouter(prefix="/condominios", tags=["Condomínio"])
     "/por-codigo/{codigo}",
     response_model=CondominioPorCodigo,
     summary="Confere um código de acesso (aberto, para a tela de cadastro)",
+    # Sem limite por origem, o código (cerca de um milhão de combinações)
+    # podia ser adivinhado por um script em poucas horas.
+    dependencies=[Depends(limitar("consulta_codigo", 20))],
 )
 def buscar_por_codigo(codigo: str, db: Session = Depends(get_db)) -> Condominio:
     """Rota aberta: o morador precisa confirmar o condomínio antes de ter

@@ -53,6 +53,8 @@ class Settings(BaseSettings):
     # quanto tempo. O bloqueio é temporário de propósito: permanente,
     # bastaria errar a senha de alguém para deixá-lo de fora.
     MAX_TENTATIVAS_LOGIN: int = Field(default=5, ge=3, le=20)
+    # Limite de pedidos por IP nas rotas abertas (app/core/limite.py).
+    LIMITE_POR_ORIGEM: bool = True
     BLOQUEIO_LOGIN_MIN: int = Field(default=15, ge=1, le=1440)
 
     # ── Envio de e-mail ──────────────────────────────────────────────

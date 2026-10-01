@@ -219,6 +219,11 @@ pagou e a data.
 - **Trocar ou redefinir a senha encerra as outras sessões**: o token leva a
   `versao_sessao` do usuário, que a troca aumenta. A troca pelo perfil
   devolve um token novo, e quem trocou segue conectado.
+- As rotas abertas (consulta do código de acesso, cadastro, login,
+  confirmação e recuperação de senha) têm **limite de pedidos por IP**
+  (`app/core/limite.py`, 429 com `Retry-After`). A contagem fica na
+  memória do processo; com mais de um processo, o limite vai para o proxy.
+  `LIMITE_POR_ORIGEM=false` desliga.
 - Tentativas de login, palpites do código, pedidos de código, reservas,
   pagamentos e as decisões (aprovar cadastro, avaliar ou cancelar reserva,
   liberar visitante, retirar encomenda, responder ocorrência) travam a linha no banco (`SELECT ... FOR UPDATE`): requisições
