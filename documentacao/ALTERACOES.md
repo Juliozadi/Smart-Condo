@@ -16,7 +16,7 @@ seções novas descrevendo o que foi construído desde então.
 | 13.5.3 Tela de reservas do síndico | Nova seção Espaços Comuns, com a autoria de cada espaço; nova figura |
 | 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id; usuarios ganha unidade_desde; encomendas ganha entregue_por_id e retirado_por_nome — agora 254 atributos e 50 relacionamentos |
 | 21 API REST | 109 endpoints: entrega da encomenda em mãos; editar, inativar e reativar espaço; editar andar e vagas da unidade; corrigir e cancelar cobrança |
-| 23 Testes | 408 casos no servidor e 89 testes de interface |
+| 23 Testes | 408 casos no servidor e 91 testes de interface |
 
 **Erros achados.**
 - Não havia tela para cadastrar espaço comum: só a carga de demonstração
@@ -54,6 +54,9 @@ seções novas descrevendo o que foi construído desde então.
   impede lançar a certa no mesmo mês (a restrição única passou a ignorar
   as canceladas). O painel do morador também deixou de somar a cancelada
   como pendente.
+- O painel do porteiro com "visitantes" ou "encomendas" bloqueados pelo
+  síndico mostrava os contadores em "—" e as seções com o aviso de ação
+  não liberada; agora o que não foi liberado some do painel.
 - Segurança: as rotas abertas não tinham limite por origem. O código de
   acesso do condomínio (cerca de um milhão de combinações, com o prefixo
   tirado do nome) podia ser adivinhado por um script em poucas horas, e

@@ -33,9 +33,9 @@
     </div>
 
     <div class="stats-row">
-      <div class="stat-card teal"><span class="stat-value" id="totVisitantes">—</span><span class="stat-label"><img src="../../assets/img/icons/person-walking-arrow-right.svg" width="16" height="16" alt="">No condomínio</span></div>
-      <div class="stat-card amber"><span class="stat-value" id="totEncomendas">—</span><span class="stat-label"><img src="../../assets/img/icons/box-archive.svg" width="16" height="16" alt="">Encomendas</span></div>
-      <div class="stat-card blue"><span class="stat-value" id="totVeiculos">—</span><span class="stat-label"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">No pátio</span></div>
+      <div class="stat-card teal" data-exige="registrar_visitantes"><span class="stat-value" id="totVisitantes">—</span><span class="stat-label"><img src="../../assets/img/icons/person-walking-arrow-right.svg" width="16" height="16" alt="">No condomínio</span></div>
+      <div class="stat-card amber" data-exige="registrar_encomendas"><span class="stat-value" id="totEncomendas">—</span><span class="stat-label"><img src="../../assets/img/icons/box-archive.svg" width="16" height="16" alt="">Encomendas</span></div>
+      <div class="stat-card blue" data-exige="registrar_veiculos"><span class="stat-value" id="totVeiculos">—</span><span class="stat-label"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="">No pátio</span></div>
     </div>
 
     <h2 class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Ações Rápidas</h2>
@@ -62,6 +62,7 @@
       </a>
     </div>
 
+    <div data-exige="registrar_visitantes">
     <h2 class="section-title"><img src="../../assets/img/icons/person-walking-arrow-right.svg" width="16" height="16" alt=""> Visitantes no Condomínio Agora</h2>
     <div class="list-items" id="listaVisitantes"></div>
     <p class="estado-lista" id="estadoVisitantes">Carregando…</p>
@@ -69,10 +70,13 @@
     <a href="visitantes.html" class="action-btn">
       <img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Registrar Novo Visitante
     </a>
+    </div>
 
+    <div data-exige="registrar_encomendas">
     <h2 class="section-title"><img src="../../assets/img/icons/box.svg" width="16" height="16" alt=""> Encomendas Aguardando Retirada</h2>
     <div class="list-items" id="listaEncomendas"></div>
     <p class="estado-lista" id="estadoEncomendas">Carregando…</p>
+    </div>
 
     <h2 class="section-title"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt=""> Avisos do Síndico</h2>
     <div class="notif-list" id="listaAvisos"></div>
@@ -90,8 +94,19 @@
     var usuario = api.protegerPagina('porteiro');
     if (!usuario) return;
 
-    // Esconde o que o síndico não liberou para este porteiro.
-    window.SmartCondo.permissoes.aplicar(usuario);
+    // Esconde o que o síndico não liberou para este porteiro: o atalho, o
+    // contador e a seção inteira. Antes ficavam "—" e um aviso de erro.
+    var permitido = window.SmartCondo.permissoes.aplicar(usuario).then(function(p) {
+      var liberado = function(chave) { return !p || p[chave] !== false; };
+      Array.prototype.forEach.call(document.querySelectorAll('[data-exige]'), function(el) {
+        if (!liberado(el.getAttribute('data-exige'))) el.hidden = true;
+      });
+      var linha = document.querySelector('.stats-row');
+      var cartoes = linha.querySelectorAll('.stat-card:not([hidden])');
+      if (!cartoes.length) linha.hidden = true;
+      else if (cartoes.length < 3) linha.style.gridTemplateColumns = 'repeat(' + cartoes.length + ', 1fr)';
+      return liberado;
+    });
 
     function campo(id) { return document.getElementById(id); }
 
@@ -243,9 +258,11 @@
       .then(function(c) { campo('saudacaoCondominio').textContent = c.nome; })
       .catch(function() { campo('saudacaoCondominio').textContent = ''; });
 
-    carregarVisitantes();
-    carregarEncomendas();
-    carregarVeiculos();
+    permitido.then(function(liberado) {
+      if (liberado('registrar_visitantes')) carregarVisitantes();
+      if (liberado('registrar_encomendas')) carregarEncomendas();
+      if (liberado('registrar_veiculos')) carregarVeiculos();
+    });
     carregarAvisos();
   })();
   </script>
