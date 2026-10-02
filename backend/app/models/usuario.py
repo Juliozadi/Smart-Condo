@@ -126,6 +126,8 @@ class PermissaoPorteiro(Base, TimestampMixin):
     registrar_veiculos: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     registrar_ocorrencias: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     # O financeiro é do síndico; por padrão o porteiro não acessa.
+    # Sem uso: a permissão saiu da tela e da API (o financeiro é sempre
+    # recusado ao porteiro). A coluna fica para não perder o histórico.
     acessar_financeiro: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     definidas_por_id: Mapped[int | None] = mapped_column(
@@ -142,7 +144,6 @@ class PermissaoPorteiro(Base, TimestampMixin):
             "registrar_encomendas": self.registrar_encomendas,
             "registrar_veiculos": self.registrar_veiculos,
             "registrar_ocorrencias": self.registrar_ocorrencias,
-            "acessar_financeiro": self.acessar_financeiro,
         }
 
 

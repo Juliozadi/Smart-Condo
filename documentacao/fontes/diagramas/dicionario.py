@@ -97,7 +97,7 @@ DESCRICOES = {
     "permissoes_porteiro.registrar_encomendas": "Se o porteiro pode registrar encomendas",
     "permissoes_porteiro.registrar_veiculos": "Se o porteiro pode registrar entrada e saída de veículos",
     "permissoes_porteiro.registrar_ocorrencias": "Se o porteiro pode abrir ocorrências",
-    "permissoes_porteiro.acessar_financeiro": "Se o porteiro pode consultar a área financeira",
+    "permissoes_porteiro.acessar_financeiro": "Sem uso: a permissão saiu do sistema, e o financeiro é sempre recusado ao porteiro",
 
     "espacos_comuns.nome": "Nome do espaço",
     "espacos_comuns.descricao": "Descrição e regras de uso",

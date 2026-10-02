@@ -56,7 +56,7 @@ const requisitosFuncionais = [
 
   { id: 'RF008', nome: 'Definir permissões do porteiro',
     atores: 'Síndico', prioridade: 'Importante',
-    descricao: 'O sistema permite ao síndico escolher, porteiro a porteiro, quais ações ele pode executar: registrar visitantes, registrar encomendas, registrar veículos, registrar ocorrências e consultar o financeiro.',
+    descricao: 'O sistema permite ao síndico escolher, porteiro a porteiro, quais ações ele pode executar: registrar visitantes, registrar encomendas, registrar veículos e registrar ocorrências. O financeiro não é liberado ao porteiro: quem deve o quê não é assunto da portaria (LGPD).',
     entradas: 'O porteiro deve pertencer ao condomínio do síndico.',
     saidas: 'As permissões passam a valer imediatamente. A tela do porteiro esconde o que ele não pode fazer, e a API recusa a operação mesmo que a requisição seja enviada por fora da tela.' },
 

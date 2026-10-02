@@ -163,12 +163,12 @@ def criar(db) -> dict:
     db.add(PermissaoPorteiro(
         porteiro_id=carlos.id, definidas_por_id=sindico.id,
         registrar_visitantes=True, registrar_encomendas=True,
-        registrar_veiculos=True, registrar_ocorrencias=True, acessar_financeiro=False,
+        registrar_veiculos=True, registrar_ocorrencias=True,
     ))
     db.add(PermissaoPorteiro(
         porteiro_id=renata.id, definidas_por_id=sindico.id,
         registrar_visitantes=True, registrar_encomendas=True,
-        registrar_veiculos=False, registrar_ocorrencias=False, acessar_financeiro=False,
+        registrar_veiculos=False, registrar_ocorrencias=False,
     ))
 
     # ── Moradores ─────────────────────────────────────────────────────

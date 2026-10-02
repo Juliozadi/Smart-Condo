@@ -50,7 +50,6 @@ ACOES_DO_PORTEIRO = [
     {"chave": "registrar_encomendas", "rotulo": "Registrar encomendas"},
     {"chave": "registrar_veiculos", "rotulo": "Registrar veículos"},
     {"chave": "registrar_ocorrencias", "rotulo": "Registrar ocorrências"},
-    {"chave": "acessar_financeiro", "rotulo": "Acessar o financeiro"},
 ]
 
 

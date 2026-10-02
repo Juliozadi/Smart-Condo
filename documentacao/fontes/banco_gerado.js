@@ -1321,7 +1321,7 @@ const dicionario = [
         "tipo": "BOOLEAN",
         "obrigatorio": "Sim",
         "chave": "",
-        "descricao": "Se o porteiro pode consultar a área financeira"
+        "descricao": "Sem uso: a permissão saiu do sistema, e o financeiro é sempre recusado ao porteiro"
       },
       {
         "coluna": "definidas_por_id",

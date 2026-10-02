@@ -11,7 +11,7 @@ seções novas descrevendo o que foi construído desde então.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | RF004: o cadastro nunca confirmado não prende o e-mail nem o CPF. RF025: o porteiro dá baixa na encomenda entregue em mãos. RF022: visitante sem resposta em 2 horas passa a "sem resposta". RF034: o síndico corrige ou cancela a cobrança lançada errada. RF035: o síndico registra pela tela o pagamento recebido fora do app. RF003: o síndico edita andar e vagas da unidade. RF017 e RF018: reserva cujo horário já passou só pode ser recusada, e o morador não cancela a que já aconteceu. RF021: o aviso do visitante vai só para quem mora lá agora. RF015: o síndico cadastra, edita, marca em manutenção, inativa e reativa os espaços pela tela; inativar cancela as reservas de hoje em diante. RF045: o registro de quem fez inclui o síndico e os espaços |
+| 9 Requisitos funcionais | RF008: sai a permissão "consultar o financeiro" do porteiro. RF004: o cadastro nunca confirmado não prende o e-mail nem o CPF. RF025: o porteiro dá baixa na encomenda entregue em mãos. RF022: visitante sem resposta em 2 horas passa a "sem resposta". RF034: o síndico corrige ou cancela a cobrança lançada errada. RF035: o síndico registra pela tela o pagamento recebido fora do app. RF003: o síndico edita andar e vagas da unidade. RF017 e RF018: reserva cujo horário já passou só pode ser recusada, e o morador não cancela a que já aconteceu. RF021: o aviso do visitante vai só para quem mora lá agora. RF015: o síndico cadastra, edita, marca em manutenção, inativa e reativa os espaços pela tela; inativar cancela as reservas de hoje em diante. RF045: o registro de quem fez inclui o síndico e os espaços |
 | 13.5.8 Tela de moradores e unidades | Nova seção na documentação, com a autoria de cada cadastro e as unidades com andar e vagas; duas figuras |
 | 13.5.3 Tela de reservas do síndico | Nova seção Espaços Comuns, com a autoria de cada espaço; nova figura |
 | 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id; usuarios ganha unidade_desde; encomendas ganha entregue_por_id e retirado_por_nome — agora 254 atributos e 50 relacionamentos |
@@ -54,6 +54,10 @@ seções novas descrevendo o que foi construído desde então.
   impede lançar a certa no mesmo mês (a restrição única passou a ignorar
   as canceladas). O painel do morador também deixou de somar a cancelada
   como pendente.
+- A permissão "Acessar o financeiro" do porteiro não fazia nada: o
+  síndico a marcava, mas o financeiro é sempre recusado ao porteiro, e
+  nenhuma tela a usava. Por decisão do grupo, ela saiu (quem deve o quê
+  não é assunto da portaria); a coluna fica no banco, sem uso.
 - O painel do porteiro com "visitantes" ou "encomendas" bloqueados pelo
   síndico mostrava os contadores em "—" e as seções com o aviso de ação
   não liberada; agora o que não foi liberado some do painel.

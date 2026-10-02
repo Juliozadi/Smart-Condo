@@ -184,7 +184,6 @@ def test_porteiro_criado_pelo_admin_nasce_com_permissoes(cliente, admin):
     )
     assert r.status_code == 200
     assert r.json()["registrar_visitantes"] is True
-    assert r.json()["acessar_financeiro"] is False
 
 
 def test_um_condominio_tem_um_sindico_ativo(cliente, admin):

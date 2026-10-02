@@ -10,7 +10,7 @@ from conftest import FRONT, abrir, ir
 
 API = FRONT.rsplit(":", 1)[0] + ":8000/api/v1"
 TODAS = {"registrar_visitantes": True, "registrar_encomendas": True,
-         "registrar_veiculos": True, "registrar_ocorrencias": True, "acessar_financeiro": False}
+         "registrar_veiculos": True, "registrar_ocorrencias": True}
 
 
 def test_painel_mostra_so_o_que_foi_liberado(navegador):

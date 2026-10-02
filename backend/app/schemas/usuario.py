@@ -111,7 +111,8 @@ class PermissoesPorteiroEntrada(SchemaBase):
     registrar_encomendas: bool = True
     registrar_veiculos: bool = True
     registrar_ocorrencias: bool = True
-    acessar_financeiro: bool = False
+    # "Acessar o financeiro" saiu: nenhuma tela a usava e o financeiro é
+    # sempre recusado ao porteiro (quem deve o quê não é assunto da portaria).
 
 
 class PermissoesPorteiroSaida(PermissoesPorteiroEntrada):
