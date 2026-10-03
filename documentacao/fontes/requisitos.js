@@ -39,14 +39,14 @@ const requisitosFuncionais = [
   { id: 'RF005', nome: 'Confirmar cadastro com código',
     atores: 'Administrador, Síndico, Porteiro, Morador', prioridade: 'Essencial',
     descricao: 'O sistema envia um código de confirmação ao usuário recém-cadastrado e só considera a conta válida depois que esse código é informado. O mesmo mecanismo permite reenviar o código.',
-    entradas: 'A conta deve existir e estar aguardando confirmação. O código vai por e-mail ou, quando o servidor tem provedor de SMS configurado, por SMS, à escolha do usuário. Tem prazo de validade e um limite de tentativas erradas.',
+    entradas: 'A conta deve existir e estar aguardando confirmação; quem tenta entrar sem ter confirmado é levado à tela do código, com o reenvio liberado. O código vai por e-mail ou, quando o servidor tem provedor de SMS configurado, por SMS, à escolha do usuário. Tem prazo de validade e um limite de tentativas erradas.',
     saidas: 'Confirmado o código, a conta passa para "ativo" ou, no caso do morador que se cadastrou sozinho, para "aguardando aprovação" do síndico. Esgotadas as tentativas, o código é invalidado e é preciso pedir outro.' },
 
   { id: 'RF006', nome: 'Aprovar ou recusar cadastro de morador',
     atores: 'Síndico', prioridade: 'Essencial',
     descricao: 'O sistema apresenta ao síndico a fila de moradores que se cadastraram sozinhos e aguardam liberação, permitindo aprovar ou recusar cada um. A recusa exige motivo.',
     entradas: 'O cadastro deve estar na situação "aguardando aprovação" e pertencer ao condomínio do síndico.',
-    saidas: 'Aprovado, o morador passa a "ativo" e consegue entrar. Recusado, fica registrado quem avaliou, quando e por qual motivo, e o morador vê a justificativa na própria tela de espera. Nos dois casos, o morador recebe um e-mail com a decisão.' },
+    saidas: 'Aprovado, o morador passa a "ativo" e consegue entrar. Recusado, fica registrado quem avaliou, quando e por qual motivo, e o morador vê a justificativa na própria tela de espera e também ao tentar entrar. Nos dois casos, o morador recebe um e-mail com a decisão.' },
 
   { id: 'RF007', nome: 'Cadastrar porteiro',
     atores: 'Síndico', prioridade: 'Essencial',

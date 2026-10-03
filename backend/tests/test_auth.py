@@ -697,3 +697,26 @@ def test_conta_confirmada_continua_protegida(cliente, cenario, db):
     db.commit()
     r = cadastrar(cliente, cenario, email="outro@exemplo.com")
     assert r.status_code == 409 and "CPF" in r.json()["detalhe"]
+
+
+def test_login_bloqueado_diz_a_situacao_e_o_motivo_da_recusa(cliente, cenario):
+    """O recusado só via "indisponível", sem o motivo que o síndico escreveu;
+    quem não confirmou o código não sabia para onde ir. A situação vem junto
+    da mensagem, para a tela levar ao passo certo."""
+    corpo = cadastrar(cliente, cenario).json()
+    email, senha = corpo["usuario"]["email"], dados_morador(cenario)["senha"]
+    r = cliente.post("/api/v1/auth/login", json={"email": email, "senha": senha})
+    assert r.status_code == 403 and r.json()["situacao"] == "aguardando_codigo"
+
+    cliente.post("/api/v1/auth/confirmar", json={"email": email, "codigo": corpo["codigo_debug"]})
+    r = cliente.post("/api/v1/auth/login", json={"email": email, "senha": senha})
+    assert r.json()["situacao"] == "aguardando_aprovacao"
+
+    cliente.post(f"/api/v1/usuarios/{corpo['usuario']['id']}/aprovacao", headers=cab(
+        cenario["sindico"]), json={"aprovado": False, "motivo": "Unidade não confere"})
+    r = cliente.post("/api/v1/auth/login", json={"email": email, "senha": senha})
+    assert r.json()["situacao"] == "recusado"
+    assert "Motivo: Unidade não confere" in r.json()["detalhe"]
+    # Com a senha errada, nada disso aparece.
+    r = cliente.post("/api/v1/auth/login", json={"email": email, "senha": "outrasenha99"})
+    assert r.status_code == 401 and "situacao" not in r.json()

@@ -285,6 +285,16 @@
           window.location.href = api.painelDoPapel(usuario.papel);
         })
         .catch(function(e) {
+          // Cadastro sem o código confirmado: leva para a confirmação, com o
+          // reenvio liberado (o código antigo pode ter expirado).
+          if (e.situacao === "aguardando_codigo") {
+            try {
+              sessionStorage.setItem("smartcondo_cadastro",
+                JSON.stringify({ email: email, canal: "email", doLogin: true }));
+            } catch (_) {}
+            window.location.href = "pages/cadastro/confirmar_codigo.html";
+            return;
+          }
           mostrarErroLogin(e.message);
           document.getElementById("senhaInput").value = "";
           document.getElementById("perfilDetectado").className = "perfil-detectado";

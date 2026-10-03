@@ -135,9 +135,12 @@ async def cabecalhos_de_seguranca(requisicao: Request, proxima):
 # "detalhe", que é o que os schemas de sucesso também usam.
 @app.exception_handler(StarletteHTTPException)
 async def erro_http(request: Request, exc: StarletteHTTPException) -> JSONResponse:
+    # O detalhe pode vir como dicionário, com campos a mais além da mensagem
+    # (o login diz a situação do cadastro, para a tela levar ao passo certo).
+    conteudo = exc.detail if isinstance(exc.detail, dict) else {"detalhe": exc.detail}
     return JSONResponse(
         status_code=exc.status_code,
-        content={"detalhe": exc.detail},
+        content=conteudo,
         headers=getattr(exc, "headers", None),
     )
 

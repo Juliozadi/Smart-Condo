@@ -117,8 +117,9 @@
     });
 
     var reenviar = document.getElementById('reenviarCadastro');
-    // O código acabou de ser enviado no cadastro.
-    SmartCondo.api.esperarReenvio(reenviar);
+    // O código acabou de ser enviado no cadastro. Vindo do login, ele pode
+    // ter expirado: o reenvio já fica liberado.
+    if (!dados.doLogin) SmartCondo.api.esperarReenvio(reenviar);
     reenviar.addEventListener('click', function(e) {
       e.preventDefault();
       var link = this;

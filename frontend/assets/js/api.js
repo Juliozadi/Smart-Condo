@@ -128,7 +128,10 @@
           (campos.length ? mensagemDeCampos(campos) : null) ||
           ('Não foi possível concluir (erro ' + resposta.status + ').');
 
-        throw new ErroApi(mensagem, resposta.status, campos);
+        var erro = new ErroApi(mensagem, resposta.status, campos);
+        // A situação do cadastro, quando o login é recusado por ela.
+        erro.situacao = (dados && dados.situacao) || null;
+        throw erro;
       });
     }, function(falhaDeRede) {
       if (falhaDeRede instanceof ErroApi) throw falhaDeRede;

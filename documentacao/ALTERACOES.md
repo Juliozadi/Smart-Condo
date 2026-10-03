@@ -16,7 +16,7 @@ seções novas descrevendo o que foi construído desde então.
 | 13.5.3 Tela de reservas do síndico | Nova seção Espaços Comuns, com a autoria de cada espaço; nova figura |
 | 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id; usuarios ganha unidade_desde; encomendas ganha entregue_por_id e retirado_por_nome — agora 254 atributos e 50 relacionamentos |
 | 21 API REST | 109 endpoints: entrega da encomenda em mãos; editar, inativar e reativar espaço; editar andar e vagas da unidade; corrigir e cancelar cobrança |
-| 23 Testes | 408 casos no servidor e 91 testes de interface |
+| 23 Testes | 409 casos no servidor e 93 testes de interface |
 
 **Erros achados.**
 - Não havia tela para cadastrar espaço comum: só a carga de demonstração
@@ -54,6 +54,13 @@ seções novas descrevendo o que foi construído desde então.
   impede lançar a certa no mesmo mês (a restrição única passou a ignorar
   as canceladas). O painel do morador também deixou de somar a cancelada
   como pendente.
+- Login de quem ainda não pode entrar: o cadastro recusado via só "Este
+  cadastro está indisponível", sem o motivo que o síndico escreveu, e
+  quem não tinha confirmado o código ficava só com a mensagem, sem
+  caminho até a confirmação. Agora (depois de a senha ser conferida) a
+  API diz a situação do cadastro: o recusado vê o motivo, e quem não
+  confirmou o código vai direto para a tela de confirmação, com o
+  reenvio liberado.
 - A permissão "Acessar o financeiro" do porteiro não fazia nada: o
   síndico a marcava, mas o financeiro é sempre recusado ao porteiro, e
   nenhuma tela a usava. Por decisão do grupo, ela saiu (quem deve o quê

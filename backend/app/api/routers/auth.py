@@ -275,24 +275,29 @@ def reenviar_codigo(dados: ReenvioCodigo, db: Session = Depends(get_db)) -> Mens
     return Mensagem(detalhe="Se houver um cadastro pendente, um novo código foi enviado.")
 
 
+def _mensagem_bloqueio(usuario: Usuario) -> str:
+    if usuario.status == StatusUsuario.AGUARDANDO_CODIGO:
+        return "Confirme o código enviado para ativar o cadastro."
+    if usuario.status == StatusUsuario.AGUARDANDO_APROVACAO:
+        return "Seu cadastro aguarda aprovação do síndico."
+    if usuario.status == StatusUsuario.RECUSADO:
+        # Antes era só "indisponível": o morador não sabia por quê.
+        motivo = f" Motivo: {usuario.motivo_recusa}" if usuario.motivo_recusa else ""
+        return f"Seu cadastro foi recusado pelo síndico.{motivo} Fale com ele se precisar."
+    return "Seu acesso foi encerrado. Fale com o síndico do condomínio se precisar."
+
+
 @router.post("/login", response_model=TokenSaida, summary="Efetua a sessão do usuário",
              dependencies=[Depends(limitar("login", 30))])
 def login(dados: LoginEntrada, db: Session = Depends(get_db)) -> TokenSaida:
     usuario = servico_auth.autenticar(db, dados.email, dados.senha)
 
-    if usuario.status == StatusUsuario.AGUARDANDO_CODIGO:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Confirme o código enviado para ativar o cadastro.",
-        )
-    if usuario.status == StatusUsuario.AGUARDANDO_APROVACAO:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Seu cadastro aguarda aprovação do síndico.",
-        )
+    # A senha já foi conferida: quem chega aqui é o dono da conta, e pode
+    # saber em que pé está o cadastro e o que fazer.
     if usuario.status != StatusUsuario.ATIVO:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Este cadastro está indisponível."
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"detalhe": _mensagem_bloqueio(usuario), "situacao": usuario.status.value},
         )
 
     return TokenSaida(
