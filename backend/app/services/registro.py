@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.models.registro import RegistroAlteracao
 from app.models.usuario import Usuario
+from app.schemas.admin import RegistroSaida
 
 # Ações
 CRIOU = "criou"
@@ -57,14 +58,16 @@ def campos_alterados(objeto, novos: dict, rotulos: dict[str, str]) -> str | None
     return "Alterou " + ", ".join(mudaram[:-1]) + " e " + mudaram[-1]
 
 
-def _saida(registro: RegistroAlteracao, autor_nome: str | None) -> dict:
-    return {
-        "acao": registro.acao,
-        "rotulo": ROTULO_ACAO.get(registro.acao, registro.acao),
-        "autor_nome": autor_nome,
-        "feito_em": registro.feito_em,
-        "descricao": registro.descricao,
-    }
+def _saida(registro: RegistroAlteracao, autor_nome: str | None) -> RegistroSaida:
+    # O esquema, e não um dicionário: as listas o põem nas respostas com
+    # model_copy, que não converte, e o Pydantic avisava a cada resposta.
+    return RegistroSaida(
+        acao=registro.acao,
+        rotulo=ROTULO_ACAO.get(registro.acao, registro.acao),
+        autor_nome=autor_nome,
+        feito_em=registro.feito_em,
+        descricao=registro.descricao,
+    )
 
 
 def _consulta(entidade: str):
@@ -75,7 +78,7 @@ def _consulta(entidade: str):
     )
 
 
-def ultimas(db: Session, entidade: str, ids) -> dict[int, dict]:
+def ultimas(db: Session, entidade: str, ids) -> dict[int, RegistroSaida]:
     """A alteração mais recente de cada registro, numa consulta só."""
     ids = list(ids)
     if not ids:
@@ -105,7 +108,7 @@ def criadores(db: Session, entidade: str, ids) -> dict[int, str | None]:
     return {r.entidade_id: nome for r, nome in linhas}
 
 
-def historico(db: Session, entidade: str, entidade_id: int) -> list[dict]:
+def historico(db: Session, entidade: str, entidade_id: int) -> list[RegistroSaida]:
     """Todas as alterações de um registro, da mais recente para a mais antiga."""
     linhas = db.execute(
         _consulta(entidade)

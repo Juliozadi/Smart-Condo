@@ -16,7 +16,7 @@ seções novas descrevendo o que foi construído desde então.
 | 13.5.3 Tela de reservas do síndico | Nova seção Espaços Comuns, com a autoria de cada espaço; nova figura |
 | 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id; usuarios ganha unidade_desde; encomendas ganha entregue_por_id e retirado_por_nome — agora 254 atributos e 50 relacionamentos |
 | 21 API REST | 109 endpoints: entrega da encomenda em mãos; editar, inativar e reativar espaço; editar andar e vagas da unidade; corrigir e cancelar cobrança |
-| 23 Testes | 409 casos no servidor e 93 testes de interface |
+| 23 Testes | 411 casos no servidor e 94 testes de interface |
 
 **Erros achados.**
 - Não havia tela para cadastrar espaço comum: só a carga de demonstração
@@ -54,6 +54,21 @@ seções novas descrevendo o que foi construído desde então.
   impede lançar a certa no mesmo mês (a restrição única passou a ignorar
   as canceladas). O painel do morador também deixou de somar a cancelada
   como pendente.
+- O CI estava vermelho desde 24/09, e aqui os testes passavam. Duas
+  causas, as duas só no ambiente do CI: (1) no Chrome mais novo, o
+  documento do condomínio não abria — a aba nova era levada a um
+  endereço blob: criado pela outra página, o que ele passou a bloquear;
+  agora a aba nova cria o próprio endereço e mostra o arquivo dentro
+  dela. (2) Com internet, o VLibras carrega e desenhava fora de qualquer
+  região da página (falha de acessibilidade); agora fica numa região
+  rotulada. Aqui a internet externa é bloqueada, por isso os dois não
+  apareciam; um teste novo imita o VLibras.
+- Reserva com horário que traz fuso ("14:00Z", "14:00+03:00") derrubava
+  o servidor (erro 500): a hora com fuso não se compara com a hora local.
+  Agora é recusada com a mensagem de campo inválido.
+- Respostas com a última alteração (o "editado por") geravam avisos do
+  Pydantic a cada lista, escondidos pela configuração dos testes; agora
+  vêm no formato certo, e esse aviso passa a reprovar os testes.
 - Login de quem ainda não pode entrar: o cadastro recusado via só "Este
   cadastro está indisponível", sem o motivo que o síndico escreveu, e
   quem não tinha confirmado o código ficava só com a mensagem, sem

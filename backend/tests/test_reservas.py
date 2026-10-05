@@ -11,6 +11,7 @@ from tests.fixtures import (
 )
 
 AMANHA = (hoje_local() + timedelta(days=1)).isoformat()
+HOJE = hoje_local().isoformat()
 
 
 @pytest.fixture
@@ -166,6 +167,18 @@ def test_antecedencia_maxima(cliente, cenario):
 def test_hora_fim_antes_do_inicio_e_recusada(cliente, cenario):
     r = reservar(cliente, cenario["ana"], cenario["salao"]["id"], "22:00", "14:00")
     assert r.status_code == 422
+
+
+@pytest.mark.parametrize("inicio, fim", [
+    ("14:00+03:00", "22:00"),        # só um com fuso: não dava para comparar
+    ("14:00Z", "22:00Z"),            # os dois com fuso: não comparava com a hora local
+])
+def test_horario_com_fuso_e_recusado(cliente, cenario, inicio, fim):
+    """O horário é o do condomínio. Com fuso, a comparação com a hora local
+    estourava e o pedido voltava como erro 500."""
+    r = reservar(cliente, cenario["ana"], cenario["salao"]["id"], inicio, fim, data=HOJE)
+    assert r.status_code == 422
+    assert "fuso" in str(r.json()["campos"])
 
 
 def test_acima_da_capacidade_e_recusado(cliente, cenario):

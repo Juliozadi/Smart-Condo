@@ -238,7 +238,10 @@ def test_documento_do_sindico_chega_ao_morador(navegador):
     with pg.expect_popup() as aba:
         cartao.locator("button.link-baixar").click()
     nova = aba.value
-    nova.wait_for_url("blob:**", timeout=8000)
+    # A aba nova mostra o PDF num quadro com o próprio endereço blob:
+    # (navegar até o blob desta página é bloqueado no Chrome mais novo).
+    nova.wait_for_selector("iframe[src^='blob:']", timeout=8000)
+    assert nova.title() == titulo
     # Sem o token, o mesmo caminho não entrega o arquivo.
     status = pg.evaluate("""async (t) => {
         const api = window.SmartCondo.api;

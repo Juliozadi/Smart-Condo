@@ -142,6 +142,28 @@
   }
 
   // ── API pública ───────────────────────────────────────────────
+  function mostrarNaJanela(janela, arquivo, nome) {
+    var doc = janela.document;
+    var url = janela.URL.createObjectURL(arquivo.blob);
+    doc.title = nome || 'Documento';
+    doc.body.textContent = '';
+    doc.body.style.cssText = 'margin:0;height:100vh;background:#525659;display:flex;' +
+      'align-items:center;justify-content:center;';
+    var visor;
+    if (/^image\//.test(arquivo.tipo)) {
+      visor = doc.createElement('img');
+      visor.alt = nome || 'Documento';
+      visor.style.cssText = 'max-width:100%;max-height:100%;';
+    } else {
+      visor = doc.createElement('iframe');
+      visor.title = nome || 'Documento';
+      visor.style.cssText = 'border:0;width:100%;height:100%;';
+    }
+    visor.src = url;
+    doc.body.appendChild(visor);
+    URL.revokeObjectURL(arquivo.url);   // o desta página não é mais usado
+  }
+
   var api = {
     url: API,
     base: BASE,
@@ -181,7 +203,7 @@
       }, function() {
         throw new ErroApi('Não foi possível falar com o servidor. Verifique se a API está no ar.', 0);
       }).then(function(blob) {
-        return { url: URL.createObjectURL(blob), tipo: blob.type };
+        return { url: URL.createObjectURL(blob), tipo: blob.type, blob: blob };
       });
     },
 
@@ -245,6 +267,10 @@
        A aba é aberta já no clique — depois do download o navegador a
        trataria como pop-up e bloquearia — e recebe o arquivo quando ele
        chega. Se mesmo assim não abrir, o arquivo é baixado. */
+    /* O Chrome mais novo isola os endereços blob: por janela: navegar a
+       aba nova até um endereço criado nesta página dava ERR_ABORTED, e o
+       documento não abria. A aba nova cria o próprio endereço e mostra o
+       arquivo dentro dela (PDF num quadro, imagem numa <img>). */
     abrirArquivo: function(caminho, nome) {
       var janela = global.open('', '_blank');
       if (janela) {
@@ -254,7 +280,7 @@
       }
       return api.protegido(caminho).then(function(arquivo) {
         if (janela && !janela.closed) {
-          janela.location.href = arquivo.url;
+          mostrarNaJanela(janela, arquivo, nome);
         } else {
           var link = document.createElement('a');
           link.href = arquivo.url;
