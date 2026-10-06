@@ -11,6 +11,8 @@ criação, edição, inativação e reativação guarda quem a fez e quando
 """
 from __future__ import annotations
 
+import re
+
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -142,9 +144,27 @@ def _sem_acento(coluna):
     return func.translate(coluna, _COM_ACENTO, _SEM_ACENTO)
 
 
+def _contendo(texto: str) -> str:
+    """Padrão do LIKE para "contém o texto". "%" e "_" digitados são
+    curingas do LIKE: sem o escape, uma busca por "_" achava tudo."""
+    texto = texto.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    return f"%{texto}%"
+
+
 def _termo_sem_acento(busca: str) -> str:
     tabela = str.maketrans(_COM_ACENTO, _SEM_ACENTO)
-    return f"%{busca.strip().translate(tabela)}%"
+    return _contendo(busca.strip().translate(tabela))
+
+
+def _termo_documento(busca: str) -> str:
+    """CPF e CNPJ são guardados só com os dígitos, e a tela os mostra
+    pontuados: "11.222.333/0001-81" precisa achar "11222333000181". Só
+    quando a busca é um número (dígitos e pontuação); "Rua 100" não vira
+    busca por "100" no CNPJ."""
+    texto = busca.strip()
+    if re.fullmatch(r"[\d.\-/\s]+", texto):
+        texto = re.sub(r"\D", "", texto)
+    return _contendo(texto)
 
 
 def _buscar_condominio(db: Session, condominio_id: int, travar: bool = False) -> Condominio:
@@ -204,7 +224,7 @@ def historico(
     entidade_id: int = Query(),
     _: Usuario = SomenteAdmin,
     db: Session = Depends(get_db),
-) -> list[dict]:
+) -> list[RegistroSaida]:
     return registro.historico(db, entidade, entidade_id)
 
 
@@ -224,9 +244,9 @@ def listar_condominios(
     if busca:
         termo = _termo_sem_acento(busca)
         consulta = consulta.where(
-            _sem_acento(Condominio.nome).ilike(termo)
-            | _sem_acento(Condominio.cidade).ilike(termo)
-            | Condominio.cnpj.ilike(termo)
+            _sem_acento(Condominio.nome).ilike(termo, escape="\\")
+            | _sem_acento(Condominio.cidade).ilike(termo, escape="\\")
+            | Condominio.cnpj.ilike(_termo_documento(busca), escape="\\")
         )
     return _condominios_saida(db, db.scalars(consulta).all())
 
@@ -396,9 +416,9 @@ def listar_usuarios(
     if busca:
         termo = _termo_sem_acento(busca)
         consulta = consulta.where(
-            _sem_acento(Usuario.nome).ilike(termo)
-            | Usuario.email.ilike(termo)
-            | Usuario.cpf.ilike(termo)
+            _sem_acento(Usuario.nome).ilike(termo, escape="\\")
+            | Usuario.email.ilike(termo, escape="\\")
+            | Usuario.cpf.ilike(_termo_documento(busca), escape="\\")
         )
     return _usuarios_saida(db, db.scalars(consulta).all())
 
