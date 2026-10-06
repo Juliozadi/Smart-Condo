@@ -415,7 +415,11 @@ def criar_usuario(
     admin: Usuario = SomenteAdmin,
     db: Session = Depends(get_db),
 ) -> UsuarioAdminSaida:
-    condominio = _buscar_condominio(db, condominio_id)
+    # Travado até o commit: "já tem síndico?" e "está inativo?" são
+    # conferidos antes de gravar. Sem a trava, dois cadastros juntos
+    # criavam dois síndicos, e um cadastro junto da inativação deixava
+    # alguém ativo num condomínio inativo.
+    condominio = _buscar_condominio(db, condominio_id, travar=True)
     usuario = servico_usuarios.criar_usuario(db, condominio, dados, admin)
     registro.registrar(db, admin, registro.CRIOU, registro.USUARIO, usuario.id)
     db.commit()

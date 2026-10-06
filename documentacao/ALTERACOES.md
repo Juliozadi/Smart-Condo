@@ -16,7 +16,7 @@ seções novas descrevendo o que foi construído desde então.
 | 13.5.3 Tela de reservas do síndico | Nova seção Espaços Comuns, com a autoria de cada espaço; nova figura |
 | 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id; usuarios ganha unidade_desde; encomendas ganha entregue_por_id e retirado_por_nome — agora 254 atributos e 50 relacionamentos |
 | 21 API REST | 109 endpoints: entrega da encomenda em mãos; editar, inativar e reativar espaço; editar andar e vagas da unidade; corrigir e cancelar cobrança |
-| 23 Testes | 416 casos no servidor e 94 testes de interface |
+| 23 Testes | 418 casos no servidor e 94 testes de interface |
 
 **Erros achados.**
 - Não havia tela para cadastrar espaço comum: só a carga de demonstração
@@ -63,6 +63,12 @@ seções novas descrevendo o que foi construído desde então.
   região da página (falha de acessibilidade); agora fica numa região
   rotulada. Aqui a internet externa é bloqueada, por isso os dois não
   apareciam; um teste novo imita o VLibras.
+- Dois síndicos no mesmo condomínio: "já tem síndico?" era conferido sem
+  travar o condomínio. Dois cadastros feitos juntos pelo administrador
+  passavam os dois, e quatro reativações juntas deixavam os quatro
+  ativos; um cadastro ou reativação junto da inativação do condomínio
+  deixava alguém ativo num condomínio inativo. Agora o condomínio fica
+  travado até o fim da gravação, nos dois caminhos.
 - Brecha: não havia tamanho máximo para o corpo do pedido, e a API lê o
   corpo inteiro antes de conferir o login. Um corpo de 50 MB mandado ao
   /auth/login, sem conta nenhuma, levava o servidor a 401 MB de memória;

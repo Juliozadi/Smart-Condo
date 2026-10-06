@@ -281,7 +281,10 @@ def _conferir_reativacao(db: Session, usuario: Usuario) -> None:
     reativação deixava o condomínio com dois síndicos."""
     if usuario.condominio_id is None:
         return
-    condominio = db.get(Condominio, usuario.condominio_id)
+    # Travado até o commit, como no cadastro: duas reativações juntas
+    # passavam as duas por "já tem síndico?", e uma junto da inativação do
+    # condomínio deixava alguém ativo num condomínio inativo.
+    condominio = db.get(Condominio, usuario.condominio_id, with_for_update=True)
     if condominio is not None and condominio.inativo_em is not None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
