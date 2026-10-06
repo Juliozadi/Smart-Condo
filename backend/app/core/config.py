@@ -97,6 +97,11 @@ class Settings(BaseSettings):
     # Documentos do cadastro do morador (RG, comprovante, escritura) e os
     # do condomínio que o síndico publica (atas, convenção, regimento).
     DOCUMENTO_MAX_KB: int = Field(default=10240, ge=100, le=20480)
+    # Teto do corpo de qualquer pedido sem arquivo. O maior texto aceito
+    # tem 8 mil caracteres; 256 KB sobra com folga. Os pedidos com arquivo
+    # (multipart) têm como teto o maior arquivo aceito, mais uma folga
+    # para os outros campos do formulário.
+    CORPO_MAX_KB: int = Field(default=256, ge=64, le=4096)
     # Por quanto tempo vale a autorização para enviar esses documentos,
     # contada a partir do cadastro.
     TOKEN_DOCUMENTOS_MIN: int = Field(default=60, ge=5, le=1440)

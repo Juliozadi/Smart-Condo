@@ -16,7 +16,7 @@ seções novas descrevendo o que foi construído desde então.
 | 13.5.3 Tela de reservas do síndico | Nova seção Espaços Comuns, com a autoria de cada espaço; nova figura |
 | 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id; usuarios ganha unidade_desde; encomendas ganha entregue_por_id e retirado_por_nome — agora 254 atributos e 50 relacionamentos |
 | 21 API REST | 109 endpoints: entrega da encomenda em mãos; editar, inativar e reativar espaço; editar andar e vagas da unidade; corrigir e cancelar cobrança |
-| 23 Testes | 411 casos no servidor e 94 testes de interface |
+| 23 Testes | 416 casos no servidor e 94 testes de interface |
 
 **Erros achados.**
 - Não havia tela para cadastrar espaço comum: só a carga de demonstração
@@ -63,6 +63,13 @@ seções novas descrevendo o que foi construído desde então.
   região da página (falha de acessibilidade); agora fica numa região
   rotulada. Aqui a internet externa é bloqueada, por isso os dois não
   apareciam; um teste novo imita o VLibras.
+- Brecha: não havia tamanho máximo para o corpo do pedido, e a API lê o
+  corpo inteiro antes de conferir o login. Um corpo de 50 MB mandado ao
+  /auth/login, sem conta nenhuma, levava o servidor a 401 MB de memória;
+  poucos ao mesmo tempo derrubavam a API (arquivo enviado ia para o
+  disco, também sem teto). Agora: até 256 KB sem arquivo
+  (CORPO_MAX_KB) e até o maior arquivo aceito mais 128 KB com arquivo;
+  acima disso, 413 sem ler o resto. Vale também sem Content-Length.
 - Reserva com horário que traz fuso ("14:00Z", "14:00+03:00") derrubava
   o servidor (erro 500): a hora com fuso não se compara com a hora local.
   Agora é recusada com a mensagem de campo inválido.
