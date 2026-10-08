@@ -16,7 +16,7 @@ seções novas descrevendo o que foi construído desde então.
 | 13.5.3 Tela de reservas do síndico | Nova seção Espaços Comuns, com a autoria de cada espaço; nova figura |
 | 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id; usuarios ganha unidade_desde; encomendas ganha entregue_por_id e retirado_por_nome — agora 254 atributos e 50 relacionamentos |
 | 21 API REST | 109 endpoints: entrega da encomenda em mãos; editar, inativar e reativar espaço; editar andar e vagas da unidade; corrigir e cancelar cobrança |
-| 23 Testes | 425 casos no servidor e 94 testes de interface |
+| 23 Testes | 426 casos no servidor e 94 testes de interface |
 
 **Erros achados.**
 - Não havia tela para cadastrar espaço comum: só a carga de demonstração
@@ -63,6 +63,12 @@ seções novas descrevendo o que foi construído desde então.
   região da página (falha de acessibilidade); agora fica numa região
   rotulada. Aqui a internet externa é bloqueada, por isso os dois não
   apareciam; um teste novo imita o VLibras.
+- Reserva pendente esquecida bloqueava o espaço: a que tem o horário
+  chegado sem avaliação vira recusada, mas isso só se acertava ao abrir
+  as listas de reservas. Até lá ela aparecia ocupando a agenda e barrava
+  o pedido de outro morador para mais tarde no mesmo dia (pendente das
+  10h às 22h, ao meio-dia, recusava um pedido das 14h às 16h). Agora a
+  agenda e o pedido de reserva fazem o mesmo acerto antes de conferir.
 - Busca do administrador: CPF e CNPJ são guardados só com os dígitos e a
   tela os mostra pontuados; quem copiava "11.222.333/0001-81" para a
   busca não achava nada. Agora a busca que é um número compara só os

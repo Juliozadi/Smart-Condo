@@ -380,3 +380,32 @@ def test_reservas_passadas_se_encerram_sozinhas(cliente, cenario, db):
     todas = {r["id"]: r["status"] for r in cliente.get(
         "/api/v1/espacos/reservas", headers=cab(cenario["sindico"])).json()}
     assert todas[futura["id"]] == "pendente"
+
+
+def test_pendente_que_ja_comecou_nao_bloqueia_o_espaco(cliente, cenario, db, monkeypatch):
+    """A pendente cujo horário chegou sem avaliação vira recusada, mas isso
+    só se acertava ao abrir as listas: até lá ela continuava ocupando o
+    espaço na agenda e barrando o pedido de outro morador para mais tarde."""
+    from datetime import time
+
+    from sqlalchemy import update
+
+    from app.api.routers import reservas as rotas
+    from app.models.espaco import Reserva
+
+    meio_dia = rotas.agora_local().replace(hour=12, minute=0, second=0, microsecond=0)
+    monkeypatch.setattr(rotas, "agora_local", lambda: meio_dia)
+
+    esquecida = reservar(cliente, cenario["ana"], cenario["salao"]["id"]).json()
+    db.execute(update(Reserva).where(Reserva.id == esquecida["id"])
+               .values(data=meio_dia.date(), hora_inicio=time(10), hora_fim=time(22)))
+    db.commit()
+    hoje = meio_dia.date().isoformat()
+
+    agenda = cliente.get("/api/v1/espacos/agenda", params={"inicio": hoje, "fim": hoje},
+                         headers=cab(cenario["bruno"])).json()
+    assert agenda == []
+
+    r = reservar(cliente, cenario["bruno"], cenario["salao"]["id"],
+                 inicio="14:00", fim="16:00", data=hoje)
+    assert r.status_code == 201, r.json()

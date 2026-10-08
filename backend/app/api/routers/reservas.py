@@ -364,6 +364,8 @@ def consultar_agenda(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="A data final precisa ser igual ou posterior à inicial.",
         )
+    # A pendente esquecida cujo horário chegou não ocupa mais o espaço.
+    _encerrar_passadas(db, usuario.condominio_id)
 
     consulta = (
         select(Reserva)
@@ -406,6 +408,9 @@ def solicitar_reserva(
     morador: Usuario = Depends(exigir_papel(Papel.MORADOR)),
     db: Session = Depends(get_db),
 ) -> ReservaSaida:
+    # Antes da conferência de conflito: a pendente cujo horário chegou sem
+    # avaliação já é recusada e não pode barrar um pedido para mais tarde.
+    _encerrar_passadas(db, morador.condominio_id)
     espaco = _espaco_do_condominio(db, morador, dados.espaco_id)
     # Trava o espaço até o fim da transação. Sem isso, dois moradores que
     # pedem o mesmo horário ao mesmo tempo passam juntos pela conferência
