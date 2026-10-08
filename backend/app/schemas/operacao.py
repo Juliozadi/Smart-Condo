@@ -4,37 +4,24 @@ from __future__ import annotations
 from datetime import date, datetime
 from decimal import Decimal
 
-from pydantic import Field, field_validator
+from pydantic import Field
 
 from app.models.enums import (
     CategoriaDocumento, CategoriaVeiculo, PrioridadeOrdemServico, StatusOrdemServico,
     TipoMovimentacao,
 )
-from app.schemas.comuns import SchemaBase
+from app.schemas.comuns import Placa, SchemaBase
 
 
 # ── Veículos ─────────────────────────────────────────────────────────
 class MovimentacaoEntrada(SchemaBase):
-    placa: str = Field(min_length=7, max_length=10)
+    placa: Placa
     tipo: TipoMovimentacao
     categoria: CategoriaVeiculo
     unidade_id: int | None = None
     modelo: str | None = Field(default=None, max_length=60)
     cor: str | None = Field(default=None, max_length=30)
     observacao: str | None = Field(default=None, max_length=500)
-
-    @field_validator("placa")
-    @classmethod
-    def normalizar_placa(cls, valor: str) -> str:
-        """Guarda só letras e números, em maiúsculas.
-
-        Assim ABC-1D23, abc1d23 e ABC 1D23 viram a mesma placa e a consulta
-        de quem está dentro não erra por causa do hífen.
-        """
-        limpa = "".join(c for c in valor if c.isalnum()).upper()
-        if len(limpa) != 7:
-            raise ValueError("A placa precisa ter 7 caracteres (ex.: ABC1D23).")
-        return limpa
 
 
 class MovimentacaoSaida(SchemaBase):

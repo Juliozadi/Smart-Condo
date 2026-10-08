@@ -720,3 +720,21 @@ def test_login_bloqueado_diz_a_situacao_e_o_motivo_da_recusa(cliente, cenario):
     # Com a senha errada, nada disso aparece.
     r = cliente.post("/api/v1/auth/login", json={"email": email, "senha": "outrasenha99"})
     assert r.status_code == 401 and "situacao" not in r.json()
+
+
+ARABES = str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩")
+LARGOS = str.maketrans("0123456789", "０１２３４５６７８９")
+
+
+@pytest.mark.parametrize("tabela", [ARABES, LARGOS], ids=["arabes", "largura_total"])
+def test_cpf_com_digitos_de_outro_alfabeto_nao_burla_o_cpf_repetido(cliente, cenario, tabela):
+    """O \\d do Python também casa com "٠١٢" e "０１２": o mesmo CPF escrito
+    assim passava pelos dígitos verificadores, era gravado como outro texto
+    e a mesma pessoa se cadastrava duas vezes."""
+    assert cadastrar(cliente, cenario).status_code == 201
+    disfarcado = CPF_MORADOR.translate(tabela)
+    r = cadastrar(cliente, cenario, cpf=disfarcado, email="outro@exemplo.com")
+    assert r.status_code in (409, 422), r.json()
+    r = cadastrar(cliente, cenario, cpf=disfarcado, email="outro@exemplo.com",
+                  telefone="(67) 99999-0000".translate(tabela))
+    assert r.status_code in (409, 422), r.json()

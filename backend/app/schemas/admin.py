@@ -11,7 +11,7 @@ from datetime import date, datetime
 from pydantic import EmailStr, Field
 
 from app.models.enums import Papel, StatusUsuario, TipoOcupacao
-from app.schemas.comuns import CPF, DataNascimento, SchemaBase, Senha, Telefone
+from app.schemas.comuns import CPF, DataNascimento, IdUnidade, SchemaBase, Senha, Telefone
 
 
 class UsuarioAdminEntrada(SchemaBase):
@@ -30,8 +30,8 @@ class UsuarioAdminEntrada(SchemaBase):
     papel: Papel
 
     # Só para morador.
-    unidade_numero: str | None = Field(default=None, max_length=20)
-    unidade_bloco: str = Field(default="unico", max_length=20)
+    unidade_numero: IdUnidade | None = Field(default=None, max_length=20)
+    unidade_bloco: IdUnidade = Field(default="unico", max_length=20)
     tipo_ocupacao: TipoOcupacao | None = None
 
 
@@ -63,8 +63,8 @@ class UsuarioAdminAtualizacao(SchemaBase):
     status: StatusUsuario | None = None
     senha: Senha | None = Field(default=None, description="Só envie para trocar a senha.")
 
-    unidade_numero: str | None = Field(default=None, max_length=20)
-    unidade_bloco: str | None = Field(default=None, max_length=20)
+    unidade_numero: IdUnidade | None = Field(default=None, max_length=20)
+    unidade_bloco: IdUnidade | None = Field(default=None, max_length=20)
     tipo_ocupacao: TipoOcupacao | None = None
 
 

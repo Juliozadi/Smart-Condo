@@ -69,6 +69,13 @@ def test_placa_com_tamanho_errado_e_recusada(cliente, cenario):
     assert mover(cliente, cenario["porteiro"], placa="ABC123").status_code == 422
 
 
+@pytest.mark.parametrize("placa", ["ＡＢＣ１２３４", "ÁBC1234", "ABC²234", "ABC_1234"])
+def test_placa_so_aceita_letras_e_numeros_comuns(cliente, cenario, placa):
+    """Letra acentuada, número sobrescrito ou de largura total passavam pela
+    limpeza e viravam outra placa: o mesmo carro entrava duas vezes."""
+    assert mover(cliente, cenario["porteiro"], placa=placa).status_code == 422
+
+
 def test_nao_registra_duas_entradas_seguidas(cliente, cenario):
     """Duas entradas sem saída deixariam o pátio contando errado."""
     assert mover(cliente, cenario["porteiro"]).status_code == 201

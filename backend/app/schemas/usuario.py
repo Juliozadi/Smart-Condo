@@ -13,7 +13,9 @@ from app.models.enums import (
     CanalVerificacao, Papel, StatusUsuario, TipoOcupacao,
 )
 from app.schemas.admin import RegistroSaida
-from app.schemas.comuns import CPF, DataNascimento, SchemaBase, Senha, SenhaDigitada, Telefone
+from app.schemas.comuns import (
+    CPF, DataNascimento, IdUnidade, SchemaBase, Senha, SenhaDigitada, Telefone,
+)
 
 
 # ── Cadastro (seção 12) ───────────────────────────────────────────────
@@ -38,8 +40,8 @@ class CadastroMorador(CadastroBase):
 
     # O morador informa o código que recebeu do síndico, não o id.
     codigo_condominio: str = Field(min_length=4, max_length=20)
-    unidade_numero: str = Field(min_length=1, max_length=20)
-    unidade_bloco: str = Field(default="unico", max_length=20)
+    unidade_numero: IdUnidade = Field(min_length=1, max_length=20)
+    unidade_bloco: IdUnidade = Field(default="unico", max_length=20)
     tipo_ocupacao: TipoOcupacao
 
 

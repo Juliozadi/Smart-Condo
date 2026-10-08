@@ -455,3 +455,16 @@ def test_porteiro_entrega_em_maos_e_o_morador_e_avisado(cliente, cenario, monkey
                         headers=cab(cenario["ana"]), json={"confirmada": True}).status_code == 409
     da_ana = cliente.get("/api/v1/portaria/encomendas", headers=cab(cenario["ana"])).json()
     assert da_ana[0]["retirado_por_nome"] == "Pedro (filho da Ana)"
+
+
+def test_placa_do_visitante_e_normalizada_como_a_do_patio(cliente, cenario):
+    """A placa do visitante era guardada como digitada: "abc-1d23" aqui e
+    "ABC1D23" no pátio eram o mesmo carro escrito de dois jeitos."""
+    r = registrar_visitante(cliente, cenario["porteiro"], cenario["u204"], placa_veiculo="abc-1d23")
+    assert r.status_code == 201, r.text
+    assert r.json()["placa_veiculo"] == "ABC1D23"
+    r = registrar_visitante(cliente, cenario["porteiro"], cenario["u204"], placa_veiculo="ABÇ1234")
+    assert r.status_code == 422
+    r = registrar_visitante(cliente, cenario["porteiro"], cenario["u204"], placa_veiculo="  ")
+    assert r.status_code == 201, r.text
+    assert r.json()["placa_veiculo"] is None

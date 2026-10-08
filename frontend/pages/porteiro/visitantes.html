@@ -293,6 +293,10 @@
         tipo_visita: obs ? tipo + ' — ' + obs : tipo
       };
       var placa = campo('placa-visitante').value.trim();
+      if (placa && placa.replace(/[^A-Za-z0-9]/g, '').length !== 7) {
+        erro.textContent = 'A placa precisa ter 7 letras ou números (ex.: ABC-1D23).';
+        return;
+      }
       if (placa) corpo.placa_veiculo = placa;
 
       // A foto do vídeo porteiro vai logo depois do registro, como arquivo.

@@ -9,7 +9,7 @@ from datetime import datetime
 from pydantic import Field, model_validator
 
 from app.schemas.admin import RegistroSaida
-from app.schemas.comuns import CEP, CNPJ, SchemaBase, Telefone, UF
+from app.schemas.comuns import CEP, CNPJ, IdUnidade, SchemaBase, Telefone, UF
 
 
 class CondominioEntrada(SchemaBase):
@@ -51,8 +51,8 @@ class CondominioPorCodigo(SchemaBase):
 
 
 class UnidadeEntrada(SchemaBase):
-    numero: str = Field(min_length=1, max_length=20)
-    bloco: str = Field(default="unico", max_length=20)
+    numero: IdUnidade = Field(min_length=1, max_length=20)
+    bloco: IdUnidade = Field(default="unico", max_length=20)
     andar: int | None = Field(default=None, ge=0, le=200)
     vagas_garagem: int = Field(default=0, ge=0, le=20)
 

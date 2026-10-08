@@ -110,3 +110,30 @@ def test_sindico_cadastra_a_unidade_que_so_existia_pendente(cliente, db):
     r = cliente.post("/api/v1/condominios/meu/unidades", headers=cab(base["sindico"]),
                      json={"numero": "402"})
     assert r.status_code == 409
+
+
+def _autocadastro(cliente, base, numero, email, cpf):
+    return cliente.post("/api/v1/auth/cadastro/morador", json={
+        "nome": "Morador Novo", "email": email, "cpf": cpf,
+        "telefone": "(67) 99999-0003", "senha": "senhaforte123",
+        "codigo_condominio": base["cond"]["codigo_acesso"],
+        "unidade_numero": numero, "tipo_ocupacao": "proprietario",
+    })
+
+
+def test_numero_da_unidade_com_digitos_de_outro_alfabeto(cliente, db):
+    """"２０４" (largura total) aparece na tela igual a "204", mas era outra
+    unidade: o síndico aprovaria alguém num apartamento que não é o 204."""
+    base = montar_condominio(cliente, db)
+    cliente.post("/api/v1/condominios/meu/unidades", headers=cab(base["sindico"]),
+                 json={"numero": "204"})
+    r = _autocadastro(cliente, base, "２０４", "largo@exemplo.com", CPFS[3])
+    assert r.status_code == 201, r.text
+    assert r.json()["usuario"]["unidade"]["numero"] == "204"
+    assert _numeros(cliente, base["sindico"]) == {"204"}
+
+    r = _autocadastro(cliente, base, "٢٠٤", "arabe@exemplo.com", CPFS[4])
+    assert r.status_code == 422
+    r = cliente.post("/api/v1/condominios/meu/unidades", headers=cab(base["sindico"]),
+                     json={"numero": "٣٠١"})
+    assert r.status_code == 422

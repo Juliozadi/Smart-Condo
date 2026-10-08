@@ -11,12 +11,12 @@ seções novas descrevendo o que foi construído desde então.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | RF008: sai a permissão "consultar o financeiro" do porteiro. RF004: o cadastro nunca confirmado não prende o e-mail nem o CPF, e a unidade nova do autocadastro fica pendente até a aprovação. RF025: o porteiro dá baixa na encomenda entregue em mãos. RF022: visitante sem resposta em 2 horas passa a "sem resposta". RF034: o síndico corrige ou cancela a cobrança lançada errada. RF035: o síndico registra pela tela o pagamento recebido fora do app. RF003: o síndico edita andar e vagas da unidade. RF017 e RF018: reserva cujo horário já passou só pode ser recusada, e o morador não cancela a que já aconteceu. RF021: o aviso do visitante vai só para quem mora lá agora. RF015: o síndico cadastra, edita, marca em manutenção, inativa e reativa os espaços pela tela; inativar cancela as reservas de hoje em diante. RF045: o registro de quem fez inclui o síndico e os espaços |
+| 9 Requisitos funcionais | RF008: sai a permissão "consultar o financeiro" do porteiro. RF026: a placa só aceita letras A-Z e números, e a do visitante segue a mesma regra. RF004: o cadastro nunca confirmado não prende o e-mail nem o CPF, e a unidade nova do autocadastro fica pendente até a aprovação. RF025: o porteiro dá baixa na encomenda entregue em mãos. RF022: visitante sem resposta em 2 horas passa a "sem resposta". RF034: o síndico corrige ou cancela a cobrança lançada errada. RF035: o síndico registra pela tela o pagamento recebido fora do app. RF003: o síndico edita andar e vagas da unidade. RF017 e RF018: reserva cujo horário já passou só pode ser recusada, e o morador não cancela a que já aconteceu. RF021: o aviso do visitante vai só para quem mora lá agora. RF015: o síndico cadastra, edita, marca em manutenção, inativa e reativa os espaços pela tela; inativar cancela as reservas de hoje em diante. RF045: o registro de quem fez inclui o síndico e os espaços |
 | 13.5.8 Tela de moradores e unidades | Nova seção na documentação, com a autoria de cada cadastro e as unidades com andar e vagas; duas figuras |
 | 13.5.3 Tela de reservas do síndico | Nova seção Espaços Comuns, com a autoria de cada espaço; nova figura |
 | 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id; usuarios ganha unidade_desde; encomendas ganha entregue_por_id e retirado_por_nome; unidades ganha pendente — agora 255 atributos e 50 relacionamentos |
 | 21 API REST | 109 endpoints: entrega da encomenda em mãos; editar, inativar e reativar espaço; editar andar e vagas da unidade; corrigir e cancelar cobrança |
-| 23 Testes | 429 casos no servidor e 94 testes de interface |
+| 23 Testes | 437 casos no servidor e 95 testes de interface |
 
 **Erros achados.**
 - Não havia tela para cadastrar espaço comum: só a carga de demonstração
@@ -63,6 +63,21 @@ seções novas descrevendo o que foi construído desde então.
   região da página (falha de acessibilidade); agora fica numa região
   rotulada. Aqui a internet externa é bloqueada, por isso os dois não
   apareciam; um teste novo imita o VLibras.
+- Brecha: CPF, CNPJ, telefone e CEP eram limpos com o \d do Python, que
+  também casa com dígitos árabes ("٠١٢") e de largura total ("０１２"). O
+  mesmo CPF escrito assim passava pelos dígitos verificadores, era gravado
+  como outro texto, e a regra de um cadastro por CPF não valia: a mesma
+  pessoa se cadastrava duas vezes. Agora só valem os algarismos de 0 a 9.
+- Número e bloco da unidade: "２０４" aparece na tela igual a "204", mas
+  era outra unidade, e o síndico aprovaria alguém num apartamento que não
+  é o 204. Agora a largura total é convertida (vira a mesma 204) e dígitos
+  de outro alfabeto são recusados.
+- Placa: a limpeza usava isalnum(), que aceita "Á", "²" e "Ａ" (largura
+  total): "ÁBC1234" virava outra placa, e o mesmo carro entrava duas vezes
+  no pátio sem a trava perceber. Agora só letras A-Z e números. A placa
+  do visitante era guardada como digitada ("abc-1d23"); agora segue a
+  mesma regra, e a tela do porteiro avisa a placa incompleta antes de
+  enviar.
 - Brecha: o autocadastro criava a unidade informada na hora, antes de
   qualquer aprovação. Com o código de acesso (que circula entre os
   moradores), qualquer um criava unidades ("9999") que apareciam para a

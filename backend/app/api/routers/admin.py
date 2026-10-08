@@ -162,8 +162,8 @@ def _termo_documento(busca: str) -> str:
     quando a busca é um número (dígitos e pontuação); "Rua 100" não vira
     busca por "100" no CNPJ."""
     texto = busca.strip()
-    if re.fullmatch(r"[\d.\-/\s]+", texto):
-        texto = re.sub(r"\D", "", texto)
+    if re.fullmatch(r"[0-9.\-/\s]+", texto):
+        texto = re.sub(r"[^0-9]", "", texto)
     return _contendo(texto)
 
 

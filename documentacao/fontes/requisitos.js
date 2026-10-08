@@ -165,7 +165,7 @@ const requisitosFuncionais = [
   { id: 'RF026', nome: 'Registrar entrada e saída de veículos',
     atores: 'Porteiro', prioridade: 'Importante',
     descricao: 'O sistema registra a movimentação de veículos na portaria, separando os de moradores, visitantes e prestadores de serviço.',
-    entradas: 'O porteiro informa a placa, a categoria do veículo e o tipo da movimentação. É preciso ter a permissão de registrar veículos.',
+    entradas: 'O porteiro informa a placa, a categoria do veículo e o tipo da movimentação. É preciso ter a permissão de registrar veículos. A placa tem 7 letras (A a Z) ou números e é guardada sem hífen e em maiúsculas, de modo que ABC-1D23 e abc1d23 são o mesmo veículo; a placa do carro de um visitante segue a mesma regra.',
     saidas: 'A movimentação é gravada com data e hora e passa a compor o histórico e a contagem de veículos no pátio.' },
 
   { id: 'RF027', nome: 'Consultar pátio e ocupação do estacionamento',

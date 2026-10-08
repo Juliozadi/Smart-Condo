@@ -19,6 +19,7 @@ from app.models.condominio import Unidade
 from app.models.enums import CategoriaVeiculo, Papel, TipoMovimentacao
 from app.models.operacao import MovimentacaoVeiculo
 from app.models.usuario import Usuario
+from app.schemas.comuns import limpar_placa
 from app.schemas.operacao import (
     MovimentacaoEntrada, MovimentacaoSaida, OcupacaoEstacionamento, VeiculoNoPatio,
 )
@@ -201,8 +202,7 @@ def listar_movimentacoes(
     if usuario.papel == Papel.MORADOR:
         consulta = consulta.where(MovimentacaoVeiculo.unidade_id == usuario.unidade_id)
     if placa:
-        limpa = "".join(c for c in placa if c.isalnum()).upper()
-        consulta = consulta.where(MovimentacaoVeiculo.placa == limpa)
+        consulta = consulta.where(MovimentacaoVeiculo.placa == limpar_placa(placa))
 
     movimentacoes = db.scalars(
         consulta.order_by(MovimentacaoVeiculo.id.desc()).limit(limite)
