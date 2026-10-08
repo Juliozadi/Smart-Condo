@@ -77,7 +77,9 @@ def _expirar_sem_resposta(db: Session, condominio_id: int) -> None:
 
 def _unidade_do_condominio(db: Session, usuario: Usuario, unidade_id: int) -> Unidade:
     unidade = db.get(Unidade, unidade_id)
-    if unidade is None or unidade.condominio_id != usuario.condominio_id:
+    # A pendente (autocadastro ainda não aprovado) não existe para a portaria.
+    if (unidade is None or unidade.condominio_id != usuario.condominio_id
+            or unidade.pendente):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Unidade não encontrada."
         )

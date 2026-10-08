@@ -58,3 +58,55 @@ def test_so_o_sindico_do_condominio_edita_e_vagas_nao_ficam_vazias(cliente, db):
                               email_admin="a2@exemplo.com", cpf_admin=CPFS[5])
     assert cliente.put(url, headers=cab(outro["sindico"]),
                        json={"vagas_garagem": 1}).status_code == 404
+
+
+def _numeros(cliente, tok):
+    return {u["numero"] for u in cliente.get("/api/v1/condominios/meu/unidades",
+                                             headers=cab(tok)).json()}
+
+
+def test_autocadastro_nao_aprovado_nao_cria_unidade_nas_listas(cliente, db):
+    """Quem tem o código de acesso se cadastra numa unidade qualquer ("9999")
+    e nunca confirma, ou é recusado: a unidade não pode aparecer para a
+    portaria e para o síndico como se existisse."""
+    base = montar_condominio(cliente, db)
+    _, porteiro = cadastrar_porteiro(cliente, base["sindico"], base["cond"], cpf=CPFS[2])
+
+    cliente.post("/api/v1/auth/cadastro/morador", json={
+        "nome": "Nunca Confirma", "email": "nunca@exemplo.com", "cpf": CPFS[3],
+        "telefone": "(67) 99999-0003", "senha": "senhaforte123",
+        "codigo_condominio": base["cond"]["codigo_acesso"],
+        "unidade_numero": "9999", "tipo_ocupacao": "proprietario",
+    })
+    recusado, _ = cadastrar_morador(cliente, base["sindico"], base["cond"], unidade="8888",
+                                    aprovar=False)
+    r = cliente.post(f"/api/v1/usuarios/{recusado}/aprovacao", headers=cab(base["sindico"]),
+                     json={"aprovado": False, "motivo": "Não mora aqui"})
+    assert r.status_code == 200, r.text
+
+    for tok in (base["sindico"], porteiro):
+        assert _numeros(cliente, tok) & {"9999", "8888"} == set()
+
+
+def test_aprovar_o_morador_confirma_a_unidade(cliente, db):
+    base = montar_condominio(cliente, db)
+    morador, _ = cadastrar_morador(cliente, base["sindico"], base["cond"], unidade="301",
+                                   aprovar=False)
+    assert "301" not in _numeros(cliente, base["sindico"])
+    r = cliente.post(f"/api/v1/usuarios/{morador}/aprovacao", headers=cab(base["sindico"]),
+                     json={"aprovado": True})
+    assert r.status_code == 200, r.text
+    assert "301" in _numeros(cliente, base["sindico"])
+
+
+def test_sindico_cadastra_a_unidade_que_so_existia_pendente(cliente, db):
+    base = montar_condominio(cliente, db)
+    cadastrar_morador(cliente, base["sindico"], base["cond"], unidade="402", aprovar=False)
+    r = cliente.post("/api/v1/condominios/meu/unidades", headers=cab(base["sindico"]),
+                     json={"numero": "402", "vagas_garagem": 1})
+    assert r.status_code == 201, r.text
+    assert "402" in _numeros(cliente, base["sindico"])
+    # Agora sim, cadastrada: a segunda vez é repetição.
+    r = cliente.post("/api/v1/condominios/meu/unidades", headers=cab(base["sindico"]),
+                     json={"numero": "402"})
+    assert r.status_code == 409

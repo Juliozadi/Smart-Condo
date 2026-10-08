@@ -11,12 +11,12 @@ seções novas descrevendo o que foi construído desde então.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | RF008: sai a permissão "consultar o financeiro" do porteiro. RF004: o cadastro nunca confirmado não prende o e-mail nem o CPF. RF025: o porteiro dá baixa na encomenda entregue em mãos. RF022: visitante sem resposta em 2 horas passa a "sem resposta". RF034: o síndico corrige ou cancela a cobrança lançada errada. RF035: o síndico registra pela tela o pagamento recebido fora do app. RF003: o síndico edita andar e vagas da unidade. RF017 e RF018: reserva cujo horário já passou só pode ser recusada, e o morador não cancela a que já aconteceu. RF021: o aviso do visitante vai só para quem mora lá agora. RF015: o síndico cadastra, edita, marca em manutenção, inativa e reativa os espaços pela tela; inativar cancela as reservas de hoje em diante. RF045: o registro de quem fez inclui o síndico e os espaços |
+| 9 Requisitos funcionais | RF008: sai a permissão "consultar o financeiro" do porteiro. RF004: o cadastro nunca confirmado não prende o e-mail nem o CPF, e a unidade nova do autocadastro fica pendente até a aprovação. RF025: o porteiro dá baixa na encomenda entregue em mãos. RF022: visitante sem resposta em 2 horas passa a "sem resposta". RF034: o síndico corrige ou cancela a cobrança lançada errada. RF035: o síndico registra pela tela o pagamento recebido fora do app. RF003: o síndico edita andar e vagas da unidade. RF017 e RF018: reserva cujo horário já passou só pode ser recusada, e o morador não cancela a que já aconteceu. RF021: o aviso do visitante vai só para quem mora lá agora. RF015: o síndico cadastra, edita, marca em manutenção, inativa e reativa os espaços pela tela; inativar cancela as reservas de hoje em diante. RF045: o registro de quem fez inclui o síndico e os espaços |
 | 13.5.8 Tela de moradores e unidades | Nova seção na documentação, com a autoria de cada cadastro e as unidades com andar e vagas; duas figuras |
 | 13.5.3 Tela de reservas do síndico | Nova seção Espaços Comuns, com a autoria de cada espaço; nova figura |
-| 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id; usuarios ganha unidade_desde; encomendas ganha entregue_por_id e retirado_por_nome — agora 254 atributos e 50 relacionamentos |
+| 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id; usuarios ganha unidade_desde; encomendas ganha entregue_por_id e retirado_por_nome; unidades ganha pendente — agora 255 atributos e 50 relacionamentos |
 | 21 API REST | 109 endpoints: entrega da encomenda em mãos; editar, inativar e reativar espaço; editar andar e vagas da unidade; corrigir e cancelar cobrança |
-| 23 Testes | 426 casos no servidor e 94 testes de interface |
+| 23 Testes | 429 casos no servidor e 94 testes de interface |
 
 **Erros achados.**
 - Não havia tela para cadastrar espaço comum: só a carga de demonstração
@@ -63,6 +63,14 @@ seções novas descrevendo o que foi construído desde então.
   região da página (falha de acessibilidade); agora fica numa região
   rotulada. Aqui a internet externa é bloqueada, por isso os dois não
   apareciam; um teste novo imita o VLibras.
+- Brecha: o autocadastro criava a unidade informada na hora, antes de
+  qualquer aprovação. Com o código de acesso (que circula entre os
+  moradores), qualquer um criava unidades ("9999") que apareciam para a
+  portaria (visitante, encomenda, veículo, ocorrência), para o síndico e
+  na contagem do painel, e ficavam mesmo com o cadastro recusado ou
+  nunca confirmado. Agora a unidade criada assim fica pendente
+  (unidades.pendente, migração a7b8c9d0e1f2), fora das listas, até o
+  síndico aprovar alguém nela, cadastrá-la ou cadastrar alguém nela.
 - Reserva pendente esquecida bloqueava o espaço: a que tem o horário
   chegado sem avaliação vira recusada, mas isso só se acertava ao abrir
   as listas de reservas. Até lá ela aparecia ocupando a agenda e barrava

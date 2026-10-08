@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import Boolean, ForeignKey, Integer, String, UniqueConstraint, false
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -84,6 +84,15 @@ class Unidade(Base, TimestampMixin):
     bloco: Mapped[str] = mapped_column(String(20), nullable=False, default="unico")
     andar: Mapped[int | None] = mapped_column(Integer)
     vagas_garagem: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # Criada pelo autocadastro de um morador e ainda não confirmada por um
+    # responsável: não aparece nas listas. Sem isso, qualquer um com o
+    # código de acesso criava unidades ("9999") que ficavam para a portaria
+    # e o síndico mesmo com o cadastro recusado ou nunca confirmado. Deixa
+    # de ser pendente quando o síndico aprova o morador, cadastra a unidade
+    # ou cadastra alguém nela.
+    pendente: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=false()
+    )
 
     condominio: Mapped["Condominio"] = relationship(back_populates="unidades")
     moradores: Mapped[list["Usuario"]] = relationship(

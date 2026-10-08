@@ -382,6 +382,8 @@ def aprovar_usuario(
     usuario.avaliado_por_id = sindico.id
     usuario.avaliado_em = datetime.now(timezone.utc)
     usuario.motivo_recusa = None if dados.aprovado else dados.motivo
+    if dados.aprovado:
+        servico_usuarios.confirmar_unidade(db, usuario.unidade_id)
     db.commit()
     if not dados.aprovado:
         documentos_cadastro.descartar_todos(db, usuario.id)

@@ -215,7 +215,8 @@ CREATE TABLE unidades (
     andar integer,
     vagas_garagem integer NOT NULL,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
-    atualizado_em timestamp with time zone DEFAULT now() NOT NULL
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    pendente boolean DEFAULT false NOT NULL
 );
 CREATE SEQUENCE unidades_id_seq
     AS integer

@@ -116,10 +116,13 @@ def cadastrar_morador(dados: CadastroMorador, db: Session = Depends(get_db)) -> 
         .one_or_none()
     )
     if unidade is None:
+        # Pendente: só aparece nas listas quando o síndico aprovar alguém
+        # nela (app/models/condominio.py).
         unidade = Unidade(
             condominio_id=condominio.id,
             numero=dados.unidade_numero,
             bloco=dados.unidade_bloco,
+            pendente=True,
         )
         db.add(unidade)
         db.flush()

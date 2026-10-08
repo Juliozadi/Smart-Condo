@@ -67,6 +67,7 @@ DESCRICOES = {
     "unidades.bloco": "Bloco ou torre, quando o condomínio tiver mais de um",
     "unidades.andar": "Andar em que a unidade fica",
     "unidades.vagas_garagem": "Quantidade de vagas de garagem da unidade; a soma das vagas alimenta o cálculo de ocupação do estacionamento",
+    "unidades.pendente": "Verdadeiro quando a unidade foi criada pelo autocadastro de um morador e ainda não foi confirmada pelo síndico; não aparece nas listas da portaria e do síndico até a aprovação",
 
     "usuarios.nome": "Nome completo",
     "usuarios.email": "E-mail, usado para entrar no sistema e para receber os códigos; único na plataforma",

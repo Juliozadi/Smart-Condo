@@ -77,7 +77,7 @@ def listar_unidades(
         return []
     unidades = db.scalars(
         select(Unidade)
-        .where(Unidade.condominio_id == usuario.condominio_id)
+        .where(Unidade.condominio_id == usuario.condominio_id, Unidade.pendente.is_(False))
         .order_by(Unidade.bloco, Unidade.numero)
     ).all()
     saida = [UnidadeSaida.model_validate(u) for u in unidades]
@@ -118,13 +118,20 @@ def cadastrar_unidade(
             Unidade.bloco == dados.bloco,
         )
     )
-    if ja_existe is not None:
+    if ja_existe is not None and not ja_existe.pendente:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Esta unidade já está cadastrada."
         )
 
-    unidade = Unidade(condominio_id=sindico.condominio_id, **dados.model_dump())
-    db.add(unidade)
+    if ja_existe is not None:
+        # Existia só pelo autocadastro de alguém: o síndico a confirma.
+        unidade = ja_existe
+        for campo, valor in dados.model_dump().items():
+            setattr(unidade, campo, valor)
+        unidade.pendente = False
+    else:
+        unidade = Unidade(condominio_id=sindico.condominio_id, **dados.model_dump())
+        db.add(unidade)
     db.flush()
     registro.registrar(db, sindico, registro.CRIOU, registro.UNIDADE, unidade.id)
     db.commit()

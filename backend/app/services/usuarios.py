@@ -41,7 +41,19 @@ def obter_ou_criar_unidade(
         unidade = Unidade(condominio_id=condominio_id, numero=numero, bloco=bloco)
         db.add(unidade)
         db.flush()
+    # Quem chega aqui é o síndico ou o administrador: a unidade é real.
+    unidade.pendente = False
     return unidade
+
+
+def confirmar_unidade(db: Session, unidade_id: int | None) -> None:
+    """A unidade do autocadastro passa a existir para a portaria e o
+    síndico quando um responsável aceita alguém nela."""
+    if unidade_id is None:
+        return
+    unidade = db.get(Unidade, unidade_id)
+    if unidade is not None and unidade.pendente:
+        unidade.pendente = False
 
 
 def criar_usuario(
@@ -192,6 +204,8 @@ def atualizar_usuario(db: Session, usuario: Usuario, dados) -> Usuario:
 
     for campo, valor in campos.items():
         setattr(usuario, campo, valor)
+    if usuario.status == StatusUsuario.ATIVO:
+        confirmar_unidade(db, usuario.unidade_id)
 
     db.flush()
     return usuario
