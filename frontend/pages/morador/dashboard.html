@@ -124,6 +124,10 @@
     if (d.length !== 11) return valor || '';
     return d.slice(0, 3) + '.' + d.slice(3, 6) + '.' + d.slice(6, 9) + '-' + d.slice(9);
   }
+  function placaLegivel(valor) {
+    var p = (valor || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    return p.length === 7 ? p.slice(0, 3) + '-' + p.slice(3) : p;
+  }
   function dinheiro(valor) {
     return 'R$' + Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
   }
@@ -228,7 +232,7 @@
           icone: 'user.svg', selo: 'Vídeo porteiro', foto_url: v.foto_url,
           titulo: v.nome + ' está na portaria',
           detalhe: v.tipo_visita + ' · documento ' + documentoLegivel(v.documento) +
-                   (v.placa_veiculo ? ' · placa ' + v.placa_veiculo : ''),
+                   (v.placa_veiculo ? ' · placa ' + placaLegivel(v.placa_veiculo) : ''),
           quando: 'Registrado às ' + horaCurta(v.criado_em),
           rotuloSim: 'Confirmar entrada', rotuloNao: 'Não reconheço',
           avisoSim: 'Entrada confirmada — a portaria foi avisada.',
@@ -300,6 +304,11 @@
       var ativas = lista.filter(function(r) {
         return r.status === 'pendente' || r.status === 'aprovada';
       });
+      // A API manda da mais recente para a mais antiga; "próximas" são as
+      // mais perto de hoje, então a ordem se inverte.
+      ativas.sort(function(a, b) {
+        return (a.data + a.hora_inicio) < (b.data + b.hora_inicio) ? -1 : 1;
+      });
       campo('totReservas').textContent = ativas.length;
 
       var caixa = campo('listaReservas');
@@ -338,7 +347,8 @@
   /* ── Valor em aberto ────────────────────────────────────────────── */
   function carregarFinanceiro() {
     return api.get('/financeiro/cobrancas').then(function(lista) {
-      var devendo = lista.filter(function(c) { return c.status !== 'paga'; });
+      // Só a aberta e a vencida: a cancelada não é dívida.
+      var devendo = lista.filter(function(c) { return c.status === 'aberta' || c.status === 'vencida'; });
       var total = devendo.reduce(function(soma, c) {
         return soma + (Number(c.valor) - Number(c.total_pago || 0));
       }, 0);

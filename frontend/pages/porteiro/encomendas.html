@@ -112,8 +112,9 @@
 
     <p class="aviso-notificacao">
       <img src="../../assets/img/icons/bullhorn.svg" alt="">
-      <span>Quem confirma a retirada é o próprio morador, pelo painel dele. Assim que
-      ele responder, a encomenda sai desta lista e entra no histórico.</span>
+      <span>O morador confirma a retirada pelo painel dele. Se ela for entregue em mãos
+      aqui na portaria, toque em <strong>Entregar</strong> e anote quem levou: os
+      moradores da unidade são avisados.</span>
     </p>
 
     <!-- Histórico do dia -->
@@ -213,9 +214,32 @@
       selo.className = 'badge ' + (dias >= 3 ? 'badge-alert' : 'badge-pending');
       selo.textContent = dias === 0 ? 'Hoje' : (dias === 1 ? '1 dia' : dias + ' dias');
 
+      // Entregue em mãos: o porteiro dá baixa e anota quem levou; os
+      // moradores da unidade são avisados.
+      var entregar = document.createElement('button');
+      entregar.type = 'button';
+      entregar.className = 'pill-acao aprovar';
+      entregar.textContent = 'Entregar';
+      entregar.setAttribute('aria-label', 'Entregar a encomenda do apto ' + (e.unidade || ''));
+      entregar.addEventListener('click', function() {
+        var nome = prompt('Quem está retirando a encomenda? (nome)', '');
+        if (nome === null) return;
+        nome = nome.trim();
+        if (nome.length < 3) { alert('Informe o nome de quem retirou.'); return; }
+        entregar.disabled = true;
+        api.post('/portaria/encomendas/' + e.id + '/entrega', { retirado_por_nome: nome })
+          .then(carregar)
+          .catch(function(erro) { entregar.disabled = false; alert(erro.message); });
+      });
+
+      var acoes = document.createElement('div');
+      acoes.className = 'acoes-aprovacao';
+      acoes.appendChild(selo);
+      acoes.appendChild(entregar);
+
       item.appendChild(icone);
       item.appendChild(info);
-      item.appendChild(selo);
+      item.appendChild(acoes);
       return item;
     }
 

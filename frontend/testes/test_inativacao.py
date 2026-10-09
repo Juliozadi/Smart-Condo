@@ -1,6 +1,7 @@
 """O síndico tira o acesso de quem saiu do condomínio.
 
 Não havia botão para isso: a API tinha a rota, mas nenhuma tela a usava.
+Depois, nada passou a ser apagado, e quem foi inativado pode ser reativado.
 O morador que se mudava e o porteiro que deixava a equipe continuavam
 entrando e vendo o condomínio. Estes testes usam contas da carga de
 demonstração que nenhum outro teste usa (Bruno e Renata).
@@ -29,11 +30,20 @@ def test_sindico_inativa_um_morador(navegador):
     assert "reservas futuras são canceladas" in avisos[0]
     linha = pg.locator("#tabelaMoradores .table-row", has_text="Bruno Cardoso")
     assert "Inativo" in linha.inner_text()
-    assert linha.get_by_role("button").count() == 0
+    assert "Inativado por Roberto Nascimento em" in linha.inner_text()
+    assert linha.get_by_role("button", name="Inativar Bruno Cardoso").count() == 0
     # O acesso acabou na hora, inclusive a sessão que já estava aberta.
     r = pg.request.get(f"{API}/auth/eu", headers={"Authorization": f"Bearer {tok_bruno}"})
     assert r.status == 403
     assert entrar(pg, "bruno@smartcondo.com").status == 403
+    # Nada é apagado: o síndico reativa, e a mesma senha volta a valer.
+    pg.once("dialog", lambda d: d.accept())
+    linha.get_by_role("button", name="Reativar Bruno Cardoso").click()
+    pg.wait_for_timeout(1200)
+    linha = pg.locator("#tabelaMoradores .table-row", has_text="Bruno Cardoso")
+    assert "Ativo" in linha.inner_text()
+    assert "Reativado por Roberto Nascimento em" in linha.inner_text()
+    assert entrar(pg, "bruno@smartcondo.com").status == 200
     assert pg.erros == []
     ctx.close()
 
@@ -46,6 +56,11 @@ def test_sindico_inativa_um_porteiro(navegador):
     pg.wait_for_timeout(1200)
     assert pg.get_by_role("button", name="Inativar Renata Moura").count() == 0
     assert entrar(pg, "renata@smartcondo.com").status == 403
+    pg.once("dialog", lambda d: d.accept())
+    pg.get_by_role("button", name="Reativar Renata Moura").click()
+    pg.wait_for_timeout(1200)
+    assert pg.get_by_role("button", name="Inativar Renata Moura").count() == 1
+    assert entrar(pg, "renata@smartcondo.com").status == 200
     assert pg.erros == []
     ctx.close()
 

@@ -397,3 +397,74 @@ def test_morador_nao_responde_ocorrencia(cliente, cenario):
         headers=cab(cenario["ana"]),
     )
     assert r.status_code == 403
+
+
+def test_visitante_sem_resposta_expira(cliente, cenario, db):
+    """O morador não respondeu: depois de 2 horas o visitante deixa de
+    aparecer como aguardando na portaria, e não é confirmado dias depois
+    (a entrada seria registrada na hora da confirmação)."""
+    from datetime import datetime, timedelta, timezone
+
+    from sqlalchemy import update
+
+    from app.models.portaria import Visitante
+
+    antigo = registrar_visitante(cliente, cenario["porteiro"], cenario["u204"]).json()
+    recente = registrar_visitante(cliente, cenario["porteiro"], cenario["u204"]).json()
+    from app.models.usuario import Usuario
+    agora = datetime.now(timezone.utc)
+    db.execute(update(Usuario).where(Usuario.email == "ana@exemplo.com")
+               .values(unidade_desde=agora - timedelta(days=1)))
+    db.execute(update(Visitante).where(Visitante.id == antigo["id"])
+               .values(criado_em=agora - timedelta(hours=3)))
+    db.commit()
+
+    r = cliente.post(f"/api/v1/portaria/visitantes/{antigo['id']}/confirmacao",
+                     json={"confirmado": True}, headers=cab(cenario["ana"]))
+    assert r.status_code == 409
+    lista = {v["id"]: v["status"] for v in cliente.get(
+        "/api/v1/portaria/visitantes", headers=cab(cenario["porteiro"])).json()}
+    assert lista[antigo["id"]] == "sem_resposta"
+    assert lista[recente["id"]] == "aguardando_confirmacao"
+
+
+def test_porteiro_entrega_em_maos_e_o_morador_e_avisado(cliente, cenario, monkeypatch):
+    """Só o morador dava baixa pelo app: entregue em mãos, a encomenda
+    ficava aguardando retirada para sempre."""
+    from app.services import notificacao
+    avisos = []
+    monkeypatch.setattr(notificacao, "notificar",
+                        lambda destino, canal, titulo, mensagem: avisos.append((destino, mensagem)))
+    e = registrar_encomenda(cliente, cenario["porteiro"], cenario["u204"]).json()
+    avisos.clear()
+    url = f"/api/v1/portaria/encomendas/{e['id']}/entrega"
+    assert cliente.post(url, headers=cab(cenario["ana"]),
+                        json={"retirado_por_nome": "Ana"}).status_code == 403
+    r = cliente.post(url, headers=cab(cenario["porteiro"]),
+                     json={"retirado_por_nome": "Pedro (filho da Ana)"})
+    assert r.status_code == 200, r.text
+    corpo = r.json()
+    assert corpo["status"] == "retirada" and corpo["retirado_por_nome"] == "Pedro (filho da Ana)"
+    assert corpo["entregue_por_nome"] == "Carlos Pereira"
+    assert [a[0] for a in avisos] == ["ana@exemplo.com"]
+    assert "Pedro (filho da Ana)" in avisos[0][1]
+    # Não entrega duas vezes, e o morador não confirma depois.
+    assert cliente.post(url, headers=cab(cenario["porteiro"]),
+                        json={"retirado_por_nome": "Outro"}).status_code == 409
+    assert cliente.post(f"/api/v1/portaria/encomendas/{e['id']}/retirada",
+                        headers=cab(cenario["ana"]), json={"confirmada": True}).status_code == 409
+    da_ana = cliente.get("/api/v1/portaria/encomendas", headers=cab(cenario["ana"])).json()
+    assert da_ana[0]["retirado_por_nome"] == "Pedro (filho da Ana)"
+
+
+def test_placa_do_visitante_e_normalizada_como_a_do_patio(cliente, cenario):
+    """A placa do visitante era guardada como digitada: "abc-1d23" aqui e
+    "ABC1D23" no pátio eram o mesmo carro escrito de dois jeitos."""
+    r = registrar_visitante(cliente, cenario["porteiro"], cenario["u204"], placa_veiculo="abc-1d23")
+    assert r.status_code == 201, r.text
+    assert r.json()["placa_veiculo"] == "ABC1D23"
+    r = registrar_visitante(cliente, cenario["porteiro"], cenario["u204"], placa_veiculo="ABÇ1234")
+    assert r.status_code == 422
+    r = registrar_visitante(cliente, cenario["porteiro"], cenario["u204"], placa_veiculo="  ")
+    assert r.status_code == 201, r.text
+    assert r.json()["placa_veiculo"] is None

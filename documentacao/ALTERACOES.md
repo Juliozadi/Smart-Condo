@@ -7,6 +7,217 @@ O texto escrito pelo grupo foi **preservado**. As mudanças abaixo são de
 duas naturezas: correções do que não correspondia mais ao sistema, e
 seções novas descrevendo o que foi construído desde então.
 
+## Versão 2.6 — espaços comuns pelo síndico e autoria também do síndico
+
+| Seção | O que mudou |
+|---|---|
+| 9 Requisitos funcionais | RF008: sai a permissão "consultar o financeiro" do porteiro. RF026: a placa só aceita letras A-Z e números, e a do visitante segue a mesma regra. RF004: o cadastro nunca confirmado não prende o e-mail nem o CPF, e a unidade nova do autocadastro fica pendente até a aprovação. RF025: o porteiro dá baixa na encomenda entregue em mãos. RF022: visitante sem resposta em 2 horas passa a "sem resposta". RF034: o síndico corrige ou cancela a cobrança lançada errada. RF035: o síndico registra pela tela o pagamento recebido fora do app. RF003: o síndico edita andar e vagas da unidade. RF017 e RF018: reserva cujo horário já passou só pode ser recusada, e o morador não cancela a que já aconteceu. RF021: o aviso do visitante vai só para quem mora lá agora. RF015: o síndico cadastra, edita, marca em manutenção, inativa e reativa os espaços pela tela; inativar cancela as reservas de hoje em diante. RF045: o registro de quem fez inclui o síndico e os espaços |
+| 13.5.8 Tela de moradores e unidades | Nova seção na documentação, com a autoria de cada cadastro e as unidades com andar e vagas; duas figuras |
+| 13.5.3 Tela de reservas do síndico | Nova seção Espaços Comuns, com a autoria de cada espaço; nova figura |
+| 14 a 17 | espacos_comuns ganha inativo_em e inativado_por_id; usuarios ganha unidade_desde; encomendas ganha entregue_por_id e retirado_por_nome; unidades ganha pendente — agora 255 atributos e 50 relacionamentos |
+| 21 API REST | 109 endpoints: entrega da encomenda em mãos; editar, inativar e reativar espaço; editar andar e vagas da unidade; corrigir e cancelar cobrança |
+| 23 Testes | 437 casos no servidor e 95 testes de interface |
+
+**Erros achados.**
+- Não havia tela para cadastrar espaço comum: só a carga de demonstração
+  criava espaços, e um condomínio novo ficava sem nada para reservar.
+  Também não havia como editar um espaço, nem pô-lo em manutenção depois
+  de criado.
+- O que o síndico fazia não registrava quem fez: editar, inativar e
+  reativar morador ou porteiro, cadastrar porteiro, mudar as permissões do
+  porteiro e gerar novo código de acesso. O administrador via só "Criado
+  por…" e não a última alteração.
+- O síndico inativava morador e porteiro, mas não tinha como reativá-los
+  pela tela.
+- Ordem de serviço: pelo Salvar, uma ordem concluída virava cancelada (o
+  botão Cancelar OS proibia isso) e uma cancelada virava concluída;
+  cancelar duas vezes respondia como se tivesse cancelado. E a tela não
+  conseguia apagar o fornecedor nem o custo real depois de preenchidos.
+- Quem já saiu continuava recebendo: o aviso de visitante e de encomenda
+  ia também para o morador que se mudou (inativado) ou teve o cadastro
+  recusado, e o aviso de pagamento podia ir para o síndico antigo.
+- O vencimento da cobrança usava o dia escolhido pelo morador que já tinha
+  se mudado.
+- O morador novo via os visitantes (nome, CPF e foto) e as encomendas de
+  quem morava no apartamento antes dele. Agora vê o que chegou desde o
+  próprio cadastro, mais as encomendas que ainda aguardam retirada. O
+  mesmo vale para o morador transferido de apartamento e para quem saiu
+  e voltou: a referência é desde quando ele mora na unidade
+  (usuarios.unidade_desde), e não a data do cadastro.
+- Veículos: dois registros de entrada da mesma placa ao mesmo tempo
+  (clique duplo, dois porteiros) passavam juntos, e o carro aparecia duas
+  vezes no pátio. Agora a placa é travada durante o registro.
+- A cobrança lançada errada não tinha correção nem cancelamento (a
+  situação "cancelada" existia, mas nada a usava): a unidade ficava em
+  atraso para sempre. Agora o síndico corrige descrição, valor e
+  vencimento, ou cancela com um motivo; a cancelada fica guardada e não
+  impede lançar a certa no mesmo mês (a restrição única passou a ignorar
+  as canceladas). O painel do morador também deixou de somar a cancelada
+  como pendente.
+- O CI estava vermelho desde 24/09, e aqui os testes passavam. Duas
+  causas, as duas só no ambiente do CI: (1) no Chrome mais novo, o
+  documento do condomínio não abria — a aba nova era levada a um
+  endereço blob: criado pela outra página, o que ele passou a bloquear;
+  agora a aba nova cria o próprio endereço e mostra o arquivo dentro
+  dela. (2) Com internet, o VLibras carrega e desenhava fora de qualquer
+  região da página (falha de acessibilidade); agora fica numa região
+  rotulada. Aqui a internet externa é bloqueada, por isso os dois não
+  apareciam; um teste novo imita o VLibras.
+- Brecha: CPF, CNPJ, telefone e CEP eram limpos com o \d do Python, que
+  também casa com dígitos árabes ("٠١٢") e de largura total ("０１２"). O
+  mesmo CPF escrito assim passava pelos dígitos verificadores, era gravado
+  como outro texto, e a regra de um cadastro por CPF não valia: a mesma
+  pessoa se cadastrava duas vezes. Agora só valem os algarismos de 0 a 9.
+- Número e bloco da unidade: "２０４" aparece na tela igual a "204", mas
+  era outra unidade, e o síndico aprovaria alguém num apartamento que não
+  é o 204. Agora a largura total é convertida (vira a mesma 204) e dígitos
+  de outro alfabeto são recusados.
+- Placa: a limpeza usava isalnum(), que aceita "Á", "²" e "Ａ" (largura
+  total): "ÁBC1234" virava outra placa, e o mesmo carro entrava duas vezes
+  no pátio sem a trava perceber. Agora só letras A-Z e números. A placa
+  do visitante era guardada como digitada ("abc-1d23"); agora segue a
+  mesma regra, e a tela do porteiro avisa a placa incompleta antes de
+  enviar.
+- Brecha: o autocadastro criava a unidade informada na hora, antes de
+  qualquer aprovação. Com o código de acesso (que circula entre os
+  moradores), qualquer um criava unidades ("9999") que apareciam para a
+  portaria (visitante, encomenda, veículo, ocorrência), para o síndico e
+  na contagem do painel, e ficavam mesmo com o cadastro recusado ou
+  nunca confirmado. Agora a unidade criada assim fica pendente
+  (unidades.pendente, migração a7b8c9d0e1f2), fora das listas, até o
+  síndico aprovar alguém nela, cadastrá-la ou cadastrar alguém nela.
+- Reserva pendente esquecida bloqueava o espaço: a que tem o horário
+  chegado sem avaliação vira recusada, mas isso só se acertava ao abrir
+  as listas de reservas. Até lá ela aparecia ocupando a agenda e barrava
+  o pedido de outro morador para mais tarde no mesmo dia (pendente das
+  10h às 22h, ao meio-dia, recusava um pedido das 14h às 16h). Agora a
+  agenda e o pedido de reserva fazem o mesmo acerto antes de conferir.
+- Busca do administrador: CPF e CNPJ são guardados só com os dígitos e a
+  tela os mostra pontuados; quem copiava "11.222.333/0001-81" para a
+  busca não achava nada. Agora a busca que é um número compara só os
+  dígitos. E "_" ou "%" digitados eram curingas do SQL e achavam tudo;
+  agora são texto comum.
+- Dois síndicos no mesmo condomínio: "já tem síndico?" era conferido sem
+  travar o condomínio. Dois cadastros feitos juntos pelo administrador
+  passavam os dois, e quatro reativações juntas deixavam os quatro
+  ativos; um cadastro ou reativação junto da inativação do condomínio
+  deixava alguém ativo num condomínio inativo. Agora o condomínio fica
+  travado até o fim da gravação, nos dois caminhos.
+- Brecha: não havia tamanho máximo para o corpo do pedido, e a API lê o
+  corpo inteiro antes de conferir o login. Um corpo de 50 MB mandado ao
+  /auth/login, sem conta nenhuma, levava o servidor a 401 MB de memória;
+  poucos ao mesmo tempo derrubavam a API (arquivo enviado ia para o
+  disco, também sem teto). Agora: até 256 KB sem arquivo
+  (CORPO_MAX_KB) e até o maior arquivo aceito mais 128 KB com arquivo;
+  acima disso, 413 sem ler o resto. Vale também sem Content-Length.
+- Reserva com horário que traz fuso ("14:00Z", "14:00+03:00") derrubava
+  o servidor (erro 500): a hora com fuso não se compara com a hora local.
+  Agora é recusada com a mensagem de campo inválido.
+- Respostas com a última alteração (o "editado por") geravam avisos do
+  Pydantic a cada lista, escondidos pela configuração dos testes; agora
+  vêm no formato certo, e esse aviso passa a reprovar os testes.
+- Login de quem ainda não pode entrar: o cadastro recusado via só "Este
+  cadastro está indisponível", sem o motivo que o síndico escreveu, e
+  quem não tinha confirmado o código ficava só com a mensagem, sem
+  caminho até a confirmação. Agora (depois de a senha ser conferida) a
+  API diz a situação do cadastro: o recusado vê o motivo, e quem não
+  confirmou o código vai direto para a tela de confirmação, com o
+  reenvio liberado.
+- A permissão "Acessar o financeiro" do porteiro não fazia nada: o
+  síndico a marcava, mas o financeiro é sempre recusado ao porteiro, e
+  nenhuma tela a usava. Por decisão do grupo, ela saiu (quem deve o quê
+  não é assunto da portaria); a coluna fica no banco, sem uso.
+- O painel do porteiro com "visitantes" ou "encomendas" bloqueados pelo
+  síndico mostrava os contadores em "—" e as seções com o aviso de ação
+  não liberada; agora o que não foi liberado some do painel.
+- Segurança: as rotas abertas não tinham limite por origem. O código de
+  acesso do condomínio (cerca de um milhão de combinações, com o prefixo
+  tirado do nome) podia ser adivinhado por um script em poucas horas, e
+  cada cadastro novo disparava e-mails e SMS sem limite. Agora consulta
+  do código, cadastro, login, confirmação e recuperação de senha têm
+  limite de pedidos por IP (RNF014).
+- Testes do financeiro falhavam todo dia 1º: o vencimento "ontem" caía no
+  mês anterior à competência, que a regra recusa (corretamente).
+- O cadastro que nunca confirmou o código prendia o e-mail e o CPF para
+  sempre: quem errou o e-mail não recebia o código e não conseguia se
+  cadastrar de novo, e quem digitasse o CPF de outra pessoa impedia o
+  dono de se cadastrar. Passada uma hora (o prazo do código e do envio de
+  documentos), o novo cadastro retoma o antigo, que nunca foi uma conta;
+  contas confirmadas continuam protegidas.
+- Só o morador, pelo app, dava baixa na encomenda: entregue em mãos na
+  portaria, ela ficava "aguardando retirada" para sempre. O porteiro
+  passa a registrar a entrega ("Entregar"), com o nome de quem levou, e os
+  moradores da unidade são avisados.
+- Visitante sem resposta do morador ficava "aguardando" para sempre: o
+  painel da portaria contava como presente quem já tinha ido embora, e o
+  morador podia confirmá-lo dias depois, registrando a entrada na hora.
+  Depois de 2 horas ele passa a "sem resposta" (nova situação; nada é
+  apagado).
+- Chat: a mensagem de quem foi inativado continuava contando como não
+  lida, mas a conversa sai da lista e não abre mais — o contador ficava
+  preso para sempre. Agora conta só o que vem de contatos válidos.
+- A API aceitava que o síndico registrasse um pagamento (o boleto pago no
+  banco), mas a tela dele não tinha essa opção: a cobrança ficava em
+  aberto mesmo paga. A janela da cobrança ganhou "Registrar pagamento
+  recebido", e o aviso vai para os moradores da unidade, não para o
+  próprio síndico.
+- As vagas de garagem somam a capacidade do estacionamento, mas nenhuma
+  tela as preenchia: fora da demonstração, a portaria via sempre 0 vagas.
+  O síndico passa a editar andar e vagas de cada unidade.
+- O síndico não via quem tinha mexido num morador ou porteiro (por
+  exemplo, o administrador); agora as listas dele mostram "Editado por…".
+  A troca de nome, telefone e senha pelo próprio usuário também entra no
+  histórico. Na carga de demonstração, os moradores aparecem como
+  aprovados pelo síndico (eles se cadastram sozinhos), e não como criados
+  por ele.
+- Reservas: o síndico aprovava uma reserva esquecida na fila depois da
+  data, e o morador cancelava uma reserva que já tinha acontecido,
+  reescrevendo o histórico.
+- Nada marcava a reserva como realizada: a aprovada do mês passado
+  continuava "em aberto" para o morador, e a pendente esquecida ficava
+  pendente para sempre. Agora, ao consultar, a aprovada cujo horário
+  terminou vira concluída, e a pendente cujo horário chegou sem avaliação
+  vira recusada, com o motivo.
+- "Próximas reservas" no painel do morador mostrava as mais distantes: a
+  lista vinha da mais recente para a mais antiga e o painel pegava as três
+  primeiras. Agora aparecem as mais perto de hoje.
+
+## Versão 2.5 — vários administradores, histórico e nada apagado
+
+| Seção | O que mudou |
+|---|---|
+| 9 Requisitos funcionais | RF001: "excluir" o condomínio o inativa, sem apagar nada. RF010: o administrador cadastra outros administradores; ninguém inativa a si mesmo e a plataforma nunca fica sem administrador. RF030 e RF032: comunicado e documento removidos ficam guardados. Novo: RF045 registrar quem fez cada alteração |
+| 11.8 Telas do Administrador | Vários administradores, autoria em cada linha, histórico na edição e inativar/reativar no lugar de excluir; sai o campo Complemento do cadastro de condomínio (os endereços já gravados continuam no banco); figuras refeitas |
+| 14 a 17 | Nova tabela registros_alteracao; condominios, comunicados e documentos ganham inativo_em e inativado_por_id — agora 22 entidades, 249 atributos e 48 relacionamentos |
+| 21 API REST | 102 endpoints: histórico de alterações, reativação de condomínio e cadastro de administrador |
+| 23 Testes | 367 casos no servidor e 82 testes de interface |
+
+**Pedidos do grupo.** O complemento saiu do cadastro de condomínio do
+administrador. Nenhum botão apaga mais nada: excluir um condomínio,
+remover um comunicado ou um documento passa a inativar — o registro sai
+das telas, mas fica no banco com quem o inativou e quando (o arquivo do
+documento também fica). E pode haver mais de um administrador: cada
+criação, edição, inativação e reativação guarda o autor, e as telas do
+administrador mostram "Editado por Fulano em 25/09/2026 14:32" em cada
+linha e o histórico completo na janela de edição.
+
+**O que continua sendo descartado, por regra da LGPD:** as fotos da
+portaria depois de 90 dias e os documentos do cadastro quando o síndico o
+recusa ou inativa o morador. São descartes automáticos, e não botões de
+excluir; a política de privacidade os promete (RNF016).
+
+**Erros achados no caminho.**
+- A senha trocada pelo administrador (numa conta invadida, por exemplo)
+  não encerrava as sessões abertas com a antiga.
+- Reativar um síndico pela edição deixava o condomínio com dois síndicos.
+- O comunicado ia por e-mail também para moradores inativados e para
+  cadastros recusados ou pendentes.
+- Dois administradores inativando um ao outro ao mesmo tempo deixavam a
+  plataforma sem nenhum — ou travavam o banco num impasse (erro 500).
+- As máscaras: o CNPJ virava "11.222.33300/0181" e todo telefone fixo
+  ganhava formato de celular, "(67) 37017-071"; ao editar um condomínio,
+  CNPJ e CEP abriam sem máscara.
+
 ## Versão 2.4 — documentos do condomínio com arquivo de verdade
 
 | Seção | O que mudou |

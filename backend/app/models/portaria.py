@@ -104,9 +104,16 @@ class Encomenda(Base, TimestampMixin):
     retirada_por_id: Mapped[int | None] = mapped_column(
         ForeignKey("usuarios.id", ondelete="SET NULL")
     )
+    # Entregue em mãos na portaria: quem entregou e o nome de quem levou
+    # (pode ser um familiar, sem cadastro no sistema).
+    entregue_por_id: Mapped[int | None] = mapped_column(
+        ForeignKey("usuarios.id", ondelete="SET NULL")
+    )
+    retirado_por_nome: Mapped[str | None] = mapped_column(String(120))
 
     unidade: Mapped["Unidade"] = relationship()
     registrada_por: Mapped["Usuario | None"] = relationship(foreign_keys=[registrada_por_id])
+    entregue_por: Mapped["Usuario | None"] = relationship(foreign_keys=[entregue_por_id])
 
     def __repr__(self) -> str:
         return f"<Encomenda {self.id} unidade={self.unidade_id} {self.status.value}>"

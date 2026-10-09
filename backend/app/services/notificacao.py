@@ -134,9 +134,9 @@ def telefone_internacional(telefone: str) -> str | None:
     O provedor exige o formato internacional. Um número já com + é mantido.
     """
     if telefone.strip().startswith("+"):
-        digitos = "+" + re.sub(r"\D", "", telefone)
+        digitos = "+" + re.sub(r"[^0-9]", "", telefone)
         return digitos if len(digitos) >= 11 else None
-    digitos = re.sub(r"\D", "", telefone)
+    digitos = re.sub(r"[^0-9]", "", telefone)
     if digitos.startswith("55") and len(digitos) in (12, 13):
         digitos = digitos[2:]
     if len(digitos) not in (10, 11):

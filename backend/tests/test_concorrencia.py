@@ -196,3 +196,83 @@ def test_aprovar_e_cancelar_a_reserva_ao_mesmo_tempo(cliente, cenario):
                                             headers=cab(cenario["ana"])).json()
                      if r["id"] == reserva["id"])
         assert final["status"] == "cancelada"
+
+
+def test_mesma_placa_nao_entra_duas_vezes_ao_mesmo_tempo(cliente, cenario, monkeypatch):
+    """Clique duplo em Entrada, ou dois porteiros: os dois pedidos passavam
+    juntos pela conferência da última movimentação, e o pátio ficava com
+    o carro duas vezes. Uma pausa depois da conferência garante que os
+    pedidos se sobreponham."""
+    import time
+    from datetime import datetime as _datetime
+
+    from app.api.routers import veiculos
+
+    class Lento(_datetime):
+        @classmethod
+        def now(cls, tz=None):
+            time.sleep(0.3)
+            return _datetime.now(tz)
+
+    monkeypatch.setattr(veiculos, "datetime", Lento)
+    corpo = {"placa": "ABC1D23", "tipo": "entrada", "categoria": "visitante"}
+    respostas = ao_mesmo_tempo(4, lambda i: cliente.post(
+        "/api/v1/veiculos", json=corpo, headers=cab(cenario["sindico"])).status_code)
+    assert sorted(respostas) == [201, 409, 409, 409]
+    patio = cliente.get("/api/v1/veiculos/patio", headers=cab(cenario["sindico"])).json()
+    assert [v["placa"] for v in patio] == ["ABC1D23"]
+
+
+def test_dois_sindicos_ao_mesmo_tempo_so_um_passa(cliente, db):
+    """Um síndico por condomínio. A conferência ("já tem síndico?") e a
+    gravação não eram um passo só: dois cadastros juntos passavam os dois."""
+    from tests.fixtures import criar_condominio_como_admin, token_admin
+
+    tok = token_admin(cliente, db)
+    cond = criar_condominio_como_admin(cliente, tok)
+
+    def criar(i):
+        return cliente.post(
+            f"/api/v1/admin/condominios/{cond['id']}/usuarios",
+            json={
+                "nome": "Síndico Concorrente", "email": f"sindico{i}@exemplo.com",
+                "cpf": CPFS[i], "telefone": "(67) 99999-0001",
+                "senha": "senhaforte123", "papel": "sindico",
+            },
+            headers=cab(tok),
+        ).status_code
+
+    codigos = ao_mesmo_tempo(4, criar)
+    assert sorted(codigos) == [201, 409, 409, 409], codigos
+
+
+def test_reativar_dois_sindicos_ao_mesmo_tempo_so_um_passa(cliente, db, monkeypatch):
+    """Sem trava no condomínio, cada reativação conferia "já tem síndico?"
+    antes de a outra gravar. A janela é curta; o atraso logo depois da
+    conferência a deixa larga, para o teste não depender da sorte."""
+    import time
+
+    from app.services import usuarios as servico_usuarios
+    from tests.fixtures import criar_condominio_como_admin, criar_sindico, token_admin
+
+    original = servico_usuarios._conferir_reativacao
+
+    def conferir_devagar(db_, usuario):
+        original(db_, usuario)
+        time.sleep(0.3)
+
+    monkeypatch.setattr(servico_usuarios, "_conferir_reativacao", conferir_devagar)
+
+    tok = token_admin(cliente, db)
+    cond = criar_condominio_como_admin(cliente, tok)
+    ids = []
+    for i in range(4):
+        id_, _ = criar_sindico(cliente, tok, cond["id"], email=f"s{i}@exemplo.com", cpf=CPFS[i])
+        r = cliente.delete(f"/api/v1/admin/usuarios/{id_}", headers=cab(tok))
+        assert r.status_code == 200, r.text
+        ids.append(id_)
+
+    codigos = ao_mesmo_tempo(4, lambda i: cliente.put(
+        f"/api/v1/admin/usuarios/{ids[i]}", json={"status": "ativo"}, headers=cab(tok),
+    ).status_code)
+    assert sorted(codigos) == [200, 409, 409, 409], codigos

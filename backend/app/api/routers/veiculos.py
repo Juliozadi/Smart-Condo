@@ -19,6 +19,7 @@ from app.models.condominio import Unidade
 from app.models.enums import CategoriaVeiculo, Papel, TipoMovimentacao
 from app.models.operacao import MovimentacaoVeiculo
 from app.models.usuario import Usuario
+from app.schemas.comuns import limpar_placa
 from app.schemas.operacao import (
     MovimentacaoEntrada, MovimentacaoSaida, OcupacaoEstacionamento, VeiculoNoPatio,
 )
@@ -73,6 +74,15 @@ def registrar_movimentacao(
             detail="Informe a unidade do morador.",
         )
 
+    # Trava a placa até o fim da transação: dois pedidos ao mesmo tempo
+    # (clique duplo, dois porteiros) passavam juntos pela conferência
+    # abaixo, e o carro entrava duas vezes. Não há linha para travar
+    # antes da primeira entrada, por isso a trava é por chave.
+    db.execute(
+        select(func.pg_advisory_xact_lock(
+            usuario.condominio_id, func.hashtext(dados.placa)
+        ))
+    )
     # Duas entradas seguidas (ou duas saídas) deixariam o pátio errado.
     ultima = db.scalar(
         select(MovimentacaoVeiculo)
@@ -192,8 +202,7 @@ def listar_movimentacoes(
     if usuario.papel == Papel.MORADOR:
         consulta = consulta.where(MovimentacaoVeiculo.unidade_id == usuario.unidade_id)
     if placa:
-        limpa = "".join(c for c in placa if c.isalnum()).upper()
-        consulta = consulta.where(MovimentacaoVeiculo.placa == limpa)
+        consulta = consulta.where(MovimentacaoVeiculo.placa == limpar_placa(placa))
 
     movimentacoes = db.scalars(
         consulta.order_by(MovimentacaoVeiculo.id.desc()).limit(limite)

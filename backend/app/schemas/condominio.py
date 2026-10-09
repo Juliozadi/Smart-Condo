@@ -6,9 +6,10 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
-from app.schemas.comuns import CEP, CNPJ, SchemaBase, Telefone, UF
+from app.schemas.admin import RegistroSaida
+from app.schemas.comuns import CEP, CNPJ, IdUnidade, SchemaBase, Telefone, UF
 
 
 class CondominioEntrada(SchemaBase):
@@ -17,7 +18,6 @@ class CondominioEntrada(SchemaBase):
     cep: CEP
     logradouro: str = Field(min_length=3, max_length=180)
     numero: str = Field(min_length=1, max_length=20)
-    complemento: str | None = Field(default=None, max_length=80)
     bairro: str = Field(min_length=2, max_length=100)
     cidade: str = Field(min_length=2, max_length=100)
     uf: UF
@@ -33,7 +33,6 @@ class CondominioSaida(SchemaBase):
     cep: str
     logradouro: str
     numero: str
-    complemento: str | None = None
     bairro: str
     cidade: str
     uf: str
@@ -52,8 +51,8 @@ class CondominioPorCodigo(SchemaBase):
 
 
 class UnidadeEntrada(SchemaBase):
-    numero: str = Field(min_length=1, max_length=20)
-    bloco: str = Field(default="unico", max_length=20)
+    numero: IdUnidade = Field(min_length=1, max_length=20)
+    bloco: IdUnidade = Field(default="unico", max_length=20)
     andar: int | None = Field(default=None, ge=0, le=200)
     vagas_garagem: int = Field(default=0, ge=0, le=20)
 
@@ -61,20 +60,69 @@ class UnidadeEntrada(SchemaBase):
 class UnidadeSaida(UnidadeEntrada):
     id: int
     condominio_id: int
+    # Só para o síndico: quantos moradores ativos e quem mexeu por último.
+    total_moradores: int | None = None
+    ultima_alteracao: RegistroSaida | None = None
+
+
+class UnidadeAtualizacao(SchemaBase):
+    """Andar e vagas. Número e bloco não mudam: moradores, cobranças e a
+    portaria apontam para a unidade por eles."""
+    andar: int | None = Field(default=None, ge=0, le=200)
+    vagas_garagem: int | None = Field(default=None, ge=0, le=20)
+
+    @model_validator(mode="after")
+    def _vagas_nao_nulas(self):
+        if "vagas_garagem" in self.model_fields_set and self.vagas_garagem is None:
+            raise ValueError("Informe o número de vagas (0 se não houver).")
+        return self
 
 
 class EspacoEntrada(SchemaBase):
     nome: str = Field(min_length=2, max_length=120)
-    descricao: str | None = None
+    descricao: str | None = Field(default=None, max_length=2000)
     capacidade: int = Field(default=0, ge=0, le=10000)
     reservavel: bool = True
     uso_livre: bool = False
     em_manutencao: bool = False
 
+    @model_validator(mode="after")
+    def _tem_uso(self):
+        # Nem reservável nem de uso livre: o espaço não serviria para nada.
+        if not self.reservavel and not self.uso_livre:
+            raise ValueError("O espaço precisa ser reservável ou de uso livre.")
+        return self
 
-class EspacoSaida(EspacoEntrada):
+
+class EspacoAtualizacao(SchemaBase):
+    """Só o que veio muda. Campos obrigatórios não aceitam null."""
+    nome: str | None = Field(default=None, min_length=2, max_length=120)
+    descricao: str | None = Field(default=None, max_length=2000)
+    capacidade: int | None = Field(default=None, ge=0, le=10000)
+    reservavel: bool | None = None
+    uso_livre: bool | None = None
+    em_manutencao: bool | None = None
+
+    @model_validator(mode="after")
+    def _sem_null_nos_obrigatorios(self):
+        for campo in ("nome", "capacidade", "reservavel", "uso_livre", "em_manutencao"):
+            if campo in self.model_fields_set and getattr(self, campo) is None:
+                raise ValueError(f"O campo {campo} não pode ficar vazio.")
+        return self
+
+
+class EspacoSaida(SchemaBase):
     id: int
     condominio_id: int
+    nome: str
+    descricao: str | None = None
+    capacidade: int
+    reservavel: bool
+    uso_livre: bool
+    em_manutencao: bool
+    inativo: bool = False
+    # Só para o síndico: "Editado por Fulano em 28/09 14:32".
+    ultima_alteracao: RegistroSaida | None = None
 
 
 class OcupacaoEntrada(SchemaBase):

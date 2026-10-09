@@ -79,6 +79,9 @@ class StatusVisitante(str, enum.Enum):
     RECUSADO = "recusado"
     DENTRO = "dentro"
     SAIU = "saiu"
+    # O morador não respondeu a tempo: o visitante não fica "aguardando"
+    # para sempre na portaria, nem é confirmado dias depois.
+    SEM_RESPOSTA = "sem_resposta"
 
 
 class StatusEncomenda(str, enum.Enum):

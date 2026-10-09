@@ -85,10 +85,28 @@
     var wrapper = document.createElement('div');
     wrapper.setAttribute('vw', '');
     wrapper.className = 'enabled';
+    // Uma região rotulada, como o nosso widget: sem isso, o que o VLibras
+    // desenha fica fora de qualquer região da página (falha de
+    // acessibilidade apontada pelo axe, regra "region").
+    wrapper.setAttribute('role', 'region');
+    wrapper.setAttribute('aria-label', 'Tradução em Libras (VLibras)');
     wrapper.innerHTML =
       '<div vw-access-button class="active"></div>' +
       '<div vw-plugin-wrapper><div class="vw-plugin-top-wrapper"></div></div>';
     document.body.appendChild(wrapper);
+
+    // O plugin pode pôr partes dele direto no <body>: elas vêm para dentro
+    // da região. Só o que é do VLibras (id começando com "vlibras").
+    function recolher(no) {
+      if (no.nodeType === 1 && /^vlibras/i.test(no.id || '') && no.parentNode === document.body) {
+        wrapper.appendChild(no);
+      }
+    }
+    if (window.MutationObserver) {
+      new MutationObserver(function(mudancas) {
+        mudancas.forEach(function(m) { Array.prototype.forEach.call(m.addedNodes, recolher); });
+      }).observe(document.body, { childList: true });
+    }
 
     var script = document.createElement('script');
     script.src = 'https://vlibras.gov.br/app/vlibras-plugin.js';

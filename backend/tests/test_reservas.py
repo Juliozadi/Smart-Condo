@@ -11,6 +11,7 @@ from tests.fixtures import (
 )
 
 AMANHA = (hoje_local() + timedelta(days=1)).isoformat()
+HOJE = hoje_local().isoformat()
 
 
 @pytest.fixture
@@ -168,6 +169,18 @@ def test_hora_fim_antes_do_inicio_e_recusada(cliente, cenario):
     assert r.status_code == 422
 
 
+@pytest.mark.parametrize("inicio, fim", [
+    ("14:00+03:00", "22:00"),        # só um com fuso: não dava para comparar
+    ("14:00Z", "22:00Z"),            # os dois com fuso: não comparava com a hora local
+])
+def test_horario_com_fuso_e_recusado(cliente, cenario, inicio, fim):
+    """O horário é o do condomínio. Com fuso, a comparação com a hora local
+    estourava e o pedido voltava como erro 500."""
+    r = reservar(cliente, cenario["ana"], cenario["salao"]["id"], inicio, fim, data=HOJE)
+    assert r.status_code == 422
+    assert "fuso" in str(r.json()["campos"])
+
+
 def test_acima_da_capacidade_e_recusado(cliente, cenario):
     r = reservar(cliente, cenario["ana"], cenario["salao"]["id"], pessoas_estimadas=200)
     assert r.status_code == 400
@@ -311,3 +324,88 @@ def test_inativar_o_morador_libera_as_reservas_futuras(cliente, db, cenario):
     assert db.get(Reserva, passada.id).status == StatusReserva.APROVADA
     # O horário ficou livre para os outros.
     assert reservar(cliente, cenario["bruno"], salao, data=dia).status_code == 201
+
+
+def test_reserva_que_ja_passou_nao_e_aprovada_nem_cancelada(cliente, cenario, db):
+    """Uma reserva esquecida na fila era aprovada dois dias depois, e o
+    morador cancelava a que já tinha acontecido, reescrevendo o histórico."""
+    from sqlalchemy import update
+
+    from app.models.espaco import Reserva
+
+    pendente = reservar(cliente, cenario["ana"], cenario["salao"]["id"]).json()
+    aprovada = reservar(cliente, cenario["bruno"], cenario["salao"]["id"],
+                        inicio="08:00", fim="12:00").json()
+    cliente.post(f"/api/v1/espacos/reservas/{aprovada['id']}/avaliacao",
+                 headers=cab(cenario["sindico"]), json={"aprovada": True})
+    ontem = hoje_local() - timedelta(days=1)
+    db.execute(update(Reserva).where(Reserva.id.in_([pendente["id"], aprovada["id"]]))
+               .values(data=ontem))
+    db.commit()
+
+    url = f"/api/v1/espacos/reservas/{pendente['id']}/avaliacao"
+    assert cliente.post(url, headers=cab(cenario["sindico"]),
+                        json={"aprovada": True}).status_code == 409
+    r = cliente.post(url, headers=cab(cenario["sindico"]),
+                     json={"aprovada": False, "motivo": "Passou da data"})
+    assert r.status_code == 200 and r.json()["status"] == "recusada"
+    r = cliente.delete(f"/api/v1/espacos/reservas/{aprovada['id']}", headers=cab(cenario["bruno"]))
+    assert r.status_code == 409
+
+
+def test_reservas_passadas_se_encerram_sozinhas(cliente, cenario, db):
+    """A aprovada do mês passado não fica "em aberto" para sempre: vira
+    concluída. A pendente cujo horário chegou sem avaliação vira recusada,
+    com o motivo para o morador."""
+    from sqlalchemy import update
+
+    from app.models.espaco import Reserva
+
+    aprovada = reservar(cliente, cenario["ana"], cenario["salao"]["id"]).json()
+    cliente.post(f"/api/v1/espacos/reservas/{aprovada['id']}/avaliacao",
+                 headers=cab(cenario["sindico"]), json={"aprovada": True})
+    esquecida = reservar(cliente, cenario["ana"], cenario["salao"]["id"],
+                         inicio="08:00", fim="12:00").json()
+    futura = reservar(cliente, cenario["bruno"], cenario["salao"]["id"],
+                      data=(hoje_local() + timedelta(days=3)).isoformat()).json()
+    db.execute(update(Reserva).where(Reserva.id.in_([aprovada["id"], esquecida["id"]]))
+               .values(data=hoje_local() - timedelta(days=30)))
+    db.commit()
+
+    minhas = {r["id"]: r for r in cliente.get("/api/v1/espacos/reservas/minhas",
+                                              headers=cab(cenario["ana"])).json()}
+    assert minhas[aprovada["id"]]["status"] == "concluida"
+    assert minhas[esquecida["id"]]["status"] == "recusada"
+    assert "sem a avaliação" in minhas[esquecida["id"]]["motivo_recusa"]
+    todas = {r["id"]: r["status"] for r in cliente.get(
+        "/api/v1/espacos/reservas", headers=cab(cenario["sindico"])).json()}
+    assert todas[futura["id"]] == "pendente"
+
+
+def test_pendente_que_ja_comecou_nao_bloqueia_o_espaco(cliente, cenario, db, monkeypatch):
+    """A pendente cujo horário chegou sem avaliação vira recusada, mas isso
+    só se acertava ao abrir as listas: até lá ela continuava ocupando o
+    espaço na agenda e barrando o pedido de outro morador para mais tarde."""
+    from datetime import time
+
+    from sqlalchemy import update
+
+    from app.api.routers import reservas as rotas
+    from app.models.espaco import Reserva
+
+    meio_dia = rotas.agora_local().replace(hour=12, minute=0, second=0, microsecond=0)
+    monkeypatch.setattr(rotas, "agora_local", lambda: meio_dia)
+
+    esquecida = reservar(cliente, cenario["ana"], cenario["salao"]["id"]).json()
+    db.execute(update(Reserva).where(Reserva.id == esquecida["id"])
+               .values(data=meio_dia.date(), hora_inicio=time(10), hora_fim=time(22)))
+    db.commit()
+    hoje = meio_dia.date().isoformat()
+
+    agenda = cliente.get("/api/v1/espacos/agenda", params={"inicio": hoje, "fim": hoje},
+                         headers=cab(cenario["bruno"])).json()
+    assert agenda == []
+
+    r = reservar(cliente, cenario["bruno"], cenario["salao"]["id"],
+                 inicio="14:00", fim="16:00", data=hoje)
+    assert r.status_code == 201, r.json()

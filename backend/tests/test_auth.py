@@ -647,3 +647,94 @@ def test_senha_atual_errada_nao_encerra_nada(cliente, cenario):
     )
     assert r.status_code == 400
     assert cliente.get("/api/v1/auth/eu", headers=cab(cenario["sindico"])).status_code == 200
+
+
+def _envelhecer_cadastro(db, email):
+    """Como se o cadastro tivesse sido feito há 2 horas, sem confirmar."""
+    from datetime import datetime, timedelta, timezone
+
+    from sqlalchemy import update
+
+    from app.models.usuario import CodigoVerificacao
+    antes = datetime.now(timezone.utc) - timedelta(hours=2)
+    usuario = db.query(Usuario).filter(Usuario.email == email).one()
+    db.execute(update(Usuario).where(Usuario.id == usuario.id).values(criado_em=antes))
+    db.execute(update(CodigoVerificacao).where(CodigoVerificacao.usuario_id == usuario.id)
+               .values(expira_em=antes))
+    db.commit()
+    return usuario.id
+
+
+def test_cadastro_nunca_confirmado_nao_prende_o_cpf(cliente, cenario, db):
+    """Errou o e-mail, o código não chegou: antes o CPF ficava preso para
+    sempre ("Já existe um cadastro com este CPF"). Passado o prazo, o novo
+    cadastro retoma o antigo, que nunca foi uma conta."""
+    errado = cadastrar(cliente, cenario, email="joao@exemplo.con")
+    assert errado.status_code == 201
+    # Logo em seguida ainda é recusado: o código enviado pode estar chegando.
+    r = cadastrar(cliente, cenario, email="joao@exemplo.com")
+    assert r.status_code == 409 and "esperando a confirmação" in r.json()["detalhe"]
+
+    antigo_id = _envelhecer_cadastro(db, "joao@exemplo.con")
+    r = cadastrar(cliente, cenario, email="joao@exemplo.com")
+    assert r.status_code == 201, r.text
+    assert r.json()["usuario"]["id"] == antigo_id
+    assert r.json()["usuario"]["email"] == "joao@exemplo.com"
+    conf = cliente.post("/api/v1/auth/confirmar", json={
+        "email": "joao@exemplo.com", "codigo": r.json()["codigo_debug"]})
+    assert conf.status_code == 200, conf.text
+
+
+def test_conta_confirmada_continua_protegida(cliente, cenario, db):
+    cadastrar_e_confirmar(cliente, cenario)
+    email = dados_morador(cenario)["email"].lower()
+    usuario_id = db.query(Usuario).filter(Usuario.email == email).one().id
+    from datetime import datetime, timedelta, timezone
+
+    from sqlalchemy import update
+    db.execute(update(Usuario).where(Usuario.id == usuario_id)
+               .values(criado_em=datetime.now(timezone.utc) - timedelta(days=30)))
+    db.commit()
+    r = cadastrar(cliente, cenario, email="outro@exemplo.com")
+    assert r.status_code == 409 and "CPF" in r.json()["detalhe"]
+
+
+def test_login_bloqueado_diz_a_situacao_e_o_motivo_da_recusa(cliente, cenario):
+    """O recusado só via "indisponível", sem o motivo que o síndico escreveu;
+    quem não confirmou o código não sabia para onde ir. A situação vem junto
+    da mensagem, para a tela levar ao passo certo."""
+    corpo = cadastrar(cliente, cenario).json()
+    email, senha = corpo["usuario"]["email"], dados_morador(cenario)["senha"]
+    r = cliente.post("/api/v1/auth/login", json={"email": email, "senha": senha})
+    assert r.status_code == 403 and r.json()["situacao"] == "aguardando_codigo"
+
+    cliente.post("/api/v1/auth/confirmar", json={"email": email, "codigo": corpo["codigo_debug"]})
+    r = cliente.post("/api/v1/auth/login", json={"email": email, "senha": senha})
+    assert r.json()["situacao"] == "aguardando_aprovacao"
+
+    cliente.post(f"/api/v1/usuarios/{corpo['usuario']['id']}/aprovacao", headers=cab(
+        cenario["sindico"]), json={"aprovado": False, "motivo": "Unidade não confere"})
+    r = cliente.post("/api/v1/auth/login", json={"email": email, "senha": senha})
+    assert r.json()["situacao"] == "recusado"
+    assert "Motivo: Unidade não confere" in r.json()["detalhe"]
+    # Com a senha errada, nada disso aparece.
+    r = cliente.post("/api/v1/auth/login", json={"email": email, "senha": "outrasenha99"})
+    assert r.status_code == 401 and "situacao" not in r.json()
+
+
+ARABES = str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩")
+LARGOS = str.maketrans("0123456789", "０１２３４５６７８９")
+
+
+@pytest.mark.parametrize("tabela", [ARABES, LARGOS], ids=["arabes", "largura_total"])
+def test_cpf_com_digitos_de_outro_alfabeto_nao_burla_o_cpf_repetido(cliente, cenario, tabela):
+    """O \\d do Python também casa com "٠١٢" e "０１２": o mesmo CPF escrito
+    assim passava pelos dígitos verificadores, era gravado como outro texto
+    e a mesma pessoa se cadastrava duas vezes."""
+    assert cadastrar(cliente, cenario).status_code == 201
+    disfarcado = CPF_MORADOR.translate(tabela)
+    r = cadastrar(cliente, cenario, cpf=disfarcado, email="outro@exemplo.com")
+    assert r.status_code in (409, 422), r.json()
+    r = cadastrar(cliente, cenario, cpf=disfarcado, email="outro@exemplo.com",
+                  telefone="(67) 99999-0000".translate(tabela))
+    assert r.status_code in (409, 422), r.json()

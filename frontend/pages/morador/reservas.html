@@ -133,6 +133,11 @@
     var d = new Date();
     return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
   }
+  function jaComecou(r) {
+    var d = new Date();
+    var agora = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    return r.data < hoje() || (r.data === hoje() && (r.hora_inicio || '').slice(0, 5) <= agora);
+  }
 
   // ── Ocupação em tempo real ──────────────────────────────────────
   var desdeAtualizacao = 0;
@@ -289,7 +294,8 @@
 
     card.appendChild(data); card.appendChild(info); card.appendChild(selo);
 
-    if (ATIVAS.indexOf(r.status) >= 0) {
+    // A que já começou não se cancela mais: fica no histórico como está.
+    if (ATIVAS.indexOf(r.status) >= 0 && !jaComecou(r)) {
       var cancelar = document.createElement('button');
       cancelar.type = 'button';
       cancelar.className = 'pill-acao recusar';
@@ -323,7 +329,9 @@
     campo('estadoMinhas').textContent = 'Carregando…';
     return api.get('/espacos/reservas/minhas')
       .then(function(lista) {
-        var ativas = lista.filter(function(r) { return ATIVAS.indexOf(r.status) >= 0; });
+        // As em aberto da mais próxima para a mais distante.
+        var ativas = lista.filter(function(r) { return ATIVAS.indexOf(r.status) >= 0; })
+          .sort(function(a, b) { return (a.data + a.hora_inicio) < (b.data + b.hora_inicio) ? -1 : 1; });
         var encerradas = lista.filter(function(r) { return ATIVAS.indexOf(r.status) < 0; });
 
         campo('totAprovadas').textContent =

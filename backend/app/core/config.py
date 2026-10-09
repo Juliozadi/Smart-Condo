@@ -53,6 +53,8 @@ class Settings(BaseSettings):
     # quanto tempo. O bloqueio é temporário de propósito: permanente,
     # bastaria errar a senha de alguém para deixá-lo de fora.
     MAX_TENTATIVAS_LOGIN: int = Field(default=5, ge=3, le=20)
+    # Limite de pedidos por IP nas rotas abertas (app/core/limite.py).
+    LIMITE_POR_ORIGEM: bool = True
     BLOQUEIO_LOGIN_MIN: int = Field(default=15, ge=1, le=1440)
 
     # ── Envio de e-mail ──────────────────────────────────────────────
@@ -95,6 +97,11 @@ class Settings(BaseSettings):
     # Documentos do cadastro do morador (RG, comprovante, escritura) e os
     # do condomínio que o síndico publica (atas, convenção, regimento).
     DOCUMENTO_MAX_KB: int = Field(default=10240, ge=100, le=20480)
+    # Teto do corpo de qualquer pedido sem arquivo. O maior texto aceito
+    # tem 8 mil caracteres; 256 KB sobra com folga. Os pedidos com arquivo
+    # (multipart) têm como teto o maior arquivo aceito, mais uma folga
+    # para os outros campos do formulário.
+    CORPO_MAX_KB: int = Field(default=256, ge=64, le=4096)
     # Por quanto tempo vale a autorização para enviar esses documentos,
     # contada a partir do cadastro.
     TOKEN_DOCUMENTOS_MIN: int = Field(default=60, ge=5, le=1440)

@@ -107,9 +107,10 @@ backend/
 | Área | Prefixo | O que cobre na documentação |
 |---|---|---|
 | Autenticação | `/api/v1/auth` | Seção 9: Cadastro, Login, Esqueci minha senha |
+| Administrador | `/api/v1/admin` | Condomínios, usuários e outros administradores; `GET /admin/historico` traz quem alterou cada registro |
 | Condomínio | `/api/v1/condominios` | Seção 9: Cadastro do condomínio |
 | Usuários | `/api/v1/usuarios` | Seções 8, 9 e 11.2: cadastro do porteiro, permissões e aprovação |
-| Espaços e reservas | `/api/v1/espacos` | Seções 6 e 11.5.3: reservas sigilosas, ocupação e aprovação |
+| Espaços e reservas | `/api/v1/espacos` | Seções 6 e 11.5.3: espaços (o síndico cadastra, edita, inativa e reativa), reservas sigilosas, ocupação e aprovação |
 | Portaria | `/api/v1/portaria` | Seção 6: vídeo porteiro, encomendas e ocorrências |
 | Financeiro | `/api/v1/financeiro` | Seção 6: cobrança na data escolhida e formas de pagamento |
 | Comunicados | `/api/v1/comunicados` | Seções 11.5.4 e 11.6.4 |
@@ -204,11 +205,25 @@ pagou e a data.
 - A senha é limitada a 72 bytes no schema, que é o teto do bcrypt.
 - Cada consulta é restrita ao condomínio do usuário; o morador só alcança a
   própria unidade.
-- Usuários são **inativados**, nunca apagados, para o histórico de portaria,
-  reservas e financeiro continuar íntegro.
+- **Nada é apagado.** Usuários são inativados; condomínios, comunicados,
+  documentos e espaços comuns também (`inativo_em`, `inativado_por_id`) —
+  saem das telas e continuam no banco; condomínios, usuários e espaços podem
+  ser reativados. Inativar um espaço cancela as reservas de hoje em diante.
+- **Quem fez cada alteração** fica em `registros_alteracao`: criar, editar
+  (com os campos que mudaram), inativar e reativar — pelo administrador ou
+  pelo síndico (usuários, permissões do porteiro, espaços, novo código de
+  acesso). As telas mostram "Editado por Fulano em ..." e o histórico.
+- Pode haver **vários administradores** (`POST /admin/administradores`);
+  ninguém inativa a si mesmo, e a plataforma nunca fica sem administrador
+  ativo (as linhas dos administradores são travadas, sempre na mesma ordem).
 - **Trocar ou redefinir a senha encerra as outras sessões**: o token leva a
   `versao_sessao` do usuário, que a troca aumenta. A troca pelo perfil
   devolve um token novo, e quem trocou segue conectado.
+- As rotas abertas (consulta do código de acesso, cadastro, login,
+  confirmação e recuperação de senha) têm **limite de pedidos por IP**
+  (`app/core/limite.py`, 429 com `Retry-After`). A contagem fica na
+  memória do processo; com mais de um processo, o limite vai para o proxy.
+  `LIMITE_POR_ORIGEM=false` desliga.
 - Tentativas de login, palpites do código, pedidos de código, reservas,
   pagamentos e as decisões (aprovar cadastro, avaliar ou cancelar reserva,
   liberar visitante, retirar encomenda, responder ocorrência) travam a linha no banco (`SELECT ... FOR UPDATE`): requisições

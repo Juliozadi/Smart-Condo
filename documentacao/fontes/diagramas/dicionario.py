@@ -40,6 +40,7 @@ TABELAS = {
     "movimentacoes_veiculo": "As entradas e saídas de veículos registradas na portaria.",
     "mensagens": "As mensagens do chat entre síndico, porteiros e moradores do mesmo condomínio.",
     "documentos_cadastro": "Os documentos que o morador envia ao se cadastrar, para o síndico conferir antes de aprovar.",
+    "registros_alteracao": "Quem criou, editou, inativou ou reativou cada registro, e quando — o \"editado por fulano\" das telas do administrador.",
 }
 
 # O significado de cada coluna que não é identificador, vínculo ou carimbo
@@ -55,7 +56,7 @@ DESCRICOES = {
     "condominios.cep": "CEP do endereço",
     "condominios.logradouro": "Rua, avenida ou praça",
     "condominios.numero": "Número do imóvel no logradouro",
-    "condominios.complemento": "Complemento do endereço, quando houver",
+    "condominios.complemento": "Complemento do endereço dos cadastros antigos; não é mais pedido",
     "condominios.bairro": "Bairro",
     "condominios.cidade": "Cidade",
     "condominios.uf": "Sigla da unidade federativa",
@@ -66,6 +67,7 @@ DESCRICOES = {
     "unidades.bloco": "Bloco ou torre, quando o condomínio tiver mais de um",
     "unidades.andar": "Andar em que a unidade fica",
     "unidades.vagas_garagem": "Quantidade de vagas de garagem da unidade; a soma das vagas alimenta o cálculo de ocupação do estacionamento",
+    "unidades.pendente": "Verdadeiro quando a unidade foi criada pelo autocadastro de um morador e ainda não foi confirmada pelo síndico; não aparece nas listas da portaria e do síndico até a aprovação",
 
     "usuarios.nome": "Nome completo",
     "usuarios.email": "E-mail, usado para entrar no sistema e para receber os códigos; único na plataforma",
@@ -81,6 +83,7 @@ DESCRICOES = {
     "usuarios.motivo_recusa": "Justificativa registrada pelo síndico ao recusar o cadastro; é o que o morador vê na tela de espera",
     "usuarios.tentativas_login": "Senhas erradas seguidas; zera no primeiro acesso bem-sucedido",
     "usuarios.bloqueado_ate": "Momento até o qual a conta fica bloqueada depois de sucessivas senhas erradas",
+    "usuarios.unidade_desde": "Desde quando mora na unidade atual; renovado na transferência e na reativação. O morador só vê os visitantes e as encomendas a partir daqui",
     "usuarios.versao_sessao": "Versão da sessão, gravada em cada token; sobe quando a senha é trocada ou redefinida, e os tokens antigos deixam de valer",
 
     "codigos_verificacao.codigo_hash": "Resumo criptográfico do código enviado. O código em si não é guardado",
@@ -95,7 +98,7 @@ DESCRICOES = {
     "permissoes_porteiro.registrar_encomendas": "Se o porteiro pode registrar encomendas",
     "permissoes_porteiro.registrar_veiculos": "Se o porteiro pode registrar entrada e saída de veículos",
     "permissoes_porteiro.registrar_ocorrencias": "Se o porteiro pode abrir ocorrências",
-    "permissoes_porteiro.acessar_financeiro": "Se o porteiro pode consultar a área financeira",
+    "permissoes_porteiro.acessar_financeiro": "Sem uso: a permissão saiu do sistema, e o financeiro é sempre recusado ao porteiro",
 
     "espacos_comuns.nome": "Nome do espaço",
     "espacos_comuns.descricao": "Descrição e regras de uso",
@@ -186,7 +189,8 @@ DESCRICOES = {
     "encomendas.foto_arquivo": "Nome do arquivo da foto do volume, gravado pela API sem endereço público; apagado após o prazo de guarda",
     "encomendas.status": "Situação da encomenda, do recebimento à retirada",
     "encomendas.recebida_em": "Momento em que a portaria recebeu",
-    "encomendas.retirada_em": "Momento em que o morador retirou",
+    "encomendas.retirada_em": "Momento da retirada, pelo app ou em mãos na portaria",
+    "encomendas.retirado_por_nome": "Nome de quem levou a encomenda entregue em mãos (pode não ter cadastro)",
 
     "movimentacoes_veiculo.placa": "Placa do veículo",
     "movimentacoes_veiculo.modelo": "Modelo do veículo",
@@ -199,18 +203,33 @@ DESCRICOES = {
     "mensagens.texto": "Conteúdo da mensagem, de 1 a 2.000 caracteres",
     "mensagens.enviada_em": "Momento do envio, preenchido pelo banco",
     "mensagens.lida_em": "Momento em que o destinatário abriu a conversa; vazio enquanto não lida",
+    "condominios.inativo_em": "Quando o condomínio foi inativado; vazio enquanto ativo. Nada é apagado: \"excluir\" inativa",
+    "comunicados.inativo_em": "Quando o comunicado foi removido das telas; vazio enquanto publicado. O registro fica guardado",
+    "documentos.inativo_em": "Quando o documento foi removido das telas; vazio enquanto disponível. Registro e arquivo ficam guardados",
+    "espacos_comuns.inativo_em": "Quando o espaço foi inativado; vazio enquanto ativo. As reservas passadas ficam no histórico",
+    "registros_alteracao.acao": "O que foi feito: criou, editou, inativou, reativou, aprovou, recusou, cancelou ou gerou novo código",
+    "registros_alteracao.entidade": "Tipo do registro alterado: condominio, usuario, comunicado, documento, espaco, unidade ou cobranca",
+    "registros_alteracao.entidade_id": "Identificador do registro alterado, na tabela indicada em entidade",
+    "registros_alteracao.descricao": "O que mudou, quando cabe (\"Alterou o nome e o telefone\"); a senha aparece pelo nome, nunca pelo valor",
+    "registros_alteracao.feito_em": "Momento da alteração, preenchido pelo banco",
 }
 
 # O que cada vínculo significa, quando o nome da coluna não basta.
 VINCULOS = {
     "condominios.sindico_id": "Síndico responsável pelo condomínio",
+    "condominios.inativado_por_id": "Administrador que inativou o condomínio",
+    "comunicados.inativado_por_id": "Síndico que removeu o comunicado",
+    "documentos.inativado_por_id": "Síndico que removeu o documento",
+    "espacos_comuns.inativado_por_id": "Síndico que inativou o espaço",
+    "registros_alteracao.autor_id": "Quem fez a alteração",
     "usuarios.avaliado_por_id": "Síndico que aprovou ou recusou este cadastro",
     "reservas.avaliada_por_id": "Síndico que aprovou ou recusou a reserva",
     "ocorrencias.aberta_por_id": "Quem registrou a ocorrência",
     "ocorrencias.respondida_por_id": "Síndico que respondeu",
     "ordens_servico.aberta_por_id": "Síndico que abriu a ordem",
     "encomendas.registrada_por_id": "Porteiro que recebeu a encomenda",
-    "encomendas.retirada_por_id": "Morador que retirou",
+    "encomendas.retirada_por_id": "Morador que confirmou a retirada pelo app",
+    "encomendas.entregue_por_id": "Porteiro que entregou em mãos na portaria",
     "visitantes.registrado_por_id": "Porteiro que anunciou a visita",
     "visitantes.confirmado_por_id": "Morador que autorizou ou recusou",
     "movimentacoes_veiculo.registrada_por_id": "Porteiro que registrou a movimentação",

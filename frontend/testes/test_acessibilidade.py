@@ -124,3 +124,29 @@ def test_janela_prende_o_foco(navegador, papel, pagina, abrir_com, janela, abert
     assert pg.evaluate("(s) => document.activeElement.matches(s)", abrir_com)
     assert pg.erros == []
     ctx.close()
+
+
+PLUGIN_FALSO = """
+window.VLibras = { Widget: function () {
+  for (const id of ['vlibras-access-wrapper', 'vlibras-popup']) {
+    const el = document.createElement('div');
+    el.id = id;
+    el.textContent = 'VLibras';
+    document.body.appendChild(el);
+  }
+} };
+"""
+
+
+def test_vlibras_fica_numa_regiao(navegador):
+    """No CI, com internet, o VLibras carrega e desenhava fora de qualquer
+    região da página (regra "region" do axe); aqui ele não carrega. Um
+    plugin falso faz o que o de verdade faz: põe os elementos no <body>."""
+    ctx, pg = abrir(navegador)
+    pg.route("https://vlibras.gov.br/**", lambda rota: rota.fulfill(
+        status=200, content_type="application/javascript", body=PLUGIN_FALSO))
+    ir(pg, "index.html", 900)
+    assert pg.evaluate("document.querySelector('#vlibras-popup').closest('[role=region]') !== null")
+    problemas = auditar(pg, "index.html com o VLibras")
+    ctx.close()
+    assert not problemas, "\n".join(problemas)

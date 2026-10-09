@@ -24,8 +24,8 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
-from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy import select, update
+from sqlalchemy.orm import Session, contains_eager, selectinload
 
 from app.api.deps import (
     exigir_condominio, exigir_papel, exigir_permissao_do_porteiro, exigir_permissao_porteiro,
@@ -35,12 +35,12 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.models.condominio import Unidade
 from app.models.enums import (
-    CanalVerificacao, Papel, StatusEncomenda, StatusOcorrencia, StatusVisitante,
+    CanalVerificacao, Papel, StatusEncomenda, StatusOcorrencia, StatusUsuario, StatusVisitante,
 )
 from app.models.portaria import Encomenda, Ocorrencia, Visitante
 from app.models.usuario import Usuario
 from app.schemas.portaria import (
-    ConfirmacaoVisitante, EncomendaEntrada, EncomendaSaida, OcorrenciaEntrada,
+    ConfirmacaoVisitante, EncomendaEntrada, EncomendaSaida, EntregaEncomenda, OcorrenciaEntrada,
     OcorrenciaSaida, RespostaOcorrencia, RetiradaEncomenda, VisitanteEntrada,
     VisitanteSaida,
 )
@@ -53,9 +53,33 @@ def _agora() -> datetime:
     return datetime.now(timezone.utc)
 
 
+# Quanto o visitante espera a resposta do morador. Depois disso ele vira
+# "sem resposta": não fica aguardando para sempre no painel da portaria, e
+# o morador não o confirma dias depois (a entrada seria registrada na hora).
+PRAZO_RESPOSTA = timedelta(hours=2)
+
+
+def _expirar_sem_resposta(db: Session, condominio_id: int) -> None:
+    db.execute(
+        update(Visitante)
+        .where(
+            Visitante.status == StatusVisitante.AGUARDANDO_CONFIRMACAO,
+            Visitante.criado_em < _agora() - PRAZO_RESPOSTA,
+            Visitante.unidade_id.in_(
+                select(Unidade.id).where(Unidade.condominio_id == condominio_id)
+            ),
+        )
+        .values(status=StatusVisitante.SEM_RESPOSTA)
+        .execution_options(synchronize_session=False)
+    )
+    db.commit()
+
+
 def _unidade_do_condominio(db: Session, usuario: Usuario, unidade_id: int) -> Unidade:
     unidade = db.get(Unidade, unidade_id)
-    if unidade is None or unidade.condominio_id != usuario.condominio_id:
+    # A pendente (autocadastro ainda não aprovado) não existe para a portaria.
+    if (unidade is None or unidade.condominio_id != usuario.condominio_id
+            or unidade.pendente):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Unidade não encontrada."
         )
@@ -63,9 +87,14 @@ def _unidade_do_condominio(db: Session, usuario: Usuario, unidade_id: int) -> Un
 
 
 def _avisar_moradores(db: Session, unidade: Unidade, titulo: str, mensagem: str) -> None:
-    """Notifica quem mora na unidade."""
+    """Notifica quem mora na unidade agora: o morador que se mudou
+    (inativado) ou teve o cadastro recusado não recebe mais os visitantes e
+    as encomendas do apartamento."""
     moradores = db.scalars(
-        select(Usuario).where(Usuario.unidade_id == unidade.id, Usuario.papel == Papel.MORADOR)
+        select(Usuario).where(
+            Usuario.unidade_id == unidade.id, Usuario.papel == Papel.MORADOR,
+            Usuario.status == StatusUsuario.ATIVO,
+        )
     ).all()
     for morador in moradores:
         notificacao.notificar(morador.email, CanalVerificacao.EMAIL, titulo, mensagem)
@@ -91,7 +120,9 @@ def _encomenda_saida(e: Encomenda) -> EncomendaSaida:
         codigo_rastreio=e.codigo_rastreio, observacoes=e.observacoes,
         foto_url=f"/portaria/encomendas/{e.id}/foto" if e.foto_arquivo else None,
         status=e.status, recebida_em=e.recebida_em,
-        retirada_em=e.retirada_em, criado_em=e.criado_em,
+        retirada_em=e.retirada_em, retirado_por_nome=e.retirado_por_nome,
+        entregue_por_nome=e.entregue_por.nome if e.entregue_por else None,
+        criado_em=e.criado_em,
     )
 
 
@@ -108,13 +139,29 @@ def _ler_foto_enviada(arquivo: UploadFile, pasta: str = arquivos.PORTARIA) -> st
         raise HTTPException(status_code=422, detail=str(erro)) from erro
 
 
-def _pode_ver_foto(db: Session, usuario: Usuario, unidade: Unidade, permissao: str) -> bool:
+# O morador vê o que chegou para a unidade desde que passou a morar nela
+# (usuarios.unidade_desde): o morador novo, o transferido e o que voltou não
+# veem os visitantes (nome, CPF, foto) nem as encomendas de quem estava lá
+# antes. A encomenda que ainda aguarda retirada aparece, porque o volume
+# está na portaria e ele pode dizer que não é dele.
+def _visitante_do_morador(v: Visitante, morador: Usuario) -> bool:
+    return v.unidade_id == morador.unidade_id and v.criado_em >= morador.unidade_desde
+
+
+def _encomenda_do_morador(e: Encomenda, morador: Usuario) -> bool:
+    return e.unidade_id == morador.unidade_id and (
+        e.criado_em >= morador.unidade_desde or e.status == StatusEncomenda.AGUARDANDO_RETIRADA
+    )
+
+
+def _pode_ver_foto(db: Session, usuario: Usuario, unidade: Unidade, permissao: str,
+                   do_morador: bool) -> bool:
     if unidade.condominio_id != usuario.condominio_id:
         return False
     if usuario.papel == Papel.SINDICO:
         return True
     if usuario.papel == Papel.MORADOR:
-        return unidade.id == usuario.unidade_id
+        return do_morador
     if usuario.papel == Papel.PORTEIRO:
         return porteiro_tem_permissao(db, usuario, permissao)
     return False
@@ -200,12 +247,16 @@ def listar_visitantes(
     db: Session = Depends(get_db),
 ) -> list[VisitanteSaida]:
     exigir_permissao_do_porteiro(db, usuario, "registrar_visitantes")
+    _expirar_sem_resposta(db, usuario.condominio_id)
     consulta = select(Visitante).join(Unidade).where(
         Unidade.condominio_id == usuario.condominio_id
     )
-    # O morador só enxerga os visitantes da própria unidade.
+    # O morador só enxerga os visitantes da própria unidade, desde que mora nela.
     if usuario.papel == Papel.MORADOR:
-        consulta = consulta.where(Visitante.unidade_id == usuario.unidade_id)
+        consulta = consulta.where(
+            Visitante.unidade_id == usuario.unidade_id,
+            Visitante.criado_em >= usuario.unidade_desde,
+        )
     if status_visitante is not None:
         consulta = consulta.where(Visitante.status == status_visitante)
 
@@ -227,9 +278,17 @@ def confirmar_visitante(
     """"o cliente confirme se é ou não seu convidado" (seção 6)."""
     visitante = db.get(Visitante, visitante_id, with_for_update=True)
     # Quem responde é o morador da unidade visitada, ninguém mais.
-    if visitante is None or visitante.unidade_id != morador.unidade_id:
+    if visitante is None or not _visitante_do_morador(visitante, morador):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Visitante não encontrado."
+        )
+    if (visitante.status == StatusVisitante.AGUARDANDO_CONFIRMACAO
+            and visitante.criado_em < _agora() - PRAZO_RESPOSTA):
+        visitante.status = StatusVisitante.SEM_RESPOSTA
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Passou o tempo de resposta: o visitante já não está esperando na portaria.",
         )
     if visitante.status != StatusVisitante.AGUARDANDO_CONFIRMACAO:
         raise HTTPException(
@@ -331,7 +390,8 @@ def foto_visitante(
     visitante = db.get(Visitante, visitante_id)
     # 404 também para quem não pode ver: não confirma que o registro existe.
     if visitante is None or not _pode_ver_foto(
-        db, usuario, visitante.unidade, "registrar_visitantes"
+        db, usuario, visitante.unidade, "registrar_visitantes",
+        do_morador=_visitante_do_morador(visitante, usuario),
     ):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Foto não encontrada.")
     return _entregar_foto(visitante.foto_arquivo)
@@ -383,10 +443,17 @@ def listar_encomendas(
         Unidade.condominio_id == usuario.condominio_id
     )
     if usuario.papel == Papel.MORADOR:
-        consulta = consulta.where(Encomenda.unidade_id == usuario.unidade_id)
+        consulta = consulta.where(
+            Encomenda.unidade_id == usuario.unidade_id,
+            (Encomenda.criado_em >= usuario.unidade_desde)
+            | (Encomenda.status == StatusEncomenda.AGUARDANDO_RETIRADA),
+        )
     if status_encomenda is not None:
         consulta = consulta.where(Encomenda.status == status_encomenda)
 
+    consulta = consulta.options(
+        contains_eager(Encomenda.unidade), selectinload(Encomenda.entregue_por)
+    )
     return [_encomenda_saida(e) for e in db.scalars(consulta.order_by(Encomenda.id.desc())).all()]
 
 
@@ -404,7 +471,7 @@ def confirmar_retirada(
     """"o porteiro me envia... uma foto ou vídeo para que eu confirmasse a
     minha entrega ou pedido" (seção 6)."""
     encomenda = db.get(Encomenda, encomenda_id, with_for_update=True)
-    if encomenda is None or encomenda.unidade_id != morador.unidade_id:
+    if encomenda is None or not _encomenda_do_morador(encomenda, morador):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Encomenda não encontrada."
         )
@@ -422,6 +489,43 @@ def confirmar_retirada(
 
     db.commit()
     db.refresh(encomenda)
+    return _encomenda_saida(encomenda)
+
+
+@router.post(
+    "/encomendas/{encomenda_id}/entrega",
+    response_model=EncomendaSaida,
+    summary="A portaria entrega a encomenda em mãos",
+)
+def entregar_encomenda(
+    encomenda_id: int,
+    dados: EntregaEncomenda,
+    usuario: Usuario = Depends(exigir_permissao_porteiro("registrar_encomendas")),
+    db: Session = Depends(get_db),
+) -> EncomendaSaida:
+    """Só o morador, pelo app, dava baixa: entregue em mãos, a encomenda
+    ficava "aguardando retirada" para sempre no painel da portaria. Os
+    moradores da unidade são avisados de quem levou."""
+    encomenda = db.get(Encomenda, encomenda_id, with_for_update=True)
+    if encomenda is None or encomenda.unidade.condominio_id != usuario.condominio_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Encomenda não encontrada."
+        )
+    if encomenda.status != StatusEncomenda.AGUARDANDO_RETIRADA:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Esta encomenda já foi respondida."
+        )
+    encomenda.status = StatusEncomenda.RETIRADA
+    encomenda.retirada_em = _agora()
+    encomenda.entregue_por_id = usuario.id
+    encomenda.retirado_por_nome = dados.retirado_por_nome
+    db.commit()
+    db.refresh(encomenda)
+    _avisar_moradores(
+        db, encomenda.unidade, "Encomenda retirada na portaria",
+        f"{encomenda.tipo_volume} de {encomenda.remetente}: entregue a "
+        f"{dados.retirado_por_nome} por {usuario.nome}.",
+    )
     return _encomenda_saida(encomenda)
 
 
@@ -464,7 +568,8 @@ def foto_encomenda(
 ) -> FileResponse:
     encomenda = db.get(Encomenda, encomenda_id)
     if encomenda is None or not _pode_ver_foto(
-        db, usuario, encomenda.unidade, "registrar_encomendas"
+        db, usuario, encomenda.unidade, "registrar_encomendas",
+        do_morador=_encomenda_do_morador(encomenda, usuario),
     ):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Foto não encontrada.")
     return _entregar_foto(encomenda.foto_arquivo)

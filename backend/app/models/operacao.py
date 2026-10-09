@@ -17,7 +17,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-from app.models.base import TimestampMixin
+from app.models.base import InativacaoMixin, TimestampMixin
 from app.models.enums import (
     CategoriaDocumento, CategoriaVeiculo, PrioridadeOrdemServico, StatusOrdemServico,
     TipoMovimentacao,
@@ -119,7 +119,7 @@ class OrdemServico(Base, TimestampMixin):
         return f"<OrdemServico {self.id} {self.tipo!r} {self.status.value}>"
 
 
-class Documento(Base, TimestampMixin):
+class Documento(Base, TimestampMixin, InativacaoMixin):
     """Atas, convenção, regimento e demais arquivos do condomínio.
 
     O síndico envia o arquivo pela API; ele fica em uploads/condominio,

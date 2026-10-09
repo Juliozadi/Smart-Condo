@@ -16,13 +16,15 @@ from app.api.deps import exigir_condominio, exigir_papel, exigir_permissao_porte
 from app.core.database import get_db
 from app.core.tempo import hoje_local
 from app.models.condominio import Unidade
-from app.models.enums import Papel, StatusCobranca
+from app.models.enums import Papel, StatusCobranca, StatusUsuario
 from app.models.financeiro import Cobranca, Pagamento, PreferenciaCobranca
 from app.models.usuario import Usuario
 from app.schemas.financeiro import (
-    CobrancaEntrada, CobrancaSaida, PagamentoEntrada, PagamentoSaida,
+    CancelamentoCobranca, CobrancaAtualizacao, CobrancaEntrada, CobrancaSaida,
+    PagamentoEntrada, PagamentoSaida,
     PreferenciaCobrancaEntrada, PreferenciaCobrancaSaida, ResumoFinanceiro,
 )
+from app.services import registro
 from app.services import notificacao
 from app.models.enums import CanalVerificacao
 
@@ -75,16 +77,19 @@ def _cobranca_saida(db: Session, c: Cobranca, total_pago: Decimal | None = None)
 
 def _dia_de_vencimento(db: Session, unidade_id: int, competencia: date) -> date:
     """Usa o dia que o morador escolheu (seção 6)."""
-    morador = db.scalar(
-        select(Usuario).where(Usuario.unidade_id == unidade_id, Usuario.papel == Papel.MORADOR)
-    )
-    dia = 10
-    if morador is not None:
-        preferencia = db.scalar(
-            select(PreferenciaCobranca).where(PreferenciaCobranca.morador_id == morador.id)
+    # Só quem mora lá agora: a preferência de quem se mudou não vale mais.
+    # Com mais de um morador, vale a do primeiro cadastrado que escolheu.
+    preferencia = db.scalar(
+        select(PreferenciaCobranca)
+        .join(Usuario, Usuario.id == PreferenciaCobranca.morador_id)
+        .where(
+            Usuario.unidade_id == unidade_id, Usuario.papel == Papel.MORADOR,
+            Usuario.status == StatusUsuario.ATIVO,
         )
-        if preferencia is not None:
-            dia = preferencia.dia_vencimento
+        .order_by(Usuario.id)
+        .limit(1)
+    )
+    dia = preferencia.dia_vencimento if preferencia is not None else 10
 
     # O dia é limitado a 28 na entrada, mas o clamp protege dados antigos.
     ultimo_dia = calendar.monthrange(competencia.year, competencia.month)[1]
@@ -164,7 +169,8 @@ def gerar_cobranca(
     competencia = dados.competencia.replace(day=1)
     ja_existe = db.scalar(
         select(Cobranca).where(
-            Cobranca.unidade_id == unidade.id, Cobranca.competencia == competencia
+            Cobranca.unidade_id == unidade.id, Cobranca.competencia == competencia,
+            Cobranca.status != StatusCobranca.CANCELADA,
         )
     )
     if ja_existe is not None:
@@ -183,6 +189,8 @@ def gerar_cobranca(
         status=StatusCobranca.VENCIDA if vencimento < _hoje() else StatusCobranca.ABERTA,
     )
     db.add(cobranca)
+    db.flush()
+    registro.registrar(db, sindico, registro.CRIOU, registro.COBRANCA, cobranca.id)
     db.commit()
     db.refresh(cobranca)
     return _cobranca_saida(db, cobranca)
@@ -232,7 +240,101 @@ def listar_cobrancas(
     cobrancas = db.scalars(consulta.order_by(Cobranca.competencia.desc())).all()
 
     totais = _totais_pagos(db, [c.id for c in cobrancas])
-    return [_cobranca_saida(db, c, totais.get(c.id, ZERO)) for c in cobrancas]
+    saida = [_cobranca_saida(db, c, totais.get(c.id, ZERO)) for c in cobrancas]
+    if usuario.papel == Papel.SINDICO:
+        ultimas = registro.ultimas(db, registro.COBRANCA, (c.id for c in cobrancas))
+        saida = [c.model_copy(update={"ultima_alteracao": ultimas.get(c.id)}) for c in saida]
+    return saida
+
+
+# ── Correção e cancelamento pelo síndico ─────────────────────────────
+ROTULOS_COBRANCA = {"descricao": "a descrição", "valor": "o valor", "vencimento": "o vencimento"}
+
+
+def _cobranca_do_sindico(db: Session, sindico: Usuario, cobranca_id: int) -> Cobranca:
+    # Travada: o morador pode estar pagando enquanto o síndico corrige.
+    cobranca = db.get(Cobranca, cobranca_id, with_for_update=True)
+    if cobranca is None or cobranca.unidade.condominio_id != sindico.condominio_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Cobrança não encontrada."
+        )
+    if cobranca.status in (StatusCobranca.PAGA, StatusCobranca.CANCELADA):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Esta cobrança já está {cobranca.status.value}.",
+        )
+    return cobranca
+
+
+@router.put(
+    "/cobrancas/{cobranca_id}", response_model=CobrancaSaida, summary="Corrige uma cobrança"
+)
+def corrigir_cobranca(
+    cobranca_id: int,
+    dados: CobrancaAtualizacao,
+    sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
+    db: Session = Depends(get_db),
+) -> CobrancaSaida:
+    """Antes, a cobrança lançada errada (R$ 3.200 no lugar de R$ 320) não
+    tinha correção: a unidade ficava em atraso para sempre."""
+    cobranca = _cobranca_do_sindico(db, sindico, cobranca_id)
+    novos = dados.model_dump(exclude_unset=True)
+    pago = _total_pago(db, cobranca.id)
+    if "valor" in novos and novos["valor"] < pago:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Já foram pagos R$ {pago}; o valor não pode ficar abaixo disso.",
+        )
+    if "vencimento" in novos and novos["vencimento"] < cobranca.competencia:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="O vencimento não pode ser antes do mês de competência.",
+        )
+    descricao = registro.campos_alterados(cobranca, novos, ROTULOS_COBRANCA)
+    for campo, valor in novos.items():
+        setattr(cobranca, campo, valor)
+    # A situação acompanha o novo valor e o novo vencimento.
+    if pago >= cobranca.valor:
+        cobranca.status = StatusCobranca.PAGA
+    else:
+        cobranca.status = (StatusCobranca.VENCIDA if cobranca.vencimento < _hoje()
+                           else StatusCobranca.ABERTA)
+    if descricao:
+        registro.registrar(db, sindico, registro.EDITOU, registro.COBRANCA, cobranca.id,
+                           descricao)
+    db.commit()
+    db.refresh(cobranca)
+    saida = _cobranca_saida(db, cobranca)
+    return saida.model_copy(update={
+        "ultima_alteracao": registro.ultimas(db, registro.COBRANCA, [cobranca.id]).get(cobranca.id)
+    })
+
+
+@router.post(
+    "/cobrancas/{cobranca_id}/cancelamento",
+    response_model=CobrancaSaida,
+    summary="Cancela uma cobrança lançada por engano",
+)
+def cancelar_cobranca(
+    cobranca_id: int,
+    dados: CancelamentoCobranca,
+    sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
+    db: Session = Depends(get_db),
+) -> CobrancaSaida:
+    """Nada é apagado: a cobrança fica como cancelada, com o motivo e quem
+    cancelou no histórico, e não impede lançar a correta no mesmo mês."""
+    cobranca = _cobranca_do_sindico(db, sindico, cobranca_id)
+    if _total_pago(db, cobranca.id) > 0:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Esta cobrança já tem pagamento. Corrija o valor em vez de cancelar.",
+        )
+    cobranca.status = StatusCobranca.CANCELADA
+    registro.registrar(db, sindico, registro.CANCELOU, registro.COBRANCA, cobranca.id,
+                       dados.motivo)
+    db.commit()
+    db.refresh(cobranca)
+    return _cobranca_saida(db, cobranca)
 
 
 # ── Pagamentos ───────────────────────────────────────────────────────
@@ -298,19 +400,30 @@ def registrar_pagamento(
 
     # "o próprio sistema me notificar com qual meio o pagamento foi realizado,
     # por quem e a data do pagamento" (seção 6).
+    # O síndico atual: o antigo continua no banco, inativado.
     sindico = db.scalar(
         select(Usuario).where(
-            Usuario.condominio_id == usuario.condominio_id, Usuario.papel == Papel.SINDICO
+            Usuario.condominio_id == usuario.condominio_id, Usuario.papel == Papel.SINDICO,
+            Usuario.status == StatusUsuario.ATIVO,
         )
     )
-    if sindico is not None:
-        notificacao.notificar(
-            sindico.email, CanalVerificacao.EMAIL,
-            "Pagamento recebido",
-            f"Unidade {cobranca.unidade.identificacao}: R$ {pagamento.valor} "
-            f"por {pagamento.forma.value}, pago por {usuario.nome} "
-            f"em {pagamento.pago_em:%d/%m/%Y}.",
-        )
+    texto = (f"Unidade {cobranca.unidade.identificacao}: R$ {pagamento.valor} "
+             f"por {pagamento.forma.value}, registrado por {usuario.nome} "
+             f"em {pagamento.pago_em:%d/%m/%Y}.")
+    if usuario.papel == Papel.SINDICO:
+        # O síndico registrou o que recebeu fora do app (boleto, depósito):
+        # quem fica sabendo são os moradores da unidade, não ele mesmo.
+        moradores = db.scalars(
+            select(Usuario).where(
+                Usuario.unidade_id == cobranca.unidade_id, Usuario.papel == Papel.MORADOR,
+                Usuario.status == StatusUsuario.ATIVO,
+            )
+        ).all()
+        for morador in moradores:
+            notificacao.notificar(morador.email, CanalVerificacao.EMAIL,
+                                  "Pagamento registrado", texto)
+    elif sindico is not None:
+        notificacao.notificar(sindico.email, CanalVerificacao.EMAIL, "Pagamento recebido", texto)
 
     return PagamentoSaida(
         id=pagamento.id, cobranca_id=pagamento.cobranca_id, valor=pagamento.valor,

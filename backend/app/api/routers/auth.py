@@ -11,6 +11,8 @@ admin.py) e o síndico cadastra porteiros e moradores do seu condomínio
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy import select
@@ -18,6 +20,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import esquema_bearer, get_usuario_atual
 from app.core.config import settings
+from app.core.limite import limitar
 from app.core.database import get_db
 from app.core.security import (
     criar_token_acesso, criar_token_documentos, gerar_hash_senha, ler_token_documentos,
@@ -39,6 +42,7 @@ from app.schemas.usuario import (
 from app.services import arquivos
 from app.services import auth as servico_auth
 from app.services import documentos_cadastro
+from app.services import registro
 from app.services.notificacao import mascarar_destino
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
@@ -82,14 +86,17 @@ def _resposta_cadastro(usuario: Usuario, codigo: str, canal: CanalVerificacao) -
     response_model=CadastroSaida,
     status_code=status.HTTP_201_CREATED,
     summary="Cadastra um morador",
+    dependencies=[Depends(limitar("cadastro", 10))],
 )
 def cadastrar_morador(dados: CadastroMorador, db: Session = Depends(get_db)) -> CadastroSaida:
     _exigir_canal(dados.canal_confirmacao)
-    servico_auth.garantir_email_e_cpf_livres(db, dados.email, dados.cpf)
+    abandonado = servico_auth.cadastro_abandonado(db, dados.email, dados.cpf)
 
     condominio = db.scalar(
         select(Condominio).where(
-            Condominio.codigo_acesso == dados.codigo_condominio.strip().upper()
+            Condominio.codigo_acesso == dados.codigo_condominio.strip().upper(),
+            # Condomínio inativado não recebe cadastro novo.
+            Condominio.inativo_em.is_(None),
         )
     )
     if condominio is None:
@@ -109,15 +116,18 @@ def cadastrar_morador(dados: CadastroMorador, db: Session = Depends(get_db)) -> 
         .one_or_none()
     )
     if unidade is None:
+        # Pendente: só aparece nas listas quando o síndico aprovar alguém
+        # nela (app/models/condominio.py).
         unidade = Unidade(
             condominio_id=condominio.id,
             numero=dados.unidade_numero,
             bloco=dados.unidade_bloco,
+            pendente=True,
         )
         db.add(unidade)
         db.flush()
 
-    usuario = Usuario(
+    campos = dict(
         nome=dados.nome,
         email=dados.email.lower(),
         cpf=dados.cpf,
@@ -130,7 +140,19 @@ def cadastrar_morador(dados: CadastroMorador, db: Session = Depends(get_db)) -> 
         unidade_id=unidade.id,
         tipo_ocupacao=dados.tipo_ocupacao,
     )
-    db.add(usuario)
+    if abandonado is not None:
+        # Retoma o cadastro que nunca foi confirmado: os documentos enviados
+        # nele eram de outra tentativa (talvez de outra pessoa) e saem.
+        documentos_cadastro.descartar_todos(db, abandonado.id)
+        usuario = abandonado
+        for campo, valor in campos.items():
+            setattr(usuario, campo, valor)
+        agora = datetime.now(timezone.utc)
+        usuario.criado_em = agora
+        usuario.unidade_desde = agora
+    else:
+        usuario = Usuario(**campos)
+        db.add(usuario)
     db.flush()
 
     codigo = servico_auth.emitir_codigo(
@@ -215,6 +237,7 @@ def enviar_foto_cadastro(
     "/confirmar",
     response_model=UsuarioSaida,
     summary="Confirma o cadastro com o código recebido",
+    dependencies=[Depends(limitar("codigo", 30))],
 )
 def confirmar_cadastro(dados: ConfirmacaoCodigo, db: Session = Depends(get_db)) -> Usuario:
     usuario = servico_auth.buscar_por_email(db, dados.email)
@@ -235,7 +258,8 @@ def confirmar_cadastro(dados: ConfirmacaoCodigo, db: Session = Depends(get_db)) 
     return usuario
 
 
-@router.post("/codigo/reenviar", response_model=Mensagem, summary="Reenvia o código de cadastro")
+@router.post("/codigo/reenviar", response_model=Mensagem, summary="Reenvia o código de cadastro",
+             dependencies=[Depends(limitar("envio_codigo", 10))])
 def reenviar_codigo(dados: ReenvioCodigo, db: Session = Depends(get_db)) -> Mensagem:
     _exigir_canal(dados.canal)
     usuario = servico_auth.buscar_por_email(db, dados.email)
@@ -254,23 +278,29 @@ def reenviar_codigo(dados: ReenvioCodigo, db: Session = Depends(get_db)) -> Mens
     return Mensagem(detalhe="Se houver um cadastro pendente, um novo código foi enviado.")
 
 
-@router.post("/login", response_model=TokenSaida, summary="Efetua a sessão do usuário")
+def _mensagem_bloqueio(usuario: Usuario) -> str:
+    if usuario.status == StatusUsuario.AGUARDANDO_CODIGO:
+        return "Confirme o código enviado para ativar o cadastro."
+    if usuario.status == StatusUsuario.AGUARDANDO_APROVACAO:
+        return "Seu cadastro aguarda aprovação do síndico."
+    if usuario.status == StatusUsuario.RECUSADO:
+        # Antes era só "indisponível": o morador não sabia por quê.
+        motivo = f" Motivo: {usuario.motivo_recusa}" if usuario.motivo_recusa else ""
+        return f"Seu cadastro foi recusado pelo síndico.{motivo} Fale com ele se precisar."
+    return "Seu acesso foi encerrado. Fale com o síndico do condomínio se precisar."
+
+
+@router.post("/login", response_model=TokenSaida, summary="Efetua a sessão do usuário",
+             dependencies=[Depends(limitar("login", 30))])
 def login(dados: LoginEntrada, db: Session = Depends(get_db)) -> TokenSaida:
     usuario = servico_auth.autenticar(db, dados.email, dados.senha)
 
-    if usuario.status == StatusUsuario.AGUARDANDO_CODIGO:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Confirme o código enviado para ativar o cadastro.",
-        )
-    if usuario.status == StatusUsuario.AGUARDANDO_APROVACAO:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Seu cadastro aguarda aprovação do síndico.",
-        )
+    # A senha já foi conferida: quem chega aqui é o dono da conta, e pode
+    # saber em que pé está o cadastro e o que fazer.
     if usuario.status != StatusUsuario.ATIVO:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Este cadastro está indisponível."
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"detalhe": _mensagem_bloqueio(usuario), "situacao": usuario.status.value},
         )
 
     return TokenSaida(
@@ -284,6 +314,7 @@ def login(dados: LoginEntrada, db: Session = Depends(get_db)) -> TokenSaida:
     "/senha/recuperar",
     response_model=Mensagem,
     summary="Solicita o código de recuperação de senha",
+    dependencies=[Depends(limitar("envio_codigo", 10))],
 )
 def solicitar_recuperacao(
     dados: SolicitacaoRecuperacao, db: Session = Depends(get_db)
@@ -302,7 +333,8 @@ def solicitar_recuperacao(
     return Mensagem(detalhe="Se o e-mail estiver cadastrado, um código foi enviado.")
 
 
-@router.post("/senha/redefinir", response_model=Mensagem, summary="Redefine a senha com o código")
+@router.post("/senha/redefinir", response_model=Mensagem, summary="Redefine a senha com o código",
+             dependencies=[Depends(limitar("codigo", 30))])
 def redefinir_senha(dados: RedefinicaoSenha, db: Session = Depends(get_db)) -> Mensagem:
     usuario = servico_auth.buscar_por_email(db, dados.email)
     if usuario is None:
@@ -318,6 +350,9 @@ def redefinir_senha(dados: RedefinicaoSenha, db: Session = Depends(get_db)) -> M
     usuario.tentativas_login = 0
     usuario.bloqueado_ate = None
     servico_auth.encerrar_sessoes(usuario)
+    # O autor é o próprio usuário: quem provou a identidade foi o código.
+    registro.registrar(db, usuario, registro.EDITOU, registro.USUARIO, usuario.id,
+                       "Redefiniu a senha pelo código de recuperação")
 
     db.commit()
     return Mensagem(detalhe="Senha redefinida. Faça o login com a nova senha.")
@@ -337,6 +372,8 @@ def trocar_senha(
     """As outras sessões são encerradas; esta continua com o token novo
     que vai na resposta."""
     servico_auth.trocar_senha(db, usuario, dados.senha_atual, dados.nova_senha)
+    registro.registrar(db, usuario, registro.EDITOU, registro.USUARIO, usuario.id,
+                       "Alterou a própria senha")
     db.commit()
     return SenhaTrocadaSaida(
         detalhe="Senha alterada. As sessões abertas em outros aparelhos foram encerradas.",

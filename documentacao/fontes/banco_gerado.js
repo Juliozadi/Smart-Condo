@@ -72,8 +72,7 @@ const dicionario = [
       }
     ],
     "regras": [
-      "CHECK ((valor > (0)::numeric))",
-      "UNIQUE (unidade_id, competencia)"
+      "CHECK ((valor > (0)::numeric))"
     ]
   },
   {
@@ -233,6 +232,20 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "inativo_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o comunicado foi removido das telas; vazio enquanto publicado. O registro fica guardado"
+      },
+      {
+        "coluna": "inativado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que removeu o comunicado"
       }
     ],
     "regras": []
@@ -288,7 +301,7 @@ const dicionario = [
         "tipo": "VARCHAR(80)",
         "obrigatorio": "Não",
         "chave": "",
-        "descricao": "Complemento do endereço, quando houver"
+        "descricao": "Complemento do endereço dos cadastros antigos; não é mais pedido"
       },
       {
         "coluna": "bairro",
@@ -345,6 +358,20 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Código que o morador informa para se cadastrar no condomínio certo; pode ser trocado a qualquer momento"
+      },
+      {
+        "coluna": "inativo_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o condomínio foi inativado; vazio enquanto ativo. Nada é apagado: \"excluir\" inativa"
+      },
+      {
+        "coluna": "inativado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Administrador que inativou o condomínio"
       }
     ],
     "regras": []
@@ -443,6 +470,20 @@ const dicionario = [
         "obrigatorio": "Não",
         "chave": "",
         "descricao": "Tipo do arquivo conferido pelo conteúdo (application/pdf, image/png...)"
+      },
+      {
+        "coluna": "inativo_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o documento foi removido das telas; vazio enquanto disponível. Registro e arquivo ficam guardados"
+      },
+      {
+        "coluna": "inativado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que removeu o documento"
       }
     ],
     "regras": []
@@ -584,14 +625,14 @@ const dicionario = [
         "tipo": "TIMESTAMPTZ",
         "obrigatorio": "Não",
         "chave": "",
-        "descricao": "Momento em que o morador retirou"
+        "descricao": "Momento da retirada, pelo app ou em mãos na portaria"
       },
       {
         "coluna": "retirada_por_id",
         "tipo": "INTEGER",
         "obrigatorio": "Não",
         "chave": "FK",
-        "descricao": "Morador que retirou"
+        "descricao": "Morador que confirmou a retirada pelo app"
       },
       {
         "coluna": "criado_em",
@@ -606,6 +647,20 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "entregue_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Porteiro que entregou em mãos na portaria"
+      },
+      {
+        "coluna": "retirado_por_nome",
+        "tipo": "VARCHAR(120)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Nome de quem levou a encomenda entregue em mãos (pode não ter cadastro)"
       }
     ],
     "regras": []
@@ -683,6 +738,20 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "inativo_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o espaço foi inativado; vazio enquanto ativo. As reservas passadas ficam no histórico"
+      },
+      {
+        "coluna": "inativado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que inativou o espaço"
       }
     ],
     "regras": []
@@ -1252,7 +1321,7 @@ const dicionario = [
         "tipo": "BOOLEAN",
         "obrigatorio": "Sim",
         "chave": "",
-        "descricao": "Se o porteiro pode consultar a área financeira"
+        "descricao": "Sem uso: a permissão saiu do sistema, e o financeiro é sempre recusado ao porteiro"
       },
       {
         "coluna": "definidas_por_id",
@@ -1328,6 +1397,62 @@ const dicionario = [
     "regras": [
       "CHECK (((dia_vencimento >= 1) AND (dia_vencimento <= 28)))"
     ]
+  },
+  {
+    "nome": "registros_alteracao",
+    "resumo": "Quem criou, editou, inativou ou reativou cada registro, e quando — o \"editado por fulano\" das telas do administrador.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "autor_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Quem fez a alteração"
+      },
+      {
+        "coluna": "acao",
+        "tipo": "VARCHAR(20)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "O que foi feito: criou, editou, inativou, reativou, aprovou, recusou, cancelou ou gerou novo código"
+      },
+      {
+        "coluna": "entidade",
+        "tipo": "VARCHAR(30)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Tipo do registro alterado: condominio, usuario, comunicado, documento, espaco, unidade ou cobranca"
+      },
+      {
+        "coluna": "entidade_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Identificador do registro alterado, na tabela indicada em entidade"
+      },
+      {
+        "coluna": "descricao",
+        "tipo": "TEXT",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "O que mudou, quando cabe (\"Alterou o nome e o telefone\"); a senha aparece pelo nome, nunca pelo valor"
+      },
+      {
+        "coluna": "feito_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da alteração, preenchido pelo banco"
+      }
+    ],
+    "regras": []
   },
   {
     "nome": "registros_ocupacao",
@@ -1553,6 +1678,13 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "pendente",
+        "tipo": "BOOLEAN",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Verdadeiro quando a unidade foi criada pelo autocadastro de um morador e ainda não foi confirmada pelo síndico; não aparece nas listas da portaria e do síndico até a aprovação"
       }
     ],
     "regras": [
@@ -1709,6 +1841,13 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Versão da sessão, gravada em cada token; sobe quando a senha é trocada ou redefinida, e os tokens antigos deixam de valer"
+      },
+      {
+        "coluna": "unidade_desde",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Desde quando mora na unidade atual; renovado na transferência e na reativação. O morador só vê os visitantes e as encomendas a partir daqui"
       }
     ],
     "regras": []
@@ -1778,7 +1917,7 @@ const dicionario = [
         "tipo": "ENUM",
         "obrigatorio": "Sim",
         "chave": "",
-        "descricao": "Situação da visita, do anúncio à saída — tipo enumerado status_visitante, valores: AGUARDANDO_CONFIRMACAO, CONFIRMADO, RECUSADO, DENTRO, SAIU"
+        "descricao": "Situação da visita, do anúncio à saída — tipo enumerado status_visitante, valores: AGUARDANDO_CONFIRMACAO, CONFIRMADO, RECUSADO, DENTRO, SAIU, SEM_RESPOSTA"
       },
       {
         "coluna": "entrada_em",
@@ -1853,6 +1992,18 @@ const relacoes = [
     "texto": "Condomínio para o qual o aviso foi publicado"
   },
   {
+    "origem": "comunicados",
+    "coluna": "inativado_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que removeu o comunicado"
+  },
+  {
+    "origem": "condominios",
+    "coluna": "inativado_por_id",
+    "destino": "usuarios",
+    "texto": "Administrador que inativou o condomínio"
+  },
+  {
     "origem": "condominios",
     "coluna": "sindico_id",
     "destino": "usuarios",
@@ -1863,6 +2014,12 @@ const relacoes = [
     "coluna": "condominio_id",
     "destino": "condominios",
     "texto": "Condomínio a que o documento pertence"
+  },
+  {
+    "origem": "documentos",
+    "coluna": "inativado_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que removeu o documento"
   },
   {
     "origem": "documentos",
@@ -1884,6 +2041,12 @@ const relacoes = [
   },
   {
     "origem": "encomendas",
+    "coluna": "entregue_por_id",
+    "destino": "usuarios",
+    "texto": "Porteiro que entregou em mãos na portaria"
+  },
+  {
+    "origem": "encomendas",
     "coluna": "registrada_por_id",
     "destino": "usuarios",
     "texto": "Porteiro que recebeu a encomenda"
@@ -1892,7 +2055,7 @@ const relacoes = [
     "origem": "encomendas",
     "coluna": "retirada_por_id",
     "destino": "usuarios",
-    "texto": "Morador que retirou"
+    "texto": "Morador que confirmou a retirada pelo app"
   },
   {
     "origem": "encomendas",
@@ -1905,6 +2068,12 @@ const relacoes = [
     "coluna": "condominio_id",
     "destino": "condominios",
     "texto": "Condomínio a que o espaço pertence"
+  },
+  {
+    "origem": "espacos_comuns",
+    "coluna": "inativado_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que inativou o espaço"
   },
   {
     "origem": "leituras_comunicado",
@@ -2019,6 +2188,12 @@ const relacoes = [
     "coluna": "morador_id",
     "destino": "usuarios",
     "texto": "Morador dono da preferência"
+  },
+  {
+    "origem": "registros_alteracao",
+    "coluna": "autor_id",
+    "destino": "usuarios",
+    "texto": "Quem fez a alteração"
   },
   {
     "origem": "registros_ocupacao",
@@ -2157,7 +2332,7 @@ const enumerados = [
   },
   {
     "nome": "status_visitante",
-    "valores": "AGUARDANDO_CONFIRMACAO, CONFIRMADO, RECUSADO, DENTRO, SAIU"
+    "valores": "AGUARDANDO_CONFIRMACAO, CONFIRMADO, RECUSADO, DENTRO, SAIU, SEM_RESPOSTA"
   },
   {
     "nome": "tipo_documento_cadastro",

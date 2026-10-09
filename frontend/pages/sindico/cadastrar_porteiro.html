@@ -252,8 +252,7 @@ document.getElementById('formPorteiro').addEventListener('submit', function(e) {
         registrar_visitantes: document.getElementById('perm-vis').checked,
         registrar_encomendas: document.getElementById('perm-enc').checked,
         registrar_veiculos: document.getElementById('perm-vei').checked,
-        registrar_ocorrencias: document.getElementById('perm-ocr').checked,
-        acessar_financeiro: false
+        registrar_ocorrencias: document.getElementById('perm-ocr').checked
       });
     })
     .then(function() { window.location.href = 'porteiros.html?cadastro=ok'; })

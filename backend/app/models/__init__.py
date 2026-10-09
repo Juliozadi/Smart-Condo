@@ -17,6 +17,7 @@ from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
 from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico
 from app.models.financeiro import Cobranca, Pagamento, PreferenciaCobranca
 from app.models.portaria import Encomenda, Ocorrencia, Visitante
+from app.models.registro import RegistroAlteracao
 from app.models.usuario import CodigoVerificacao, PermissaoPorteiro, Usuario
 
 __all__ = [
@@ -24,7 +25,8 @@ __all__ = [
     "DocumentoCadastro",
     "Encomenda", "EspacoComum", "LeituraComunicado", "Mensagem", "MovimentacaoVeiculo",
     "Ocorrencia", "OrdemServico", "Pagamento", "PermissaoPorteiro",
-    "PreferenciaCobranca", "RegistroOcupacao", "Reserva", "Unidade", "Usuario",
+    "PreferenciaCobranca", "RegistroAlteracao", "RegistroOcupacao", "Reserva", "Unidade",
+    "Usuario",
     "Visitante",
     "CanalVerificacao", "CategoriaComunicado", "CategoriaDocumento", "CategoriaVeiculo",
     "FinalidadeCodigo", "FormaPagamento", "Papel", "PrioridadeOrdemServico",

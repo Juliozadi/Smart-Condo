@@ -1684,6 +1684,18 @@ a.contato-btn { text-decoration: none; }
 }
 .btn-primario:hover { filter: brightness(.92); }
 .btn-primario:disabled { opacity: .6; cursor: default; }
+/* Número e texto longo nas janelas com o mesmo visual dos outros campos. */
+.modal-caixa .form-group input[type="number"],
+.modal-caixa .form-group textarea {
+  width: 100%; padding: 12px 16px; border-radius: var(--radius-xs);
+  border: 1.5px solid var(--border); font-size: 14px; font-weight: 500;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--surface-2); color: var(--text); transition: .22s; outline: none;
+}
+.modal-caixa .form-group textarea { resize: vertical; min-height: 70px; }
+.modal-caixa .form-group textarea:focus {
+  border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 3px var(--primary-glow);
+}
 .modal-erro {
   font-size: 12px; color: var(--erro); font-weight: 600;
   margin: 14px 0 0; min-height: 17px;
@@ -2178,3 +2190,35 @@ body.tema-escuro .chat-avatar.sindico, body.tema-escuro .chat-avatar.porteiro { 
   #tabelaMoradores .cols-6 { grid-template-columns: minmax(0,1.3fr) 40px minmax(0,1.2fr) 40px; }
   #tabelaMoradores .badge { white-space: normal; overflow: visible; text-overflow: clip; max-width: none; line-height: 1.25; }
 }
+
+/* Autoria na linha ("Editado por Fulano em ...") e histórico na janela de
+   edição do administrador. */
+.lista-autoria {
+  display: block; font-size: 11px; color: var(--muted); font-weight: 500;
+  margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.historico-edicao { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 14px; }
+.historico-edicao h3 { font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+.historico-edicao ol { list-style: none; margin: 0; padding: 0; max-height: 180px; overflow-y: auto; }
+.historico-edicao li { font-size: 12px; color: var(--text-2); padding: 6px 0; border-bottom: 1px dashed var(--border); }
+.historico-edicao li:last-child { border-bottom: 0; }
+.table-row.inativo > span:first-child strong { color: var(--muted); }
+.list-item.inativo .list-info h3 { color: var(--muted); }
+/* Unidades e vagas (síndico): no celular o andar sai para caber. */
+#tabelaUnidades .table-head,
+#tabelaUnidades .table-row { grid-template-columns: minmax(0,2fr) 1fr 1fr 1fr 48px; }
+@media (max-width: 640px) {
+  #tabelaUnidades .table-head,
+  #tabelaUnidades .table-row { grid-template-columns: minmax(0,1.6fr) 1fr 1fr 40px; }
+  #tabelaUnidades .table-head span:nth-child(2),
+  #tabelaUnidades .table-row span:nth-child(2) { display: none; }
+}
+/* Botão pequeno ao lado de um texto na linha (corrigir cobrança). */
+.btn-acao.btn-acao-mini { width: 24px; height: 24px; margin-left: 6px; vertical-align: middle; display: inline-flex; }
+.btn-acao.btn-acao-mini img { width: 11px; height: 11px; }
+.btn-secundario.perigo-texto { color: var(--erro); margin-right: auto; }
+.secao-ajuda { font-size: 12px; color: var(--muted); margin: -6px 0 12px; }
+.list-item .list-info h3 .badge { margin-left: 6px; vertical-align: middle; }
+/* "Administrador" é longo: no celular a coluna do papel corta com
+   reticências em vez de passar por cima do selo de status. */
+.papel-usuario { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

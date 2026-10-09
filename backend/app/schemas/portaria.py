@@ -6,12 +6,12 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from app.models.enums import (
     PrioridadeOcorrencia, StatusEncomenda, StatusOcorrencia, StatusVisitante,
 )
-from app.schemas.comuns import CPF, SchemaBase
+from app.schemas.comuns import CPF, Placa, SchemaBase
 
 
 # ── Visitantes ───────────────────────────────────────────────────────
@@ -20,7 +20,16 @@ class VisitanteEntrada(SchemaBase):
     nome: str = Field(min_length=3, max_length=160)
     documento: CPF
     tipo_visita: str = Field(min_length=3, max_length=60)
-    placa_veiculo: str | None = Field(default=None, max_length=10)
+    # Normalizada como a do pátio (ABC1D23); em branco é "sem veículo".
+    placa_veiculo: Placa | None = None
+
+    @field_validator("placa_veiculo", mode="before")
+    @classmethod
+    def _placa_vazia(cls, valor):
+        if isinstance(valor, str) and not valor.strip():
+            return None
+        return valor
+
     # A foto do vídeo porteiro (seção 6) não vem aqui: ela é enviada como
     # arquivo em PUT /portaria/visitantes/{id}/foto logo depois do registro.
 
@@ -71,11 +80,19 @@ class EncomendaSaida(SchemaBase):
     status: StatusEncomenda
     recebida_em: datetime
     retirada_em: datetime | None = None
+    # Entregue em mãos na portaria: a quem e por quem.
+    retirado_por_nome: str | None = None
+    entregue_por_nome: str | None = None
     criado_em: datetime
 
 
 class RetiradaEncomenda(SchemaBase):
     confirmada: bool
+
+
+class EntregaEncomenda(SchemaBase):
+    """O porteiro entrega em mãos e anota quem levou."""
+    retirado_por_nome: str = Field(min_length=3, max_length=120)
 
 
 # ── Ocorrências ──────────────────────────────────────────────────────

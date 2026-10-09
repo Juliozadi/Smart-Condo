@@ -22,6 +22,7 @@ from app.api.routers import (
     portaria, reservas, usuarios, veiculos,
 )
 from app.core.config import settings
+from app.core.corpo import LimiteDeCorpo
 
 logging.basicConfig(
     level=logging.DEBUG if settings.DEBUG else logging.INFO,
@@ -67,6 +68,12 @@ app = FastAPI(
 _origens = list(settings.CORS_ORIGINS)
 if settings.DEBUG:
     _origens.append("null")
+
+# O primeiro registrado fica por dentro de todos: a recusa do corpo grande
+# é levantada na leitura feita pela rota, e só sem outro middleware no
+# meio ela chega ao tratador de erros como 413 (atravessando um deles,
+# vinha embrulhada e virava 400).
+app.add_middleware(LimiteDeCorpo)
 
 # Registrado antes do CORS de propósito: o middleware adicionado antes
 # fica por dentro na pilha, e só assim o CORS enxerga esta resposta para
@@ -135,9 +142,12 @@ async def cabecalhos_de_seguranca(requisicao: Request, proxima):
 # "detalhe", que é o que os schemas de sucesso também usam.
 @app.exception_handler(StarletteHTTPException)
 async def erro_http(request: Request, exc: StarletteHTTPException) -> JSONResponse:
+    # O detalhe pode vir como dicionário, com campos a mais além da mensagem
+    # (o login diz a situação do cadastro, para a tela levar ao passo certo).
+    conteudo = exc.detail if isinstance(exc.detail, dict) else {"detalhe": exc.detail}
     return JSONResponse(
         status_code=exc.status_code,
-        content={"detalhe": exc.detail},
+        content=conteudo,
         headers=getattr(exc, "headers", None),
     )
 

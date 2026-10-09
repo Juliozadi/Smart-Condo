@@ -104,14 +104,38 @@ def test_busca_ignora_acento(cliente, admin):
     assert [c["nome"] for c in com_acento.json()] == ["Condomínio Açucena"]
 
 
-def test_excluir_condominio_vazio(cliente, admin):
+@pytest.mark.parametrize("busca", ["11.222.333/0001-81", "11222333000181", "333/0001", "11.222"])
+def test_busca_de_condominio_pelo_cnpj_com_ou_sem_pontuacao(cliente, admin, busca):
+    """O CNPJ é guardado só com os dígitos; a tela o mostra pontuado, e quem
+    o copiava de lá para a busca não achava nada."""
+    criar_condominio_como_admin(cliente, admin, nome="Palmeiras", cnpj="11.222.333/0001-81")
+    criar_condominio_como_admin(cliente, admin, nome="Aurora", cnpj="45.997.418/0001-53")
+    r = cliente.get("/api/v1/admin/condominios", params={"busca": busca}, headers=cab(admin))
+    assert [c["nome"] for c in r.json()] == ["Palmeiras"]
+
+
+@pytest.mark.parametrize("busca", ["_", "%", "a_a"])
+def test_curinga_digitado_na_busca_e_texto_comum(cliente, admin, busca):
+    """"_" e "%" são curingas do LIKE: digitados na busca, achavam tudo."""
+    criar_condominio_como_admin(cliente, admin, nome="Palmeiras", cnpj="11.222.333/0001-81")
+    r = cliente.get("/api/v1/admin/condominios", params={"busca": busca}, headers=cab(admin))
+    assert r.json() == []
+
+
+def test_excluir_condominio_vazio_inativa_sem_apagar(cliente, admin):
+    """Nada é apagado: "excluir" inativa. O condomínio continua no banco e
+    na lista do administrador, marcado como inativo, e pode ser reativado."""
     cond = criar_condominio_como_admin(cliente, admin)
-    assert cliente.delete(
-        f"/api/v1/admin/condominios/{cond['id']}", headers=cab(admin)
-    ).status_code == 200
-    assert cliente.get(
-        f"/api/v1/admin/condominios/{cond['id']}", headers=cab(admin)
-    ).status_code == 404
+    r = cliente.delete(f"/api/v1/admin/condominios/{cond['id']}", headers=cab(admin))
+    assert r.status_code == 200
+    assert r.json()["detalhe"] == "Condomínio inativado."
+    detalhe = cliente.get(f"/api/v1/admin/condominios/{cond['id']}", headers=cab(admin)).json()
+    assert detalhe["inativo"] is True
+    assert detalhe["ultima_alteracao"]["acao"] == "inativou"
+
+    r = cliente.post(f"/api/v1/admin/condominios/{cond['id']}/reativacao", headers=cab(admin))
+    assert r.status_code == 200
+    assert r.json()["inativo"] is False
 
 
 def test_nao_exclui_condominio_com_gente_dentro(cliente, db, admin):
@@ -178,7 +202,6 @@ def test_porteiro_criado_pelo_admin_nasce_com_permissoes(cliente, admin):
     )
     assert r.status_code == 200
     assert r.json()["registrar_visitantes"] is True
-    assert r.json()["acessar_financeiro"] is False
 
 
 def test_um_condominio_tem_um_sindico_ativo(cliente, admin):
@@ -335,6 +358,13 @@ def test_filtros_da_lista_de_usuarios(cliente, admin):
         "/api/v1/admin/usuarios", params={"busca": "m@exemplo"}, headers=cab(admin)
     )
     assert [u["email"] for u in por_busca.json()] == ["m@exemplo.com"]
+
+    # O CPF é guardado só com os dígitos; a busca aceita como a tela mostra.
+    for busca in (CPFS[1], CPFS[1][:7]):
+        por_cpf = cliente.get(
+            "/api/v1/admin/usuarios", params={"busca": busca}, headers=cab(admin)
+        )
+        assert [u["email"] for u in por_cpf.json()] == ["m@exemplo.com"], busca
 
 
 def test_resumo_da_plataforma(cliente, db, admin):

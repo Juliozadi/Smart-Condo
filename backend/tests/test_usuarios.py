@@ -300,7 +300,7 @@ def test_sistema_mostra_as_acoes_do_porteiro(cliente, sindico):
     chaves = {a["chave"] for a in r.json()}
     assert chaves == {
         "registrar_visitantes", "registrar_encomendas", "registrar_veiculos",
-        "registrar_ocorrencias", "acessar_financeiro",
+        "registrar_ocorrencias",
     }
 
 
@@ -321,15 +321,17 @@ def test_porteiro_nasce_com_as_permissoes_escolhidas(cliente, sindico, condomini
     p = r.json()
     assert p["registrar_visitantes"] is True
     assert p["registrar_encomendas"] is False
-    assert p["acessar_financeiro"] is False
+    assert "acessar_financeiro" not in p
 
 
-def test_o_financeiro_nao_vem_liberado_por_padrao(cliente, sindico, condominio):
-    porteiro_id, _ = cadastrar_porteiro(cliente, sindico, condominio, cpf=CPFS[2])
-    r = cliente.get(
-        f"/api/v1/usuarios/porteiros/{porteiro_id}/permissoes", headers=cab(sindico)
-    )
-    assert r.json()["acessar_financeiro"] is False
+def test_financeiro_nao_e_permissao_do_porteiro(cliente, sindico, condominio):
+    """A opção "Acessar o financeiro" não fazia nada: saiu. Enviada por um
+    cliente antigo, é ignorada, e o financeiro continua recusado."""
+    porteiro_id, tok = cadastrar_porteiro(cliente, sindico, condominio, cpf=CPFS[2])
+    r = cliente.put(f"/api/v1/usuarios/porteiros/{porteiro_id}/permissoes", headers=cab(sindico),
+                    json={"acessar_financeiro": True})
+    assert r.status_code == 200 and "acessar_financeiro" not in r.json()
+    assert cliente.get("/api/v1/financeiro/cobrancas", headers=cab(tok)).status_code == 403
 
 
 def test_sindico_altera_as_permissoes(cliente, sindico, condominio):
@@ -347,7 +349,6 @@ def test_sindico_altera_as_permissoes(cliente, sindico, condominio):
     )
     assert r.status_code == 200
     assert r.json()["registrar_visitantes"] is False
-    assert r.json()["acessar_financeiro"] is True
 
 
 def test_porteiro_nao_mexe_nas_proprias_permissoes(cliente, sindico, condominio):

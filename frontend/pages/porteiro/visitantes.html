@@ -126,11 +126,11 @@
 
     var ROTULO_STATUS = {
       aguardando_confirmacao: 'Aguardando morador', confirmado: 'Confirmado',
-      recusado: 'Recusado', dentro: 'Dentro', saiu: 'Saiu'
+      recusado: 'Recusado', dentro: 'Dentro', saiu: 'Saiu', sem_resposta: 'Sem resposta'
     };
     var CLASSE_STATUS = {
       aguardando_confirmacao: 'badge-pending', confirmado: 'badge-blue',
-      recusado: 'badge-alert', dentro: 'badge-ok', saiu: 'badge-neutral'
+      recusado: 'badge-alert', dentro: 'badge-ok', saiu: 'badge-neutral', sem_resposta: 'badge-neutral'
     };
     var CORES = ['', 'amber', 'blue', 'purple'];
 
@@ -293,6 +293,10 @@
         tipo_visita: obs ? tipo + ' — ' + obs : tipo
       };
       var placa = campo('placa-visitante').value.trim();
+      if (placa && placa.replace(/[^A-Za-z0-9]/g, '').length !== 7) {
+        erro.textContent = 'A placa precisa ter 7 letras ou números (ex.: ABC-1D23).';
+        return;
+      }
       if (placa) corpo.placa_veiculo = placa;
 
       // A foto do vídeo porteiro vai logo depois do registro, como arquivo.

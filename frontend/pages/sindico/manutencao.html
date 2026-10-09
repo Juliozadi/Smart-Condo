@@ -234,9 +234,13 @@
     salvar.addEventListener('click', function() {
       salvar.disabled = true;
       aviso.textContent = 'Salvando…';
-      var corpo = { status: status.value, observacoes: observacoes.value.trim() || null };
-      if (fornecedor.value.trim()) corpo.fornecedor = fornecedor.value.trim();
-      if (custo.value !== '') corpo.custo_real = Number(custo.value);
+      // Campo apagado vai como null: sem isso, não havia como limpar.
+      var corpo = {
+        status: status.value,
+        observacoes: observacoes.value.trim() || null,
+        fornecedor: fornecedor.value.trim() || null,
+        custo_real: custo.value !== '' ? Number(custo.value) : null
+      };
       api.put('/manutencao/' + o.id, corpo)
         .then(carregar)
         .catch(function(e) { salvar.disabled = false; aviso.textContent = e.message; });

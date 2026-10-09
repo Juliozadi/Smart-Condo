@@ -98,7 +98,15 @@
     var item = document.createElement('div');
     item.className = 'list-item';
     item.appendChild(avatarDe(p));
-    item.appendChild(infoDe(p, p.email + ' · ' + ui.formatarTelefone(p.telefone)));
+    var info = infoDe(p, p.email + ' · ' + ui.formatarTelefone(p.telefone));
+    // "Editado por Fulano em ...": quem mexeu por último (síndico ou administrador).
+    if (p.ultima_alteracao) {
+      var autoria = document.createElement('small');
+      autoria.className = 'lista-autoria';
+      autoria.textContent = ui.textoAlteracao(p.ultima_alteracao);
+      info.appendChild(autoria);
+    }
+    item.appendChild(info);
 
     var acoesEl = document.createElement('div');
     acoesEl.className = 'acoes-aprovacao';
@@ -204,7 +212,15 @@
     var item = document.createElement('div');
     item.className = 'list-item';
     item.appendChild(avatarDe(p));
-    item.appendChild(infoDe(p, p.email + ' · ' + ui.formatarTelefone(p.telefone)));
+    var info = infoDe(p, p.email + ' · ' + ui.formatarTelefone(p.telefone));
+    // "Editado por Fulano em ...": quem mexeu por último (síndico ou administrador).
+    if (p.ultima_alteracao) {
+      var autoria = document.createElement('small');
+      autoria.className = 'lista-autoria';
+      autoria.textContent = ui.textoAlteracao(p.ultima_alteracao);
+      info.appendChild(autoria);
+    }
+    item.appendChild(info);
 
     var contato = document.createElement('div');
     contato.className = 'contato-acoes';
@@ -269,6 +285,16 @@
         ui.inativarUsuario(p, inativar, carregar);
       });
       contato.appendChild(inativar);
+    } else if (p.status === 'inativo') {
+      var reativar = document.createElement('button');
+      reativar.type = 'button';
+      reativar.className = 'contato-btn';
+      reativar.textContent = 'Reativar';
+      reativar.setAttribute('aria-label', 'Reativar ' + p.nome);
+      reativar.addEventListener('click', function() {
+        ui.reativarUsuario(p, reativar, carregar);
+      });
+      contato.appendChild(reativar);
     }
 
     bloco.appendChild(item);

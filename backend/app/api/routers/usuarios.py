@@ -32,9 +32,11 @@ from app.schemas.admin import (
 from app.schemas.usuario import (
     AprovacaoUsuario, CadastroPorteiro, CadastroSaida, PerfilSaida,
     PermissoesPorteiroEntrada, PermissoesPorteiroSaida, UsuarioAtualizacao, UsuarioSaida,
+    UsuarioSindicoSaida,
 )
 from app.services import arquivos as servico_arquivos
 from app.services import documentos_cadastro
+from app.services import registro
 from app.services import usuarios as servico_usuarios
 from app.services import auth as servico_auth
 from app.services import notificacao
@@ -48,7 +50,6 @@ ACOES_DO_PORTEIRO = [
     {"chave": "registrar_encomendas", "rotulo": "Registrar encomendas"},
     {"chave": "registrar_veiculos", "rotulo": "Registrar veículos"},
     {"chave": "registrar_ocorrencias", "rotulo": "Registrar ocorrências"},
-    {"chave": "acessar_financeiro", "rotulo": "Acessar o financeiro"},
 ]
 
 
@@ -106,6 +107,7 @@ def cadastrar_porteiro(
     codigo = servico_auth.emitir_codigo(
         db, porteiro, FinalidadeCodigo.CONFIRMACAO_CADASTRO, dados.canal_confirmacao
     )
+    registro.registrar(db, sindico, registro.CRIOU, registro.USUARIO, porteiro.id)
     db.commit()
     db.refresh(porteiro)
 
@@ -208,15 +210,26 @@ def definir_permissoes(
         )
 
     permissoes = db.scalar(
-        select(PermissaoPorteiro).where(PermissaoPorteiro.porteiro_id == porteiro.id)
+        select(PermissaoPorteiro)
+        .where(PermissaoPorteiro.porteiro_id == porteiro.id)
+        .with_for_update()
     )
     if permissoes is None:
         permissoes = PermissaoPorteiro(porteiro_id=porteiro.id)
         db.add(permissoes)
 
+    rotulos = {a["chave"]: a["rotulo"].lower() for a in ACOES_DO_PORTEIRO}
+    liberou, bloqueou = [], []
     for campo, valor in dados.model_dump().items():
+        if bool(getattr(permissoes, campo, None)) != valor:
+            (liberou if valor else bloqueou).append(rotulos.get(campo, campo))
         setattr(permissoes, campo, valor)
     permissoes.definidas_por_id = sindico.id
+    if liberou or bloqueou:
+        partes = ([f"liberou {', '.join(liberou)}"] if liberou else []) + \
+                 ([f"bloqueou {', '.join(bloqueou)}"] if bloqueou else [])
+        registro.registrar(db, sindico, registro.EDITOU, registro.USUARIO, porteiro.id,
+                           "Alterou as permissões: " + "; ".join(partes))
 
     db.commit()
     db.refresh(permissoes)
@@ -255,6 +268,7 @@ def cadastrar_usuario(
 
     condominio = db.get(Condominio, sindico.condominio_id)
     usuario = servico_usuarios.criar_usuario(db, condominio, dados, sindico)
+    registro.registrar(db, sindico, registro.CRIOU, registro.USUARIO, usuario.id)
     db.commit()
     db.refresh(usuario)
     return _para_saida_admin(db, usuario)
@@ -277,7 +291,9 @@ def editar_usuario(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Você pode editar apenas porteiros e moradores.",
         )
-    servico_usuarios.atualizar_usuario(db, usuario, dados)
+    # Trava a linha: o administrador pode estar editando o mesmo cadastro.
+    db.refresh(usuario, with_for_update=True)
+    servico_usuarios.editar_registrando(db, sindico, usuario, dados)
     db.commit()
     documentos_cadastro.descartar_se_encerrado(db, usuario)
     db.refresh(usuario)
@@ -299,7 +315,7 @@ def _para_saida_admin(db: Session, u: Usuario) -> UsuarioAdminSaida:
 
 
 # ── Administração dos cadastros ──────────────────────────────────────
-@router.get("", response_model=list[UsuarioSaida], summary="Lista os usuários do condomínio")
+@router.get("", response_model=list[UsuarioSindicoSaida], summary="Lista os usuários do condomínio")
 def listar_usuarios(
     papel: Papel | None = Query(default=None, description="Filtra por papel."),
     status_usuario: StatusUsuario | None = Query(
@@ -307,7 +323,7 @@ def listar_usuarios(
     ),
     sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
     db: Session = Depends(get_db),
-) -> list[Usuario]:
+) -> list[UsuarioSindicoSaida]:
     consulta = (
         select(Usuario)
         .where(Usuario.condominio_id == sindico.condominio_id)
@@ -317,7 +333,14 @@ def listar_usuarios(
         consulta = consulta.where(Usuario.papel == papel)
     if status_usuario is not None:
         consulta = consulta.where(Usuario.status == status_usuario)
-    return list(db.scalars(consulta.order_by(Usuario.nome)).all())
+    usuarios = db.scalars(consulta.order_by(Usuario.nome)).all()
+    ultimas = registro.ultimas(db, registro.USUARIO, (u.id for u in usuarios))
+    return [
+        UsuarioSindicoSaida.model_validate(u).model_copy(
+            update={"ultima_alteracao": ultimas.get(u.id)}
+        )
+        for u in usuarios
+    ]
 
 
 @router.post(
@@ -350,12 +373,17 @@ def aprovar_usuario(
         )
 
     usuario.status = StatusUsuario.ATIVO if dados.aprovado else StatusUsuario.RECUSADO
+    registro.registrar(db, sindico, registro.APROVOU if dados.aprovado else registro.RECUSOU,
+                       registro.USUARIO, usuario.id,
+                       None if dados.aprovado else (dados.motivo or None))
     # Fica o registro de quem decidiu e quando, como em reservas e
     # ocorrências. O motivo só faz sentido na recusa; aprovar limpa o
     # que tiver sobrado de uma recusa anterior.
     usuario.avaliado_por_id = sindico.id
     usuario.avaliado_em = datetime.now(timezone.utc)
     usuario.motivo_recusa = None if dados.aprovado else dados.motivo
+    if dados.aprovado:
+        servico_usuarios.confirmar_unidade(db, usuario.unidade_id)
     db.commit()
     if not dados.aprovado:
         documentos_cadastro.descartar_todos(db, usuario.id)
@@ -430,8 +458,14 @@ def atualizar_perfil(
     usuario: Usuario = Depends(get_usuario_atual),
     db: Session = Depends(get_db),
 ) -> Usuario:
-    for campo, valor in dados.model_dump(exclude_unset=True).items():
+    novos = dados.model_dump(exclude_unset=True)
+    # Fica no histórico como as edições do síndico e do administrador.
+    descricao = registro.campos_alterados(usuario, novos, servico_usuarios.ROTULOS_USUARIO)
+    for campo, valor in novos.items():
         setattr(usuario, campo, valor)
+    if descricao:
+        registro.registrar(db, usuario, registro.EDITOU, registro.USUARIO, usuario.id,
+                           descricao + " no próprio perfil")
     db.commit()
     db.refresh(usuario)
     return usuario
@@ -487,15 +521,21 @@ def inativar_usuario(
     db: Session = Depends(get_db),
 ) -> Mensagem:
     usuario = _buscar_do_meu_condominio(db, sindico, usuario_id)
+    db.refresh(usuario, with_for_update=True)
     if usuario.id == sindico.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Você não pode inativar o próprio usuário.",
         )
+    if usuario.status == StatusUsuario.INATIVO:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Este usuário já está inativo."
+        )
     # Inativa em vez de apagar: o histórico de portaria, reservas e
     # financeiro precisa continuar apontando para o usuário.
     usuario.status = StatusUsuario.INATIVO
     servico_usuarios.cancelar_reservas_futuras(db, usuario)
+    registro.registrar(db, sindico, registro.INATIVOU, registro.USUARIO, usuario.id)
     db.commit()
     # Os registros ficam; os documentos do cadastro, não: sem vínculo com
     # o condomínio, acabou a finalidade de guardá-los (LGPD, art. 16).

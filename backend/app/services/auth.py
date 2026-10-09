@@ -48,6 +48,47 @@ def garantir_email_e_cpf_livres(db: Session, email: str, cpf: str) -> None:
         )
 
 
+def _prazo_abandono() -> timedelta:
+    # Depois do código e do token de envio dos documentos: nada emitido para
+    # o cadastro antigo ainda vale quando outro o retoma.
+    return timedelta(minutes=max(settings.CODIGO_VERIFICACAO_EXPIRA_MIN,
+                                 settings.TOKEN_DOCUMENTOS_MIN))
+
+
+def cadastro_abandonado(db: Session, email: str, cpf: str) -> Usuario | None:
+    """O cadastro de morador que nunca confirmou o código, com o mesmo e-mail
+    ou CPF, e que pode ser retomado; None se os dois estão livres.
+
+    Antes, esse cadastro prendia o e-mail e o CPF para sempre: quem errou o
+    e-mail não recebia o código e não conseguia se cadastrar de novo, e
+    quem digitasse o CPF de outra pessoa impedia o dono de se cadastrar.
+    Conta confirmada, ou de outro papel, continua respondendo 409.
+    """
+    encontrados = {u.id: u for u in (buscar_por_email(db, email), buscar_por_cpf(db, cpf)) if u}
+    if not encontrados:
+        return None
+    if len(encontrados) > 1 or any(
+        u.status != StatusUsuario.AGUARDANDO_CODIGO or u.papel != Papel.MORADOR
+        for u in encontrados.values()
+    ):
+        garantir_email_e_cpf_livres(db, email, cpf)
+    usuario = next(iter(encontrados.values()))
+    agora = _agora()
+    codigo_valido = db.scalar(
+        select(CodigoVerificacao.id).where(
+            CodigoVerificacao.usuario_id == usuario.id, CodigoVerificacao.expira_em > agora,
+        ).limit(1)
+    )
+    if usuario.criado_em > agora - _prazo_abandono() or codigo_valido is not None:
+        minutos = int(_prazo_abandono().total_seconds() // 60)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Já há um cadastro com este e-mail ou CPF esperando a confirmação do "
+                   f"código. Use o código recebido, ou tente de novo depois de {minutos} minutos.",
+        )
+    return usuario
+
+
 class CodigoMuitoFrequente(Exception):
     """Pediu código novo antes do intervalo mínimo ou além do limite da hora."""
 

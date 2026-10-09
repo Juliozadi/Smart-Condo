@@ -17,7 +17,8 @@ TRUNCATE
     ocorrencias,
     movimentacoes_veiculo,
     ordens_servico,
-    documentos
+    documentos,
+    registros_alteracao
 RESTART IDENTITY CASCADE;
 
 INSERT INTO condominios (id, nome, cnpj, cep, logradouro, numero, complemento, bairro, cidade, uf, telefone, sindico_id, criado_em, atualizado_em, codigo_acesso) VALUES (1, 'Residencial das Palmeiras', '11222333000181', '79000000', 'Rua das Flores', '100', NULL, 'Centro', 'Campo Grande', 'MS', '6733330000', NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00', 'PALM-2025');
@@ -133,6 +134,26 @@ INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo
 
 UPDATE condominios SET sindico_id = 2 WHERE id = 1;
 
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (1, 1, 'criou', 'condominio', 1, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (2, 1, 'criou', 'usuario', 2, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (3, 2, 'criou', 'usuario', 3, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (4, 2, 'criou', 'usuario', 4, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (5, 2, 'aprovou', 'usuario', 5, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (6, 2, 'aprovou', 'usuario', 6, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (7, 2, 'aprovou', 'usuario', 7, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (8, 2, 'aprovou', 'usuario', 8, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (9, 2, 'criou', 'espaco', 1, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (10, 2, 'criou', 'espaco', 2, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (11, 2, 'criou', 'espaco', 3, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (12, 2, 'criou', 'espaco', 4, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (13, 2, 'criou', 'espaco', 5, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (14, 2, 'criou', 'espaco', 6, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (15, 2, 'criou', 'espaco', 7, NULL);
+INSERT INTO registros_alteracao (id, autor_id, acao, entidade, entidade_id, descricao) VALUES (16, 2, 'criou', 'espaco', 8, NULL);
+
+-- Os moradores moram na unidade desde o cadastro (e não desde a carga).
+UPDATE usuarios SET unidade_desde = criado_em;
+
 SELECT setval('condominios_id_seq', (SELECT COALESCE(MAX(id), 1) FROM condominios));
 
 SELECT setval('unidades_id_seq', (SELECT COALESCE(MAX(id), 1) FROM unidades));
@@ -166,3 +187,5 @@ SELECT setval('movimentacoes_veiculo_id_seq', (SELECT COALESCE(MAX(id), 1) FROM 
 SELECT setval('ordens_servico_id_seq', (SELECT COALESCE(MAX(id), 1) FROM ordens_servico));
 
 SELECT setval('documentos_id_seq', (SELECT COALESCE(MAX(id), 1) FROM documentos));
+
+SELECT setval('registros_alteracao_id_seq', (SELECT COALESCE(MAX(id), 1) FROM registros_alteracao));

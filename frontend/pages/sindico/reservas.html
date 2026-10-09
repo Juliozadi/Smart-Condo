@@ -47,7 +47,57 @@
       <div class="table-head cols-4"><span>Morador</span><span>Espaço</span><span>Data</span><span>Status</span></div>
     </div>
     <p class="estado-lista" id="estadoTabela"></p>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Espaços Comuns</h2>
+    <div class="barra-acoes">
+      <button type="button" class="btn-novo" id="btnNovoEspaco">
+        <img src="../../assets/img/icons/plus.svg" alt="">Novo espaço
+      </button>
+    </div>
+    <div class="list-items" id="listaEspacos"></div>
+    <p class="estado-lista" id="estadoEspacos">Carregando…</p>
   </main>
+
+  <!-- Cadastro e edição de espaço comum -->
+  <div class="modal-fundo" id="modalEspaco" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+    <div class="modal-caixa">
+      <h2 class="modal-titulo" id="modalTitulo">
+        <img src="../../assets/img/icons/building.svg" alt="">Novo espaço
+      </h2>
+      <p class="modal-sub">Reservável: salão, churrasqueira. Uso livre: piscina, academia (mostra a ocupação).</p>
+      <form id="formEspaco" novalidate>
+        <div class="form-group">
+          <label for="eNome">Nome <span class="req">*</span></label>
+          <input type="text" id="eNome" required minlength="2" maxlength="120" placeholder="Ex: Salão de Festas">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eTipo">Tipo <span class="req">*</span></label>
+            <select id="eTipo" required>
+              <option value="reservavel">Reservável</option>
+              <option value="uso_livre">Uso livre</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="eCapacidade">Capacidade (pessoas)</label>
+            <input type="number" id="eCapacidade" min="0" max="10000" step="1" placeholder="Ex: 80">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="eDescricao">Descrição</label>
+          <textarea id="eDescricao" maxlength="2000" rows="2" placeholder="Ex: Com cozinha de apoio e som"></textarea>
+        </div>
+        <label class="permissao-item" for="eManutencao">
+          <input type="checkbox" id="eManutencao"> Em manutenção (não aceita novas reservas)
+        </label>
+        <p class="modal-erro" id="modalErro" role="alert"></p>
+        <div class="modal-acoes">
+          <button type="button" class="btn-secundario" id="btnCancelar">Cancelar</button>
+          <button type="submit" class="btn-primario" id="btnSalvar">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
 <script src="../../assets/js/validation.js"></script>
 <script src="../../assets/js/admin-ui.js"></script>
@@ -88,6 +138,12 @@
     return ('0' + d.dia).slice(-2) + '/' + ('0' + d.mes).slice(-2);
   }
   function hora(h) { return (h || '').slice(0, 5).replace(':', 'h'); }
+  function jaComecou(r) {
+    var d = new Date();
+    var hoje = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+    var agora = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    return r.data < hoje || (r.data === hoje && (r.hora_inicio || '').slice(0, 5) <= agora);
+  }
   function periodo(r) { return hora(r.hora_inicio) + '–' + hora(r.hora_fim); }
 
   function quem(r) {
@@ -123,6 +179,11 @@
     var nao = document.createElement('button');
     nao.type = 'button'; nao.className = 'pill-acao recusar'; nao.textContent = 'Recusar';
     acoes.appendChild(sim); acoes.appendChild(nao);
+    // O horário já passou: aprovar não faz sentido, só recusar (limpa a fila).
+    if (jaComecou(r)) {
+      sim.hidden = true;
+      sub.textContent += ' · horário já passou';
+    }
 
     function decidir(aprovada, motivo) {
       sim.disabled = nao.disabled = true;
@@ -199,6 +260,130 @@
   }
 
   campo('filtroStatus').addEventListener('change', aplicarFiltro);
+
+  /* ── Espaços comuns: cadastrar, editar, inativar e reativar ──────
+     Antes não havia esta seção, e um condomínio novo ficava sem espaço
+     nenhum para reservar. Nada é apagado: "inativar" tira o espaço das
+     telas e dá para reativá-lo. */
+  var modal = ui.modal('modalEspaco', 'formEspaco', 'modalErro');
+  var editandoId = null;
+
+  function abrirEspaco(e) {
+    editandoId = e ? e.id : null;
+    campo('modalTitulo').lastChild.textContent = e ? 'Editar espaço' : 'Novo espaço';
+    modal.limpar();
+    if (e) {
+      campo('eNome').value = e.nome;
+      campo('eTipo').value = e.uso_livre && !e.reservavel ? 'uso_livre' : 'reservavel';
+      campo('eCapacidade').value = e.capacidade || '';
+      campo('eDescricao').value = e.descricao || '';
+      campo('eManutencao').checked = !!e.em_manutencao;
+    }
+    modal.abrir();
+  }
+
+  function cartaoEspaco(e) {
+    var item = document.createElement('div');
+    item.className = 'list-item' + (e.inativo ? ' inativo' : '');
+
+    var info = document.createElement('div');
+    info.className = 'list-info';
+    var titulo = document.createElement('h3');
+    titulo.textContent = e.nome + ' ';
+    var selo = document.createElement('span');
+    selo.className = 'badge ' + (e.inativo ? 'badge-neutral' : e.em_manutencao ? 'badge-pending' : 'badge-ok');
+    selo.textContent = e.inativo ? 'Inativo' : e.em_manutencao ? 'Em manutenção' : 'Disponível';
+    titulo.appendChild(selo);
+    var sub = document.createElement('p');
+    sub.textContent = (e.reservavel ? 'Reservável' : 'Uso livre') +
+      (e.capacidade ? ' · até ' + e.capacidade + ' pessoas' : '') +
+      (e.descricao ? ' · ' + e.descricao : '');
+    var autoria = document.createElement('small');
+    autoria.className = 'lista-autoria';
+    autoria.textContent = ui.textoAlteracao(e.ultima_alteracao);
+    info.appendChild(titulo); info.appendChild(sub); info.appendChild(autoria);
+
+    var acoes = document.createElement('div');
+    acoes.className = 'acoes-linha';
+    function botao(icone, rotulo, perigo, acao) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn-acao' + (perigo ? ' perigo' : '');
+      b.title = rotulo;
+      b.setAttribute('aria-label', rotulo);
+      var img = document.createElement('img');
+      img.src = '../../assets/img/icons/' + icone + '.svg';
+      img.alt = '';
+      b.appendChild(img);
+      b.addEventListener('click', function() { acao(b); });
+      acoes.appendChild(b);
+    }
+    function chamar(b, promessa) {
+      b.disabled = true;
+      // As reservas também: inativar cancela as de hoje em diante.
+      promessa.then(function() { carregarEspacos(); carregar(); })
+        .catch(function(erro) { b.disabled = false; alert(erro.message); });
+    }
+    botao('pen', 'Editar ' + e.nome, false, function() { abrirEspaco(e); });
+    if (e.inativo) {
+      botao('circle-check', 'Reativar ' + e.nome, false, function(b) {
+        if (!confirm('Reativar ' + e.nome + '?\n\nEle volta a aparecer para os moradores.')) return;
+        chamar(b, api.post('/espacos/' + e.id + '/reativacao'));
+      });
+    } else {
+      botao('xmark', 'Inativar ' + e.nome, true, function(b) {
+        if (!confirm('Inativar ' + e.nome + '?\n\nEle sai das telas e as reservas de hoje em diante são canceladas. ' +
+                     'Nada é apagado: o histórico fica guardado e dá para reativá-lo depois.')) return;
+        chamar(b, api.remover('/espacos/' + e.id).then(function(r) {
+          if (/cancelad/.test(r.detalhe)) alert(r.detalhe);
+        }));
+      });
+    }
+
+    item.appendChild(info);
+    item.appendChild(acoes);
+    return item;
+  }
+
+  function carregarEspacos() {
+    return api.get('/espacos?todos=true')
+      .then(function(lista) {
+        var caixa = campo('listaEspacos');
+        caixa.innerHTML = '';
+        lista.forEach(function(e) { caixa.appendChild(cartaoEspaco(e)); });
+        campo('estadoEspacos').textContent = lista.length ? '' :
+          'Nenhum espaço cadastrado. Cadastre o salão, a churrasqueira, a piscina… para os moradores reservarem.';
+      })
+      .catch(function(e) { campo('estadoEspacos').textContent = e.message; });
+  }
+
+  campo('btnNovoEspaco').addEventListener('click', function() { abrirEspaco(null); });
+
+  modal.aoEnviar(function() {
+    var nome = campo('eNome').value.trim();
+    if (nome.length < 2) {
+      modal.erro('Informe o nome do espaço.');
+      return null;
+    }
+    var capacidade = campo('eCapacidade').value;
+    var livre = campo('eTipo').value === 'uso_livre';
+    var corpo = {
+      nome: nome,
+      descricao: campo('eDescricao').value.trim() || null,
+      capacidade: capacidade === '' ? 0 : parseInt(capacidade, 10),
+      reservavel: !livre,
+      uso_livre: livre,
+      em_manutencao: campo('eManutencao').checked
+    };
+    return editandoId
+      ? api.put('/espacos/' + editandoId, corpo)
+      : api.post('/espacos', corpo);
+  }, function() {
+    modal.fechar();
+    carregarEspacos();
+  });
+
+  carregarEspacos();
 
   var usuario = api.sessao.usuario();
   var cabecalho = campo('hdrName');

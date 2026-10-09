@@ -122,7 +122,7 @@
     }
     var remover = botaoAcao('Remover ' + d.titulo, 'xmark.svg', 'perigo');
     remover.addEventListener('click', function() {
-      if (!confirm('Remover o documento "' + d.titulo + '"? O arquivo também será apagado.')) return;
+      if (!confirm('Remover o documento "' + d.titulo + '"?\n\nEle sai das telas dos moradores, mas fica guardado no sistema.')) return;
       remover.disabled = true;
       api.remover('/documentos/' + d.id)
         .then(carregar)

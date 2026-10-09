@@ -25,7 +25,7 @@ from app.models.operacao import Documento
 from app.models.usuario import Usuario
 from app.schemas.comuns import Mensagem
 from app.schemas.operacao import DocumentoSaida
-from app.services import arquivos
+from app.services import arquivos, registro
 
 router = APIRouter(prefix="/documentos", tags=["Documentos"])
 
@@ -46,7 +46,9 @@ def _saida(db: Session, d: Documento) -> DocumentoSaida:
 def _visiveis(usuario: Usuario):
     """Os documentos que o usuário pode ver: o síndico vê todos; os demais,
     os do condomínio inteiro e — o morador — os da própria unidade."""
-    consulta = select(Documento).where(Documento.condominio_id == usuario.condominio_id)
+    consulta = select(Documento).where(
+        Documento.condominio_id == usuario.condominio_id, Documento.inativo_em.is_(None)
+    )
     if usuario.papel == Papel.MORADOR:
         consulta = consulta.where(
             or_(Documento.unidade_id.is_(None), Documento.unidade_id == usuario.unidade_id)
@@ -115,6 +117,8 @@ def publicar(
     )
     db.add(documento)
     try:
+        db.flush()
+        registro.registrar(db, sindico, registro.CRIOU, registro.DOCUMENTO, documento.id)
         db.commit()
     except Exception:
         db.rollback()
@@ -160,19 +164,22 @@ def abrir(
     )
 
 
-@router.delete("/{documento_id}", response_model=Mensagem, summary="Remove um documento")
+@router.delete("/{documento_id}", response_model=Mensagem, summary="Remove (inativa) um documento")
 def remover(
     documento_id: int,
     sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
     db: Session = Depends(get_db),
 ) -> Mensagem:
-    documento = db.get(Documento, documento_id)
-    if documento is None or documento.condominio_id != sindico.condominio_id:
+    documento = db.get(Documento, documento_id, with_for_update=True)
+    if (documento is None or documento.condominio_id != sindico.condominio_id
+            or documento.inativo_em is not None):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Documento não encontrado."
         )
-    nome = documento.arquivo
-    db.delete(documento)
+    # Nada é apagado — nem o arquivo: o documento sai das telas e da rota
+    # do arquivo, mas fica guardado com quem o removeu e quando.
+    documento.inativo_em = datetime.now(timezone.utc)
+    documento.inativado_por_id = sindico.id
+    registro.registrar(db, sindico, registro.INATIVOU, registro.DOCUMENTO, documento.id)
     db.commit()
-    arquivos.apagar_privado(arquivos.CONDOMINIO, nome)
     return Mensagem(detalhe="Documento removido.")

@@ -155,6 +155,52 @@
     return { abrir: abrir, fechar: fechar, limpar: limpar, erro: erro, aoEnviar: aoEnviar };
   }
 
+  /* "Editado por Fulano em 25/09/2026 14:32" — quem fez a última alteração
+     de um registro (pedido do grupo: com vários administradores, cada
+     mudança precisa mostrar o autor). */
+  function dataHora(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    var dois = function(n) { return ('0' + n).slice(-2); };
+    return dois(d.getDate()) + '/' + dois(d.getMonth() + 1) + '/' + d.getFullYear() +
+      ' ' + dois(d.getHours()) + ':' + dois(d.getMinutes());
+  }
+  function textoAlteracao(r) {
+    if (!r) return '';
+    return r.rotulo + ' por ' + (r.autor_nome || 'sistema') + ' em ' + dataHora(r.feito_em);
+  }
+
+  /* Preenche a lista de histórico da janela de edição. */
+  function mostrarHistorico(lista, entidade, id) {
+    lista.textContent = '';
+    var carregando = document.createElement('li');
+    carregando.textContent = 'Carregando…';
+    lista.appendChild(carregando);
+    return global.SmartCondo.api
+      .get('/admin/historico?entidade=' + entidade + '&entidade_id=' + id)
+      .then(function(registros) {
+        lista.textContent = '';
+        if (!registros.length) {
+          var vazio = document.createElement('li');
+          vazio.textContent = 'Nenhuma alteração registrada.';
+          lista.appendChild(vazio);
+        }
+        registros.forEach(function(r) {
+          var item = document.createElement('li');
+          var quem = document.createElement('strong');
+          quem.textContent = textoAlteracao(r);
+          item.appendChild(quem);
+          if (r.descricao) {
+            var oque = document.createElement('span');
+            oque.textContent = ' — ' + r.descricao;
+            item.appendChild(oque);
+          }
+          lista.appendChild(item);
+        });
+      })
+      .catch(function(e) { lista.textContent = e.message; });
+  }
+
   /* Inativa um morador ou porteiro que saiu do condomínio: o acesso acaba
      na hora e o histórico fica. Pede confirmação dizendo o que acontece. */
   function inativarUsuario(u, botao, aoConcluir) {
@@ -169,9 +215,21 @@
       .catch(function(e) { if (botao) botao.disabled = false; alert(e.message); });
   }
 
+  // Nada é apagado: quem foi inativado por engano (ou voltou) é reativado.
+  function reativarUsuario(u, botao, aoConcluir) {
+    if (!confirm('Reativar ' + u.nome + '?\n\nO acesso volta a funcionar com a mesma senha.')) return;
+    if (botao) botao.disabled = true;
+    global.SmartCondo.api.put('/usuarios/' + u.id, { status: 'ativo' })
+      .then(aoConcluir)
+      .catch(function(e) { if (botao) botao.disabled = false; alert(e.message); });
+  }
+
   global.SmartCondo = global.SmartCondo || {};
   global.SmartCondo.ui = {
     inativarUsuario: inativarUsuario,
+    reativarUsuario: reativarUsuario,
+    textoAlteracao: textoAlteracao,
+    mostrarHistorico: mostrarHistorico,
     limparTabela: limparTabela,
     aguardar: aguardar,
     semAcento: semAcento,

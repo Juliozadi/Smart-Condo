@@ -304,6 +304,10 @@ telas.forEach((t) => {
     filhos.push(imagemTela(t.imagem));
     filhos.push(legenda(`Figura — ${t.legenda}`));
   }
+  if (t.imagem2) {
+    filhos.push(imagemTela(t.imagem2));
+    filhos.push(legenda(`Figura — ${t.legenda2}`));
+  }
 });
 
 // Seção 14 — modelo entidade-relacionamento

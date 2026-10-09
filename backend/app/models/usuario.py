@@ -10,7 +10,7 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
-    Boolean, Date, DateTime, Enum as SAEnum, ForeignKey, Integer, String, Text,
+    Boolean, Date, DateTime, Enum as SAEnum, ForeignKey, Integer, String, Text, func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -50,6 +50,11 @@ class Usuario(Base, TimestampMixin):
     # Só o morador tem unidade; porteiro e síndico ficam sem.
     unidade_id: Mapped[int | None] = mapped_column(
         ForeignKey("unidades.id", ondelete="SET NULL"), index=True
+    )
+    # Desde quando mora na unidade atual: o morador transferido não vê os
+    # visitantes e as encomendas de quem estava lá antes dele.
+    unidade_desde: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     tipo_ocupacao: Mapped[TipoOcupacao | None] = mapped_column(
         SAEnum(TipoOcupacao, name="tipo_ocupacao")
@@ -121,6 +126,8 @@ class PermissaoPorteiro(Base, TimestampMixin):
     registrar_veiculos: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     registrar_ocorrencias: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     # O financeiro é do síndico; por padrão o porteiro não acessa.
+    # Sem uso: a permissão saiu da tela e da API (o financeiro é sempre
+    # recusado ao porteiro). A coluna fica para não perder o histórico.
     acessar_financeiro: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     definidas_por_id: Mapped[int | None] = mapped_column(
@@ -137,7 +144,6 @@ class PermissaoPorteiro(Base, TimestampMixin):
             "registrar_encomendas": self.registrar_encomendas,
             "registrar_veiculos": self.registrar_veiculos,
             "registrar_ocorrencias": self.registrar_ocorrencias,
-            "acessar_financeiro": self.acessar_financeiro,
         }
 
 

@@ -12,7 +12,10 @@ from pydantic import EmailStr, Field, model_validator
 from app.models.enums import (
     CanalVerificacao, Papel, StatusUsuario, TipoOcupacao,
 )
-from app.schemas.comuns import CPF, DataNascimento, SchemaBase, Senha, SenhaDigitada, Telefone
+from app.schemas.admin import RegistroSaida
+from app.schemas.comuns import (
+    CPF, DataNascimento, IdUnidade, SchemaBase, Senha, SenhaDigitada, Telefone,
+)
 
 
 # ── Cadastro (seção 12) ───────────────────────────────────────────────
@@ -37,8 +40,8 @@ class CadastroMorador(CadastroBase):
 
     # O morador informa o código que recebeu do síndico, não o id.
     codigo_condominio: str = Field(min_length=4, max_length=20)
-    unidade_numero: str = Field(min_length=1, max_length=20)
-    unidade_bloco: str = Field(default="unico", max_length=20)
+    unidade_numero: IdUnidade = Field(min_length=1, max_length=20)
+    unidade_bloco: IdUnidade = Field(default="unico", max_length=20)
     tipo_ocupacao: TipoOcupacao
 
 
@@ -110,7 +113,8 @@ class PermissoesPorteiroEntrada(SchemaBase):
     registrar_encomendas: bool = True
     registrar_veiculos: bool = True
     registrar_ocorrencias: bool = True
-    acessar_financeiro: bool = False
+    # "Acessar o financeiro" saiu: nenhuma tela a usava e o financeiro é
+    # sempre recusado ao porteiro (quem deve o quê não é assunto da portaria).
 
 
 class PermissoesPorteiroSaida(PermissoesPorteiroEntrada):
@@ -144,6 +148,12 @@ class UsuarioSaida(SchemaBase):
     # usuário recusado precisa saber o motivo.
     avaliado_em: datetime | None = None
     motivo_recusa: str | None = None
+
+
+class UsuarioSindicoSaida(UsuarioSaida):
+    """A lista do síndico: também diz quem mexeu por último no cadastro —
+    ele, outro síndico antes dele ou o administrador."""
+    ultima_alteracao: RegistroSaida | None = None
 
 
 class PerfilSaida(UsuarioSaida):

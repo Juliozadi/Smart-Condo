@@ -16,7 +16,7 @@ const requisitosFuncionais = [
     atores: 'Administrador', prioridade: 'Essencial',
     descricao: 'O sistema permite cadastrar um condomínio com razão social, CNPJ e endereço completo, e vincular a ele o síndico responsável. É o primeiro cadastro da plataforma: sem condomínio não existe unidade, e sem unidade não existe morador.',
     entradas: 'O administrador informa nome, CNPJ, CEP, logradouro, número, bairro, cidade, UF e telefone. O CNPJ é conferido pelos dígitos verificadores e não pode repetir outro já cadastrado.',
-    saidas: 'O condomínio é gravado e recebe automaticamente um código de acesso, que é o que o síndico repassa aos moradores para que se cadastrem no condomínio certo.' },
+    saidas: 'O condomínio é gravado e recebe automaticamente um código de acesso, que é o que o síndico repassa aos moradores para que se cadastrem no condomínio certo. Nada é apagado: "excluir" inativa o condomínio, que sai das telas e tem o código de acesso suspenso, mas continua guardado com reservas, cobranças e portaria, e pode ser reativado.' },
 
   { id: 'RF002', nome: 'Gerar novo código de acesso do condomínio',
     atores: 'Administrador, Síndico', prioridade: 'Importante',
@@ -28,25 +28,25 @@ const requisitosFuncionais = [
     atores: 'Síndico', prioridade: 'Essencial',
     descricao: 'O sistema permite cadastrar e consultar as unidades (apartamentos ou casas) do condomínio, com bloco, número, andar e quantidade de vagas de garagem.',
     entradas: 'O síndico informa número e, quando houver, bloco. A combinação de condomínio, bloco e número não pode repetir.',
-    saidas: 'A unidade fica disponível para ser vinculada a moradores, cobranças, encomendas, visitantes e ocorrências.' },
+    saidas: 'A unidade fica disponível para ser vinculada a moradores, cobranças, encomendas, visitantes e ocorrências. Depois, o síndico edita o andar e as vagas de garagem, que somam a capacidade do estacionamento; número e bloco não mudam, porque moradores, cobranças e portaria apontam para eles. Cada alteração registra quem a fez.' },
 
   { id: 'RF004', nome: 'Cadastrar-se como morador',
     atores: 'Morador', prioridade: 'Essencial',
     descricao: 'O sistema permite que o morador se cadastre sozinho, sem depender do síndico, informando o código de acesso do condomínio e a unidade em que mora.',
     entradas: 'O morador informa nome, CPF, e-mail, telefone, data de nascimento, senha, o código de acesso do condomínio e a unidade. O CPF é conferido pelos dígitos verificadores. E-mail e CPF não podem repetir outro cadastro.',
-    saidas: 'A conta é criada com a situação "aguardando código". Um código de confirmação é enviado ao morador, e o acesso só é liberado depois da confirmação e da aprovação do síndico.' },
+    saidas: 'A conta é criada com a situação "aguardando código". Um código de confirmação é enviado ao morador, e o acesso só é liberado depois da confirmação e da aprovação do síndico. O cadastro nunca confirmado não prende o e-mail nem o CPF: passada uma hora, um novo cadastro com eles retoma o antigo, que nunca chegou a ser uma conta, e os documentos enviados nele são descartados. A unidade informada que ainda não existia fica pendente: não aparece para a portaria nem para o síndico até ele aprovar alguém nela, cadastrá-la ou cadastrar alguém nela, para que um cadastro recusado ou nunca confirmado não deixe unidades inventadas nas listas.' },
 
   { id: 'RF005', nome: 'Confirmar cadastro com código',
     atores: 'Administrador, Síndico, Porteiro, Morador', prioridade: 'Essencial',
     descricao: 'O sistema envia um código de confirmação ao usuário recém-cadastrado e só considera a conta válida depois que esse código é informado. O mesmo mecanismo permite reenviar o código.',
-    entradas: 'A conta deve existir e estar aguardando confirmação. O código vai por e-mail ou, quando o servidor tem provedor de SMS configurado, por SMS, à escolha do usuário. Tem prazo de validade e um limite de tentativas erradas.',
+    entradas: 'A conta deve existir e estar aguardando confirmação; quem tenta entrar sem ter confirmado é levado à tela do código, com o reenvio liberado. O código vai por e-mail ou, quando o servidor tem provedor de SMS configurado, por SMS, à escolha do usuário. Tem prazo de validade e um limite de tentativas erradas.',
     saidas: 'Confirmado o código, a conta passa para "ativo" ou, no caso do morador que se cadastrou sozinho, para "aguardando aprovação" do síndico. Esgotadas as tentativas, o código é invalidado e é preciso pedir outro.' },
 
   { id: 'RF006', nome: 'Aprovar ou recusar cadastro de morador',
     atores: 'Síndico', prioridade: 'Essencial',
     descricao: 'O sistema apresenta ao síndico a fila de moradores que se cadastraram sozinhos e aguardam liberação, permitindo aprovar ou recusar cada um. A recusa exige motivo.',
     entradas: 'O cadastro deve estar na situação "aguardando aprovação" e pertencer ao condomínio do síndico.',
-    saidas: 'Aprovado, o morador passa a "ativo" e consegue entrar. Recusado, fica registrado quem avaliou, quando e por qual motivo, e o morador vê a justificativa na própria tela de espera. Nos dois casos, o morador recebe um e-mail com a decisão.' },
+    saidas: 'Aprovado, o morador passa a "ativo" e consegue entrar. Recusado, fica registrado quem avaliou, quando e por qual motivo, e o morador vê a justificativa na própria tela de espera e também ao tentar entrar. Nos dois casos, o morador recebe um e-mail com a decisão.' },
 
   { id: 'RF007', nome: 'Cadastrar porteiro',
     atores: 'Síndico', prioridade: 'Essencial',
@@ -56,7 +56,7 @@ const requisitosFuncionais = [
 
   { id: 'RF008', nome: 'Definir permissões do porteiro',
     atores: 'Síndico', prioridade: 'Importante',
-    descricao: 'O sistema permite ao síndico escolher, porteiro a porteiro, quais ações ele pode executar: registrar visitantes, registrar encomendas, registrar veículos, registrar ocorrências e consultar o financeiro.',
+    descricao: 'O sistema permite ao síndico escolher, porteiro a porteiro, quais ações ele pode executar: registrar visitantes, registrar encomendas, registrar veículos e registrar ocorrências. O financeiro não é liberado ao porteiro: quem deve o quê não é assunto da portaria (LGPD).',
     entradas: 'O porteiro deve pertencer ao condomínio do síndico.',
     saidas: 'As permissões passam a valer imediatamente. A tela do porteiro esconde o que ele não pode fazer, e a API recusa a operação mesmo que a requisição seja enviada por fora da tela.' },
 
@@ -68,9 +68,9 @@ const requisitosFuncionais = [
 
   { id: 'RF010', nome: 'Manter usuários da plataforma',
     atores: 'Administrador', prioridade: 'Importante',
-    descricao: 'O sistema permite ao administrador consultar e manter os usuários de qualquer condomínio, incluindo a criação da conta do síndico. Serve de apoio quando o síndico não consegue resolver sozinho.',
-    entradas: 'O administrador escolhe o condomínio e informa os dados do usuário.',
-    saidas: 'O usuário é criado, editado ou removido, e o resultado aparece imediatamente para o síndico do condomínio correspondente.' },
+    descricao: 'O sistema permite ao administrador consultar e manter os usuários de qualquer condomínio, incluindo a criação da conta do síndico, e cadastrar outros administradores. Serve de apoio quando o síndico não consegue resolver sozinho.',
+    entradas: 'O administrador escolhe o condomínio e informa os dados do usuário; para outro administrador, não há condomínio. Ninguém inativa a si mesmo, e a plataforma nunca fica sem administrador ativo.',
+    saidas: 'O usuário é criado, editado, inativado ou reativado — nunca apagado —, e o resultado aparece imediatamente para o síndico do condomínio correspondente. A senha trocada pelo administrador encerra as sessões abertas com a antiga.' },
 
   { id: 'RF011', nome: 'Autenticar-se no sistema',
     atores: 'Administrador, Síndico, Porteiro, Morador', prioridade: 'Essencial',
@@ -99,8 +99,8 @@ const requisitosFuncionais = [
   { id: 'RF015', nome: 'Cadastrar espaço comum',
     atores: 'Síndico', prioridade: 'Importante',
     descricao: 'O sistema permite cadastrar os espaços do condomínio — salão de festas, churrasqueira, academia, piscina — indicando capacidade, se exigem reserva e se exigem aprovação do síndico.',
-    entradas: 'O síndico informa nome, capacidade e as regras de uso do espaço.',
-    saidas: 'O espaço passa a aparecer para os moradores, na agenda de reservas ou no painel de ocupação, conforme as regras definidas.' },
+    entradas: 'O síndico informa nome, tipo (reservável ou de uso livre), capacidade e descrição, e pode marcar o espaço como em manutenção. Depois, pela mesma tela, edita, inativa ou reativa o espaço.',
+    saidas: 'O espaço passa a aparecer para os moradores, na agenda de reservas ou no painel de ocupação, conforme as regras definidas. Em manutenção, não aceita novas reservas. Nada é apagado: inativado, o espaço sai das telas, as reservas de hoje em diante são canceladas e o histórico fica guardado; reativado, volta a aparecer. Cada alteração registra quem a fez.' },
 
   { id: 'RF016', nome: 'Solicitar reserva de espaço',
     atores: 'Morador', prioridade: 'Essencial',
@@ -111,14 +111,14 @@ const requisitosFuncionais = [
   { id: 'RF017', nome: 'Aprovar ou recusar reserva',
     atores: 'Síndico', prioridade: 'Essencial',
     descricao: 'O sistema apresenta ao síndico as reservas pendentes e permite aprovar ou recusar cada uma, registrando quem avaliou e quando.',
-    entradas: 'A reserva deve estar pendente e pertencer a um espaço do condomínio do síndico.',
+    entradas: 'A reserva deve estar pendente e pertencer a um espaço do condomínio do síndico. Se o horário já passou, ela só pode ser recusada; e a que chega ao horário sem avaliação é recusada pelo sistema, com o motivo para o morador.',
     saidas: 'A reserva passa a "aprovada" ou "recusada", e o morador vê o resultado na sua lista de reservas.' },
 
   { id: 'RF018', nome: 'Cancelar a própria reserva',
     atores: 'Morador', prioridade: 'Importante',
     descricao: 'O sistema permite ao morador cancelar uma reserva que ele mesmo fez.',
-    entradas: 'A reserva deve ser do próprio morador e ainda não ter sido concluída.',
-    saidas: 'A reserva passa a "cancelada" e o horário volta a ficar livre para outros moradores.' },
+    entradas: 'A reserva deve ser do próprio morador e o horário dela ainda não pode ter começado: a que já aconteceu fica no histórico como está.',
+    saidas: 'A reserva passa a "cancelada" e o horário volta a ficar livre para outros moradores. A aprovada cujo horário terminou passa sozinha a "concluída" e sai das reservas em aberto.' },
 
   { id: 'RF019', nome: 'Consultar a agenda dos espaços',
     atores: 'Morador', prioridade: 'Importante',
@@ -136,13 +136,13 @@ const requisitosFuncionais = [
     atores: 'Porteiro', prioridade: 'Essencial',
     descricao: 'O sistema permite registrar a chegada de um visitante, vinculando-o à unidade visitada e avisando o morador para que confirme.',
     entradas: 'O porteiro informa nome do visitante, documento e a unidade de destino, e pode tirar uma foto pela câmera ou enviar uma imagem. É preciso ter a permissão de registrar visitantes.',
-    saidas: 'O visitante é registrado como "aguardando confirmação" e o morador da unidade recebe o aviso, com a foto no painel para reconhecer quem está na portaria. A foto só é vista pelo morador da unidade, pelo síndico e pela portaria, e não pode ser trocada depois que o morador responde.' },
+    saidas: 'O visitante é registrado como "aguardando confirmação" e o morador da unidade recebe o aviso, com a foto no painel para reconhecer quem está na portaria. A foto só é vista pelo morador da unidade, pelo síndico e pela portaria, e não pode ser trocada depois que o morador responde. O aviso vai só para quem mora lá agora, e o morador que chega depois — ou é transferido de apartamento, ou volta depois de sair — não vê os visitantes de quem estava lá antes.' },
 
   { id: 'RF022', nome: 'Confirmar ou recusar visitante',
     atores: 'Morador', prioridade: 'Essencial',
     descricao: 'O sistema permite ao morador autorizar ou recusar a entrada de quem foi anunciado pela portaria.',
-    entradas: 'O visitante deve estar vinculado à unidade do morador e aguardando confirmação.',
-    saidas: 'Confirmado, o visitante passa a "dentro" e a portaria libera a entrada. Recusado, fica registrado como "recusado", com hora e responsável.' },
+    entradas: 'O visitante deve estar vinculado à unidade do morador e aguardando confirmação há menos de 2 horas.',
+    saidas: 'Confirmado, o visitante passa a "dentro" e a portaria libera a entrada. Recusado, fica registrado como "recusado", com hora e responsável. Sem resposta em 2 horas, passa a "sem resposta": sai do painel da portaria e não pode mais ser confirmado.' },
 
   { id: 'RF023', nome: 'Registrar saída do visitante',
     atores: 'Porteiro', prioridade: 'Importante',
@@ -157,15 +157,15 @@ const requisitosFuncionais = [
     saidas: 'A encomenda fica como "aguardando retirada" e aparece no painel do morador, com a foto quando houver.' },
 
   { id: 'RF025', nome: 'Confirmar retirada de encomenda',
-    atores: 'Morador', prioridade: 'Importante',
-    descricao: 'O sistema registra que a encomenda foi entregue ao morador, guardando quem retirou e quando.',
+    atores: 'Morador, Porteiro', prioridade: 'Importante',
+    descricao: 'O sistema registra que a encomenda foi entregue ao morador, guardando quem retirou e quando. O morador confirma pelo app; entregue em mãos, é o porteiro quem dá baixa.',
     entradas: 'A encomenda deve pertencer à unidade do morador e estar aguardando retirada.',
-    saidas: 'A encomenda passa a "retirada", com data, hora e responsável, e sai da lista de pendências da portaria.' },
+    saidas: 'A encomenda passa a "retirada", com data, hora e responsável, e sai da lista de pendências da portaria. Na entrega em mãos ficam o nome de quem levou e o porteiro que entregou, e os moradores da unidade são avisados.' },
 
   { id: 'RF026', nome: 'Registrar entrada e saída de veículos',
     atores: 'Porteiro', prioridade: 'Importante',
     descricao: 'O sistema registra a movimentação de veículos na portaria, separando os de moradores, visitantes e prestadores de serviço.',
-    entradas: 'O porteiro informa a placa, a categoria do veículo e o tipo da movimentação. É preciso ter a permissão de registrar veículos.',
+    entradas: 'O porteiro informa a placa, a categoria do veículo e o tipo da movimentação. É preciso ter a permissão de registrar veículos. A placa tem 7 letras (A a Z) ou números e é guardada sem hífen e em maiúsculas, de modo que ABC-1D23 e abc1d23 são o mesmo veículo; a placa do carro de um visitante segue a mesma regra.',
     saidas: 'A movimentação é gravada com data e hora e passa a compor o histórico e a contagem de veículos no pátio.' },
 
   { id: 'RF027', nome: 'Consultar pátio e ocupação do estacionamento',
@@ -190,7 +190,7 @@ const requisitosFuncionais = [
     atores: 'Síndico', prioridade: 'Essencial',
     descricao: 'O sistema permite publicar avisos para todo o condomínio, classificados por categoria: geral, manutenção, financeiro, segurança, evento ou urgente.',
     entradas: 'O síndico informa título, texto e categoria.',
-    saidas: 'O comunicado passa a aparecer para todos os moradores do condomínio, ordenado pela data de publicação.' },
+    saidas: 'O comunicado passa a aparecer para todos os moradores ativos do condomínio, ordenado pela data de publicação. Removido, ele sai das telas, mas fica guardado com quem o removeu e quando.' },
 
   { id: 'RF031', nome: 'Marcar comunicado como lido',
     atores: 'Síndico, Porteiro, Morador', prioridade: 'Desejável',
@@ -202,7 +202,7 @@ const requisitosFuncionais = [
     atores: 'Síndico', prioridade: 'Importante',
     descricao: 'O sistema permite disponibilizar documentos do condomínio — convenção, regimento interno, atas, plantas e prestações de contas — para consulta pelos moradores.',
     entradas: 'O síndico informa título e categoria e envia o arquivo, em PDF ou imagem de até 10 MB; o tipo é conferido pelo conteúdo. Um documento pode ser dirigido a todo o condomínio ou a uma unidade específica.',
-    saidas: 'O documento aparece na tela de documentos de quem tem direito de vê-lo, e o arquivo só abre com o token dessa pessoa: o de uma unidade, só para quem mora nela.' },
+    saidas: 'O documento aparece na tela de documentos de quem tem direito de vê-lo, e o arquivo só abre com o token dessa pessoa: o de uma unidade, só para quem mora nela. Removido, o documento sai das telas, mas o registro e o arquivo ficam guardados.' },
 
   { id: 'RF033', nome: 'Escolher dia e forma de pagamento',
     atores: 'Morador', prioridade: 'Importante',
@@ -213,14 +213,14 @@ const requisitosFuncionais = [
   { id: 'RF034', nome: 'Gerar cobrança',
     atores: 'Síndico', prioridade: 'Essencial',
     descricao: 'O sistema permite gerar a cobrança de uma unidade para determinada competência, com descrição, valor e vencimento.',
-    entradas: 'O valor precisa ser maior que zero e não pode existir outra cobrança para a mesma unidade na mesma competência. A competência vai de 5 anos atrás, prazo em que a cobrança condominial prescreve, até 12 meses à frente, e o vencimento não pode ser antes dela.',
-    saidas: 'A cobrança é criada como "aberta" e passa a aparecer na tela financeira do morador da unidade.' },
+    entradas: 'O valor precisa ser maior que zero e não pode existir outra cobrança, que não esteja cancelada, para a mesma unidade na mesma competência. A competência vai de 5 anos atrás, prazo em que a cobrança condominial prescreve, até 12 meses à frente, e o vencimento não pode ser antes dela.',
+    saidas: 'A cobrança é criada como "aberta" e passa a aparecer na tela financeira do morador da unidade. Lançada errada, o síndico corrige a descrição, o valor (nunca abaixo do que já foi pago) e o vencimento, ou a cancela com um motivo, se ainda não tiver pagamento. Nada é apagado: a cancelada fica guardada, e cada correção e cancelamento registra quem fez.' },
 
   { id: 'RF035', nome: 'Registrar pagamento',
     atores: 'Síndico, Morador', prioridade: 'Essencial',
     descricao: 'O sistema registra o pagamento de uma cobrança, com valor, data e forma utilizada, e atualiza a situação da cobrança.',
     entradas: 'A cobrança deve existir e estar em aberto. O valor precisa ser maior que zero.',
-    saidas: 'O pagamento entra no histórico da cobrança e, quando o total pago alcança o valor devido, a cobrança passa a "paga".' },
+    saidas: 'O pagamento entra no histórico da cobrança e, quando o total pago alcança o valor devido, a cobrança passa a "paga". O pagamento feito pelo morador no app avisa o síndico; o recebido fora do app (boleto no banco, depósito) o síndico registra pela tela, e quem é avisado são os moradores da unidade.' },
 
   { id: 'RF036', nome: 'Consultar indicadores financeiros',
     atores: 'Síndico', prioridade: 'Importante',
@@ -274,6 +274,12 @@ const requisitosFuncionais = [
     descricao: 'O sistema mostra, em cada cadastro aguardando aprovação, os documentos enviados e os obrigatórios que faltam, e permite abri-los na própria tela.',
     entradas: 'O cadastro deve ser de um morador do condomínio do síndico.',
     saidas: 'O documento é exibido — imagem ou PDF — sem ser gravado no cache do navegador. Recusado o cadastro, ou inativado o morador, os documentos são apagados.' },
+
+  { id: 'RF045', nome: 'Registrar quem fez cada alteração',
+    atores: 'Administrador, Síndico', prioridade: 'Importante',
+    descricao: 'Com mais de um administrador, cada alteração precisa mostrar quem a fez. O sistema registra quem criou, editou, inativou ou reativou condomínios, usuários, comunicados, documentos, espaços comuns, unidades e cobranças, e quando — seja o administrador, seja o síndico (inclusive as permissões do porteiro e o novo código de acesso), seja o próprio usuário no perfil e na troca de senha.',
+    entradas: 'O registro é feito pelo próprio sistema, na mesma operação da alteração; a edição anota os campos que mudaram (a senha aparece pelo nome, nunca pelo valor), e salvar sem mudar nada não gera registro.',
+    saidas: 'Cada linha das telas do administrador mostra a última alteração ("Editado por Fulano em 25/09/2026 14:32"), e a janela de edição traz o histórico completo. As listas de moradores, porteiros e espaços do síndico também mostram quem mexeu por último, inclusive quando foi o administrador.' },
 ];
 
 // ── 10 Requisitos não funcionais ────────────────────────────────────
@@ -344,8 +350,8 @@ const requisitosNaoFuncionais = [
       verificacao: 'Coberto por teste automatizado que erra a senha até o bloqueio e confere que o acesso é recusado mesmo com a senha certa durante o período, e por outro que envia quinze senhas erradas ao mesmo tempo e confere que só cinco são conferidas.' },
     { id: 'RNF014', nome: 'Limite de tentativas do código de verificação',
       prioridade: 'Essencial',
-      descricao: 'O código de confirmação de cadastro e o de recuperação de senha têm prazo de validade e número máximo de tentativas. Esgotado o limite, o código é invalidado e é preciso pedir outro. O limite vale também para palpites enviados ao mesmo tempo, e pedidos simultâneos de código geram um só.',
-      verificacao: 'Coberto por teste automatizado que esgota as tentativas e confere que o código correto deixa de ser aceito, e por testes que enviam palpites e pedidos de código em paralelo.' },
+      descricao: 'O código de confirmação de cadastro e o de recuperação de senha têm prazo de validade e número máximo de tentativas. Esgotado o limite, o código é invalidado e é preciso pedir outro. O limite vale também para palpites enviados ao mesmo tempo, e pedidos simultâneos de código geram um só. As rotas abertas — consulta do código de acesso do condomínio, cadastro, login, confirmação e recuperação de senha — têm ainda um limite de pedidos por origem (IP): sem ele, o código de acesso, de cerca de um milhão de combinações, podia ser adivinhado por um script, e cada cadastro novo disparava e-mails e SMS.',
+      verificacao: 'Coberto por teste automatizado que esgota as tentativas e confere que o código correto deixa de ser aceito, por testes que enviam palpites e pedidos de código em paralelo, e por testes que passam do limite por origem e recebem o aviso para aguardar.' },
     { id: 'RNF015', nome: 'Cabeçalhos de segurança e origem restrita',
       prioridade: 'Importante',
       descricao: 'As respostas trazem cabeçalhos que fecham portas que o navegador deixaria abertas: impedem adivinhação de tipo de conteúdo, exibição do sistema dentro de página de terceiros e vazamento do endereço da API ao seguir um link externo. Apenas as origens declaradas podem consumir a API.',
