@@ -752,9 +752,46 @@ const dicionario = [
         "obrigatorio": "Não",
         "chave": "FK",
         "descricao": "Síndico que inativou o espaço"
+      },
+      {
+        "coluna": "horario_abertura",
+        "tipo": "TIME",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Regra de uso: a partir de que horas o espaço pode ser reservado; vazio = sem regra"
+      },
+      {
+        "coluna": "horario_fechamento",
+        "tipo": "TIME",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Regra de uso: até que horas o espaço pode ser usado (ex.: 22h, pela lei do silêncio); posterior à abertura"
+      },
+      {
+        "coluna": "antecedencia_minima_dias",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Regra de uso: com quantos dias de antecedência, no mínimo, a reserva precisa ser feita"
+      },
+      {
+        "coluna": "duracao_maxima_horas",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Regra de uso: quantas horas cada reserva pode durar, no máximo"
+      },
+      {
+        "coluna": "limite_por_unidade",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Regra de uso: quantas reservas futuras deste espaço cada apartamento pode ter ao mesmo tempo"
       }
     ],
-    "regras": []
+    "regras": [
+      "CHECK ((horario_fechamento > horario_abertura))"
+    ]
   },
   {
     "nome": "leituras_comunicado",

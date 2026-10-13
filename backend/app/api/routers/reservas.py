@@ -8,7 +8,7 @@ from __future__ import annotations
 from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import and_, or_, select, update
+from sqlalchemy import and_, func, or_, select, update
 from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import exigir_condominio, exigir_papel, get_usuario_atual
@@ -22,6 +22,7 @@ from app.models.usuario import Usuario
 from app.schemas.comuns import Mensagem
 from app.schemas.condominio import (
     EspacoAtualizacao, EspacoEntrada, EspacoSaida, OcupacaoEntrada, OcupacaoSaida,
+    conferir_par_de_horarios,
 )
 from app.schemas.reserva import (
     AvaliacaoReserva, CancelamentoReserva, OcupacaoAgenda, ReservaEntrada, ReservaSaida,
@@ -108,6 +109,62 @@ def _encerrar_passadas(db: Session, condominio_id: int) -> None:
     db.commit()
 
 
+def _plural(n: int, singular: str, plural: str) -> str:
+    return f"{n} {singular if n == 1 else plural}"
+
+
+def _conferir_regras(db: Session, espaco: EspacoComum, morador: Usuario,
+                     dados: ReservaEntrada, hoje: date) -> None:
+    """As regras de uso que o síndico definiu para o espaço (vazio = sem a
+    regra). Roda com o espaço travado, então o limite por apartamento vale
+    também para dois pedidos feitos ao mesmo tempo."""
+    dias = espaco.antecedencia_minima_dias
+    if dias and dados.data < hoje + timedelta(days=dias):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(f"Este espaço precisa ser reservado com pelo menos "
+                    f"{_plural(dias, 'dia', 'dias')} de antecedência."),
+        )
+    abre, fecha = espaco.horario_abertura, espaco.horario_fechamento
+    if abre is not None and fecha is not None and (
+            dados.hora_inicio < abre or dados.hora_fim > fecha):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Este espaço funciona das {abre:%H:%M} às {fecha:%H:%M}.",
+        )
+    horas = espaco.duracao_maxima_horas
+    if horas:
+        minutos = ((dados.hora_fim.hour * 60 + dados.hora_fim.minute)
+                   - (dados.hora_inicio.hour * 60 + dados.hora_inicio.minute))
+        if minutos > horas * 60:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(f"Cada reserva deste espaço pode durar no máximo "
+                        f"{_plural(horas, 'hora', 'horas')}."),
+            )
+    limite = espaco.limite_por_unidade
+    if limite and morador.unidade_id is not None:
+        # Conta o apartamento inteiro: a filha não reserva de novo o salão
+        # que a mãe já reservou.
+        do_apartamento = db.scalar(
+            select(func.count(Reserva.id))
+            .join(Usuario, Usuario.id == Reserva.morador_id)
+            .where(
+                Reserva.espaco_id == espaco.id,
+                Reserva.status.in_(STATUS_QUE_OCUPAM),
+                Reserva.data >= hoje,
+                Usuario.unidade_id == morador.unidade_id,
+            )
+        ) or 0
+        if do_apartamento >= limite:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=(f"Seu apartamento já tem "
+                        f"{_plural(do_apartamento, 'reserva futura', 'reservas futuras')} "
+                        f"deste espaço; o limite é {limite} por apartamento."),
+            )
+
+
 def _para_saida(reserva: Reserva) -> ReservaSaida:
     return ReservaSaida(
         id=reserva.id,
@@ -172,6 +229,9 @@ def cadastrar_espaco(
 ROTULOS_ESPACO = {
     "nome": "o nome", "descricao": "a descrição", "capacidade": "a capacidade",
     "reservavel": "o tipo", "uso_livre": "o tipo", "em_manutencao": "a manutenção",
+    "horario_abertura": "o horário", "horario_fechamento": "o horário",
+    "antecedencia_minima_dias": "a antecedência", "duracao_maxima_horas": "a duração máxima",
+    "limite_por_unidade": "o limite por apartamento",
 }
 
 
@@ -198,11 +258,21 @@ def editar_espaco(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="O espaço precisa ser reservável ou de uso livre.",
         )
+    erro = conferir_par_de_horarios(novos.get("horario_abertura", espaco.horario_abertura),
+                                    novos.get("horario_fechamento", espaco.horario_fechamento))
+    abre = novos.get("horario_abertura", espaco.horario_abertura)
+    fecha = novos.get("horario_fechamento", espaco.horario_fechamento)
+    if not erro and abre is not None and fecha <= abre:
+        erro = "O horário de fechamento precisa ser depois do de abertura."
+    if erro:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=erro)
     mudaram = {c: v for c, v in novos.items() if getattr(espaco, c) != v}
-    # "reservavel" e "uso_livre" mudam juntos quando o tipo troca: um rótulo só.
+    # Campos que mudam juntos (o tipo; o horário): um rótulo só.
     rotulos = dict(ROTULOS_ESPACO)
     if "reservavel" in mudaram and "uso_livre" in mudaram:
         rotulos.pop("uso_livre")
+    if "horario_abertura" in mudaram and "horario_fechamento" in mudaram:
+        rotulos.pop("horario_fechamento")
     descricao = registro.campos_alterados(espaco, mudaram, rotulos)
     for campo, valor in mudaram.items():
         setattr(espaco, campo, valor)
@@ -474,6 +544,7 @@ def solicitar_reserva(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Não é possível reservar uma data passada."
         )
+    _conferir_regras(db, espaco, morador, dados, agora.date())
     if espaco.capacidade and dados.pessoas_estimadas and dados.pessoas_estimadas > espaco.capacidade:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

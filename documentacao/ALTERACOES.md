@@ -15,10 +15,10 @@ Esta versão percorre essas situações, uma a uma.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | RF017: o síndico cancela a reserva já aprovada, com motivo, e o morador vê o motivo da recusa ou do cancelamento |
-| 14 a 17 | reservas ganha cancelada_por_id, cancelada_em e motivo_cancelamento — agora 258 atributos e 51 relacionamentos |
+| 9 Requisitos funcionais | RF017: o síndico cancela a reserva já aprovada, com motivo, e o morador vê o motivo da recusa ou do cancelamento. RF015 e RF016: regras de uso de cada espaço (horário, antecedência, duração, limite por apartamento) |
+| 14 a 17 | reservas ganha cancelada_por_id, cancelada_em e motivo_cancelamento; espacos_comuns ganha horario_abertura, horario_fechamento, antecedencia_minima_dias, duracao_maxima_horas e limite_por_unidade — agora 263 atributos e 51 relacionamentos |
 | 21 API REST | 110 endpoints: o síndico cancela uma reserva aprovada |
-| 23 Testes | 445 casos no servidor e 96 testes de interface |
+| 23 Testes | 458 casos no servidor e 97 testes de interface |
 
 **Situações tratadas.**
 - O síndico precisa cancelar uma reserva já aprovada (vazamento no salão,
@@ -27,6 +27,13 @@ Esta versão percorre essas situações, uma a uma.
   com um motivo, o morador recebe por e-mail e vê na tela, e o horário
   fica livre. Fica registrado quem cancelou e quando — o morador, o
   síndico, ou a inativação do espaço ou do cadastro.
+- Cada espaço tem as suas regras: o salão funciona até as 22h (lei do
+  silêncio), precisa ser reservado com dois dias de antecedência, a
+  churrasqueira vale por no máximo seis horas, cada apartamento pode ter
+  uma reserva futura do salão por vez. Nada disso existia: qualquer
+  horário passava. Agora o síndico define essas regras, todas opcionais,
+  o morador as vê ao escolher o espaço, e a API as confere no pedido. O
+  limite conta o apartamento inteiro, e não só quem pede.
 
 **Erros achados.**
 - O morador nunca via o motivo de uma recusa: a tela só o mostrava nas

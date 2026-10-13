@@ -87,6 +87,33 @@
           <label for="eDescricao">Descrição</label>
           <textarea id="eDescricao" maxlength="2000" rows="2" placeholder="Ex: Com cozinha de apoio e som"></textarea>
         </div>
+        <fieldset class="regras-espaco" id="regrasEspaco">
+          <legend>Regras de uso (opcional)</legend>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="eAbre">Abre às</label>
+              <input type="time" id="eAbre">
+            </div>
+            <div class="form-group">
+              <label for="eFecha">Fecha às</label>
+              <input type="time" id="eFecha">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="eAntecedencia">Antecedência mínima (dias)</label>
+              <input type="number" id="eAntecedencia" min="0" max="180" step="1" placeholder="Ex: 2">
+            </div>
+            <div class="form-group">
+              <label for="eDuracao">Duração máxima (horas)</label>
+              <input type="number" id="eDuracao" min="1" max="24" step="1" placeholder="Ex: 6">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="eLimite">Reservas futuras por apartamento</label>
+            <input type="number" id="eLimite" min="1" max="50" step="1" placeholder="Ex: 1 (vazio = sem limite)">
+          </div>
+        </fieldset>
         <label class="permissao-item" for="eManutencao">
           <input type="checkbox" id="eManutencao"> Em manutenção (não aceita novas reservas)
         </label>
@@ -300,8 +327,30 @@
       campo('eCapacidade').value = e.capacidade || '';
       campo('eDescricao').value = e.descricao || '';
       campo('eManutencao').checked = !!e.em_manutencao;
+      campo('eAbre').value = (e.horario_abertura || '').slice(0, 5);
+      campo('eFecha').value = (e.horario_fechamento || '').slice(0, 5);
+      campo('eAntecedencia').value = e.antecedencia_minima_dias != null ? e.antecedencia_minima_dias : '';
+      campo('eDuracao').value = e.duracao_maxima_horas || '';
+      campo('eLimite').value = e.limite_por_unidade || '';
     }
+    mostrarRegras();
     modal.abrir();
+  }
+  // As regras só valem para o espaço reservável: na piscina não há reserva.
+  function mostrarRegras() {
+    campo('regrasEspaco').hidden = campo('eTipo').value === 'uso_livre';
+  }
+  campo('eTipo').addEventListener('change', mostrarRegras);
+
+  function textoRegras(e) {
+    var partes = [];
+    if (e.horario_abertura && e.horario_fechamento) {
+      partes.push('das ' + hora(e.horario_abertura) + ' às ' + hora(e.horario_fechamento));
+    }
+    if (e.antecedencia_minima_dias) partes.push(e.antecedencia_minima_dias + ' dia(s) de antecedência');
+    if (e.duracao_maxima_horas) partes.push('até ' + e.duracao_maxima_horas + 'h por reserva');
+    if (e.limite_por_unidade) partes.push(e.limite_por_unidade + ' reserva(s) futura(s) por apto');
+    return partes.join(' · ');
   }
 
   function cartaoEspaco(e) {
@@ -317,8 +366,10 @@
     selo.textContent = e.inativo ? 'Inativo' : e.em_manutencao ? 'Em manutenção' : 'Disponível';
     titulo.appendChild(selo);
     var sub = document.createElement('p');
+    var regras = e.reservavel ? textoRegras(e) : '';
     sub.textContent = (e.reservavel ? 'Reservável' : 'Uso livre') +
       (e.capacidade ? ' · até ' + e.capacidade + ' pessoas' : '') +
+      (regras ? ' · ' + regras : '') +
       (e.descricao ? ' · ' + e.descricao : '');
     var autoria = document.createElement('small');
     autoria.className = 'lista-autoria';
@@ -389,13 +440,33 @@
     }
     var capacidade = campo('eCapacidade').value;
     var livre = campo('eTipo').value === 'uso_livre';
+    function numero(id) {
+      var v = campo(id).value;
+      return livre || v === '' ? null : parseInt(v, 10);
+    }
+    var abre = livre ? '' : campo('eAbre').value;
+    var fecha = livre ? '' : campo('eFecha').value;
+    if (!!abre !== !!fecha) {
+      modal.erro('Informe o horário de abertura e o de fechamento, ou deixe os dois vazios.');
+      return null;
+    }
+    if (abre && fecha <= abre) {
+      modal.erro('O horário de fechamento precisa ser depois do de abertura.');
+      return null;
+    }
     var corpo = {
       nome: nome,
       descricao: campo('eDescricao').value.trim() || null,
       capacidade: capacidade === '' ? 0 : parseInt(capacidade, 10),
       reservavel: !livre,
       uso_livre: livre,
-      em_manutencao: campo('eManutencao').checked
+      em_manutencao: campo('eManutencao').checked,
+      // Vazio tira a regra: vai como null de propósito.
+      horario_abertura: abre || null,
+      horario_fechamento: fecha || null,
+      antecedencia_minima_dias: numero('eAntecedencia'),
+      duracao_maxima_horas: numero('eDuracao'),
+      limite_por_unidade: numero('eLimite')
     };
     return editandoId
       ? api.put('/espacos/' + editandoId, corpo)

@@ -30,6 +30,9 @@ if TYPE_CHECKING:
 
 class EspacoComum(Base, TimestampMixin, InativacaoMixin):
     __tablename__ = "espacos_comuns"
+    __table_args__ = (
+        CheckConstraint("horario_fechamento > horario_abertura", name="ck_espaco_horario"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     condominio_id: Mapped[int] = mapped_column(
@@ -46,6 +49,16 @@ class EspacoComum(Base, TimestampMixin, InativacaoMixin):
     uso_livre: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     em_manutencao: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+    # Regras de uso, definidas pelo síndico; vazio = sem a regra. Conferidas
+    # quando o morador pede a reserva: o salão que funciona até as 22h, a
+    # antecedência mínima, a duração máxima e quantas reservas futuras
+    # deste espaço cada apartamento pode ter ao mesmo tempo.
+    horario_abertura: Mapped[time | None] = mapped_column(Time)
+    horario_fechamento: Mapped[time | None] = mapped_column(Time)
+    antecedencia_minima_dias: Mapped[int | None] = mapped_column(Integer)
+    duracao_maxima_horas: Mapped[int | None] = mapped_column(Integer)
+    limite_por_unidade: Mapped[int | None] = mapped_column(Integer)
 
     reservas: Mapped[list["Reserva"]] = relationship(
         back_populates="espaco", cascade="all, delete-orphan"

@@ -66,10 +66,11 @@
       <form id="formReserva" novalidate>
         <div class="form-group">
           <label for="reserv_espacoDesejado">Espaço desejado</label>
-          <select id="reserv_espacoDesejado" required>
+          <select id="reserv_espacoDesejado" required aria-describedby="regrasEspaco">
             <option value="" disabled selected>Selecione o espaço</option>
           </select>
         </div>
+        <p class="regras-aviso" id="regrasEspaco" role="status"></p>
         <div class="form-row">
           <div class="form-group"><label for="reserv_data">Data</label><input id="reserv_data" type="date" required></div>
           <div class="form-group"><label for="reserv_horarioDeInicio">Horário de início</label><input id="reserv_horarioDeInicio" type="time" required></div>
@@ -234,6 +235,26 @@
         });
     }).catch(function(e) { campo('estadoEspacos').textContent = e.message; });
   }
+
+  // ── Regras do espaço escolhido, antes de pedir ─────────────────
+  function mostrarRegrasEspaco() {
+    var e = espacos.filter(function(x) { return String(x.id) === campo('reserv_espacoDesejado').value; })[0];
+    var partes = [];
+    if (e && e.horario_abertura && e.horario_fechamento) {
+      partes.push('funciona das ' + hora(e.horario_abertura) + ' às ' + hora(e.horario_fechamento));
+    }
+    if (e && e.antecedencia_minima_dias) {
+      partes.push('reserve com ' + e.antecedencia_minima_dias +
+                  (e.antecedencia_minima_dias === 1 ? ' dia' : ' dias') + ' de antecedência');
+    }
+    if (e && e.duracao_maxima_horas) partes.push('até ' + e.duracao_maxima_horas + 'h por reserva');
+    if (e && e.limite_por_unidade) {
+      partes.push(e.limite_por_unidade + (e.limite_por_unidade === 1 ? ' reserva futura' : ' reservas futuras') +
+                  ' por apartamento');
+    }
+    campo('regrasEspaco').textContent = partes.length ? 'Regras deste espaço: ' + partes.join(' · ') + '.' : '';
+  }
+  campo('reserv_espacoDesejado').addEventListener('change', mostrarRegrasEspaco);
 
   // ── Agenda: mostra se o horário já está ocupado, sem dizer por quem ─
   function conferirAgenda() {

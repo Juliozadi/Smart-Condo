@@ -213,6 +213,12 @@ def criar(db) -> dict:
         )
         db.add(e)
         espacos[nome] = e
+    # Regras de uso do salão, como num condomínio de verdade: até as 23h,
+    # reserva com dois dias de antecedência, uma futura por apartamento.
+    salao = espacos["Salão de Festas"]
+    salao.horario_abertura, salao.horario_fechamento = _hora(8), _hora(23)
+    salao.antecedencia_minima_dias = 2
+    salao.limite_por_unidade = 1
     db.flush()
 
     # ── Ocupação atual das áreas de uso livre ─────────────────────────

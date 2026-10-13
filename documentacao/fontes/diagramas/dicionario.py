@@ -106,6 +106,11 @@ DESCRICOES = {
     "espacos_comuns.reservavel": "Se o espaço precisa ser reservado antes do uso",
     "espacos_comuns.uso_livre": "Se o espaço pode ser usado sem reserva; nesse caso a ocupação é acompanhada pela contagem da portaria",
     "espacos_comuns.em_manutencao": "Se o espaço está temporariamente indisponível",
+    "espacos_comuns.horario_abertura": "Regra de uso: a partir de que horas o espaço pode ser reservado; vazio = sem regra",
+    "espacos_comuns.horario_fechamento": "Regra de uso: até que horas o espaço pode ser usado (ex.: 22h, pela lei do silêncio); posterior à abertura",
+    "espacos_comuns.antecedencia_minima_dias": "Regra de uso: com quantos dias de antecedência, no mínimo, a reserva precisa ser feita",
+    "espacos_comuns.duracao_maxima_horas": "Regra de uso: quantas horas cada reserva pode durar, no máximo",
+    "espacos_comuns.limite_por_unidade": "Regra de uso: quantas reservas futuras deste espaço cada apartamento pode ter ao mesmo tempo",
 
     "reservas.data": "Dia da reserva",
     "reservas.hora_inicio": "Hora de início",

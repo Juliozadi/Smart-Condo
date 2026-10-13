@@ -99,13 +99,13 @@ const requisitosFuncionais = [
   { id: 'RF015', nome: 'Cadastrar espaço comum',
     atores: 'Síndico', prioridade: 'Importante',
     descricao: 'O sistema permite cadastrar os espaços do condomínio — salão de festas, churrasqueira, academia, piscina — indicando capacidade, se exigem reserva e se exigem aprovação do síndico.',
-    entradas: 'O síndico informa nome, tipo (reservável ou de uso livre), capacidade e descrição, e pode marcar o espaço como em manutenção. Depois, pela mesma tela, edita, inativa ou reativa o espaço.',
+    entradas: 'O síndico informa nome, tipo (reservável ou de uso livre), capacidade e descrição, e pode marcar o espaço como em manutenção. No espaço reservável, define também as regras de uso, todas opcionais: horário de funcionamento, antecedência mínima, duração máxima de cada reserva e quantas reservas futuras cada apartamento pode ter. Depois, pela mesma tela, edita, inativa ou reativa o espaço.',
     saidas: 'O espaço passa a aparecer para os moradores, na agenda de reservas ou no painel de ocupação, conforme as regras definidas. Em manutenção, não aceita novas reservas. Nada é apagado: inativado, o espaço sai das telas, as reservas de hoje em diante são canceladas e o histórico fica guardado; reativado, volta a aparecer. Cada alteração registra quem a fez.' },
 
   { id: 'RF016', nome: 'Solicitar reserva de espaço',
     atores: 'Morador', prioridade: 'Essencial',
     descricao: 'O sistema permite ao morador reservar um espaço comum para uma data e faixa de horário.',
-    entradas: 'O espaço deve exigir reserva, a hora final deve ser posterior à inicial e não pode haver outra reserva ativa no mesmo espaço e horário. A data vai de hoje — a partir do horário atual — até 180 dias à frente.',
+    entradas: 'O espaço deve exigir reserva, a hora final deve ser posterior à inicial e não pode haver outra reserva ativa no mesmo espaço e horário. A data vai de hoje — a partir do horário atual — até 180 dias à frente. Valem também as regras de uso que o síndico definiu para o espaço, mostradas ao morador quando ele o escolhe; o limite de reservas futuras conta todos os moradores do mesmo apartamento.',
     saidas: 'A reserva é criada como "pendente" quando o espaço exige aprovação, ou já "aprovada" quando não exige. Choque de horário é recusado com a explicação do conflito.' },
 
   { id: 'RF017', nome: 'Aprovar ou recusar reserva',

@@ -329,7 +329,13 @@ CREATE TABLE espacos_comuns (
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
     inativo_em timestamp with time zone,
-    inativado_por_id integer
+    inativado_por_id integer,
+    horario_abertura time without time zone,
+    horario_fechamento time without time zone,
+    antecedencia_minima_dias integer,
+    duracao_maxima_horas integer,
+    limite_por_unidade integer,
+    CONSTRAINT ck_espaco_horario CHECK ((horario_fechamento > horario_abertura))
 );
 CREATE SEQUENCE espacos_comuns_id_seq
     AS integer
