@@ -15,10 +15,11 @@ Esta versão percorre essas situações, uma a uma.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | RF017: o síndico cancela a reserva já aprovada, com motivo, e o morador vê o motivo da recusa ou do cancelamento. RF015 e RF016: regras de uso de cada espaço (horário, antecedência, duração, limite por apartamento) |
-| 14 a 17 | reservas ganha cancelada_por_id, cancelada_em e motivo_cancelamento; espacos_comuns ganha horario_abertura, horario_fechamento, antecedencia_minima_dias, duracao_maxima_horas e limite_por_unidade — agora 263 atributos e 51 relacionamentos |
-| 21 API REST | 110 endpoints: o síndico cancela uma reserva aprovada |
-| 23 Testes | 458 casos no servidor e 97 testes de interface |
+| 9 Requisitos funcionais | RF017: o síndico cancela a reserva já aprovada, com motivo, e o morador vê o motivo da recusa ou do cancelamento. RF015 e RF016: regras de uso de cada espaço (horário, antecedência, duração, limite por apartamento). Novo RF046: o morador autoriza visitante com antecedência, e a portaria registra a entrada sem esperar resposta |
+| 11 Diagrama de caso de uso | Novo caso do morador: autorizar visitante antes — agora 28 casos de uso |
+| 14 a 17 | reservas ganha cancelada_por_id, cancelada_em e motivo_cancelamento; espacos_comuns ganha horario_abertura, horario_fechamento, antecedencia_minima_dias, duracao_maxima_horas e limite_por_unidade; nova tabela autorizacoes_visita, e visitantes ganha autorizacao_id — agora 23 entidades, 278 atributos e 55 relacionamentos |
+| 21 API REST | 113 endpoints: o síndico cancela uma reserva aprovada; o morador autoriza, lista e revoga visitantes com antecedência |
+| 23 Testes | 482 casos no servidor e 98 testes de interface |
 
 **Situações tratadas.**
 - O síndico precisa cancelar uma reserva já aprovada (vazamento no salão,
@@ -34,6 +35,17 @@ Esta versão percorre essas situações, uma a uma.
   horário passava. Agora o síndico define essas regras, todas opcionais,
   o morador as vê ao escolher o espaço, e a API as confere no pedido. O
   limite conta o apartamento inteiro, e não só quem pede.
+- A diarista que vem toda terça e sexta, o pedreiro da reforma, os
+  convidados do aniversário: a portaria interfonava a cada entrada, e a
+  pessoa esperava a resposta de um morador que podia estar no trabalho —
+  depois de duas horas sem resposta, ficava do lado de fora. Agora o
+  morador deixa a entrada autorizada pela tela nova "Visitantes", com o
+  período, os dias da semana e, se quiser, o CPF; a portaria vê quem está
+  autorizado para hoje, digita o CPF do documento apresentado e registra
+  a entrada, e o morador recebe o aviso. A portaria vê só o meio do CPF
+  autorizado, para não bastar copiá-lo da tela; a autorização de quem se
+  mudou deixa de valer sozinha; e duas portarias registrando a mesma
+  pessoa ao mesmo tempo não a colocam "dentro" duas vezes.
 
 **Erros achados.**
 - O morador nunca via o motivo de uma recusa: a tela só o mostrava nas

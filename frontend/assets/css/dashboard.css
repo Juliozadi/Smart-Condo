@@ -2234,3 +2234,24 @@ body.tema-escuro .chat-avatar.sindico, body.tema-escuro .chat-avatar.porteiro { 
 }
 .regras-espaco[hidden] { display: none; }
 .regras-aviso { font-size: 12px; color: var(--muted); margin: -4px 0 10px; }
+
+/* Dias da semana da autorização de visita (tela do morador) */
+.dias-semana { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 10px; }
+.dias-semana label {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-md);
+  font-size: 13px; font-weight: 600; color: var(--text); background: var(--surface);
+  cursor: pointer;
+}
+.dias-semana label:has(input:checked) { border-color: var(--primary-texto); background: var(--surface-2); }
+.dias-semana input { accent-color: var(--primary); width: 15px; height: 15px; margin: 0; }
+.dias-semana .regras-aviso { flex-basis: 100%; margin: 2px 0 0; }
+
+/* Autorizado pelo morador, na portaria */
+.aviso-autorizacao {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  border: 1.5px solid var(--primary-texto); border-radius: var(--radius-md);
+  padding: 10px 14px; margin-bottom: 12px; font-size: 13px; color: var(--text);
+  background: var(--surface-2);
+}
+.aviso-autorizacao[hidden] { display: none; }

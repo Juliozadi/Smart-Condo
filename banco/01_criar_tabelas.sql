@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS
     ocorrencias,
     encomendas,
     visitantes,
+    autorizacoes_visita,
     leituras_comunicado,
     comunicados,
     pagamentos,
@@ -536,7 +537,8 @@ CREATE TABLE visitantes (
     confirmado_por_id integer,
     confirmado_em timestamp with time zone,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
-    atualizado_em timestamp with time zone DEFAULT now() NOT NULL
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    autorizacao_id integer
 );
 CREATE SEQUENCE visitantes_id_seq
     AS integer
@@ -549,6 +551,37 @@ ALTER SEQUENCE visitantes_id_seq OWNED BY visitantes.id;
 ALTER TABLE ONLY visitantes ALTER COLUMN id SET DEFAULT nextval('visitantes_id_seq'::regclass);
 ALTER TABLE ONLY visitantes
     ADD CONSTRAINT visitantes_pkey PRIMARY KEY (id);
+
+-- Entrada liberada pelo morador antes de o visitante chegar (diarista,
+-- prestador, convidados). Revogar é inativar; nada é apagado.
+CREATE TABLE autorizacoes_visita (
+    id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    autorizado_por_id integer,
+    nome character varying(160) NOT NULL,
+    documento character varying(20),
+    tipo character varying(60) NOT NULL,
+    valida_de date NOT NULL,
+    valida_ate date NOT NULL,
+    dias_semana character varying(7),
+    observacao character varying(300),
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    inativo_em timestamp with time zone,
+    inativado_por_id integer,
+    CONSTRAINT ck_autorizacao_periodo CHECK ((valida_ate >= valida_de))
+);
+CREATE SEQUENCE autorizacoes_visita_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE autorizacoes_visita_id_seq OWNED BY autorizacoes_visita.id;
+ALTER TABLE ONLY autorizacoes_visita ALTER COLUMN id SET DEFAULT nextval('autorizacoes_visita_id_seq'::regclass);
+ALTER TABLE ONLY autorizacoes_visita
+    ADD CONSTRAINT autorizacoes_visita_pkey PRIMARY KEY (id);
 
 CREATE TABLE encomendas (
     id integer NOT NULL,
@@ -900,6 +933,18 @@ ALTER TABLE ONLY usuarios
 ALTER TABLE ONLY usuarios
     ADD CONSTRAINT fk_usuarios_avaliado_por_id_usuarios FOREIGN KEY (avaliado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
 
+ALTER TABLE ONLY autorizacoes_visita
+    ADD CONSTRAINT autorizacoes_visita_autorizado_por_id_fkey FOREIGN KEY (autorizado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY autorizacoes_visita
+    ADD CONSTRAINT autorizacoes_visita_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY autorizacoes_visita
+    ADD CONSTRAINT autorizacoes_visita_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY visitantes
+    ADD CONSTRAINT visitantes_autorizacao_id_fkey FOREIGN KEY (autorizacao_id) REFERENCES autorizacoes_visita(id) ON DELETE SET NULL;
+
 ALTER TABLE ONLY visitantes
     ADD CONSTRAINT visitantes_confirmado_por_id_fkey FOREIGN KEY (confirmado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
 
@@ -1027,6 +1072,12 @@ CREATE INDEX ix_unidades_condominio_id ON unidades USING btree (condominio_id);
 CREATE INDEX ix_usuarios_condominio_id ON usuarios USING btree (condominio_id);
 
 CREATE INDEX ix_usuarios_unidade_id ON usuarios USING btree (unidade_id);
+
+CREATE INDEX ix_autorizacoes_visita_autorizado_por_id ON autorizacoes_visita USING btree (autorizado_por_id);
+
+CREATE INDEX ix_autorizacoes_visita_unidade_id ON autorizacoes_visita USING btree (unidade_id);
+
+CREATE INDEX ix_visitantes_autorizacao_id ON visitantes USING btree (autorizacao_id);
 
 CREATE INDEX ix_visitantes_registrado_por_id ON visitantes USING btree (registrado_por_id);
 

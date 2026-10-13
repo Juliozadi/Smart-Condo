@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Visitantes Autorizados</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-mobile">
+
+  <header class="app-bar">
+    <div class="app-bar-inner">
+      <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
+        <span class="brand-name">Smart<strong>Condo</strong></span>
+      </a>
+      <div class="app-bar-right">
+        <a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/user.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">João Silva</span><span class="profile-role">Morador</span></a>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-wrapper">
+
+    <a href="dashboard.html" class="dash-back">
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Morador
+    </a>
+
+    <div class="dash-greeting">
+      <p class="greeting-sub">Apto 204 — João Silva</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/id-card.svg" width="26" height="26" alt=""> Visitantes Autorizados</h1>
+      <p class="greeting-condo">Libere a entrada antes de a visita chegar</p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card teal"><span class="stat-value" id="totVigor">—</span><span class="stat-label"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="">Em vigor</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totHoje">—</span><span class="stat-label"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt="">Valem hoje</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totDentro">—</span><span class="stat-label"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">No cond.</span></div>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt=""> Autorizar Visitante</h2>
+    <div class="form-card">
+      <h3><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt=""> Quem pode entrar</h3>
+      <p class="regras-aviso">A diarista, o prestador da reforma, os convidados da festa: com a
+        autorização, a portaria registra a entrada sem precisar chamar você, e você recebe um aviso
+        quando a pessoa entrar.</p>
+      <form id="formAutorizacao" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="aut_nome">Nome completo</label>
+            <input id="aut_nome" type="text" required minlength="3" maxlength="160" autocomplete="off" placeholder="Nome de quem vai entrar">
+          </div>
+          <div class="form-group">
+            <label for="aut_tipo">Tipo</label>
+            <select id="aut_tipo" required>
+              <option>Diarista</option>
+              <option>Prestador de serviço</option>
+              <option>Familiar</option>
+              <option>Convidado</option>
+              <option>Cuidador(a)</option>
+              <option>Outro</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="aut_documento">CPF (opcional)</label>
+          <input id="aut_documento" type="text" class="mask-cpf" autocomplete="off" placeholder="000.000.000-00" aria-describedby="dicaDocumento">
+          <p class="regras-aviso" id="dicaDocumento">Com o CPF, a portaria só libera quem apresentar esse documento.</p>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="aut_de">Vale a partir de</label>
+            <input id="aut_de" type="date" required>
+          </div>
+          <div class="form-group">
+            <label for="aut_ate">Até</label>
+            <input id="aut_ate" type="date" required>
+          </div>
+        </div>
+        <fieldset class="regras-espaco dias-semana" id="aut_dias">
+          <legend>Só nestes dias (opcional)</legend>
+          <label><input type="checkbox" name="aut_dia" value="1"> Seg</label>
+          <label><input type="checkbox" name="aut_dia" value="2"> Ter</label>
+          <label><input type="checkbox" name="aut_dia" value="3"> Qua</label>
+          <label><input type="checkbox" name="aut_dia" value="4"> Qui</label>
+          <label><input type="checkbox" name="aut_dia" value="5"> Sex</label>
+          <label><input type="checkbox" name="aut_dia" value="6"> Sáb</label>
+          <label><input type="checkbox" name="aut_dia" value="7"> Dom</label>
+          <p class="regras-aviso">Nenhum marcado: vale todos os dias do período.</p>
+        </fieldset>
+        <div class="form-group">
+          <label for="aut_obs">Observação para a portaria (opcional)</label>
+          <input id="aut_obs" type="text" maxlength="300" autocomplete="off" placeholder="Ex.: chega por volta das 8h, vem de moto">
+        </div>
+        <p class="form-erro" id="erroAutorizacao" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;">Autorizar Entrada</button>
+      </form>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt=""> Autorizações do Apartamento</h2>
+    <div class="list-items" id="listaAutorizacoes" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoAutorizacoes">Carregando…</p>
+
+  </main>
+
+
+<script src="../../assets/js/validation.js"></script>
+<script>
+/* Visitantes autorizados com antecedência: o morador libera a entrada e a
+   portaria registra sem esperar a resposta dele. Aparecem as autorizações
+   de quem mora no apartamento agora, inclusive as que ainda vão começar. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api;
+  var usuario = api.protegerPagina('morador');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+  var DIAS = ['', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'];
+
+  function doisDigitos(n) { return ('0' + n).slice(-2); }
+  // A data de hoje no relógio de quem usa a tela (não em UTC).
+  function hojeIso(somaDias) {
+    var d = new Date();
+    d.setDate(d.getDate() + (somaDias || 0));
+    return d.getFullYear() + '-' + doisDigitos(d.getMonth() + 1) + '-' + doisDigitos(d.getDate());
+  }
+  function dataCurta(iso) {
+    var p = (iso || '').split('-');
+    return p.length === 3 ? p[2] + '/' + p[1] : '';
+  }
+  function cpfLegivel(d) {
+    return d && d.length === 11
+      ? d.slice(0, 3) + '.' + d.slice(3, 6) + '.' + d.slice(6, 9) + '-' + d.slice(9) : d;
+  }
+
+  function situacao(a) {
+    if (a.ja_dentro) return ['No condomínio', 'badge-ok'];
+    if (a.vale_hoje) return ['Vale hoje', 'badge-blue'];
+    if (a.valida_de > hojeIso()) return ['A partir de ' + dataCurta(a.valida_de), 'badge-pending'];
+    return ['Não vale hoje', 'badge-neutral'];
+  }
+
+  function cartao(a) {
+    var item = document.createElement('div');
+    item.className = 'list-item';
+
+    var icone = document.createElement('div');
+    icone.className = 'card-icon icon-teal';
+    var img = document.createElement('img');
+    img.src = '../../assets/img/icons/id-card.svg';
+    img.width = 16; img.height = 16; img.alt = '';
+    icone.appendChild(img);
+
+    var info = document.createElement('div');
+    info.className = 'list-info';
+    var titulo = document.createElement('h3');
+    titulo.textContent = a.nome;
+    var sub = document.createElement('p');
+    var periodo = a.valida_de === a.valida_ate
+      ? 'Em ' + dataCurta(a.valida_de)
+      : dataCurta(a.valida_de) + ' a ' + dataCurta(a.valida_ate);
+    var partes = [a.tipo, periodo];
+    if (a.dias_semana) partes.push(a.dias_semana.map(function(d) { return DIAS[d]; }).join(', '));
+    if (a.documento) partes.push('CPF ' + cpfLegivel(a.documento));
+    sub.textContent = partes.join(' · ');
+    info.appendChild(titulo);
+    info.appendChild(sub);
+    if (a.observacao) {
+      var obs = document.createElement('p');
+      obs.className = 'ocorrencia-resposta';
+      obs.textContent = a.observacao;
+      info.appendChild(obs);
+    }
+    if (a.autorizado_por_nome) {
+      var autor = document.createElement('p');
+      autor.className = 'comunicado-autor';
+      autor.textContent = 'Autorizada por ' + a.autorizado_por_nome;
+      info.appendChild(autor);
+    }
+
+    var s = situacao(a);
+    var selo = document.createElement('span');
+    selo.className = 'badge ' + s[1];
+    selo.textContent = s[0];
+
+    var revogar = document.createElement('button');
+    revogar.type = 'button';
+    revogar.className = 'contato-btn';
+    revogar.textContent = 'Revogar';
+    revogar.setAttribute('aria-label', 'Revogar a autorização de ' + a.nome);
+    revogar.addEventListener('click', function() {
+      if (!confirm('Revogar a autorização de ' + a.nome + '? A portaria deixa de liberar a entrada.')) return;
+      revogar.disabled = true;
+      api.remover('/portaria/autorizacoes/' + a.id)
+        .then(carregar)
+        .catch(function(e) { revogar.disabled = false; alert(e.message); });
+    });
+
+    item.appendChild(icone);
+    item.appendChild(info);
+    item.appendChild(revogar);
+    item.appendChild(selo);
+    return item;
+  }
+
+  function carregar() {
+    campo('estadoAutorizacoes').textContent = 'Carregando…';
+    return api.get('/portaria/autorizacoes')
+      .then(function(lista) {
+        campo('totVigor').textContent = lista.length;
+        campo('totHoje').textContent = lista.filter(function(a) { return a.vale_hoje; }).length;
+        campo('totDentro').textContent = lista.filter(function(a) { return a.ja_dentro; }).length;
+        var caixa = campo('listaAutorizacoes');
+        caixa.innerHTML = '';
+        campo('estadoAutorizacoes').textContent = lista.length ? '' :
+          'Nenhuma autorização em vigor. Quem chegar sem autorização espera a sua confirmação.';
+        lista.forEach(function(a) { caixa.appendChild(cartao(a)); });
+      })
+      .catch(function(e) { campo('estadoAutorizacoes').textContent = e.message; });
+  }
+
+  function prepararDatas() {
+    campo('aut_de').min = hojeIso();
+    campo('aut_de').value = hojeIso();
+    campo('aut_ate').min = hojeIso();
+    campo('aut_ate').value = hojeIso();
+  }
+  campo('aut_de').addEventListener('change', function() {
+    campo('aut_ate').min = this.value || hojeIso();
+    if (campo('aut_ate').value < this.value) campo('aut_ate').value = this.value;
+  });
+
+  campo('formAutorizacao').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('erroAutorizacao');
+    erro.className = 'form-erro';
+    erro.textContent = '';
+
+    var nome = campo('aut_nome').value.trim();
+    var documento = campo('aut_documento').value.trim();
+    var de = campo('aut_de').value, ate = campo('aut_ate').value;
+    var dias = Array.prototype.map.call(
+      document.querySelectorAll('input[name=aut_dia]:checked'), function(c) { return +c.value; });
+
+    if (nome.length < 3) { erro.textContent = 'Escreva o nome de quem vai entrar.'; return; }
+    if (documento && !validarCPF(documento)) { erro.textContent = 'O CPF informado não é válido.'; return; }
+    if (!de || !ate) { erro.textContent = 'Informe o período da autorização.'; return; }
+    if (de < hojeIso()) { erro.textContent = 'A autorização não pode começar numa data passada.'; return; }
+    if (ate < de) { erro.textContent = 'A data final não pode ser antes da data inicial.'; return; }
+
+    var corpo = {
+      nome: nome, tipo: campo('aut_tipo').value, documento: documento || null,
+      valida_de: de, valida_ate: ate, dias_semana: dias.length ? dias : null,
+      observacao: campo('aut_obs').value.trim() || null
+    };
+
+    var botao = this.querySelector('button[type=submit]');
+    var texto = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = 'Enviando…';
+    api.post('/portaria/autorizacoes', corpo)
+      .then(function(a) {
+        campo('formAutorizacao').reset();
+        prepararDatas();
+        erro.className = 'form-erro sucesso';
+        erro.textContent = 'Entrada autorizada. A portaria já vê ' + a.nome +
+          (a.vale_hoje ? ' na lista de hoje.' : ' a partir de ' + dataCurta(a.valida_de) + '.');
+        return carregar();
+      })
+      .catch(function(e) { erro.textContent = e.message; })
+      .then(function() { botao.disabled = false; botao.textContent = texto; });
+  });
+
+  var unidade = usuario.unidade
+    ? (usuario.unidade.bloco && usuario.unidade.bloco !== 'unico' ? usuario.unidade.bloco + ' ' : '') +
+      usuario.unidade.numero : '';
+  var cabecalho = document.querySelector('.greeting-sub');
+  if (cabecalho) cabecalho.textContent = (unidade ? 'Apto ' + unidade + ' — ' : '') + usuario.nome;
+  campo('hdrName').textContent = usuario.nome;
+
+  prepararDatas();
+  carregar();
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

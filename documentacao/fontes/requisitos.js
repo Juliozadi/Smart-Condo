@@ -136,7 +136,7 @@ const requisitosFuncionais = [
     atores: 'Porteiro', prioridade: 'Essencial',
     descricao: 'O sistema permite registrar a chegada de um visitante, vinculando-o à unidade visitada e avisando o morador para que confirme.',
     entradas: 'O porteiro informa nome do visitante, documento e a unidade de destino, e pode tirar uma foto pela câmera ou enviar uma imagem. É preciso ter a permissão de registrar visitantes.',
-    saidas: 'O visitante é registrado como "aguardando confirmação" e o morador da unidade recebe o aviso, com a foto no painel para reconhecer quem está na portaria. A foto só é vista pelo morador da unidade, pelo síndico e pela portaria, e não pode ser trocada depois que o morador responde. O aviso vai só para quem mora lá agora, e o morador que chega depois — ou é transferido de apartamento, ou volta depois de sair — não vê os visitantes de quem estava lá antes.' },
+    saidas: 'O visitante é registrado como "aguardando confirmação" e o morador da unidade recebe o aviso, com a foto no painel para reconhecer quem está na portaria. A foto só é vista pelo morador da unidade, pelo síndico e pela portaria, e não pode ser trocada depois que o morador responde. O aviso vai só para quem mora lá agora, e o morador que chega depois — ou é transferido de apartamento, ou volta depois de sair — não vê os visitantes de quem estava lá antes. Quem o morador autorizou com antecedência entra sem esperar resposta (RF046).' },
 
   { id: 'RF022', nome: 'Confirmar ou recusar visitante',
     atores: 'Morador', prioridade: 'Essencial',
@@ -280,6 +280,12 @@ const requisitosFuncionais = [
     descricao: 'Com mais de um administrador, cada alteração precisa mostrar quem a fez. O sistema registra quem criou, editou, inativou ou reativou condomínios, usuários, comunicados, documentos, espaços comuns, unidades e cobranças, e quando — seja o administrador, seja o síndico (inclusive as permissões do porteiro e o novo código de acesso), seja o próprio usuário no perfil e na troca de senha.',
     entradas: 'O registro é feito pelo próprio sistema, na mesma operação da alteração; a edição anota os campos que mudaram (a senha aparece pelo nome, nunca pelo valor), e salvar sem mudar nada não gera registro.',
     saidas: 'Cada linha das telas do administrador mostra a última alteração ("Editado por Fulano em 25/09/2026 14:32"), e a janela de edição traz o histórico completo. As listas de moradores, porteiros e espaços do síndico também mostram quem mexeu por último, inclusive quando foi o administrador.' },
+
+  { id: 'RF046', nome: 'Autorizar visitante com antecedência',
+    atores: 'Morador, Porteiro', prioridade: 'Importante',
+    descricao: 'O sistema permite ao morador liberar a entrada de alguém antes de a pessoa chegar — a diarista que vem toda terça e sexta, o prestador da reforma, os convidados da festa —, para que a portaria registre a entrada sem esperar a resposta dele.',
+    entradas: 'O morador informa nome, tipo (diarista, prestador, familiar, convidado…), o período (de hoje até no máximo um ano) e, se quiser, o CPF, os dias da semana e um recado para a portaria. Na chegada, o porteiro escolhe a pessoa em "Autorizados para hoje" e digita o CPF do documento apresentado.',
+    saidas: 'A pessoa entra direto, como "dentro", e o morador recebe o aviso de que ela entrou. Com CPF na autorização, a portaria vê só o meio dele e o sistema recusa outro documento. Fora do período ou dos dias escolhidos, revogada pelo morador, ou deixada por quem não mora mais no apartamento, a autorização não vale. Qualquer morador do apartamento revoga; a mesma pessoa não entra duas vezes sem ter saído.' },
 ];
 
 // ── 10 Requisitos não funcionais ────────────────────────────────────

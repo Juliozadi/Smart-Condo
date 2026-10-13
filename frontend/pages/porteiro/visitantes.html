@@ -43,10 +43,19 @@
       <div class="stat-card amber"><span class="stat-value" id="totSairam">—</span><span class="stat-label"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt="">Saíram</span></div>
     </div>
 
+    <h2 class="section-title" id="titulo-autorizados"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt=""> Autorizados para Hoje</h2>
+    <p class="secao-ajuda">Liberados pelo morador com antecedência: a entrada é registrada sem esperar a confirmação dele.</p>
+    <div class="list-items" id="listaAutorizados" role="list" aria-labelledby="titulo-autorizados"></div>
+    <p class="estado-lista" id="estadoAutorizados">Carregando…</p>
+
     <h2 class="section-title" id="titulo-registro"><img src="../../assets/img/icons/person-walking-arrow-right.svg" width="16" height="16" alt=""> Registrar Novo Visitante</h2>
     <div class="form-card" role="region" aria-labelledby="titulo-registro">
       <h3><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt=""> Dados do Visitante</h3>
       <form id="formVisitante" novalidate aria-label="Formulário de registro de visitante">
+        <div class="aviso-autorizacao" id="avisoAutorizacao" role="status" hidden>
+          <span id="textoAutorizacao"></span>
+          <button type="button" class="contato-btn" id="btnSairAutorizacao">Cancelar</button>
+        </div>
         <div class="form-row">
           <div class="form-group"><label for="nome-visitante">Nome completo</label><input type="text" id="nome-visitante" placeholder="Nome do visitante" required autocomplete="name"></div>
           <div class="form-group"><label for="doc-visitante">CPF / Documento</label><input type="text" id="doc-visitante" placeholder="000.000.000-00" class="mask-cpf" required autocomplete="off"></div>
@@ -81,7 +90,7 @@
              data-icone="../../assets/img/icons/camera.svg"
              data-input="foto_visitante"></div>
 
-        <p class="aviso-notificacao">
+        <p class="aviso-notificacao" id="avisoNotificacao">
           <img src="../../assets/img/icons/bullhorn.svg" alt="">
           <span>Ao registrar, o morador do apartamento selecionado recebe uma notificação
           com a foto e precisa <strong>confirmar ou recusar</strong> a entrada.</span>
@@ -221,6 +230,7 @@
 
     function carregar() {
       campo('estadoPresentes').textContent = 'Carregando…';
+      carregarAutorizados();
       return api.get('/portaria/visitantes')
         .then(function(lista) {
           visitantes = lista;
@@ -256,6 +266,108 @@
         });
     }
 
+    // ── Autorizados pelo morador ──────────────────────────────────
+    var autorizacaoAtual = null;
+
+    function cartaoAutorizado(a) {
+      var item = document.createElement('div');
+      item.className = 'list-item';
+      item.setAttribute('role', 'listitem');
+
+      var avatar = document.createElement('div');
+      avatar.className = ('list-avatar ' + cor(a.nome)).trim();
+      avatar.setAttribute('aria-hidden', 'true');
+      avatar.textContent = iniciais(a.nome);
+
+      var info = document.createElement('div');
+      info.className = 'list-info';
+      var h = document.createElement('h3');
+      h.textContent = a.nome;
+      var p = document.createElement('p');
+      var partes = ['Apto ' + a.unidade, a.tipo];
+      if (a.documento) partes.push('CPF ' + a.documento);
+      if (a.autorizado_por_nome) partes.push('Autorizado por ' + a.autorizado_por_nome);
+      p.textContent = partes.join(' · ');
+      info.appendChild(h);
+      info.appendChild(p);
+      if (a.observacao) {
+        var obs = document.createElement('p');
+        obs.className = 'ocorrencia-resposta';
+        obs.textContent = a.observacao;
+        info.appendChild(obs);
+      }
+
+      item.appendChild(avatar);
+      item.appendChild(info);
+      if (a.ja_dentro) {
+        var selo = document.createElement('span');
+        selo.className = 'badge badge-ok';
+        selo.textContent = 'Dentro';
+        item.appendChild(selo);
+      } else {
+        var entrar = document.createElement('button');
+        entrar.type = 'button';
+        entrar.className = 'contato-btn';
+        entrar.textContent = 'Registrar entrada';
+        entrar.setAttribute('aria-label', 'Registrar a entrada de ' + a.nome);
+        entrar.addEventListener('click', function() { modoAutorizado(a); });
+        item.appendChild(entrar);
+      }
+      return item;
+    }
+
+    function carregarAutorizados() {
+      return api.get('/portaria/autorizacoes')
+        .then(function(lista) {
+          var caixa = campo('listaAutorizados');
+          caixa.innerHTML = '';
+          campo('estadoAutorizados').textContent =
+            lista.length ? '' : 'Nenhum visitante autorizado para hoje.';
+          lista.forEach(function(a) { caixa.appendChild(cartaoAutorizado(a)); });
+        })
+        .catch(function(e) { campo('estadoAutorizados').textContent = e.message; });
+    }
+
+    // Com a autorização, o formulário vem preenchido com o que o morador
+    // informou; o porteiro digita o CPF do documento que a pessoa mostra,
+    // e o servidor confere com o da autorização.
+    function modoAutorizado(a) {
+      autorizacaoAtual = a;
+      var foto = document.querySelector('.captura-foto');
+      campo('nome-visitante').value = a ? a.nome : '';
+      campo('nome-visitante').readOnly = !!a;
+      campo('apto-visitante').value = a ? String(a.unidade_id) : '';
+      campo('apto-visitante').disabled = !!a;
+      // O tipo é o que o morador informou (Diarista, Convidado…), que nem
+      // sempre está na lista da portaria: entra como opção provisória.
+      var tipo = campo('tipo-visita');
+      var provisoria = tipo.querySelector('option[data-autorizacao]');
+      if (provisoria) provisoria.remove();
+      if (a) {
+        provisoria = document.createElement('option');
+        provisoria.setAttribute('data-autorizacao', '');
+        provisoria.textContent = a.tipo;
+        tipo.appendChild(provisoria);
+        provisoria.selected = true;
+      }
+      tipo.disabled = !!a;
+      campo('doc-visitante').value = '';
+      campo('avisoAutorizacao').hidden = !a;
+      campo('avisoNotificacao').hidden = !!a;
+      // A foto é para o morador reconhecer quem chegou; aqui ele já autorizou.
+      if (foto) foto.style.display = a ? 'none' : '';
+      if (a) {
+        campo('textoAutorizacao').textContent = 'Entrada autorizada para ' + a.nome +
+          ' (apto ' + a.unidade + '). Confira o documento e digite o CPF.';
+        campo('avisoAutorizacao').scrollIntoView({ block: 'center' });
+        campo('doc-visitante').focus({ preventScroll: true });
+      }
+    }
+    campo('btnSairAutorizacao').addEventListener('click', function() {
+      campo('formVisitante').reset();
+      modoAutorizado(null);
+    });
+
     function carregarUnidades() {
       return api.get('/condominios/meu/unidades').then(function(lista) {
         var select = campo('apto-visitante');
@@ -275,10 +387,11 @@
       erro.textContent = '';
       document.querySelectorAll('.erro-validacao').forEach(function(el) { el.remove(); });
 
+      var autorizada = autorizacaoAtual;
       var nome = campo('nome-visitante').value.trim();
       var documento = campo('doc-visitante').value.trim();
-      var unidadeId = campo('apto-visitante').value;
-      var tipo = campo('tipo-visita').value;
+      var unidadeId = autorizada ? autorizada.unidade_id : campo('apto-visitante').value;
+      var tipo = autorizada ? autorizada.tipo : campo('tipo-visita').value;
       var obs = campo('tipo-visita-obs').value.trim();
 
       if (!nome || !documento || !unidadeId || !tipo) {
@@ -298,10 +411,11 @@
         return;
       }
       if (placa) corpo.placa_veiculo = placa;
+      if (autorizada) corpo.autorizacao_id = autorizada.id;
 
       // A foto do vídeo porteiro vai logo depois do registro, como arquivo.
       var foto = document.querySelector('.captura-valor');
-      var fotoCapturada = foto && foto.value;
+      var fotoCapturada = !autorizada && foto && foto.value;
 
       var botao = this.querySelector('button[type=submit]');
       var texto = botao.textContent;
@@ -317,8 +431,11 @@
         })
         .then(function(falhaDaFoto) {
           campo('formVisitante').reset();
+          modoAutorizado(null);
           erro.className = 'form-erro' + (falhaDaFoto ? '' : ' sucesso');
-          erro.textContent = falhaDaFoto
+          erro.textContent = autorizada
+            ? 'Entrada registrada pela autorização do morador. Ele foi avisado.'
+            : falhaDaFoto
             ? 'Visitante registrado e morador notificado, mas a foto não foi enviada: ' + falhaDaFoto
             : 'Visitante registrado. O morador foi notificado e precisa confirmar a entrada.';
           return carregar();

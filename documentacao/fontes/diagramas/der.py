@@ -38,7 +38,7 @@ RECORTES = [
     ]),
     ("Financeiro e portaria", [
         "cobrancas", "pagamentos", "preferencias_cobranca",
-        "visitantes", "encomendas", "movimentacoes_veiculo",
+        "visitantes", "autorizacoes_visita", "encomendas", "movimentacoes_veiculo",
     ]),
 ]
 
@@ -179,7 +179,7 @@ def figura_geral(tabelas, ligacoes, arquivo):
         "preferencias_cobranca": (0.83, 0.22), "visitantes": (0.83, 0.07),
         "encomendas": (0.335, 0.30), "movimentacoes_veiculo": (0.665, 0.30),
         "mensagens": (0.335, 0.56), "documentos_cadastro": (0.665, 0.56),
-        "registros_alteracao": (0.665, 0.76),
+        "registros_alteracao": (0.665, 0.76), "autorizacoes_visita": (0.68, 0.14),
     }
     for origem, _, destino in ligacoes:
         if origem == destino or origem not in pos or destino not in pos:

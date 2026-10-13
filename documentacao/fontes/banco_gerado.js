@@ -4,6 +4,113 @@
  */
 const dicionario = [
   {
+    "nome": "autorizacoes_visita",
+    "resumo": "As entradas liberadas pelo morador antes de o visitante chegar — a diarista, o prestador da reforma, os convidados da festa —, que a portaria registra sem esperar a resposta dele.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "unidade_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Apartamento para o qual a entrada está liberada"
+      },
+      {
+        "coluna": "autorizado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Morador que deixou a autorização; ela deixa de valer se ele não morar mais lá"
+      },
+      {
+        "coluna": "nome",
+        "tipo": "VARCHAR(160)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Nome de quem pode entrar; é o nome registrado na entrada"
+      },
+      {
+        "coluna": "documento",
+        "tipo": "VARCHAR(20)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "CPF da pessoa, opcional; quando informado, a portaria só libera quem apresentar o mesmo documento"
+      },
+      {
+        "coluna": "tipo",
+        "tipo": "VARCHAR(60)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Diarista, prestador de serviço, familiar, convidado…"
+      },
+      {
+        "coluna": "valida_de",
+        "tipo": "DATE",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Primeiro dia em que a entrada está liberada; não pode ser passado"
+      },
+      {
+        "coluna": "valida_ate",
+        "tipo": "DATE",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Último dia em que a entrada está liberada; no máximo um ano depois do primeiro"
+      },
+      {
+        "coluna": "dias_semana",
+        "tipo": "VARCHAR(7)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Dias da semana em que vale (1 = segunda … 7 = domingo), como 25 para terça e sexta; vazio = todos os dias do período"
+      },
+      {
+        "coluna": "observacao",
+        "tipo": "VARCHAR(300)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Recado do morador para a portaria"
+      },
+      {
+        "coluna": "criado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que o registro foi criado, preenchido pelo banco"
+      },
+      {
+        "coluna": "atualizado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "inativo_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o morador revogou a autorização; vazio enquanto vale. O registro fica guardado"
+      },
+      {
+        "coluna": "inativado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Morador que revogou a autorização"
+      }
+    ],
+    "regras": [
+      "CHECK ((valida_ate >= valida_de))"
+    ]
+  },
+  {
     "nome": "cobrancas",
     "resumo": "As cobranças emitidas para cada unidade, por competência.",
     "colunas": [
@@ -1996,7 +2103,7 @@ const dicionario = [
         "tipo": "INTEGER",
         "obrigatorio": "Não",
         "chave": "FK",
-        "descricao": "Morador que autorizou ou recusou"
+        "descricao": "Morador que autorizou ou recusou (na entrada pela autorização prévia, quem a deixou)"
       },
       {
         "coluna": "confirmado_em",
@@ -2018,6 +2125,13 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "autorizacao_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Autorização prévia pela qual a pessoa entrou, sem esperar resposta; vazio no anúncio comum"
       }
     ],
     "regras": []
@@ -2025,6 +2139,24 @@ const dicionario = [
 ];
 
 const relacoes = [
+  {
+    "origem": "autorizacoes_visita",
+    "coluna": "autorizado_por_id",
+    "destino": "usuarios",
+    "texto": "Morador que deixou a autorização; ela deixa de valer se ele não morar mais lá"
+  },
+  {
+    "origem": "autorizacoes_visita",
+    "coluna": "inativado_por_id",
+    "destino": "usuarios",
+    "texto": "Morador que revogou a autorização"
+  },
+  {
+    "origem": "autorizacoes_visita",
+    "coluna": "unidade_id",
+    "destino": "unidades",
+    "texto": "Apartamento para o qual a entrada está liberada"
+  },
   {
     "origem": "cobrancas",
     "coluna": "unidade_id",
@@ -2315,9 +2447,15 @@ const relacoes = [
   },
   {
     "origem": "visitantes",
+    "coluna": "autorizacao_id",
+    "destino": "autorizacoes_visita",
+    "texto": "Autorização prévia pela qual a pessoa entrou, sem esperar resposta; vazio no anúncio comum"
+  },
+  {
+    "origem": "visitantes",
     "coluna": "confirmado_por_id",
     "destino": "usuarios",
-    "texto": "Morador que autorizou ou recusou"
+    "texto": "Morador que autorizou ou recusou (na entrada pela autorização prévia, quem a deixou)"
   },
   {
     "origem": "visitantes",

@@ -20,11 +20,11 @@ FOTO_PORTARIA_DIAS, o arquivo é apagado.
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
-from sqlalchemy import select, update
+from sqlalchemy import exists, func, or_, select, update
 from sqlalchemy.orm import Session, contains_eager, selectinload
 
 from app.api.deps import (
@@ -33,16 +33,17 @@ from app.api.deps import (
 )
 from app.core.config import settings
 from app.core.database import get_db
+from app.core.tempo import hoje_local
 from app.models.condominio import Unidade
 from app.models.enums import (
     CanalVerificacao, Papel, StatusEncomenda, StatusOcorrencia, StatusUsuario, StatusVisitante,
 )
-from app.models.portaria import Encomenda, Ocorrencia, Visitante
+from app.models.portaria import AutorizacaoVisita, Encomenda, Ocorrencia, Visitante
 from app.models.usuario import Usuario
 from app.schemas.portaria import (
-    ConfirmacaoVisitante, EncomendaEntrada, EncomendaSaida, EntregaEncomenda, OcorrenciaEntrada,
-    OcorrenciaSaida, RespostaOcorrencia, RetiradaEncomenda, VisitanteEntrada,
-    VisitanteSaida,
+    AutorizacaoEntrada, AutorizacaoSaida, ConfirmacaoVisitante, EncomendaEntrada, EncomendaSaida,
+    EntregaEncomenda, OcorrenciaEntrada, OcorrenciaSaida, RespostaOcorrencia, RetiradaEncomenda,
+    VisitanteEntrada, VisitanteSaida,
 )
 from app.services import arquivos, notificacao
 
@@ -109,7 +110,8 @@ def _visitante_saida(v: Visitante, unidade: Unidade | None = None) -> VisitanteS
         foto_url=f"/portaria/visitantes/{v.id}/foto" if v.foto_arquivo else None,
         status=v.status,
         entrada_em=v.entrada_em, saida_em=v.saida_em,
-        confirmado_em=v.confirmado_em, criado_em=v.criado_em,
+        confirmado_em=v.confirmado_em, autorizacao_id=v.autorizacao_id,
+        criado_em=v.criado_em,
     )
 
 
@@ -219,20 +221,41 @@ def registrar_visitante(
     _expurgar_fotos_antigas(db)
 
     visitante = Visitante(
-        **dados.model_dump(),
+        **dados.model_dump(exclude={"autorizacao_id"}),
         registrado_por_id=usuario.id,
         status=StatusVisitante.AGUARDANDO_CONFIRMACAO,
     )
+    autorizacao = None
+    if dados.autorizacao_id is not None:
+        # Depois do expurgo das fotos, que faz commit e soltaria a trava.
+        autorizacao = _autorizacao_para_entrada(db, unidade, dados.autorizacao_id,
+                                                dados.documento)
+        agora = _agora()
+        # Entra quem o morador autorizou, com o nome que ele deu; a
+        # autorização é a resposta dele, dada antes.
+        visitante.nome = autorizacao.nome
+        visitante.autorizacao_id = autorizacao.id
+        visitante.status = StatusVisitante.DENTRO
+        visitante.entrada_em = agora
+        visitante.confirmado_em = agora
+        visitante.confirmado_por_id = autorizacao.autorizado_por_id
     db.add(visitante)
     db.commit()
     db.refresh(visitante)
 
-    # A notificação com a foto é o que permite o morador confirmar (seção 6).
-    _avisar_moradores(
-        db, unidade,
-        "Visitante na portaria",
-        f"{visitante.nome} diz ser seu convidado. Confirme ou recuse a entrada.",
-    )
+    if autorizacao is not None:
+        _avisar_moradores(
+            db, unidade,
+            "Visitante autorizado entrou",
+            f"{visitante.nome} ({autorizacao.tipo}) entrou pela autorização deixada na portaria.",
+        )
+    else:
+        # A notificação com a foto é o que permite o morador confirmar (seção 6).
+        _avisar_moradores(
+            db, unidade,
+            "Visitante na portaria",
+            f"{visitante.nome} diz ser seu convidado. Confirme ou recuse a entrada.",
+        )
     return _visitante_saida(visitante, unidade)
 
 
@@ -395,6 +418,213 @@ def foto_visitante(
     ):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Foto não encontrada.")
     return _entregar_foto(visitante.foto_arquivo)
+
+
+# ── Autorização prévia de visita ─────────────────────────────────────
+# A diarista de toda terça, o pedreiro da reforma, os convidados da festa:
+# o morador deixa a entrada liberada e a portaria registra sem esperar a
+# resposta dele. Quem autoriza é quem mora no apartamento agora: a
+# autorização de quem se mudou deixa de valer, sem ninguém precisar
+# lembrar de revogá-la.
+
+# Quantas autorizações em vigor cada apartamento pode ter. A lista de
+# convidados de uma festa cabe; milhares, por engano ou abuso, não.
+LIMITE_AUTORIZACOES = 60
+
+
+def _autorizador_mora_la():
+    """Condição SQL: quem autorizou ainda mora no apartamento — ativo,
+    na mesma unidade e desde antes de autorizar (o que se mudou e voltou
+    não ressuscita as autorizações antigas)."""
+    return exists().where(
+        Usuario.id == AutorizacaoVisita.autorizado_por_id,
+        Usuario.unidade_id == AutorizacaoVisita.unidade_id,
+        Usuario.papel == Papel.MORADOR,
+        Usuario.status == StatusUsuario.ATIVO,
+        Usuario.unidade_desde <= AutorizacaoVisita.criado_em,
+    )
+
+
+def _vale_no_dia(a: AutorizacaoVisita, dia: date) -> bool:
+    return (not a.inativo and a.valida_de <= dia <= a.valida_ate
+            and (not a.dias_semana or str(dia.isoweekday()) in a.dias_semana))
+
+
+def _documento_mascarado(documento: str | None) -> str | None:
+    """A portaria vê só o meio do CPF: ela digita o do documento que a
+    pessoa apresenta, e o sistema confere — copiar da tela não serve."""
+    if not documento:
+        return None
+    return f"***.{documento[3:6]}.{documento[6:9]}-**"
+
+
+def _autorizacao_saida(a: AutorizacaoVisita, hoje: date, *, para_morador: bool,
+                       ja_dentro: bool = False) -> AutorizacaoSaida:
+    return AutorizacaoSaida(
+        id=a.id, unidade_id=a.unidade_id, unidade=a.unidade.identificacao,
+        nome=a.nome,
+        documento=a.documento if para_morador else _documento_mascarado(a.documento),
+        tipo=a.tipo, valida_de=a.valida_de, valida_ate=a.valida_ate,
+        dias_semana=[int(d) for d in a.dias_semana] if a.dias_semana else None,
+        observacao=a.observacao,
+        autorizado_por_nome=a.autorizado_por.nome if a.autorizado_por else None,
+        vale_hoje=_vale_no_dia(a, hoje), ja_dentro=ja_dentro, criado_em=a.criado_em,
+    )
+
+
+def _autorizacao_para_entrada(db: Session, unidade: Unidade, autorizacao_id: int,
+                              documento: str) -> AutorizacaoVisita:
+    """Confere se a autorização libera esta entrada, agora.
+
+    Trava a autorização: duas portarias registrando a mesma pessoa ao
+    mesmo tempo não a colocam "dentro" duas vezes.
+    """
+    autorizacao = db.get(AutorizacaoVisita, autorizacao_id, with_for_update=True)
+    if autorizacao is None or autorizacao.unidade_id != unidade.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Autorização não encontrada para esta unidade.")
+    if autorizacao.inativo:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Esta autorização foi revogada pelo morador.")
+    if not db.scalar(select(_autorizador_mora_la()).where(
+            AutorizacaoVisita.id == autorizacao.id)):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Esta autorização não vale mais: quem autorizou não mora mais na unidade.",
+        )
+    if not _vale_no_dia(autorizacao, hoje_local()):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Esta autorização não vale hoje.")
+    if autorizacao.documento and autorizacao.documento != documento:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="O documento apresentado não confere com o da autorização.",
+        )
+    if db.scalar(select(Visitante.id).where(
+            Visitante.autorizacao_id == autorizacao.id,
+            Visitante.status == StatusVisitante.DENTRO).limit(1)):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Esta pessoa já está dentro do condomínio.")
+    return autorizacao
+
+
+@router.post(
+    "/autorizacoes",
+    response_model=AutorizacaoSaida,
+    status_code=status.HTTP_201_CREATED,
+    summary="O morador autoriza um visitante com antecedência",
+)
+def autorizar_visita(
+    dados: AutorizacaoEntrada,
+    morador: Usuario = Depends(exigir_papel(Papel.MORADOR)),
+    db: Session = Depends(get_db),
+) -> AutorizacaoSaida:
+    # Trava o apartamento: dois pedidos ao mesmo tempo não passam juntos
+    # pelo limite.
+    unidade = (db.get(Unidade, morador.unidade_id, with_for_update=True)
+               if morador.unidade_id else None)
+    if unidade is None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Seu cadastro não está ligado a um apartamento.")
+    hoje = hoje_local()
+    em_vigor = db.scalar(
+        select(func.count()).select_from(AutorizacaoVisita).where(
+            AutorizacaoVisita.unidade_id == unidade.id,
+            AutorizacaoVisita.inativo_em.is_(None),
+            AutorizacaoVisita.valida_ate >= hoje,
+            _autorizador_mora_la(),
+        )
+    )
+    if em_vigor >= LIMITE_AUTORIZACOES:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Seu apartamento chegou ao limite de {LIMITE_AUTORIZACOES} autorizações "
+                   "em vigor. Revogue as que não são mais necessárias.",
+        )
+
+    autorizacao = AutorizacaoVisita(
+        **dados.model_dump(exclude={"dias_semana"}),
+        dias_semana="".join(str(d) for d in dados.dias_semana) if dados.dias_semana else None,
+        unidade_id=unidade.id,
+        autorizado_por_id=morador.id,
+    )
+    db.add(autorizacao)
+    db.commit()
+    db.refresh(autorizacao)
+    return _autorizacao_saida(autorizacao, hoje, para_morador=True)
+
+
+@router.get(
+    "/autorizacoes",
+    response_model=list[AutorizacaoSaida],
+    summary="Lista as autorizações de visita",
+)
+def listar_autorizacoes(
+    usuario: Usuario = Depends(exigir_condominio),
+    db: Session = Depends(get_db),
+) -> list[AutorizacaoSaida]:
+    """O morador vê as do apartamento que ainda vão valer; a portaria e o
+    síndico, as que valem hoje no condomínio."""
+    exigir_permissao_do_porteiro(db, usuario, "registrar_visitantes")
+    hoje = hoje_local()
+    consulta = (
+        select(AutorizacaoVisita).join(AutorizacaoVisita.unidade)
+        .options(contains_eager(AutorizacaoVisita.unidade),
+                 selectinload(AutorizacaoVisita.autorizado_por))
+        .where(
+            Unidade.condominio_id == usuario.condominio_id,
+            AutorizacaoVisita.inativo_em.is_(None),
+            AutorizacaoVisita.valida_ate >= hoje,
+            _autorizador_mora_la(),
+        )
+    )
+    para_morador = usuario.papel == Papel.MORADOR
+    if para_morador:
+        consulta = consulta.where(AutorizacaoVisita.unidade_id == usuario.unidade_id)
+        ordem = (AutorizacaoVisita.valida_de, AutorizacaoVisita.id)
+    else:
+        consulta = consulta.where(
+            AutorizacaoVisita.valida_de <= hoje,
+            or_(AutorizacaoVisita.dias_semana.is_(None),
+                AutorizacaoVisita.dias_semana.contains(str(hoje.isoweekday()))),
+        )
+        ordem = (Unidade.bloco, Unidade.numero, AutorizacaoVisita.nome)
+    autorizacoes = db.scalars(consulta.order_by(*ordem)).all()
+
+    dentro = set(db.scalars(select(Visitante.autorizacao_id).where(
+        Visitante.autorizacao_id.in_([a.id for a in autorizacoes]),
+        Visitante.status == StatusVisitante.DENTRO,
+    ))) if autorizacoes else set()
+    return [_autorizacao_saida(a, hoje, para_morador=para_morador, ja_dentro=a.id in dentro)
+            for a in autorizacoes]
+
+
+@router.delete(
+    "/autorizacoes/{autorizacao_id}",
+    response_model=AutorizacaoSaida,
+    summary="O morador revoga uma autorização de visita",
+)
+def revogar_autorizacao(
+    autorizacao_id: int,
+    morador: Usuario = Depends(exigir_papel(Papel.MORADOR)),
+    db: Session = Depends(get_db),
+) -> AutorizacaoSaida:
+    autorizacao = db.get(AutorizacaoVisita, autorizacao_id, with_for_update=True)
+    # Qualquer morador do apartamento revoga (a diarista foi dispensada);
+    # a de quem morava lá antes não aparece para ninguém, nem aqui.
+    if (autorizacao is None or autorizacao.unidade_id != morador.unidade_id
+            or not db.scalar(select(_autorizador_mora_la()).where(
+                AutorizacaoVisita.id == autorizacao.id))):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Autorização não encontrada.")
+    if autorizacao.inativo:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Esta autorização já foi revogada.")
+    autorizacao.inativo_em = _agora()
+    autorizacao.inativado_por_id = morador.id
+    db.commit()
+    db.refresh(autorizacao)
+    return _autorizacao_saida(autorizacao, hoje_local(), para_morador=True)
 
 
 # ── Encomendas ───────────────────────────────────────────────────────

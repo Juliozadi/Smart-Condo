@@ -36,6 +36,7 @@ CASOS = [
     ("Abrir ocorrência",                ["POR", "MOR"],               DIR),
     ("Solicitar reserva",               ["MOR"],                      DIR),
     ("Confirmar visitante",             ["MOR"],                      DIR),
+    ("Autorizar visitante antes",       ["MOR"],                      DIR),
     ("Confirmar retirada de encomenda", ["MOR"],                      DIR),
     ("Consultar cobranças",             ["MOR"],                      DIR),
     ("Escolher forma de pagamento",     ["MOR"],                      DIR),

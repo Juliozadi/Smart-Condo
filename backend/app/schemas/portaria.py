@@ -4,14 +4,80 @@ Documentação, seção 6 (História do Usuário) e seção 8.
 """
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime, timedelta
+from typing import Annotated
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 
 from app.models.enums import (
     PrioridadeOcorrencia, StatusEncomenda, StatusOcorrencia, StatusVisitante,
 )
+from app.core.tempo import hoje_local
 from app.schemas.comuns import CPF, Placa, SchemaBase
+
+
+def _vazio_e_nada(valor):
+    if isinstance(valor, str) and not valor.strip():
+        return None
+    return valor
+
+
+# ── Autorização prévia de visita ─────────────────────────────────────
+# Até um ano: cobre a diarista fixa e a obra longa; depois, renova.
+PERIODO_MAXIMO_AUTORIZACAO = timedelta(days=365)
+
+
+class AutorizacaoEntrada(SchemaBase):
+    nome: str = Field(min_length=3, max_length=160)
+    documento: CPF | None = None
+    tipo: str = Field(min_length=3, max_length=60)
+    valida_de: date
+    valida_ate: date
+    # 1 = segunda ... 7 = domingo (ISO). Vazio: todos os dias do período.
+    dias_semana: list[Annotated[int, Field(ge=1, le=7)]] | None = Field(
+        default=None, max_length=7)
+    observacao: str | None = Field(default=None, max_length=300)
+
+    _vazios = field_validator("documento", "observacao", mode="before")(_vazio_e_nada)
+
+    @field_validator("dias_semana")
+    @classmethod
+    def _dias_sem_repeticao(cls, dias):
+        if not dias:
+            return None
+        return sorted(set(dias))
+
+    @model_validator(mode="after")
+    def _periodo(self):
+        hoje = hoje_local()
+        if self.valida_de < hoje:
+            raise ValueError("A autorização não pode começar numa data passada.")
+        if self.valida_ate < self.valida_de:
+            raise ValueError("A data final não pode ser antes da data inicial.")
+        if self.valida_de > hoje + PERIODO_MAXIMO_AUTORIZACAO:
+            raise ValueError("A autorização pode começar em até um ano.")
+        if self.valida_ate - self.valida_de > PERIODO_MAXIMO_AUTORIZACAO:
+            raise ValueError("A autorização vale por no máximo um ano; depois, renove.")
+        return self
+
+
+class AutorizacaoSaida(SchemaBase):
+    id: int
+    unidade_id: int
+    unidade: str
+    nome: str
+    documento: str | None = None
+    tipo: str
+    valida_de: date
+    valida_ate: date
+    dias_semana: list[int] | None = None
+    observacao: str | None = None
+    autorizado_por_nome: str | None = None
+    # Se a portaria pode registrar a entrada hoje, e se a pessoa já entrou
+    # (e ainda não saiu) por esta autorização.
+    vale_hoje: bool
+    ja_dentro: bool = False
+    criado_em: datetime
 
 
 # ── Visitantes ───────────────────────────────────────────────────────
@@ -22,13 +88,11 @@ class VisitanteEntrada(SchemaBase):
     tipo_visita: str = Field(min_length=3, max_length=60)
     # Normalizada como a do pátio (ABC1D23); em branco é "sem veículo".
     placa_veiculo: Placa | None = None
+    # Entrada pela autorização prévia do morador: a pessoa entra sem
+    # esperar resposta (o nome é o que o morador autorizou).
+    autorizacao_id: int | None = None
 
-    @field_validator("placa_veiculo", mode="before")
-    @classmethod
-    def _placa_vazia(cls, valor):
-        if isinstance(valor, str) and not valor.strip():
-            return None
-        return valor
+    _placa_vazia = field_validator("placa_veiculo", mode="before")(_vazio_e_nada)
 
     # A foto do vídeo porteiro (seção 6) não vem aqui: ela é enviada como
     # arquivo em PUT /portaria/visitantes/{id}/foto logo depois do registro.
@@ -49,6 +113,7 @@ class VisitanteSaida(SchemaBase):
     entrada_em: datetime | None = None
     saida_em: datetime | None = None
     confirmado_em: datetime | None = None
+    autorizacao_id: int | None = None
     criado_em: datetime
 
 

@@ -11,14 +11,16 @@ Documentação, seção 6 (História do Usuário — porteiro e morador):
 """
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, Enum as SAEnum, ForeignKey, String, Text
+from sqlalchemy import (
+    CheckConstraint, Date, DateTime, Enum as SAEnum, ForeignKey, String, Text,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-from app.models.base import TimestampMixin
+from app.models.base import InativacaoMixin, TimestampMixin
 from app.models.enums import (
     PrioridadeOcorrencia, StatusEncomenda, StatusOcorrencia, StatusVisitante,
 )
@@ -26,6 +28,45 @@ from app.models.enums import (
 if TYPE_CHECKING:
     from app.models.condominio import Unidade
     from app.models.usuario import Usuario
+
+
+class AutorizacaoVisita(Base, TimestampMixin, InativacaoMixin):
+    """Entrada liberada pelo morador antes de o visitante chegar.
+
+    A diarista que vem toda terça e sexta, o pedreiro da reforma, os
+    convidados do aniversário: a portaria registra a entrada sem esperar a
+    resposta do morador. Revogar é inativar (InativacaoMixin).
+    """
+    __tablename__ = "autorizacoes_visita"
+    __table_args__ = (
+        CheckConstraint("valida_ate >= valida_de", name="ck_autorizacao_periodo"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    unidade_id: Mapped[int] = mapped_column(
+        ForeignKey("unidades.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    autorizado_por_id: Mapped[int | None] = mapped_column(
+        ForeignKey("usuarios.id", ondelete="SET NULL"), index=True
+    )
+
+    nome: Mapped[str] = mapped_column(String(160), nullable=False)
+    # Opcional: o morador nem sempre sabe o CPF do convidado. Quando vem,
+    # a portaria só libera quem apresentar o mesmo documento.
+    documento: Mapped[str | None] = mapped_column(String(20))
+    tipo: Mapped[str] = mapped_column(String(60), nullable=False)
+    valida_de: Mapped[date] = mapped_column(Date, nullable=False)
+    valida_ate: Mapped[date] = mapped_column(Date, nullable=False)
+    # Dias da semana em que vale (1 = segunda ... 7 = domingo), como "25"
+    # para terça e sexta. Vazio: todos os dias do período.
+    dias_semana: Mapped[str | None] = mapped_column(String(7))
+    observacao: Mapped[str | None] = mapped_column(String(300))
+
+    unidade: Mapped["Unidade"] = relationship()
+    autorizado_por: Mapped["Usuario | None"] = relationship(foreign_keys=[autorizado_por_id])
+
+    def __repr__(self) -> str:
+        return f"<AutorizacaoVisita {self.id} {self.nome!r} unidade={self.unidade_id}>"
 
 
 class Visitante(Base, TimestampMixin):
@@ -64,6 +105,11 @@ class Visitante(Base, TimestampMixin):
         ForeignKey("usuarios.id", ondelete="SET NULL")
     )
     confirmado_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    # Entrou pela autorização prévia do morador, sem esperar resposta.
+    autorizacao_id: Mapped[int | None] = mapped_column(
+        ForeignKey("autorizacoes_visita.id", ondelete="SET NULL"), index=True
+    )
 
     unidade: Mapped["Unidade"] = relationship()
     registrado_por: Mapped["Usuario | None"] = relationship(foreign_keys=[registrado_por_id])
