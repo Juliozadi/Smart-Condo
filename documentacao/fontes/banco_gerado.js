@@ -1613,6 +1613,27 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "cancelada_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Quem cancelou a reserva: o próprio morador ou o síndico"
+      },
+      {
+        "coluna": "cancelada_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Data e hora do cancelamento, pelo morador ou pelo síndico"
+      },
+      {
+        "coluna": "motivo_cancelamento",
+        "tipo": "TEXT",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Por que a reserva foi cancelada (síndico, espaço inativado ou cadastro inativado); o morador vê este texto"
       }
     ],
     "regras": [
@@ -2212,6 +2233,12 @@ const relacoes = [
     "coluna": "avaliada_por_id",
     "destino": "usuarios",
     "texto": "Síndico que aprovou ou recusou a reserva"
+  },
+  {
+    "origem": "reservas",
+    "coluna": "cancelada_por_id",
+    "destino": "usuarios",
+    "texto": "Quem cancelou a reserva: o próprio morador ou o síndico"
   },
   {
     "origem": "reservas",

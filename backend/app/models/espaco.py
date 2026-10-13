@@ -92,6 +92,14 @@ class Reserva(Base, TimestampMixin):
     )
     avaliada_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     motivo_recusa: Mapped[str | None] = mapped_column(Text)
+    # Quem cancelou e por quê: o próprio morador, o síndico (vazamento no
+    # salão, obra, evento do condomínio) ou ninguém (o espaço ou o cadastro
+    # do morador foi inativado). O motivo vai para o morador.
+    cancelada_por_id: Mapped[int | None] = mapped_column(
+        ForeignKey("usuarios.id", ondelete="SET NULL")
+    )
+    cancelada_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    motivo_cancelamento: Mapped[str | None] = mapped_column(Text)
 
     espaco: Mapped["EspacoComum"] = relationship(back_populates="reservas")
     morador: Mapped["Usuario"] = relationship(foreign_keys=[morador_id])

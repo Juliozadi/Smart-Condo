@@ -110,9 +110,9 @@ const requisitosFuncionais = [
 
   { id: 'RF017', nome: 'Aprovar ou recusar reserva',
     atores: 'Síndico', prioridade: 'Essencial',
-    descricao: 'O sistema apresenta ao síndico as reservas pendentes e permite aprovar ou recusar cada uma, registrando quem avaliou e quando.',
+    descricao: 'O sistema apresenta ao síndico as reservas pendentes e permite aprovar ou recusar cada uma, registrando quem avaliou e quando. O síndico também cancela a reserva já aprovada que ainda não começou (vazamento no salão, obra, evento do condomínio), informando o motivo.',
     entradas: 'A reserva deve estar pendente e pertencer a um espaço do condomínio do síndico. Se o horário já passou, ela só pode ser recusada; e a que chega ao horário sem avaliação é recusada pelo sistema, com o motivo para o morador.',
-    saidas: 'A reserva passa a "aprovada" ou "recusada", e o morador vê o resultado na sua lista de reservas.' },
+    saidas: 'A reserva passa a "aprovada", "recusada" ou "cancelada", e o morador vê o resultado e o motivo na sua lista de reservas; a recusada e a cancelada pelo síndico que ainda estão por vir aparecem no topo, e o cancelamento também chega por e-mail. Fica registrado quem cancelou e quando.' },
 
   { id: 'RF018', nome: 'Cancelar a própria reserva',
     atores: 'Morador', prioridade: 'Importante',

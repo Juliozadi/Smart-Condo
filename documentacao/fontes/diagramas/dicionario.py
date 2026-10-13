@@ -115,6 +115,8 @@ DESCRICOES = {
     "reservas.status": "Situação da reserva, da solicitação até a conclusão ou o cancelamento",
     "reservas.avaliada_em": "Data e hora em que o síndico aprovou ou recusou",
     "reservas.motivo_recusa": "Justificativa registrada pelo síndico ao recusar",
+    "reservas.cancelada_em": "Data e hora do cancelamento, pelo morador ou pelo síndico",
+    "reservas.motivo_cancelamento": "Por que a reserva foi cancelada (síndico, espaço inativado ou cadastro inativado); o morador vê este texto",
 
     "registros_ocupacao.pessoas": "Quantas pessoas estavam no espaço no momento da contagem; não pode ser negativo",
     "registros_ocupacao.registrado_em": "Momento da contagem",
@@ -224,6 +226,7 @@ VINCULOS = {
     "registros_alteracao.autor_id": "Quem fez a alteração",
     "usuarios.avaliado_por_id": "Síndico que aprovou ou recusou este cadastro",
     "reservas.avaliada_por_id": "Síndico que aprovou ou recusou a reserva",
+    "reservas.cancelada_por_id": "Quem cancelou a reserva: o próprio morador ou o síndico",
     "ocorrencias.aberta_por_id": "Quem registrou a ocorrência",
     "ocorrencias.respondida_por_id": "Síndico que respondeu",
     "ordens_servico.aberta_por_id": "Síndico que abriu a ordem",

@@ -215,7 +215,29 @@
     var selo = linha.children[3].firstChild;
     selo.className = 'badge ' + (CLASSE_STATUS[r.status] || 'badge-neutral');
     selo.textContent = ROTULO_STATUS[r.status] || r.status;
-    if (r.motivo_recusa) linha.title = 'Motivo: ' + r.motivo_recusa;
+    var motivo = r.motivo_recusa || r.motivo_cancelamento;
+    if (motivo) linha.title = 'Motivo: ' + motivo;
+    // A aprovada que ainda não começou pode ser cancelada pelo síndico
+    // (vazamento, obra, evento do condomínio); o morador recebe o motivo.
+    if (r.status === 'aprovada' && !jaComecou(r)) {
+      var celula = linha.children[3];
+      celula.style.cssText = 'display:flex;gap:8px;align-items:center;flex-wrap:wrap';
+      var cancelar = document.createElement('button');
+      cancelar.type = 'button';
+      cancelar.className = 'pill-acao recusar';
+      cancelar.textContent = 'Cancelar';
+      cancelar.setAttribute('aria-label', 'Cancelar a reserva de ' + quem(r) + ' em ' + dataCurta(r.data));
+      cancelar.addEventListener('click', function() {
+        var texto = prompt('Motivo do cancelamento (o morador recebe esta mensagem):', '');
+        if (texto === null) return;
+        if (texto.trim().length < 3) { alert('Escreva o motivo do cancelamento.'); return; }
+        cancelar.disabled = true;
+        api.post('/espacos/reservas/' + r.id + '/cancelamento', { motivo: texto.trim() })
+          .then(carregar)
+          .catch(function(e) { cancelar.disabled = false; alert(e.message); });
+      });
+      celula.appendChild(cancelar);
+    }
     return linha;
   }
 

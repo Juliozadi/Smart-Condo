@@ -16,7 +16,7 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.core.tempo import agora_local, hoje_local
 from app.models.condominio import Unidade
-from app.models.enums import Papel, StatusReserva
+from app.models.enums import CanalVerificacao, Papel, StatusReserva
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
 from app.models.usuario import Usuario
 from app.schemas.comuns import Mensagem
@@ -24,9 +24,10 @@ from app.schemas.condominio import (
     EspacoAtualizacao, EspacoEntrada, EspacoSaida, OcupacaoEntrada, OcupacaoSaida,
 )
 from app.schemas.reserva import (
-    AvaliacaoReserva, OcupacaoAgenda, ReservaEntrada, ReservaSaida, ReservaSindicoSaida,
+    AvaliacaoReserva, CancelamentoReserva, OcupacaoAgenda, ReservaEntrada, ReservaSaida,
+    ReservaSindicoSaida,
 )
-from app.services import registro
+from app.services import notificacao, registro
 
 router = APIRouter(prefix="/espacos", tags=["Espaços e Reservas"])
 
@@ -62,6 +63,17 @@ def _ja_comecou(reserva: Reserva) -> bool:
 
 
 MOTIVO_SEM_AVALIACAO = "O horário chegou sem a avaliação do síndico."
+MOTIVO_ESPACO_INATIVADO = "O espaço foi inativado pelo síndico."
+
+
+def _avisar_cancelamento(reserva: Reserva, espaco_nome: str) -> None:
+    """O morador fica sabendo antes do dia, e não ao chegar no salão."""
+    notificacao.notificar(
+        reserva.morador.email, CanalVerificacao.EMAIL, "Reserva cancelada",
+        f"Sua reserva de {espaco_nome} em {reserva.data:%d/%m/%Y}, das "
+        f"{reserva.hora_inicio:%H:%M} às {reserva.hora_fim:%H:%M}, foi cancelada pelo "
+        f"síndico. Motivo: {reserva.motivo_cancelamento}",
+    )
 
 
 def _encerrar_passadas(db: Session, condominio_id: int) -> None:
@@ -108,6 +120,10 @@ def _para_saida(reserva: Reserva) -> ReservaSaida:
         observacoes=reserva.observacoes,
         status=reserva.status,
         motivo_recusa=reserva.motivo_recusa,
+        cancelada_pelo_sindico=(reserva.status == StatusReserva.CANCELADA
+                                and reserva.cancelada_por_id is not None
+                                and reserva.cancelada_por_id != reserva.morador_id),
+        motivo_cancelamento=reserva.motivo_cancelamento,
         criado_em=reserva.criado_em,
     )
 
@@ -212,17 +228,23 @@ def inativar_espaco(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Este espaço já está inativo."
         )
-    canceladas = db.execute(
-        update(Reserva)
+    afetadas = db.scalars(
+        select(Reserva)
         .where(
             Reserva.espaco_id == espaco.id,
             Reserva.status.in_(STATUS_QUE_OCUPAM),
             Reserva.data >= hoje_local(),
         )
-        .values(status=StatusReserva.CANCELADA)
-        .execution_options(synchronize_session=False)
-    ).rowcount
-    espaco.inativo_em = datetime.now(timezone.utc)
+        .options(selectinload(Reserva.morador))
+    ).all()
+    agora = datetime.now(timezone.utc)
+    for reserva in afetadas:
+        reserva.status = StatusReserva.CANCELADA
+        reserva.cancelada_por_id = sindico.id
+        reserva.cancelada_em = agora
+        reserva.motivo_cancelamento = MOTIVO_ESPACO_INATIVADO
+    canceladas = len(afetadas)
+    espaco.inativo_em = agora
     espaco.inativado_por_id = sindico.id
     descricao = None
     if canceladas:
@@ -230,6 +252,8 @@ def inativar_espaco(
                      else f"{canceladas} reservas futuras canceladas")
     registro.registrar(db, sindico, registro.INATIVOU, registro.ESPACO, espaco.id, descricao)
     db.commit()
+    for reserva in afetadas:
+        _avisar_cancelamento(reserva, espaco.nome)
     return Mensagem(detalhe="Espaço inativado." + (f" {descricao}." if descricao else ""))
 
 
@@ -525,6 +549,8 @@ def cancelar_reserva(
         )
 
     reserva.status = StatusReserva.CANCELADA
+    reserva.cancelada_por_id = morador.id
+    reserva.cancelada_em = datetime.now(timezone.utc)
     db.commit()
     db.refresh(reserva)
     return _para_saida(reserva)
@@ -603,6 +629,59 @@ def avaliar_reserva(
 
     db.commit()
     db.refresh(reserva)
+
+    unidade = db.get(Unidade, reserva.morador.unidade_id) if reserva.morador.unidade_id else None
+    return ReservaSindicoSaida(
+        **_para_saida(reserva).model_dump(),
+        morador_id=reserva.morador_id,
+        morador_nome=reserva.morador.nome,
+        unidade=unidade.identificacao if unidade else None,
+    )
+
+
+@router.post(
+    "/reservas/{reserva_id}/cancelamento",
+    response_model=ReservaSindicoSaida,
+    summary="O síndico cancela uma reserva já aprovada",
+)
+def cancelar_pelo_sindico(
+    reserva_id: int,
+    dados: CancelamentoReserva,
+    sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
+    db: Session = Depends(get_db),
+) -> ReservaSindicoSaida:
+    """Vazamento no salão, obra, evento do condomínio: a aprovada ficava de
+    pé e o morador só descobria no dia. O motivo vai para ele por e-mail e
+    aparece na tela; o horário volta a ficar livre."""
+    # Travada: o morador pode estar cancelando ao mesmo tempo.
+    reserva = db.get(Reserva, reserva_id, with_for_update=True)
+    if reserva is None or reserva.espaco.condominio_id != sindico.condominio_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Reserva não encontrada."
+        )
+    if reserva.status == StatusReserva.PENDENTE:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Esta reserva ainda está pendente: use Recusar, com o motivo.",
+        )
+    if reserva.status != StatusReserva.APROVADA:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Só a reserva aprovada pode ser cancelada.",
+        )
+    if _ja_comecou(reserva):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Esta reserva já começou e não pode mais ser cancelada.",
+        )
+
+    reserva.status = StatusReserva.CANCELADA
+    reserva.cancelada_por_id = sindico.id
+    reserva.cancelada_em = datetime.now(timezone.utc)
+    reserva.motivo_cancelamento = dados.motivo
+    db.commit()
+    db.refresh(reserva)
+    _avisar_cancelamento(reserva, reserva.espaco.nome)
 
     unidade = db.get(Unidade, reserva.morador.unidade_id) if reserva.morador.unidade_id else None
     return ReservaSindicoSaida(

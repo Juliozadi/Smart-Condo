@@ -281,10 +281,11 @@
     var p = document.createElement('p');
     p.textContent = periodo(r) + (r.pessoas_estimadas ? ' · ' + r.pessoas_estimadas + ' pessoas' : '');
     info.appendChild(h); info.appendChild(p);
-    if (r.motivo_recusa) {
+    var explicacao = motivoDe(r);
+    if (explicacao) {
       var motivo = document.createElement('p');
       motivo.className = 'reserve-motivo';
-      motivo.textContent = 'Motivo da recusa: ' + r.motivo_recusa;
+      motivo.textContent = explicacao;
       info.appendChild(motivo);
     }
 
@@ -312,11 +313,35 @@
     return card;
   }
 
+  /* Por que a reserva não vai acontecer: o morador precisa saber, e não
+     só ver "Recusada" ou "Cancelada". */
+  function motivoDe(r) {
+    if (r.status === 'recusada' && r.motivo_recusa) return 'Motivo da recusa: ' + r.motivo_recusa;
+    if (r.status === 'cancelada' && r.cancelada_pelo_sindico) {
+      return 'Cancelada pelo síndico' + (r.motivo_cancelamento ? ': ' + r.motivo_cancelamento : '.');
+    }
+    return '';
+  }
+  /* Recusada ou cancelada pelo síndico e ainda por vir: fica no topo,
+     junto das em aberto, para o morador ver antes do dia. */
+  function avisoFuturo(r) {
+    return !jaComecou(r) && (r.status === 'recusada' ||
+                             (r.status === 'cancelada' && r.cancelada_pelo_sindico));
+  }
+
   function montarLinhaHistorico(r) {
     var linha = document.createElement('div');
     linha.className = 'table-row cols-4';
     linha.innerHTML = '<span></span><span></span><span></span><span><span class="badge"></span></span>';
     linha.children[0].textContent = r.espaco_nome;
+    var explicacao = motivoDe(r);
+    if (explicacao) {
+      var detalhe = document.createElement('small');
+      detalhe.className = 'reserve-motivo';
+      detalhe.style.display = 'block';
+      detalhe.textContent = explicacao;
+      linha.children[0].appendChild(detalhe);
+    }
     linha.children[1].textContent = dataCurta(r.data);
     linha.children[2].textContent = periodo(r);
     var selo = linha.children[3].firstChild;
@@ -330,9 +355,9 @@
     return api.get('/espacos/reservas/minhas')
       .then(function(lista) {
         // As em aberto da mais próxima para a mais distante.
-        var ativas = lista.filter(function(r) { return ATIVAS.indexOf(r.status) >= 0; })
+        var ativas = lista.filter(function(r) { return ATIVAS.indexOf(r.status) >= 0 || avisoFuturo(r); })
           .sort(function(a, b) { return (a.data + a.hora_inicio) < (b.data + b.hora_inicio) ? -1 : 1; });
-        var encerradas = lista.filter(function(r) { return ATIVAS.indexOf(r.status) < 0; });
+        var encerradas = lista.filter(function(r) { return ATIVAS.indexOf(r.status) < 0 && !avisoFuturo(r); });
 
         campo('totAprovadas').textContent =
           lista.filter(function(r) { return r.status === 'aprovada'; }).length;

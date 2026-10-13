@@ -253,7 +253,8 @@ def cancelar_reservas_futuras(db: Session, usuario: Usuario) -> int:
             Reserva.status.in_((StatusReserva.PENDENTE, StatusReserva.APROVADA)),
             Reserva.data >= hoje_local(),
         )
-        .values(status=StatusReserva.CANCELADA)
+        .values(status=StatusReserva.CANCELADA, cancelada_em=datetime.now(timezone.utc),
+                motivo_cancelamento="O cadastro do morador foi inativado.")
         .execution_options(synchronize_session=False)
     ).rowcount
 

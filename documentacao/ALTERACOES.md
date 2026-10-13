@@ -7,6 +7,33 @@ O texto escrito pelo grupo foi **preservado**. As mudanças abaixo são de
 duas naturezas: correções do que não correspondia mais ao sistema, e
 seções novas descrevendo o que foi construído desde então.
 
+## Versão 2.7 — situações reais do dia a dia
+
+Na apresentação de 09/10, o professor apontou que, na vida real, o
+condomínio passa por muitas situações que o sistema ainda não tratava.
+Esta versão percorre essas situações, uma a uma.
+
+| Seção | O que mudou |
+|---|---|
+| 9 Requisitos funcionais | RF017: o síndico cancela a reserva já aprovada, com motivo, e o morador vê o motivo da recusa ou do cancelamento |
+| 14 a 17 | reservas ganha cancelada_por_id, cancelada_em e motivo_cancelamento — agora 258 atributos e 51 relacionamentos |
+| 21 API REST | 110 endpoints: o síndico cancela uma reserva aprovada |
+| 23 Testes | 445 casos no servidor e 96 testes de interface |
+
+**Situações tratadas.**
+- O síndico precisa cancelar uma reserva já aprovada (vazamento no salão,
+  obra, evento do condomínio). Antes ele só avaliava as pendentes: a
+  aprovada ficava de pé e o morador descobria no dia. Agora ele cancela
+  com um motivo, o morador recebe por e-mail e vê na tela, e o horário
+  fica livre. Fica registrado quem cancelou e quando — o morador, o
+  síndico, ou a inativação do espaço ou do cadastro.
+
+**Erros achados.**
+- O morador nunca via o motivo de uma recusa: a tela só o mostrava nas
+  reservas em aberto, e a recusada ia direto para o histórico. Agora a
+  recusada e a cancelada pelo síndico que ainda estão por vir aparecem
+  no topo, com o motivo, e o histórico também o mostra.
+
 ## Versão 2.6 — espaços comuns pelo síndico e autoria também do síndico
 
 | Seção | O que mudou |

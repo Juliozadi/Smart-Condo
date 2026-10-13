@@ -358,6 +358,9 @@ CREATE TABLE reservas (
     motivo_recusa text,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    cancelada_por_id integer,
+    cancelada_em timestamp with time zone,
+    motivo_cancelamento text,
     CONSTRAINT ck_reserva_intervalo CHECK ((hora_fim > hora_inicio))
 );
 CREATE SEQUENCE reservas_id_seq
@@ -869,6 +872,9 @@ ALTER TABLE ONLY registros_ocupacao
 
 ALTER TABLE ONLY reservas
     ADD CONSTRAINT reservas_avaliada_por_id_fkey FOREIGN KEY (avaliada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY reservas
+    ADD CONSTRAINT reservas_cancelada_por_id_fkey FOREIGN KEY (cancelada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY reservas
     ADD CONSTRAINT reservas_espaco_id_fkey FOREIGN KEY (espaco_id) REFERENCES espacos_comuns(id) ON DELETE CASCADE;

@@ -50,6 +50,10 @@ class ReservaSaida(SchemaBase):
     observacoes: str | None = None
     status: StatusReserva
     motivo_recusa: str | None = None
+    # Cancelada pelo síndico (ou pela inativação do espaço), e não pelo
+    # próprio morador: a tela explica, com o motivo.
+    cancelada_pelo_sindico: bool = False
+    motivo_cancelamento: str | None = None
     criado_em: datetime
 
 
@@ -78,3 +82,8 @@ class AvaliacaoReserva(SchemaBase):
     """O síndico aprova ou recusa (seção 13.5.3)."""
     aprovada: bool
     motivo: str | None = Field(default=None, max_length=300)
+
+
+class CancelamentoReserva(SchemaBase):
+    """O síndico cancela uma reserva já aprovada; o motivo vai para o morador."""
+    motivo: str = Field(min_length=3, max_length=300)
