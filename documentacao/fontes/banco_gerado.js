@@ -479,9 +479,26 @@ const dicionario = [
         "obrigatorio": "Não",
         "chave": "FK",
         "descricao": "Administrador que inativou o condomínio"
+      },
+      {
+        "coluna": "multa_atraso",
+        "tipo": "NUMERIC(4,2)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Multa, em %, da cobrança paga depois do vencimento; de 0 a 2 (Código Civil, art. 1.336, § 1º)"
+      },
+      {
+        "coluna": "juros_mensais",
+        "tipo": "NUMERIC(4,2)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Juros ao mês, em %, contados por dia de atraso; de 0 a 1 (Código Civil, art. 1.336, § 1º)"
       }
     ],
-    "regras": []
+    "regras": [
+      "CHECK (((juros_mensais >= (0)::numeric) AND (juros_mensais <= (1)::numeric)))",
+      "CHECK (((multa_atraso >= (0)::numeric) AND (multa_atraso <= (2)::numeric)))"
+    ]
   },
   {
     "nome": "documentos",
@@ -1408,9 +1425,17 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "encargos",
+        "tipo": "NUMERIC(10,2)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Parte do valor que pagou multa e juros do atraso; o resto abate a cobrança"
       }
     ],
     "regras": [
+      "CHECK (((encargos >= (0)::numeric) AND (encargos <= valor)))",
       "CHECK ((valor > (0)::numeric))"
     ]
   },

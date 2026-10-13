@@ -15,11 +15,11 @@ Esta versão percorre essas situações, uma a uma.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | RF017: o síndico cancela a reserva já aprovada, com motivo, e o morador vê o motivo da recusa ou do cancelamento. RF015 e RF016: regras de uso de cada espaço (horário, antecedência, duração, limite por apartamento). Novo RF046: o morador autoriza visitante com antecedência, e a portaria registra a entrada sem esperar resposta |
+| 9 Requisitos funcionais | RF017: o síndico cancela a reserva já aprovada, com motivo, e o morador vê o motivo da recusa ou do cancelamento. RF015 e RF016: regras de uso de cada espaço (horário, antecedência, duração, limite por apartamento). Novo RF046: o morador autoriza visitante com antecedência, e a portaria registra a entrada sem esperar resposta. Novo RF047: multa e juros da cobrança paga com atraso |
 | 11 Diagrama de caso de uso | Novo caso do morador: autorizar visitante antes — agora 28 casos de uso |
-| 14 a 17 | reservas ganha cancelada_por_id, cancelada_em e motivo_cancelamento; espacos_comuns ganha horario_abertura, horario_fechamento, antecedencia_minima_dias, duracao_maxima_horas e limite_por_unidade; nova tabela autorizacoes_visita, e visitantes ganha autorizacao_id — agora 23 entidades, 278 atributos e 55 relacionamentos |
-| 21 API REST | 113 endpoints: o síndico cancela uma reserva aprovada; o morador autoriza, lista e revoga visitantes com antecedência |
-| 23 Testes | 482 casos no servidor e 98 testes de interface |
+| 14 a 17 | reservas ganha cancelada_por_id, cancelada_em e motivo_cancelamento; espacos_comuns ganha horario_abertura, horario_fechamento, antecedencia_minima_dias, duracao_maxima_horas e limite_por_unidade; nova tabela autorizacoes_visita, e visitantes ganha autorizacao_id; condominios ganha multa_atraso e juros_mensais, e pagamentos ganha encargos — agora 23 entidades, 281 atributos e 55 relacionamentos |
+| 21 API REST | 115 endpoints: o síndico cancela uma reserva aprovada; o morador autoriza, lista e revoga visitantes com antecedência; consulta e definição da multa e dos juros |
+| 23 Testes | 498 casos no servidor e 101 testes de interface |
 
 **Situações tratadas.**
 - O síndico precisa cancelar uma reserva já aprovada (vazamento no salão,
@@ -46,6 +46,15 @@ Esta versão percorre essas situações, uma a uma.
   autorizado, para não bastar copiá-lo da tela; a autorização de quem se
   mudou deixa de valer sozinha; e duas portarias registrando a mesma
   pessoa ao mesmo tempo não a colocam "dentro" duas vezes.
+- O boleto venceu e o morador paga dez dias depois: o sistema cobrava o
+  mesmo valor no dia do vencimento e meses depois, e quem atrasava pagava
+  igual a quem pagava em dia. Agora a cobrança vencida mostra a multa e
+  os juros (Código Civil, art. 1.336, § 1º: multa de até 2% e juros de 1%
+  ao mês, contados por dia) e o total de hoje, que é o valor do botão
+  Pagar. O síndico define os percentuais do condomínio dentro desses
+  limites e, num acordo, recebe sem os encargos — e a dispensa fica
+  registrada. No pagamento parcial, o dinheiro abate primeiro a multa e
+  os juros (art. 354), como manda a lei.
 
 **Erros achados.**
 - O morador nunca via o motivo de uma recusa: a tela só o mostrava nas

@@ -62,6 +62,8 @@ DESCRICOES = {
     "condominios.cidade": "Cidade",
     "condominios.uf": "Sigla da unidade federativa",
     "condominios.telefone": "Telefone de contato da administração",
+    "condominios.multa_atraso": "Multa, em %, da cobrança paga depois do vencimento; de 0 a 2 (Código Civil, art. 1.336, § 1º)",
+    "condominios.juros_mensais": "Juros ao mês, em %, contados por dia de atraso; de 0 a 1 (Código Civil, art. 1.336, § 1º)",
     "condominios.codigo_acesso": "Código que o morador informa para se cadastrar no condomínio certo; pode ser trocado a qualquer momento",
 
     "unidades.numero": "Número do apartamento ou da casa",
@@ -172,6 +174,7 @@ DESCRICOES = {
     "cobrancas.status": "Situação da cobrança, que acompanha os pagamentos registrados",
 
     "pagamentos.valor": "Valor pago; precisa ser maior que zero",
+    "pagamentos.encargos": "Parte do valor que pagou multa e juros do atraso; o resto abate a cobrança",
     "pagamentos.forma": "Forma utilizada no pagamento",
     "pagamentos.pago_em": "Momento do pagamento",
     "pagamentos.comprovante_url": "Endereço do comprovante, quando houver",

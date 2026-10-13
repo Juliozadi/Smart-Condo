@@ -220,7 +220,7 @@ const requisitosFuncionais = [
     atores: 'Síndico, Morador', prioridade: 'Essencial',
     descricao: 'O sistema registra o pagamento de uma cobrança, com valor, data e forma utilizada, e atualiza a situação da cobrança.',
     entradas: 'A cobrança deve existir e estar em aberto. O valor precisa ser maior que zero.',
-    saidas: 'O pagamento entra no histórico da cobrança e, quando o total pago alcança o valor devido, a cobrança passa a "paga". O pagamento feito pelo morador no app avisa o síndico; o recebido fora do app (boleto no banco, depósito) o síndico registra pela tela, e quem é avisado são os moradores da unidade.' },
+    saidas: 'O pagamento entra no histórico da cobrança e, quando o total pago alcança o valor devido, a cobrança passa a "paga". O pagamento feito pelo morador no app avisa o síndico; o recebido fora do app (boleto no banco, depósito) o síndico registra pela tela, e quem é avisado são os moradores da unidade. Em atraso, o valor inclui multa e juros (RF047).' },
 
   { id: 'RF036', nome: 'Consultar indicadores financeiros',
     atores: 'Síndico', prioridade: 'Importante',
@@ -286,6 +286,12 @@ const requisitosFuncionais = [
     descricao: 'O sistema permite ao morador liberar a entrada de alguém antes de a pessoa chegar — a diarista que vem toda terça e sexta, o prestador da reforma, os convidados da festa —, para que a portaria registre a entrada sem esperar a resposta dele.',
     entradas: 'O morador informa nome, tipo (diarista, prestador, familiar, convidado…), o período (de hoje até no máximo um ano) e, se quiser, o CPF, os dias da semana e um recado para a portaria. Na chegada, o porteiro escolhe a pessoa em "Autorizados para hoje" e digita o CPF do documento apresentado.',
     saidas: 'A pessoa entra direto, como "dentro", e o morador recebe o aviso de que ela entrou. Com CPF na autorização, a portaria vê só o meio dele e o sistema recusa outro documento. Fora do período ou dos dias escolhidos, revogada pelo morador, ou deixada por quem não mora mais no apartamento, a autorização não vale. Qualquer morador do apartamento revoga; a mesma pessoa não entra duas vezes sem ter saído.' },
+
+  { id: 'RF047', nome: 'Cobrar multa e juros do atraso',
+    atores: 'Síndico, Morador', prioridade: 'Importante',
+    descricao: 'O sistema acrescenta à cobrança paga depois do vencimento a multa e os juros previstos no Código Civil (art. 1.336, § 1º): multa de até 2% sobre o débito e, sem outro valor na convenção, juros de 1% ao mês, contados por dia de atraso.',
+    entradas: 'O síndico define os percentuais do condomínio, até esses limites; os condomínios começam com 2% e 1% ao mês. Num acordo, o síndico pode receber sem os encargos.',
+    saidas: 'O morador vê, em cada cobrança vencida, a multa, os juros e o total de hoje, e paga esse total. No pagamento parcial, o dinheiro abate primeiro a multa e os juros (art. 354) e o resto abate o valor, e o pagamento precisa ao menos cobri-los. Cada pagamento guarda quanto foi de encargos; o total recebido do painel os inclui; a dispensa fica registrada, com quem dispensou e quanto.' },
 ];
 
 // ── 10 Requisitos não funcionais ────────────────────────────────────

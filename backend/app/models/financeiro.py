@@ -100,6 +100,7 @@ class Pagamento(Base, TimestampMixin):
     __tablename__ = "pagamentos"
     __table_args__ = (
         CheckConstraint("valor > 0", name="ck_pagamento_valor_positivo"),
+        CheckConstraint("encargos >= 0 AND encargos <= valor", name="ck_pagamento_encargos"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -111,6 +112,11 @@ class Pagamento(Base, TimestampMixin):
     )
 
     valor: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    # Parte do valor que pagou multa e juros do atraso; o resto abate a
+    # cobrança (app/services/encargos.py).
+    encargos: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), nullable=False, default=Decimal("0.00"), server_default=text("0")
+    )
     forma: Mapped[FormaPagamento] = mapped_column(
         SAEnum(FormaPagamento, name="forma_pagamento"), nullable=False
     )

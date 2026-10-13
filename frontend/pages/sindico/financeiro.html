@@ -59,6 +59,25 @@
       </form>
     </div>
 
+    <h2 class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Multa e Juros por Atraso</h2>
+    <div class="form-card">
+      <h3>Encargos da cobrança paga com atraso</h3>
+      <form id="formEncargos" novalidate>
+        <div class="form-row">
+          <div class="form-group"><label for="encMulta">Multa (%)</label><input id="encMulta" type="number" min="0" max="2" step="0.01" required style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
+          <div class="form-group"><label for="encJuros">Juros ao mês (%)</label><input id="encJuros" type="number" min="0" max="1" step="0.01" required style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
+        </div>
+        <p class="aviso-notificacao">
+          <img src="../../assets/img/icons/bullhorn.svg" alt="">
+          <span>Pelo Código Civil (art. 1.336, § 1º), a multa vai até <strong>2%</strong> e os
+          juros, sem outro valor na convenção, são de <strong>1% ao mês</strong>, contados por dia
+          de atraso. O morador já vê o valor atualizado; vale para os pagamentos daqui em diante.</span>
+        </p>
+        <p class="form-erro" id="erroEncargos" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;">Salvar percentuais</button>
+      </form>
+    </div>
+
     <h2 class="section-title"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt=""> Cobranças</h2>
     <div class="barra-acoes">
       <select id="filtroStatus" aria-label="Filtrar por status">
@@ -123,6 +142,13 @@
               <option value="debito_automatico">Débito automático</option>
             </select>
           </div>
+        </div>
+        <p class="regras-aviso" id="pEncargos" hidden></p>
+        <div id="grupoDispensar" style="margin-bottom:14px;" hidden>
+          <label class="terms-check" for="pDispensar">
+            <input type="checkbox" id="pDispensar">
+            <span>Dispensar a multa e os juros (acordo com o morador). Fica registrado quem dispensou.</span>
+          </label>
         </div>
         <div class="form-group">
           <label for="pObservacao">Observação</label>
@@ -204,10 +230,15 @@
     var selo = linha.children[5].firstChild;
     selo.className = 'badge ' + (CLASSE_STATUS[c.status] || 'badge-neutral');
     selo.textContent = ROTULO_STATUS[c.status] || c.status;
+    var dicas = [];
     if (Number(c.total_pago) > 0 && c.status !== 'paga') {
-      linha.title = 'Já pago: ' + dinheiro(c.total_pago) +
-        ' · Falta: ' + dinheiro(Number(c.valor) - Number(c.total_pago));
+      dicas.push('Já pago: ' + dinheiro(c.total_pago) +
+        ' · Falta: ' + dinheiro(Number(c.valor) - Number(c.total_pago)));
     }
+    if (Number(c.multa) + Number(c.juros) > 0) {
+      dicas.push('Hoje, com multa e juros: ' + dinheiro(c.total_atualizado));
+    }
+    if (dicas.length) linha.title = dicas.join(' · ');
     return linha;
   }
 
@@ -343,9 +374,25 @@
     campo('btnCancelarCobranca').hidden = Number(c.total_pago) > 0;
     campo('formPagamento').reset();
     campo('pagamentoErro').textContent = '';
-    campo('pValor').value = (Number(c.valor) - Number(c.total_pago || 0)).toFixed(2);
+    // Em atraso, o valor já vem com a multa e os juros de hoje.
+    var temEncargos = Number(c.multa) + Number(c.juros) > 0;
+    campo('pValor').value = valorDoPagamento(c, false);
+    campo('grupoDispensar').hidden = !temEncargos;
+    campo('pEncargos').hidden = !temEncargos;
+    campo('pEncargos').textContent = temEncargos
+      ? c.dias_atraso + (c.dias_atraso === 1 ? ' dia' : ' dias') + ' de atraso: multa de ' +
+        dinheiro(c.multa) + ' e juros de ' + dinheiro(c.juros) + ', já somados ao valor.'
+      : '';
     modal.abrir();
   }
+
+  function valorDoPagamento(c, dispensar) {
+    var falta = Number(c.valor) - Number(c.total_pago || 0);
+    return (dispensar || !Number(c.total_atualizado) ? falta : Number(c.total_atualizado)).toFixed(2);
+  }
+  campo('pDispensar').addEventListener('change', function() {
+    campo('pValor').value = valorDoPagamento(corrigindo, this.checked);
+  });
 
   function recarregar() {
     return Promise.all([carregarResumo(), carregarCobrancas()]);
@@ -380,7 +427,8 @@
     api.post('/financeiro/cobrancas/' + corrigindo.id + '/pagamentos', {
       valor: Number(valor),
       forma: campo('pForma').value,
-      observacao: campo('pObservacao').value.trim() || null
+      observacao: campo('pObservacao').value.trim() || null,
+      dispensar_encargos: campo('pDispensar').checked
     })
       .then(function() { modal.fechar(); recarregar(); })
       .catch(function(e) { erro.textContent = e.message; })
@@ -403,6 +451,35 @@
       .then(function() { botao.disabled = false; });
   });
 
+  // ── Multa e juros do atraso ────────────────────────────────────────
+  function carregarEncargos() {
+    return api.get('/financeiro/encargos').then(function(e) {
+      campo('encMulta').value = Number(e.multa_atraso).toFixed(2);
+      campo('encJuros').value = Number(e.juros_mensais).toFixed(2);
+    });
+  }
+  campo('formEncargos').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('erroEncargos');
+    erro.className = 'form-erro';
+    var multa = campo('encMulta').value, juros = campo('encJuros').value;
+    if (multa === '' || juros === '' || +multa < 0 || +multa > 2 || +juros < 0 || +juros > 1) {
+      erro.textContent = 'A multa vai de 0 a 2% e os juros, de 0 a 1% ao mês.';
+      return;
+    }
+    var botao = this.querySelector('button[type=submit]');
+    botao.disabled = true;
+    erro.textContent = '';
+    api.put('/financeiro/encargos', { multa_atraso: multa, juros_mensais: juros })
+      .then(function() {
+        erro.className = 'form-erro sucesso';
+        erro.textContent = 'Percentuais salvos.';
+        return recarregar();
+      })
+      .catch(function(e) { erro.textContent = e.message; })
+      .then(function() { botao.disabled = false; });
+  });
+
   campo('filtroStatus').addEventListener('change', aplicarFiltro);
   campo('btnExportar').addEventListener('click', exportarCsv);
   campo('hdrName').textContent = usuario.nome;
@@ -412,6 +489,7 @@
   campo('fin_competencia').value =
     hoje.getFullYear() + '-' + ('0' + (hoje.getMonth() + 1)).slice(-2);
 
+  carregarEncargos().catch(function(e) { campo('erroEncargos').textContent = e.message; });
   carregarUnidades().then(function() {
     return Promise.all([carregarResumo(), carregarCobrancas()]);
   }).catch(function(e) { campo('estadoTabela').textContent = e.message; });

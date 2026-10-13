@@ -164,6 +164,9 @@
     return Math.round((alvo - new Date().setHours(0, 0, 0, 0)) / 86400000);
   }
   function falta(c) { return Number(c.valor) - Number(c.total_pago || 0); }
+  // O que pagar hoje: em atraso, já com a multa e os juros (o servidor faz a conta).
+  function aPagar(c) { return Number(c.total_atualizado) || falta(c); }
+  function temEncargos(c) { return Number(c.multa) + Number(c.juros) > 0; }
 
   function formaEscolhida() {
     var marcada = document.querySelector('input[name="forma_pagamento"]:checked');
@@ -195,22 +198,30 @@
       ' · ' + dinheiro(falta(c)) + (Number(c.total_pago) > 0 ? ' (parcial já pago)' : '');
     info.appendChild(h);
     info.appendChild(p);
+    if (temEncargos(c)) {
+      var encargos = document.createElement('p');
+      encargos.className = 'encargos-atraso';
+      encargos.textContent = 'Com o atraso: multa de ' + dinheiro(c.multa) + ' e juros de ' +
+        dinheiro(c.juros) + ' · total hoje ' + dinheiro(c.total_atualizado);
+      info.appendChild(encargos);
+    }
 
     var pagar = document.createElement('button');
     pagar.type = 'button';
     pagar.className = 'action-btn';
     pagar.style.cssText = 'width:auto;margin:0;padding:10px 18px;font-size:13px;';
-    pagar.textContent = 'Pagar ' + dinheiro(falta(c));
+    pagar.textContent = 'Pagar ' + dinheiro(aPagar(c));
     pagar.addEventListener('click', function() {
       var forma = formaEscolhida();
-      if (!confirm('Registrar o pagamento de ' + dinheiro(falta(c)) +
+      if (!confirm('Registrar o pagamento de ' + dinheiro(aPagar(c)) +
+                   (temEncargos(c) ? ' (com multa e juros do atraso)' : '') +
                    ' por ' + ROTULO_FORMA[forma] + '?')) return;
       pagar.disabled = true;
       var erro = campo('erroPagamento');
       erro.className = 'form-erro';
       erro.textContent = '';
       api.post('/financeiro/cobrancas/' + c.id + '/pagamentos',
-               { valor: falta(c), forma: forma })
+               { valor: aPagar(c).toFixed(2), forma: forma })
         .then(function() {
           erro.className = 'form-erro sucesso';
           erro.textContent = 'Pagamento registrado por ' + ROTULO_FORMA[forma] +
@@ -255,7 +266,7 @@
         var abertas = cobrancas.filter(function(c) {
           return c.status === 'aberta' || c.status === 'vencida';
         });
-        var devendo = abertas.reduce(function(soma, c) { return soma + falta(c); }, 0);
+        var devendo = abertas.reduce(function(soma, c) { return soma + aPagar(c); }, 0);
         var vencidas = abertas.filter(function(c) { return c.status === 'vencida'; });
 
         campo('balanceValor').textContent = devendo > 0 ? dinheiro(devendo) : 'Em dia';

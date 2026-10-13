@@ -83,7 +83,13 @@ class CobrancaSaida(SchemaBase):
     valor: Decimal
     vencimento: date
     status: StatusCobranca
+    # O que já abateu do valor (sem a multa e os juros pagos).
     total_pago: Decimal
+    # Paga hoje: os encargos do atraso sobre o que falta, e o total a pagar.
+    dias_atraso: int = 0
+    multa: Decimal = Decimal("0.00")
+    juros: Decimal = Decimal("0.00")
+    total_atualizado: Decimal = Decimal("0.00")
     criado_em: datetime
     # Só para o síndico: "Editado por Fulano em ...".
     ultima_alteracao: RegistroSaida | None = None
@@ -94,18 +100,29 @@ class PagamentoEntrada(SchemaBase):
     forma: FormaPagamento
     comprovante_url: EnderecoWeb | None = None
     observacao: str | None = Field(default=None, max_length=500)
+    # Só o síndico: num acordo, recebe sem a multa e os juros do atraso.
+    dispensar_encargos: bool = False
 
 
 class PagamentoSaida(SchemaBase):
     id: int
     cobranca_id: int
     valor: Decimal
+    # Quanto do valor foi para a multa e os juros do atraso.
+    encargos: Decimal = Decimal("0.00")
     forma: FormaPagamento
     pago_em: datetime
     pago_por_id: int | None = None
     pago_por_nome: str | None = None
     comprovante_url: str | None = None
     observacao: str | None = None
+
+
+class EncargosCondominio(SchemaBase):
+    """Multa e juros da cobrança paga com atraso, em %. Os limites são os
+    do Código Civil, art. 1.336, § 1º."""
+    multa_atraso: Decimal = Field(ge=0, le=2, max_digits=4, decimal_places=2)
+    juros_mensais: Decimal = Field(ge=0, le=1, max_digits=4, decimal_places=2)
 
 
 class ResumoFinanceiro(SchemaBase):

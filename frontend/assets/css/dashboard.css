@@ -2255,3 +2255,6 @@ body.tema-escuro .chat-avatar.sindico, body.tema-escuro .chat-avatar.porteiro { 
   background: var(--surface-2);
 }
 .aviso-autorizacao[hidden] { display: none; }
+
+/* Multa e juros da cobrança em atraso, no financeiro do morador */
+.list-info .encargos-atraso { font-size: 12px; font-weight: 600; color: var(--erro); margin-top: 2px; }

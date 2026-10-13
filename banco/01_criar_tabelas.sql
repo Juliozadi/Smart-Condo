@@ -194,7 +194,13 @@ CREATE TABLE condominios (
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
     codigo_acesso character varying(20) NOT NULL,
     inativo_em timestamp with time zone,
-    inativado_por_id integer
+    inativado_por_id integer,
+    -- Multa e juros da cobrança paga com atraso, em %: até 2% e 1% ao mês
+    -- (Código Civil, art. 1.336, § 1º).
+    multa_atraso numeric(4,2) DEFAULT 2.00 NOT NULL,
+    juros_mensais numeric(4,2) DEFAULT 1.00 NOT NULL,
+    CONSTRAINT ck_condominio_juros CHECK (((juros_mensais >= (0)::numeric) AND (juros_mensais <= (1)::numeric))),
+    CONSTRAINT ck_condominio_multa CHECK (((multa_atraso >= (0)::numeric) AND (multa_atraso <= (2)::numeric)))
 );
 CREATE SEQUENCE condominios_id_seq
     AS integer
@@ -462,6 +468,9 @@ CREATE TABLE pagamentos (
     observacao text,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    -- Parte do valor que pagou multa e juros do atraso.
+    encargos numeric(10,2) DEFAULT 0 NOT NULL,
+    CONSTRAINT ck_pagamento_encargos CHECK (((encargos >= (0)::numeric) AND (encargos <= valor))),
     CONSTRAINT ck_pagamento_valor_positivo CHECK ((valor > (0)::numeric))
 );
 CREATE SEQUENCE pagamentos_id_seq

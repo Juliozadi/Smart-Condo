@@ -6,9 +6,12 @@ morador: condomínio, bloco/torre e número de vagas na garagem.
 """
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, ForeignKey, Integer, String, UniqueConstraint, false
+from sqlalchemy import (
+    Boolean, CheckConstraint, ForeignKey, Integer, Numeric, String, UniqueConstraint, false, text,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -20,6 +23,12 @@ if TYPE_CHECKING:
 
 class Condominio(Base, TimestampMixin, InativacaoMixin):
     __tablename__ = "condominios"
+    __table_args__ = (
+        # Código Civil, art. 1.336, § 1º: multa de até 2% e, sem outro valor
+        # na convenção, juros de 1% ao mês.
+        CheckConstraint("multa_atraso BETWEEN 0 AND 2", name="ck_condominio_multa"),
+        CheckConstraint("juros_mensais BETWEEN 0 AND 1", name="ck_condominio_juros"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     nome: Mapped[str] = mapped_column(String(160), nullable=False)
@@ -43,6 +52,14 @@ class Condominio(Base, TimestampMixin, InativacaoMixin):
     uf: Mapped[str] = mapped_column(String(2), nullable=False)
 
     telefone: Mapped[str | None] = mapped_column(String(20))
+
+    # Encargos da cobrança paga com atraso, em % (app/services/encargos.py).
+    multa_atraso: Mapped[Decimal] = mapped_column(
+        Numeric(4, 2), nullable=False, default=Decimal("2.00"), server_default=text("2.00")
+    )
+    juros_mensais: Mapped[Decimal] = mapped_column(
+        Numeric(4, 2), nullable=False, default=Decimal("1.00"), server_default=text("1.00")
+    )
 
     # O síndico que cadastrou o condomínio (pré-requisito da seção 12:
     # "Existir um síndico ativo").
