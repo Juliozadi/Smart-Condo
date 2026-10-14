@@ -9,7 +9,7 @@ import random
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from conftest import FRONT, abrir, ir
+from conftest import FRONT, abrir, ir, token_da_aba
 
 API = FRONT.rsplit(":", 1)[0] + ":8000/api/v1"
 
@@ -39,7 +39,7 @@ def _cobranca_vencida(pg, sindico, unidade_id, descricao):
 def test_morador_paga_com_multa_e_juros(navegador):
     ctx, pg = abrir(navegador, papel="morador")
     sindico = _token(pg, "sindico@smartcondo.com")
-    morador = _token(pg, "morador@smartcondo.com")
+    morador = token_da_aba(pg)
     unidade_id = pg.request.get(f"{API}/auth/eu", headers=morador).json()["unidade"]["id"]
     descricao = f"Taxa extra {random.randint(1000, 9999)}"
     _cobranca_vencida(pg, sindico, unidade_id, descricao)
@@ -59,9 +59,8 @@ def test_morador_paga_com_multa_e_juros(navegador):
 
 def test_sindico_dispensa_os_encargos_pela_tela(navegador):
     ctx, pg = abrir(navegador, papel="sindico")
-    sindico = _token(pg, "sindico@smartcondo.com")
-    morador = _token(pg, "morador@smartcondo.com")
-    unidade_id = pg.request.get(f"{API}/auth/eu", headers=morador).json()["unidade"]["id"]
+    sindico = token_da_aba(pg)
+    unidade_id = pg.request.get(f"{API}/condominios/meu/unidades", headers=sindico).json()[0]["id"]
     descricao = f"Taxa acordo {random.randint(1000, 9999)}"
     cobranca = _cobranca_vencida(pg, sindico, unidade_id, descricao)
 

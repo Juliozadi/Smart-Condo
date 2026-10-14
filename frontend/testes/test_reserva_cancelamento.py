@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
-from conftest import FRONT, abrir, ir
+from conftest import FRONT, abrir, ir, token_da_aba
 
 API = FRONT.rsplit(":", 1)[0] + ":8000/api/v1"
 
@@ -21,7 +21,7 @@ def _token(pg, email):
 def test_sindico_cancela_pela_tela_e_morador_ve_o_motivo(navegador):
     ctx, pg = abrir(navegador, papel="sindico")
     morador = _token(pg, "morador@smartcondo.com")
-    sindico = _token(pg, "sindico@smartcondo.com")
+    sindico = token_da_aba(pg)
     espaco = next(e for e in pg.request.get(f"{API}/espacos", headers=morador).json()
                   if e["nome"] == "Churrasqueira 1")
     dia = date.today() + timedelta(days=55)

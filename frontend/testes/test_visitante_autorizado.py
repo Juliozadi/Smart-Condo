@@ -10,15 +10,10 @@ import random
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from conftest import FRONT, abrir, ir
+from conftest import FRONT, abrir, ir, token_da_aba
 from test_arquivos import cpf_valido
 
 API = FRONT.rsplit(":", 1)[0] + ":8000/api/v1"
-
-
-def _token(pg, email):
-    r = pg.request.post(f"{API}/auth/login", data={"email": email, "senha": "smartcondo123"})
-    return {"Authorization": "Bearer " + r.json()["access_token"]}
 
 
 def _cpf_diferente(cpf):
@@ -32,8 +27,8 @@ def test_morador_autoriza_e_portaria_registra_a_entrada(navegador):
     nome = f"Diarista Teste {random.randint(1000, 9999)}"
     cpf = cpf_valido()
     ctx, pg = abrir(navegador, papel="morador")
-    morador = _token(pg, "morador@smartcondo.com")
-    porteiro = _token(pg, "porteiro@smartcondo.com")
+    morador = token_da_aba(pg)
+    porteiro = None
     try:
         ir(pg, "pages/morador/visitantes.html", 1200)
         pg.fill("#aut_nome", nome)
@@ -53,6 +48,7 @@ def test_morador_autoriza_e_portaria_registra_a_entrada(navegador):
         ctx.close()
 
         ctx, pg = abrir(navegador, papel="porteiro")
+        porteiro = token_da_aba(pg)
         ir(pg, "pages/porteiro/visitantes.html", 1500)
         autorizado = pg.locator("#listaAutorizados .list-item", has_text=nome)
         autorizado.wait_for(timeout=8000)
@@ -76,7 +72,9 @@ def test_morador_autoriza_e_portaria_registra_a_entrada(navegador):
         autorizado.get_by_text("Dentro").wait_for(timeout=8000)
         assert pg.erros == []
     finally:
-        for v in pg.request.get(f"{API}/portaria/visitantes?status=dentro", headers=porteiro).json():
+        dentro = (pg.request.get(f"{API}/portaria/visitantes?status=dentro", headers=porteiro).json()
+                  if porteiro else [])
+        for v in dentro:
             if v["nome"] == nome:
                 pg.request.post(f"{API}/portaria/visitantes/{v['id']}/saida", headers=porteiro)
         for a in pg.request.get(f"{API}/portaria/autorizacoes", headers=morador).json():

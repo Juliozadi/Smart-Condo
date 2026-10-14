@@ -184,6 +184,12 @@ jobs:
       SECRET_KEY: chave-de-teste-suficientemente-longa-para-o-ci
       BCRYPT_ROUNDS: '4'
       DEBUG: 'true'
+      # A suíte faz dezenas de logins de "pessoas" diferentes, todas do
+      # mesmo IP (127.0.0.1): rápida no CI, passava dos 30 logins por
+      # minuto por origem, e a tela de login recebia 429. O limite por
+      # origem é testado na suíte do servidor (tests/test_limite_origem.py),
+      # que também zera a contagem entre um teste e outro.
+      LIMITE_POR_ORIGEM: 'false'
 
     steps:
       - uses: actions/checkout@v4

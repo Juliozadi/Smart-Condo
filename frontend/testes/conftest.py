@@ -75,6 +75,13 @@ def abrir(navegador, largura=1280, tema="light", papel=None):
     return ctx, pg
 
 
+def token_da_aba(pg):
+    """O token da sessão aberta na aba, para chamar a API direto. Um login a
+    mais pela API conta no limite de 30 logins por minuto por origem — e a
+    suíte, rápida no CI, chegava a ele, e a tela de login recebia 429."""
+    return {"Authorization": "Bearer " + pg.evaluate("localStorage.getItem('smartcondo_token')")}
+
+
 def ir(pg, pagina, espera=700):
     pg.goto(f"{FRONT}/{pagina}")
     pg.wait_for_timeout(espera)
