@@ -19,7 +19,7 @@ Esta versão percorre essas situações, uma a uma.
 | 11 Diagrama de caso de uso | Novo caso do morador: autorizar visitante antes — agora 28 casos de uso |
 | 14 a 17 | reservas ganha cancelada_por_id, cancelada_em e motivo_cancelamento; espacos_comuns ganha horario_abertura, horario_fechamento, antecedencia_minima_dias, duracao_maxima_horas e limite_por_unidade; nova tabela autorizacoes_visita, e visitantes ganha autorizacao_id; condominios ganha multa_atraso e juros_mensais, e pagamentos ganha encargos; comunicados ganha bloco e unidade_id — agora 23 entidades, 283 atributos e 56 relacionamentos |
 | 21 API REST | 115 endpoints: o síndico cancela uma reserva aprovada; o morador autoriza, lista e revoga visitantes com antecedência; consulta e definição da multa e dos juros |
-| 23 Testes | 512 casos no servidor e 103 testes de interface |
+| 23 Testes | 512 casos no servidor e 111 testes de interface |
 
 **Situações tratadas.**
 - O síndico precisa cancelar uma reserva já aprovada (vazamento no salão,
@@ -72,6 +72,12 @@ Esta versão percorre essas situações, uma a uma.
   encomenda — é o síndico.
 
 **Erros achados.**
+- No painel do síndico, num monitor de 1440px, a marca "SmartCondo"
+  aparecia cortada: a barra dos painéis tem 480px em qualquer tela, e o
+  botão "Mensagens" por extenso, o nome e o "Sair" não deixavam lugar
+  para ela. Ali o botão fica só com o ícone, como no celular, e ganhou
+  nome acessível desde o início (antes só o recebia depois de carregar
+  o contador de não lidas).
 - O morador nunca via o motivo de uma recusa: a tela só o mostrava nas
   reservas em aberto, e a recusada ia direto para o histórico. Agora a
   recusada e a cancelada pelo síndico que ainda estão por vir aparecem

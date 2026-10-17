@@ -2087,6 +2087,12 @@ a.contato-btn { text-decoration: none; }
   .chat-abrir { padding: 7px 9px; }
   .chat-abrir-texto { display: none; }
 }
+/* Os painéis (layout-mobile) têm a barra de 480px em qualquer tela: com
+   "Mensagens" por extenso, o nome e o "Sair", a marca não cabia, e
+   "SmartCondo" passava por baixo do botão num monitor de 1440px. Como no
+   celular, ali o botão fica só com o ícone (o contador continua). */
+.layout-mobile .chat-abrir { padding: 7px 9px; }
+.layout-mobile .chat-abrir-texto { display: none; }
 
 .chat-fundo { position: fixed; inset: 0; background: rgba(8,20,22,.45); z-index: 1000; }
 .chat-painel {

@@ -48,6 +48,10 @@
     var botao = criar('button', 'chat-abrir');
     botao.type = 'button';
     botao.setAttribute('aria-haspopup', 'dialog');
+    // Onde o botão fica só com o ícone (celular, painéis), o nome vem
+    // daqui; o contador o completa com as não lidas.
+    botao.setAttribute('aria-label', 'Mensagens');
+    botao.title = 'Mensagens';
     botao.appendChild(icone('envelope'));
     botao.appendChild(criar('span', 'chat-abrir-texto', 'Mensagens'));
     contadorEl = criar('span', 'chat-contador');
