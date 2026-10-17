@@ -15,11 +15,11 @@ Esta versão percorre essas situações, uma a uma.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | RF017: o síndico cancela a reserva já aprovada, com motivo, e o morador vê o motivo da recusa ou do cancelamento. RF015 e RF016: regras de uso de cada espaço (horário, antecedência, duração, limite por apartamento). Novo RF046: o morador autoriza visitante com antecedência, e a portaria registra a entrada sem esperar resposta. Novo RF047: multa e juros da cobrança paga com atraso. RF030: comunicado para um bloco ou para um apartamento |
+| 9 Requisitos funcionais | RF017: o síndico cancela a reserva já aprovada, com motivo, e o morador vê o motivo da recusa ou do cancelamento. RF015 e RF016: regras de uso de cada espaço (horário, antecedência, duração, limite por apartamento). Novo RF046: o morador autoriza visitante com antecedência, e a portaria registra a entrada sem esperar resposta. Novo RF047: multa e juros da cobrança paga com atraso. RF030: comunicado para um bloco ou para um apartamento. RF021 e RF024: visitante e encomenda para apartamento sem morador |
 | 11 Diagrama de caso de uso | Novo caso do morador: autorizar visitante antes — agora 28 casos de uso |
 | 14 a 17 | reservas ganha cancelada_por_id, cancelada_em e motivo_cancelamento; espacos_comuns ganha horario_abertura, horario_fechamento, antecedencia_minima_dias, duracao_maxima_horas e limite_por_unidade; nova tabela autorizacoes_visita, e visitantes ganha autorizacao_id; condominios ganha multa_atraso e juros_mensais, e pagamentos ganha encargos; comunicados ganha bloco e unidade_id — agora 23 entidades, 283 atributos e 56 relacionamentos |
 | 21 API REST | 115 endpoints: o síndico cancela uma reserva aprovada; o morador autoriza, lista e revoga visitantes com antecedência; consulta e definição da multa e dos juros |
-| 23 Testes | 507 casos no servidor e 102 testes de interface |
+| 23 Testes | 512 casos no servidor e 103 testes de interface |
 
 **Situações tratadas.**
 - O síndico precisa cancelar uma reserva já aprovada (vazamento no salão,
@@ -62,6 +62,14 @@ Esta versão percorre essas situações, uma a uma.
   (e para a portaria); o de um apartamento, só para quem mora lá desde
   antes da publicação — nem os vizinhos, nem a portaria, nem o morador
   que chegar depois o veem, e nem conseguem marcá-lo como lido.
+- O apartamento está vazio, à venda, ou o novo morador ainda não se
+  cadastrou: a portaria registrava o visitante, o aviso não chegava a
+  ninguém e ele esperava duas horas por uma confirmação que nunca viria;
+  a encomenda do morador que se mudou ficava na portaria sem ninguém
+  saber. Agora a lista de unidades da portaria marca as "sem morador", a
+  tela avisa ao escolher uma delas, o visitante fica registrado direto
+  como "sem resposta" e quem recebe o aviso — do visitante e da
+  encomenda — é o síndico.
 
 **Erros achados.**
 - O morador nunca via o motivo de uma recusa: a tela só o mostrava nas

@@ -62,6 +62,8 @@ class UnidadeSaida(UnidadeEntrada):
     condominio_id: int
     # Só para o síndico: quantos moradores ativos e quem mexeu por último.
     total_moradores: int | None = None
+    # Para a portaria e o síndico: nenhum morador ativo, ninguém a avisar.
+    sem_morador: bool | None = None
     ultima_alteracao: RegistroSaida | None = None
 
 

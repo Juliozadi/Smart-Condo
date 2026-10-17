@@ -81,17 +81,22 @@ def listar_unidades(
         .order_by(Unidade.bloco, Unidade.numero)
     ).all()
     saida = [UnidadeSaida.model_validate(u) for u in unidades]
-    if usuario.papel != Papel.SINDICO:
+    if usuario.papel not in (Papel.SINDICO, Papel.PORTEIRO):
         return saida
-    # O síndico vê quantos moram em cada uma e quem mexeu por último.
     moradores = dict(db.execute(
         select(Usuario.unidade_id, func.count(Usuario.id))
         .where(Usuario.condominio_id == usuario.condominio_id,
                Usuario.papel == Papel.MORADOR, Usuario.status == StatusUsuario.ATIVO)
         .group_by(Usuario.unidade_id)
     ).all())
+    # A portaria vê só se há alguém a avisar: o visitante do apartamento
+    # vazio não espera uma confirmação que não vem.
+    if usuario.papel == Papel.PORTEIRO:
+        return [u.model_copy(update={"sem_morador": not moradores.get(u.id)}) for u in saida]
+    # O síndico vê quantos moram em cada uma e quem mexeu por último.
     ultimas = registro.ultimas(db, registro.UNIDADE, (u.id for u in unidades))
     return [u.model_copy(update={"total_moradores": moradores.get(u.id, 0),
+                                 "sem_morador": not moradores.get(u.id),
                                  "ultima_alteracao": ultimas.get(u.id)}) for u in saida]
 
 

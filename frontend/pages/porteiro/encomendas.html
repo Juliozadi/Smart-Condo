@@ -92,6 +92,7 @@
              data-icone="../../assets/img/icons/camera.svg"
              data-input="foto_encomenda"></div>
 
+        <p class="aviso-sem-morador" id="avisoSemMorador" role="status" hidden></p>
         <p class="aviso-notificacao">
           <img src="../../assets/img/icons/bullhorn.svg" alt="">
           <span>Ao registrar, o morador destinatário recebe uma <strong>notificação de chegada</strong>
@@ -297,12 +298,31 @@
         var select = campo('encome_destinatarioApartamento');
         lista.forEach(function(u) {
           var op = document.createElement('option');
+          var identificacao = (u.bloco && u.bloco !== 'unico' ? u.bloco + ' ' : '') + u.numero;
           op.value = u.id;
-          op.textContent = (u.bloco && u.bloco !== 'unico' ? u.bloco + ' ' : '') + u.numero;
+          op.textContent = identificacao + (u.sem_morador ? ' (sem morador)' : '');
+          op.setAttribute('data-identificacao', identificacao);
+          if (u.sem_morador) op.setAttribute('data-sem-morador', '1');
           select.appendChild(op);
         });
       });
     }
+
+    // Apartamento sem morador no sistema: o aviso iria para ninguém. A
+    // portaria fica sabendo ao escolher a unidade, e o síndico é avisado.
+    function avisarSemMorador(select) {
+      var op = select.options[select.selectedIndex];
+      var vazio = !!(op && op.getAttribute('data-sem-morador'));
+      var aviso = campo('avisoSemMorador');
+      aviso.hidden = !vazio;
+      aviso.textContent = vazio
+        ? 'Ninguém mora no apto ' + op.getAttribute('data-identificacao') +
+          ' pelo sistema: não há a quem avisar. O síndico é que será avisado.'
+        : '';
+    }
+    campo('encome_destinatarioApartamento').addEventListener('change', function() {
+      avisarSemMorador(this);
+    });
 
     campo('formEncomenda').addEventListener('submit', function(evento) {
       evento.preventDefault();
@@ -336,8 +356,10 @@
       botao.disabled = true;
       botao.textContent = 'Registrando…';
 
+      var semMorador = false;
       api.post('/portaria/encomendas', corpo)
         .then(function(encomenda) {
+          semMorador = encomenda.sem_morador;
           if (!fotoCapturada) return null;
           return api.put('/portaria/encomendas/' + encomenda.id + '/foto',
                          api.arquivoDeDataUrl(fotoCapturada, 'encomenda.jpg'))
@@ -345,9 +367,12 @@
         })
         .then(function(falhaDaFoto) {
           campo('formEncomenda').reset();
+          campo('avisoSemMorador').hidden = true;
           erro.className = 'form-erro' + (falhaDaFoto ? '' : ' sucesso');
           erro.textContent = falhaDaFoto
-            ? 'Encomenda registrada e morador notificado, mas a foto não foi enviada: ' + falhaDaFoto
+            ? 'Encomenda registrada, mas a foto não foi enviada: ' + falhaDaFoto
+            : semMorador
+            ? 'Encomenda registrada. Ninguém mora no apartamento pelo sistema; o síndico foi avisado.'
             : 'Encomenda registrada. O morador foi notificado.';
           return carregar();
         })

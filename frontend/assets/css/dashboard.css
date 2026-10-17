@@ -2261,3 +2261,7 @@ body.tema-escuro .chat-avatar.sindico, body.tema-escuro .chat-avatar.porteiro { 
 
 /* Comunicado para um bloco ou um apartamento, na lista do síndico */
 .destino-comunicado { display: block; font-size: 11px; font-weight: 600; color: var(--text-2); margin-top: 2px; }
+
+/* Apartamento sem morador no sistema, nos formulários da portaria */
+.aviso-sem-morador { font-size: 13px; font-weight: 600; color: var(--erro); margin: -4px 0 12px; }
+.aviso-sem-morador[hidden] { display: none; }

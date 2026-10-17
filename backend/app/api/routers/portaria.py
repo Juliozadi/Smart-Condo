@@ -87,18 +87,32 @@ def _unidade_do_condominio(db: Session, usuario: Usuario, unidade_id: int) -> Un
     return unidade
 
 
-def _avisar_moradores(db: Session, unidade: Unidade, titulo: str, mensagem: str) -> None:
-    """Notifica quem mora na unidade agora: o morador que se mudou
-    (inativado) ou teve o cadastro recusado não recebe mais os visitantes e
-    as encomendas do apartamento."""
-    moradores = db.scalars(
+def _moradores(db: Session, unidade: Unidade) -> list[Usuario]:
+    """Quem mora na unidade agora: o morador que se mudou (inativado) ou
+    teve o cadastro recusado não recebe mais os visitantes e as encomendas
+    do apartamento."""
+    return list(db.scalars(
         select(Usuario).where(
             Usuario.unidade_id == unidade.id, Usuario.papel == Papel.MORADOR,
             Usuario.status == StatusUsuario.ATIVO,
         )
-    ).all()
-    for morador in moradores:
+    ).all())
+
+
+def _avisar_moradores(db: Session, unidade: Unidade, titulo: str, mensagem: str) -> None:
+    for morador in _moradores(db, unidade):
         notificacao.notificar(morador.email, CanalVerificacao.EMAIL, titulo, mensagem)
+
+
+def _avisar_sindico(db: Session, unidade: Unidade, titulo: str, mensagem: str) -> None:
+    """O apartamento está vazio no sistema (à venda, ou o novo morador ainda
+    não se cadastrou): quem fica sabendo é o síndico atual."""
+    sindico = db.scalar(select(Usuario).where(
+        Usuario.condominio_id == unidade.condominio_id, Usuario.papel == Papel.SINDICO,
+        Usuario.status == StatusUsuario.ATIVO,
+    ))
+    if sindico is not None:
+        notificacao.notificar(sindico.email, CanalVerificacao.EMAIL, titulo, mensagem)
 
 
 def _visitante_saida(v: Visitante, unidade: Unidade | None = None) -> VisitanteSaida:
@@ -219,11 +233,15 @@ def registrar_visitante(
 ) -> VisitanteSaida:
     unidade = _unidade_do_condominio(db, usuario, dados.unidade_id)
     _expurgar_fotos_antigas(db)
+    # Ninguém mora lá pelo sistema: não há quem confirme, e o visitante
+    # não fica duas horas esperando. O registro fica, como "sem resposta".
+    sem_morador = not _moradores(db, unidade)
 
     visitante = Visitante(
         **dados.model_dump(exclude={"autorizacao_id"}),
         registrado_por_id=usuario.id,
-        status=StatusVisitante.AGUARDANDO_CONFIRMACAO,
+        status=(StatusVisitante.SEM_RESPOSTA if sem_morador
+                else StatusVisitante.AGUARDANDO_CONFIRMACAO),
     )
     autorizacao = None
     if dados.autorizacao_id is not None:
@@ -249,6 +267,14 @@ def registrar_visitante(
             "Visitante autorizado entrou",
             f"{visitante.nome} ({autorizacao.tipo}) entrou pela autorização deixada na portaria.",
         )
+    elif sem_morador:
+        _avisar_sindico(
+            db, unidade,
+            "Visitante para apartamento sem morador",
+            f"{visitante.nome} chegou à portaria para o apto {unidade.identificacao}, que não "
+            "tem morador ativo no sistema: não há quem confirme a entrada.",
+        )
+        return _visitante_saida(visitante, unidade).model_copy(update={"sem_morador": True})
     else:
         # A notificação com a foto é o que permite o morador confirmar (seção 6).
         _avisar_moradores(
@@ -654,6 +680,16 @@ def registrar_encomenda(
 
     # "notificação de entrega para o cliente que realizou o pedido" (seção 6)
     rastreio = f" (rastreio {encomenda.codigo_rastreio})" if encomenda.codigo_rastreio else ""
+    if not _moradores(db, unidade):
+        # A encomenda do morador que se mudou fica na portaria: sem ninguém
+        # para retirá-la, o síndico precisa saber.
+        _avisar_sindico(
+            db, unidade,
+            "Encomenda para apartamento sem morador",
+            f"{encomenda.tipo_volume} de {encomenda.remetente}{rastreio} chegou para o apto "
+            f"{unidade.identificacao}, que não tem morador ativo no sistema.",
+        )
+        return _encomenda_saida(encomenda).model_copy(update={"sem_morador": True})
     _avisar_moradores(
         db, unidade,
         "Encomenda na portaria",

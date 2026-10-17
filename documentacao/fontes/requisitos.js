@@ -136,7 +136,7 @@ const requisitosFuncionais = [
     atores: 'Porteiro', prioridade: 'Essencial',
     descricao: 'O sistema permite registrar a chegada de um visitante, vinculando-o à unidade visitada e avisando o morador para que confirme.',
     entradas: 'O porteiro informa nome do visitante, documento e a unidade de destino, e pode tirar uma foto pela câmera ou enviar uma imagem. É preciso ter a permissão de registrar visitantes.',
-    saidas: 'O visitante é registrado como "aguardando confirmação" e o morador da unidade recebe o aviso, com a foto no painel para reconhecer quem está na portaria. A foto só é vista pelo morador da unidade, pelo síndico e pela portaria, e não pode ser trocada depois que o morador responde. O aviso vai só para quem mora lá agora, e o morador que chega depois — ou é transferido de apartamento, ou volta depois de sair — não vê os visitantes de quem estava lá antes. Quem o morador autorizou com antecedência entra sem esperar resposta (RF046).' },
+    saidas: 'O visitante é registrado como "aguardando confirmação" e o morador da unidade recebe o aviso, com a foto no painel para reconhecer quem está na portaria. A foto só é vista pelo morador da unidade, pelo síndico e pela portaria, e não pode ser trocada depois que o morador responde. O aviso vai só para quem mora lá agora, e o morador que chega depois — ou é transferido de apartamento, ou volta depois de sair — não vê os visitantes de quem estava lá antes. Quem o morador autorizou com antecedência entra sem esperar resposta (RF046). Se ninguém mora no apartamento pelo sistema (vazio, à venda, ou o novo morador ainda não se cadastrou), a portaria é avisada ao escolher a unidade, o visitante fica registrado como "sem resposta" em vez de esperar duas horas, e quem é avisado é o síndico.' },
 
   { id: 'RF022', nome: 'Confirmar ou recusar visitante',
     atores: 'Morador', prioridade: 'Essencial',
@@ -154,7 +154,7 @@ const requisitosFuncionais = [
     atores: 'Porteiro', prioridade: 'Essencial',
     descricao: 'O sistema permite registrar a chegada de uma encomenda, vinculada à unidade, e avisar o morador de que há algo para retirar.',
     entradas: 'O porteiro informa a unidade, a transportadora e, quando houver, o código de rastreio e uma foto do volume. É preciso ter a permissão de registrar encomendas.',
-    saidas: 'A encomenda fica como "aguardando retirada" e aparece no painel do morador, com a foto quando houver.' },
+    saidas: 'A encomenda fica como "aguardando retirada" e aparece no painel do morador, com a foto quando houver. Para um apartamento sem morador no sistema — a encomenda de quem se mudou —, quem é avisado é o síndico, e a portaria fica sabendo ao escolher a unidade.' },
 
   { id: 'RF025', nome: 'Confirmar retirada de encomenda',
     atores: 'Morador, Porteiro', prioridade: 'Importante',

@@ -115,6 +115,9 @@ class VisitanteSaida(SchemaBase):
     confirmado_em: datetime | None = None
     autorizacao_id: int | None = None
     criado_em: datetime
+    # Na resposta do registro: ninguém mora no apartamento pelo sistema, e
+    # quem foi avisado foi o síndico.
+    sem_morador: bool = False
 
 
 class ConfirmacaoVisitante(SchemaBase):
@@ -149,6 +152,8 @@ class EncomendaSaida(SchemaBase):
     retirado_por_nome: str | None = None
     entregue_por_nome: str | None = None
     criado_em: datetime
+    # Na resposta do registro, como no visitante.
+    sem_morador: bool = False
 
 
 class RetiradaEncomenda(SchemaBase):
