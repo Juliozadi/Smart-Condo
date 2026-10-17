@@ -188,9 +188,9 @@ const requisitosFuncionais = [
 
   { id: 'RF030', nome: 'Publicar comunicado',
     atores: 'Síndico', prioridade: 'Essencial',
-    descricao: 'O sistema permite publicar avisos para todo o condomínio, classificados por categoria: geral, manutenção, financeiro, segurança, evento ou urgente.',
-    entradas: 'O síndico informa título, texto e categoria.',
-    saidas: 'O comunicado passa a aparecer para todos os moradores ativos do condomínio, ordenado pela data de publicação. Removido, ele sai das telas, mas fica guardado com quem o removeu e quando.' },
+    descricao: 'O sistema permite publicar avisos para todo o condomínio, para um bloco ou para um apartamento, classificados por categoria: geral, manutenção, financeiro, segurança, evento ou urgente.',
+    entradas: 'O síndico informa título, texto, categoria e para quem: todo o condomínio, um bloco ("falta de água no bloco B") ou um apartamento (uma advertência). O bloco precisa ter unidades, e o apartamento ser do condomínio.',
+    saidas: 'O comunicado aparece e é avisado só a quem é o destino, ordenado pela data de publicação. O de bloco também aparece para a portaria; o de um apartamento, só para quem mora lá desde antes da publicação — nem os vizinhos, nem a portaria, nem o morador que chegar depois o veem, e nem conseguem marcá-lo como lido. Removido, ele sai das telas, mas fica guardado com quem o removeu e quando.' },
 
   { id: 'RF031', nome: 'Marcar comunicado como lido',
     atores: 'Síndico, Porteiro, Morador', prioridade: 'Desejável',

@@ -353,9 +353,25 @@ const dicionario = [
         "obrigatorio": "Não",
         "chave": "FK",
         "descricao": "Síndico que removeu o comunicado"
+      },
+      {
+        "coluna": "bloco",
+        "tipo": "VARCHAR(20)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Bloco de destino, quando o aviso é só para ele (ex.: falta de água no bloco B); vazio com a unidade vazia = todo o condomínio"
+      },
+      {
+        "coluna": "unidade_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Apartamento de destino, quando o aviso é só para ele (ex.: uma advertência); nunca junto com o bloco"
       }
     ],
-    "regras": []
+    "regras": [
+      "CHECK (((bloco IS NULL) OR (unidade_id IS NULL)))"
+    ]
   },
   {
     "nome": "condominios",
@@ -2211,6 +2227,12 @@ const relacoes = [
     "coluna": "inativado_por_id",
     "destino": "usuarios",
     "texto": "Síndico que removeu o comunicado"
+  },
+  {
+    "origem": "comunicados",
+    "coluna": "unidade_id",
+    "destino": "unidades",
+    "texto": "Apartamento de destino, quando o aviso é só para ele (ex.: uma advertência); nunca junto com o bloco"
   },
   {
     "origem": "condominios",

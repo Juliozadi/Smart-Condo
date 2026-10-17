@@ -133,6 +133,13 @@
     selo.textContent = ROTULO_CATEGORIA[c.categoria] || c.categoria;
     topo.appendChild(h);
     topo.appendChild(selo);
+    // O que veio só para o apartamento (uma advertência) ou para o bloco.
+    if (c.unidade_id || c.bloco) {
+      var destino = document.createElement('span');
+      destino.className = 'badge badge-neutral';
+      destino.textContent = c.unidade_id ? 'Só para o seu apartamento' : 'Bloco ' + c.bloco;
+      topo.appendChild(destino);
+    }
     if (c.fixado) {
       var marca = document.createElement('span');
       marca.className = 'marca-fixado';

@@ -35,10 +35,14 @@
           <div class="form-group"><label for="comuni_categoria">Categoria</label><select id="comuni_categoria" required style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"><option value="" disabled selected>Selecione</option><option value="geral">Informativo</option><option value="manutencao">Manutenção</option><option value="financeiro">Financeiro</option><option value="seguranca">Segurança</option><option value="evento">Evento / Assembleia</option><option value="urgente">Urgente</option></select></div>
           <div class="form-group"><label for="comuni_fixado">Fixar no topo</label><select id="comuni_fixado" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"><option value="nao" selected>Não</option><option value="sim">Sim — aparece antes dos demais</option></select></div>
         </div>
+        <div class="form-row">
+          <div class="form-group"><label for="comuni_destino">Para quem</label><select id="comuni_destino" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"><option value="todos" selected>Todo o condomínio</option><option value="bloco">Um bloco</option><option value="unidade">Um apartamento</option></select></div>
+          <div class="form-group" id="grupoAlvo" hidden><label for="comuni_alvo" id="rotuloAlvo">Bloco</label><select id="comuni_alvo" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></select></div>
+        </div>
         <div class="form-group"><label for="comuni_mensagem">Mensagem</label><textarea id="comuni_mensagem" required maxlength="8000" placeholder="Digite o comunicado completo aqui..." style="min-height:120px;width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;resize:vertical;"></textarea></div>
         <p class="aviso-notificacao">
           <img src="../../assets/img/icons/bullhorn.svg" alt="">
-          <span>O comunicado vai para <strong>todos os moradores do condomínio</strong> assim que
+          <span id="textoDestino">O comunicado vai para <strong>todos os moradores do condomínio</strong> assim que
           for publicado. Cada um recebe um aviso e o comunicado aparece no painel dele.</span>
         </p>
         <p class="form-erro" id="erroComunicado" role="alert"></p>
@@ -93,6 +97,12 @@
 
     var titulo = linha.children[0].firstChild;
     titulo.textContent = c.titulo;
+    if (c.bloco || c.unidade_id) {
+      var destino = document.createElement('small');
+      destino.className = 'destino-comunicado';
+      destino.textContent = 'Só para: ' + c.destino;
+      linha.children[0].appendChild(destino);
+    }
     if (c.fixado) {
       var marca = document.createElement('span');
       marca.className = 'marca-fixado';
@@ -172,14 +182,24 @@
     botao.disabled = true;
     botao.textContent = 'Publicando…';
 
+    var destino = campo('comuni_destino').value;
+    var alvo = campo('comuni_alvo').value;
+    if (destino !== 'todos' && !alvo) {
+      erro.textContent = destino === 'bloco' ? 'Escolha o bloco.' : 'Escolha o apartamento.';
+      return;
+    }
+
     api.post('/comunicados', {
       titulo: titulo,
       conteudo: mensagem,
       categoria: categoria,
-      fixado: campo('comuni_fixado').value === 'sim'
+      fixado: campo('comuni_fixado').value === 'sim',
+      bloco: destino === 'bloco' ? alvo : null,
+      unidade_id: destino === 'unidade' ? +alvo : null
     })
       .then(function() {
         campo('formComunicado').reset();
+        mostrarDestino();
         erro.className = 'form-erro sucesso';
         erro.textContent = 'Comunicado publicado. Os moradores foram avisados.';
         return carregar();
@@ -187,6 +207,65 @@
       .catch(function(e) { erro.textContent = e.message; })
       .then(function() { botao.disabled = false; botao.textContent = rotulo; });
   });
+
+  // ── Para quem: o condomínio, um bloco ou um apartamento ───────────
+  var unidades = [];
+  function identificacao(u) { return u.bloco && u.bloco !== 'unico' ? u.bloco + ' ' + u.numero : u.numero; }
+  function blocos() {
+    var vistos = {};
+    return unidades.map(function(u) { return u.bloco; })
+      .filter(function(b) { if (!b || b === 'unico' || vistos[b]) return false; vistos[b] = true; return true; })
+      .sort();
+  }
+  function mostrarDestino() {
+    var destino = campo('comuni_destino').value;
+    var alvo = campo('comuni_alvo');
+    campo('grupoAlvo').hidden = destino === 'todos';
+    campo('rotuloAlvo').textContent = destino === 'bloco' ? 'Bloco' : 'Apartamento';
+    alvo.innerHTML = '';
+    var vazio = document.createElement('option');
+    vazio.value = '';
+    vazio.textContent = 'Selecione';
+    alvo.appendChild(vazio);
+    var opcoes = destino === 'bloco'
+      ? blocos().map(function(b) { return [b, 'Bloco ' + b]; })
+      : unidades.map(function(u) { return [u.id, identificacao(u)]; });
+    if (destino !== 'todos') {
+      opcoes.forEach(function(o) {
+        var op = document.createElement('option');
+        op.value = o[0];
+        op.textContent = o[1];
+        alvo.appendChild(op);
+      });
+    }
+    var texto = campo('textoDestino');
+    texto.textContent = '';
+    var forte = document.createElement('strong');
+    if (destino === 'bloco') {
+      forte.textContent = 'os moradores do bloco escolhido';
+      texto.append('O comunicado vai só para ', forte,
+                   '. Os outros blocos não o recebem; a portaria o vê.');
+    } else if (destino === 'unidade') {
+      forte.textContent = 'os moradores do apartamento escolhido';
+      texto.append('O comunicado vai só para ', forte,
+                   ' — uma advertência, por exemplo. Nem os vizinhos nem a portaria o veem.');
+    } else {
+      forte.textContent = 'todos os moradores do condomínio';
+      texto.append('O comunicado vai para ', forte,
+                   ' assim que for publicado. Cada um recebe um aviso e o comunicado aparece no painel dele.');
+    }
+  }
+  campo('comuni_destino').addEventListener('change', mostrarDestino);
+  api.get('/condominios/meu/unidades')
+    .then(function(lista) {
+      unidades = lista;
+      // Sem blocos (só "único"), a opção de bloco não faz sentido.
+      if (!blocos().length) {
+        campo('comuni_destino').querySelector('option[value=bloco]').remove();
+      }
+      mostrarDestino();
+    })
+    .catch(function() {});
 
   campo('hdrName').textContent = usuario.nome;
 

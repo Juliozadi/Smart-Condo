@@ -134,6 +134,7 @@ DESCRICOES = {
     "comunicados.categoria": "Assunto do aviso, usado para filtrar e destacar na tela",
     "comunicados.fixado": "Se o aviso deve permanecer no topo da lista",
     "comunicados.publicado_em": "Momento da publicação; é por ele que a lista é ordenada",
+    "comunicados.bloco": "Bloco de destino, quando o aviso é só para ele (ex.: falta de água no bloco B); vazio com a unidade vazia = todo o condomínio",
 
     "leituras_comunicado.lido_em": "Momento em que o usuário abriu o comunicado",
 
@@ -269,6 +270,7 @@ VINCULOS = {
     "cobrancas.unidade_id": "Unidade cobrada",
     "codigos_verificacao.usuario_id": "Usuário a quem o código foi enviado",
     "comunicados.condominio_id": "Condomínio para o qual o aviso foi publicado",
+    "comunicados.unidade_id": "Apartamento de destino, quando o aviso é só para ele (ex.: uma advertência); nunca junto com o bloco",
     "documentos.condominio_id": "Condomínio a que o documento pertence",
     "documentos.unidade_id": "Unidade destinatária, quando o documento não é para todo o condomínio",
     "encomendas.unidade_id": "Unidade destinatária da encomenda",

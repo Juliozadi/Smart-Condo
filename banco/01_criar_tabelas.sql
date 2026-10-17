@@ -497,7 +497,12 @@ CREATE TABLE comunicados (
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
     inativo_em timestamp with time zone,
-    inativado_por_id integer
+    inativado_por_id integer,
+    -- Para quem: os dois vazios, o condomínio inteiro; ou um bloco, ou um
+    -- apartamento (a advertência, que não é da conta dos vizinhos).
+    bloco character varying(20),
+    unidade_id integer,
+    CONSTRAINT ck_comunicado_um_destino CHECK (((bloco IS NULL) OR (unidade_id IS NULL)))
 );
 CREATE SEQUENCE comunicados_id_seq
     AS integer
@@ -951,6 +956,9 @@ ALTER TABLE ONLY autorizacoes_visita
 ALTER TABLE ONLY autorizacoes_visita
     ADD CONSTRAINT autorizacoes_visita_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY comunicados
+    ADD CONSTRAINT comunicados_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY visitantes
     ADD CONSTRAINT visitantes_autorizacao_id_fkey FOREIGN KEY (autorizacao_id) REFERENCES autorizacoes_visita(id) ON DELETE SET NULL;
 
@@ -1081,6 +1089,8 @@ CREATE INDEX ix_unidades_condominio_id ON unidades USING btree (condominio_id);
 CREATE INDEX ix_usuarios_condominio_id ON usuarios USING btree (condominio_id);
 
 CREATE INDEX ix_usuarios_unidade_id ON usuarios USING btree (unidade_id);
+
+CREATE INDEX ix_comunicados_unidade_id ON comunicados USING btree (unidade_id);
 
 CREATE INDEX ix_autorizacoes_visita_autorizado_por_id ON autorizacoes_visita USING btree (autorizado_por_id);
 
