@@ -4,7 +4,7 @@ Scripts SQL do banco, prontos para rodar no **pgAdmin**.
 
 | Arquivo | O que faz |
 |---|---|
-| `01_criar_tabelas.sql` | Cria os tipos, as 27 tabelas, as chaves e os índices |
+| `01_criar_tabelas.sql` | Cria os tipos, as 28 tabelas, as chaves e os índices |
 | `02_carga_dados.sql` | Carrega um condomínio completo de demonstração |
 
 Os dois arquivos são SQL puro, sem comentários — as explicações ficam
@@ -60,7 +60,7 @@ UNION ALL SELECT 'comunicados', COUNT(*) FROM comunicados;
 
 ---
 
-## As 27 tabelas
+## As 28 tabelas
 
 | Tabela | Guarda |
 |---|---|
@@ -86,6 +86,7 @@ UNION ALL SELECT 'comunicados', COUNT(*) FROM comunicados;
 | `encomendas` | Encomendas recebidas na portaria, com a foto do volume |
 | `ocorrencias` | Chamados abertos por moradores, porteiros ou síndico |
 | `movimentacoes_veiculo` | Entradas e saídas do estacionamento |
+| `veiculos_unidade` | Placas cadastradas por apartamento, para a portaria reconhecer o carro |
 | `ordens_servico` | Manutenção aberta e acompanhada pelo síndico |
 | `documentos` | Atas, convenção, regimento e plantas |
 | `documentos_cadastro` | RG, comprovante de residência e escritura enviados no cadastro do morador |

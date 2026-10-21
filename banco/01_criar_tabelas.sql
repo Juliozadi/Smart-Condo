@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS
+    veiculos_unidade,
     votos,
     itens_pauta,
     assembleias,
@@ -817,6 +818,33 @@ ALTER TABLE ONLY movimentacoes_veiculo ALTER COLUMN id SET DEFAULT nextval('movi
 ALTER TABLE ONLY movimentacoes_veiculo
     ADD CONSTRAINT movimentacoes_veiculo_pkey PRIMARY KEY (id);
 
+-- Placas cadastradas de cada apartamento, para a portaria reconhecer o
+-- carro do morador. Uma placa ativa por condomínio; remover é inativar.
+CREATE TABLE veiculos_unidade (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    cadastrado_por_id integer,
+    placa character varying(10) NOT NULL,
+    modelo character varying(60),
+    cor character varying(30),
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    inativo_em timestamp with time zone,
+    inativado_por_id integer
+);
+CREATE SEQUENCE veiculos_unidade_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE veiculos_unidade_id_seq OWNED BY veiculos_unidade.id;
+ALTER TABLE ONLY veiculos_unidade ALTER COLUMN id SET DEFAULT nextval('veiculos_unidade_id_seq'::regclass);
+ALTER TABLE ONLY veiculos_unidade
+    ADD CONSTRAINT veiculos_unidade_pkey PRIMARY KEY (id);
+
 CREATE TABLE ordens_servico (
     id integer NOT NULL,
     condominio_id integer NOT NULL,
@@ -1047,6 +1075,18 @@ ALTER TABLE ONLY assembleias
 ALTER TABLE ONLY itens_pauta
     ADD CONSTRAINT itens_pauta_assembleia_id_fkey FOREIGN KEY (assembleia_id) REFERENCES assembleias(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY veiculos_unidade
+    ADD CONSTRAINT veiculos_unidade_cadastrado_por_id_fkey FOREIGN KEY (cadastrado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY veiculos_unidade
+    ADD CONSTRAINT veiculos_unidade_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY veiculos_unidade
+    ADD CONSTRAINT veiculos_unidade_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY veiculos_unidade
+    ADD CONSTRAINT veiculos_unidade_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY votos
     ADD CONSTRAINT votos_item_id_fkey FOREIGN KEY (item_id) REFERENCES itens_pauta(id) ON DELETE CASCADE;
 
@@ -1228,6 +1268,14 @@ CREATE INDEX ix_assembleias_condominio_id ON assembleias USING btree (condominio
 CREATE INDEX ix_assembleias_convocada_por_id ON assembleias USING btree (convocada_por_id);
 
 CREATE INDEX ix_itens_pauta_assembleia_id ON itens_pauta USING btree (assembleia_id);
+
+CREATE INDEX ix_veiculos_unidade_cadastrado_por_id ON veiculos_unidade USING btree (cadastrado_por_id);
+
+CREATE INDEX ix_veiculos_unidade_condominio_id ON veiculos_unidade USING btree (condominio_id);
+
+CREATE INDEX ix_veiculos_unidade_unidade_id ON veiculos_unidade USING btree (unidade_id);
+
+CREATE UNIQUE INDEX uq_veiculo_placa_ativa ON veiculos_unidade USING btree (condominio_id, placa) WHERE (inativo_em IS NULL);
 
 CREATE INDEX ix_votos_item_id ON votos USING btree (item_id);
 

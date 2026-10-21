@@ -2301,6 +2301,90 @@ const dicionario = [
     "regras": []
   },
   {
+    "nome": "veiculos_unidade",
+    "resumo": "As placas que cada apartamento cadastrou, para a portaria reconhecer o carro do morador na chegada. Deixam de valer sozinhas quando quem cadastrou se muda.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio onde o veículo está cadastrado"
+      },
+      {
+        "coluna": "unidade_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Apartamento dono do veículo"
+      },
+      {
+        "coluna": "cadastrado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Morador (ou síndico) que cadastrou a placa"
+      },
+      {
+        "coluna": "placa",
+        "tipo": "VARCHAR(10)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Placa do veículo, só letras e números; uma placa ativa por condomínio"
+      },
+      {
+        "coluna": "modelo",
+        "tipo": "VARCHAR(60)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Modelo do veículo, quando informado"
+      },
+      {
+        "coluna": "cor",
+        "tipo": "VARCHAR(30)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Cor do veículo, quando informada"
+      },
+      {
+        "coluna": "criado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que o registro foi criado, preenchido pelo banco"
+      },
+      {
+        "coluna": "atualizado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "inativo_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o veículo foi removido do apartamento; vazio enquanto vale. A placa fica livre para outro cadastro"
+      },
+      {
+        "coluna": "inativado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Quem removeu o veículo do apartamento"
+      }
+    ],
+    "regras": []
+  },
+  {
     "nome": "visitantes",
     "resumo": "Os visitantes anunciados pela portaria e a confirmação do morador.",
     "colunas": [
@@ -2826,6 +2910,30 @@ const relacoes = [
     "coluna": "unidade_id",
     "destino": "unidades",
     "texto": "Unidade em que o morador vive; vazio para síndico, porteiro e administrador"
+  },
+  {
+    "origem": "veiculos_unidade",
+    "coluna": "cadastrado_por_id",
+    "destino": "usuarios",
+    "texto": "Morador (ou síndico) que cadastrou a placa"
+  },
+  {
+    "origem": "veiculos_unidade",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio onde o veículo está cadastrado"
+  },
+  {
+    "origem": "veiculos_unidade",
+    "coluna": "inativado_por_id",
+    "destino": "usuarios",
+    "texto": "Quem removeu o veículo do apartamento"
+  },
+  {
+    "origem": "veiculos_unidade",
+    "coluna": "unidade_id",
+    "destino": "unidades",
+    "texto": "Apartamento dono do veículo"
   },
   {
     "origem": "visitantes",

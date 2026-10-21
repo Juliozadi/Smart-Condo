@@ -15,11 +15,11 @@ não tinha.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | Novo RF048: prestação de contas — despesas e balancete do mês. Novo RF049: assembleia virtual com votação |
-| 11 Diagrama de caso de uso | Novos casos: prestar contas, convocar assembleia e votar em assembleia — agora 31 casos de uso |
-| 14 a 17 | Novas tabelas despesas, assembleias, itens_pauta e votos — agora 27 entidades, 320 atributos e 66 relacionamentos; o DER ganha um quarto recorte, de gestão |
-| 21 API REST | 127 endpoints: despesas (lançar, listar, corrigir, cancelar, comprovante) e balancete do mês; assembleias (convocar, listar, votar, cancelar) |
-| 23 Testes | 544 casos no servidor e 113 testes de interface |
+| 9 Requisitos funcionais | Novo RF048: prestação de contas — despesas e balancete do mês. Novo RF049: assembleia virtual com votação. Novo RF050: os veículos do apartamento, que a portaria reconhece pela placa |
+| 11 Diagrama de caso de uso | Novos casos: prestar contas, convocar assembleia, votar em assembleia e cadastrar veículo — agora 32 casos de uso |
+| 14 a 17 | Novas tabelas despesas, assembleias, itens_pauta, votos e veiculos_unidade — agora 28 entidades, 331 atributos e 70 relacionamentos; o DER ganha um quarto recorte, de gestão |
+| 21 API REST | 131 endpoints: despesas (lançar, listar, corrigir, cancelar, comprovante) e balancete do mês; assembleias (convocar, listar, votar, cancelar); veículos do apartamento (cadastrar, listar, remover) e a consulta da placa pela portaria |
+| 23 Testes | 557 casos no servidor e 114 testes de interface |
 
 **Situações tratadas.**
 - O morador paga a taxa todo mês e não sabe para onde vai o dinheiro; o
@@ -40,6 +40,15 @@ não tinha.
   apartamentos (como para mudar a convenção, art. 1.351) ou
   unanimidade. Durante a votação ninguém vê o placar, nem o síndico; no
   fim, cada item mostra os votos e se passou.
+- O carro do morador chega ao portão e a portaria não sabe de quem é:
+  pergunta o apartamento e procura na lista, todo dia, para o mesmo
+  carro. Agora o morador cadastra as placas do apartamento (até 10), e
+  ao digitar a placa a portaria vê o apartamento, o modelo e a cor, com
+  o formulário já preenchido — entrada ou saída conforme o carro esteja
+  no pátio. Uma placa vale para um apartamento só; cadastrada em outro,
+  o sistema recusa sem dizer qual (a placa do vizinho é dado dele). Se
+  quem cadastrou se muda, o carro deixa de ser reconhecido sozinho e a
+  placa fica livre.
 - Na carga de demonstração, a taxa do mês passa a vencer no dia 10 do
   mês seguinte: vencendo no próprio mês, a partir do dia 11 todos os
   apartamentos ficavam em atraso — e ninguém poderia votar.

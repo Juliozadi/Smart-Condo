@@ -40,6 +40,7 @@ CASOS = [
     ("Confirmar visitante",             ["MOR"],                      DIR),
     ("Votar em assembleia",             ["MOR"],                      DIR),
     ("Autorizar visitante antes",       ["MOR"],                      DIR),
+    ("Cadastrar veículo",               ["SIN", "MOR"],               DIR),
     ("Confirmar retirada de encomenda", ["MOR"],                      DIR),
     ("Consultar cobranças",             ["MOR"],                      DIR),
     ("Escolher forma de pagamento",     ["MOR"],                      DIR),

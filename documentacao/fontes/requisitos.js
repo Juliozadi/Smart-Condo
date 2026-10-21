@@ -304,6 +304,12 @@ const requisitosFuncionais = [
     descricao: 'O sistema permite ao síndico convocar uma assembleia com votação pelo SmartCondo, como admite o Código Civil (art. 1.354-A, incluído pela Lei 14.309/2022), e a cada apartamento votar de onde estiver.',
     entradas: 'O síndico informa título, convocação, o período da votação (até 30 dias) e os itens da pauta, cada um com a maioria que exige: simples, 2/3 dos apartamentos (como para mudar a convenção, art. 1.351) ou unanimidade. Vota, uma vez por apartamento e em todos os itens, o proprietário — ou, se nenhum mora lá, o inquilino —, desde que o apartamento esteja quite (art. 1.335, III).',
     saidas: 'Todos os moradores recebem a convocação. Durante a votação, todos — o síndico inclusive — veem só quantos apartamentos já votaram; encerrada, cada item mostra os votos a favor, contra e abstenções e se foi aprovado. O voto não muda depois de dado, e dois moradores do mesmo apartamento não votam duas vezes. O síndico cancela com motivo, e os moradores são avisados.' },
+
+  { id: 'RF050', nome: 'Cadastrar os veículos do apartamento',
+    atores: 'Morador, Síndico, Porteiro', prioridade: 'Desejável',
+    descricao: 'O sistema permite ao morador cadastrar as placas dos carros do apartamento, para que a portaria reconheça o carro na chegada sem perguntar de quem é.',
+    entradas: 'O morador informa a placa (padrão antigo ou Mercosul) e, se quiser, o modelo e a cor; o síndico pode cadastrar para qualquer apartamento. Cada apartamento cadastra até 10 veículos.',
+    saidas: 'Ao digitar a placa na portaria, aparece o apartamento, o modelo e a cor, e o formulário já vem preenchido com o apartamento e com entrada ou saída, conforme o carro esteja ou não no pátio. Quem mora no apartamento vê e remove os mesmos veículos; o vizinho não os vê. Uma placa só vale para um apartamento: cadastrada em outro, o sistema recusa sem dizer qual. Quando quem cadastrou se muda, o veículo deixa de ser reconhecido e a placa fica livre.' },
 ];
 
 // ── 10 Requisitos não funcionais ────────────────────────────────────

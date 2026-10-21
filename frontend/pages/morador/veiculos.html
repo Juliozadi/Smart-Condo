@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Veículos do Apartamento</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-mobile">
+
+  <header class="app-bar">
+    <div class="app-bar-inner">
+      <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
+        <span class="brand-name">Smart<strong>Condo</strong></span>
+      </a>
+      <div class="app-bar-right">
+        <a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/user.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">João Silva</span><span class="profile-role">Morador</span></a>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-wrapper">
+
+    <a href="dashboard.html" class="dash-back">
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Morador
+    </a>
+
+    <div class="dash-greeting">
+      <p class="greeting-sub">Apto 204 — João Silva</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/car.svg" width="26" height="26" alt=""> Veículos</h1>
+      <p class="greeting-condo">A portaria reconhece o seu carro pela placa</p>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Cadastrar Veículo</h2>
+    <div class="form-card">
+      <form id="formVeiculo" novalidate>
+        <div class="form-group">
+          <label for="vPlaca">Placa</label>
+          <input id="vPlaca" type="text" class="mask-placa" maxlength="8" required autocomplete="off" placeholder="ABC-1D23" style="text-transform:uppercase;letter-spacing:2px;font-weight:700;">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="vModelo">Modelo (opcional)</label>
+            <input id="vModelo" type="text" maxlength="60" autocomplete="off" placeholder="Ex: Gol">
+          </div>
+          <div class="form-group">
+            <label for="vCor">Cor (opcional)</label>
+            <input id="vCor" type="text" maxlength="30" autocomplete="off" placeholder="Ex: Prata">
+          </div>
+        </div>
+        <p class="aviso-notificacao">
+          <img src="../../assets/img/icons/shield-halved.svg" alt="">
+          <span>Na chegada, a portaria vê de que apartamento é o carro sem precisar perguntar. Se
+          você se mudar, o cadastro deixa de valer sozinho.</span>
+        </p>
+        <p class="form-erro" id="erroVeiculo" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;">Cadastrar Veículo</button>
+      </form>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt=""> Veículos do Apartamento</h2>
+    <div class="list-items" id="listaVeiculos" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoVeiculos">Carregando…</p>
+
+  </main>
+
+<script src="../../assets/js/validation.js"></script>
+<script>
+/* Veículos do apartamento: o morador cadastra as placas, e a portaria
+   reconhece o carro na entrada. Quem mora no mesmo apartamento vê e
+   remove os mesmos veículos. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api;
+  var usuario = api.protegerPagina('morador');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+  function placaLegivel(p) { return p && p.length === 7 ? p.slice(0, 3) + '-' + p.slice(3) : p; }
+
+  function cartao(v) {
+    var item = document.createElement('div');
+    item.className = 'list-item';
+    var icone = document.createElement('div');
+    icone.className = 'card-icon icon-blue';
+    var img = document.createElement('img');
+    img.src = '../../assets/img/icons/car.svg';
+    img.width = 16; img.height = 16; img.alt = '';
+    icone.appendChild(img);
+
+    var info = document.createElement('div');
+    info.className = 'list-info';
+    var titulo = document.createElement('h3');
+    titulo.className = 'placa-cadastrada';
+    titulo.textContent = placaLegivel(v.placa);
+    var sub = document.createElement('p');
+    sub.textContent = [v.modelo, v.cor].filter(Boolean).join(' · ') ||
+                      'Sem modelo informado';
+    info.appendChild(titulo);
+    info.appendChild(sub);
+    if (v.cadastrado_por_nome) {
+      var autor = document.createElement('p');
+      autor.className = 'comunicado-autor';
+      autor.textContent = 'Cadastrado por ' + v.cadastrado_por_nome;
+      info.appendChild(autor);
+    }
+
+    var remover = document.createElement('button');
+    remover.type = 'button';
+    remover.className = 'contato-btn perigo-texto';
+    remover.textContent = 'Remover';
+    remover.setAttribute('aria-label', 'Remover o veículo ' + placaLegivel(v.placa));
+    remover.addEventListener('click', function() {
+      if (!confirm('Remover o veículo ' + placaLegivel(v.placa) + ' do apartamento?')) return;
+      remover.disabled = true;
+      api.remover('/veiculos/cadastrados/' + v.id)
+        .then(carregar)
+        .catch(function(e) { remover.disabled = false; alert(e.message); });
+    });
+
+    item.appendChild(icone);
+    item.appendChild(info);
+    item.appendChild(remover);
+    return item;
+  }
+
+  function carregar() {
+    campo('estadoVeiculos').textContent = 'Carregando…';
+    return api.get('/veiculos/cadastrados')
+      .then(function(lista) {
+        var caixa = campo('listaVeiculos');
+        caixa.innerHTML = '';
+        campo('estadoVeiculos').textContent = lista.length ? '' : 'Nenhum veículo cadastrado.';
+        lista.forEach(function(v) { caixa.appendChild(cartao(v)); });
+      })
+      .catch(function(e) { campo('estadoVeiculos').textContent = e.message; });
+  }
+
+  campo('formVeiculo').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('erroVeiculo');
+    erro.className = 'form-erro';
+    erro.textContent = '';
+    var placa = campo('vPlaca').value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    if (placa.length !== 7) {
+      erro.textContent = 'A placa precisa ter 7 letras ou números (ex.: ABC-1D23).';
+      return;
+    }
+    var botao = this.querySelector('button[type=submit]');
+    botao.disabled = true;
+    api.post('/veiculos/cadastrados', {
+      placa: placa,
+      modelo: campo('vModelo').value.trim() || null,
+      cor: campo('vCor').value.trim() || null
+    })
+      .then(function(v) {
+        campo('formVeiculo').reset();
+        erro.className = 'form-erro sucesso';
+        erro.textContent = 'Veículo ' + placaLegivel(v.placa) + ' cadastrado. A portaria já o reconhece.';
+        return carregar();
+      })
+      .catch(function(e) { erro.textContent = e.message; })
+      .then(function() { botao.disabled = false; });
+  });
+
+  var unidade = usuario.unidade
+    ? (usuario.unidade.bloco && usuario.unidade.bloco !== 'unico' ? usuario.unidade.bloco + ' ' : '') +
+      usuario.unidade.numero : '';
+  var cabecalho = document.querySelector('.greeting-sub');
+  if (cabecalho) cabecalho.textContent = (unidade ? 'Apto ' + unidade + ' — ' : '') + usuario.nome;
+  campo('hdrName').textContent = usuario.nome;
+  carregar();
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

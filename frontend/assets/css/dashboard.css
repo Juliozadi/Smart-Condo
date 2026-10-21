@@ -2337,3 +2337,8 @@ label.contato-btn { position: relative; cursor: pointer; }
   .pauta-campos .item-pauta { grid-template-columns: 1fr; gap: 0; }
   .pauta-campos .item-remover { justify-self: start; }
 }
+
+/* ── Veículos do apartamento ─────────────────────────────────────── */
+.placa-cadastrada { letter-spacing: 2px; font-variant-numeric: tabular-nums; }
+.placa-reconhecida { margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--teal, #0d9488); }
+.placa-reconhecida.desconhecida { color: var(--muted); font-weight: 500; }

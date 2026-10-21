@@ -33,7 +33,7 @@ from app.models.enums import (
     TipoMovimentacao, TipoOcupacao,
 )
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
-from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico
+from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico, VeiculoUnidade
 from app.models.financeiro import Cobranca, Despesa, Pagamento, PreferenciaCobranca
 from app.models.portaria import Encomenda, Ocorrencia, Visitante
 from app.models.usuario import PermissaoPorteiro, Usuario
@@ -321,6 +321,13 @@ def criar(db) -> dict:
                            categoria=categoria,
                            descricao=descricao, valor=Decimal(valor), data=data,
                            fornecedor=fornecedor))
+
+    # ── Carros cadastrados pelos moradores ───────────────────────────
+    for unidade, placa, modelo, cor in [("204", "RIO2A18", "Gol", "Prata"),
+                                        ("301", "QAZ1B23", "Onix", "Branco")]:
+        db.add(VeiculoUnidade(condominio_id=condominio.id, unidade_id=unidades[unidade].id,
+                              cadastrado_por_id=moradores[unidade].id, placa=placa,
+                              modelo=modelo, cor=cor))
 
     # ── Assembleias: uma encerrada, com resultado, e uma em votação ───
     E = EscolhaVoto
