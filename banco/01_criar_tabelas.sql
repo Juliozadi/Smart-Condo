@@ -1,4 +1,7 @@
 DROP TABLE IF EXISTS
+    votos,
+    itens_pauta,
+    assembleias,
     despesas,
     registros_alteracao,
     documentos_cadastro,
@@ -31,7 +34,9 @@ DROP TYPE IF EXISTS
     categoria_despesa,
     categoria_documento,
     categoria_veiculo,
+    escolha_voto,
     finalidade_codigo,
+    maioria_exigida,
     forma_pagamento,
     papel_usuario,
     prioridade_ocorrencia,
@@ -60,6 +65,18 @@ CREATE TYPE categoria_comunicado AS ENUM (
     'SEGURANCA',
     'EVENTO',
     'URGENTE'
+);
+
+CREATE TYPE escolha_voto AS ENUM (
+    'A_FAVOR',
+    'CONTRA',
+    'ABSTENCAO'
+);
+
+CREATE TYPE maioria_exigida AS ENUM (
+    'SIMPLES',
+    'DOIS_TERCOS',
+    'UNANIMIDADE'
 );
 
 CREATE TYPE categoria_despesa AS ENUM (
@@ -530,6 +547,77 @@ ALTER TABLE ONLY despesas ALTER COLUMN id SET DEFAULT nextval('despesas_id_seq':
 ALTER TABLE ONLY despesas
     ADD CONSTRAINT despesas_pkey PRIMARY KEY (id);
 
+-- Assembleia virtual (Código Civil, art. 1.354-A): convocação, pauta e
+-- um voto por apartamento em cada item. Cancelar é inativar.
+CREATE TABLE assembleias (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    convocada_por_id integer,
+    titulo character varying(180) NOT NULL,
+    descricao text,
+    abre_em timestamp with time zone NOT NULL,
+    encerra_em timestamp with time zone NOT NULL,
+    motivo_cancelamento character varying(300),
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    inativo_em timestamp with time zone,
+    inativado_por_id integer,
+    CONSTRAINT ck_assembleia_periodo CHECK ((encerra_em > abre_em))
+);
+CREATE SEQUENCE assembleias_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE assembleias_id_seq OWNED BY assembleias.id;
+ALTER TABLE ONLY assembleias ALTER COLUMN id SET DEFAULT nextval('assembleias_id_seq'::regclass);
+ALTER TABLE ONLY assembleias
+    ADD CONSTRAINT assembleias_pkey PRIMARY KEY (id);
+
+CREATE TABLE itens_pauta (
+    id integer NOT NULL,
+    assembleia_id integer NOT NULL,
+    ordem integer NOT NULL,
+    titulo character varying(180) NOT NULL,
+    descricao text,
+    maioria maioria_exigida NOT NULL
+);
+CREATE SEQUENCE itens_pauta_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE itens_pauta_id_seq OWNED BY itens_pauta.id;
+ALTER TABLE ONLY itens_pauta ALTER COLUMN id SET DEFAULT nextval('itens_pauta_id_seq'::regclass);
+ALTER TABLE ONLY itens_pauta
+    ADD CONSTRAINT itens_pauta_pkey PRIMARY KEY (id);
+
+CREATE TABLE votos (
+    id integer NOT NULL,
+    item_id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    usuario_id integer,
+    escolha escolha_voto NOT NULL,
+    votado_em timestamp with time zone NOT NULL
+);
+CREATE SEQUENCE votos_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE votos_id_seq OWNED BY votos.id;
+ALTER TABLE ONLY votos ALTER COLUMN id SET DEFAULT nextval('votos_id_seq'::regclass);
+ALTER TABLE ONLY votos
+    ADD CONSTRAINT votos_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY votos
+    ADD CONSTRAINT uq_voto_por_unidade UNIQUE (item_id, unidade_id);
+
 CREATE TABLE comunicados (
     id integer NOT NULL,
     condominio_id integer NOT NULL,
@@ -947,6 +1035,27 @@ ALTER TABLE ONLY ordens_servico
 ALTER TABLE ONLY ordens_servico
     ADD CONSTRAINT ordens_servico_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY assembleias
+    ADD CONSTRAINT assembleias_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY assembleias
+    ADD CONSTRAINT assembleias_convocada_por_id_fkey FOREIGN KEY (convocada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY assembleias
+    ADD CONSTRAINT assembleias_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY itens_pauta
+    ADD CONSTRAINT itens_pauta_assembleia_id_fkey FOREIGN KEY (assembleia_id) REFERENCES assembleias(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY votos
+    ADD CONSTRAINT votos_item_id_fkey FOREIGN KEY (item_id) REFERENCES itens_pauta(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY votos
+    ADD CONSTRAINT votos_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY votos
+    ADD CONSTRAINT votos_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
 ALTER TABLE ONLY despesas
     ADD CONSTRAINT despesas_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
 
@@ -1113,6 +1222,18 @@ CREATE INDEX ix_ordens_servico_condominio_id ON ordens_servico USING btree (cond
 CREATE INDEX ix_ordens_servico_prioridade ON ordens_servico USING btree (prioridade);
 
 CREATE INDEX ix_ordens_servico_status ON ordens_servico USING btree (status);
+
+CREATE INDEX ix_assembleias_condominio_id ON assembleias USING btree (condominio_id);
+
+CREATE INDEX ix_assembleias_convocada_por_id ON assembleias USING btree (convocada_por_id);
+
+CREATE INDEX ix_itens_pauta_assembleia_id ON itens_pauta USING btree (assembleia_id);
+
+CREATE INDEX ix_votos_item_id ON votos USING btree (item_id);
+
+CREATE INDEX ix_votos_unidade_id ON votos USING btree (unidade_id);
+
+CREATE INDEX ix_votos_usuario_id ON votos USING btree (usuario_id);
 
 CREATE INDEX ix_despesas_condominio_data ON despesas USING btree (condominio_id, data);
 

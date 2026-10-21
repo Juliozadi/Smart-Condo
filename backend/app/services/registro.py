@@ -32,6 +32,7 @@ ESPACO = "espaco"
 UNIDADE = "unidade"
 COBRANCA = "cobranca"
 DESPESA = "despesa"
+ASSEMBLEIA = "assembleia"
 
 ROTULO_ACAO = {
     CRIOU: "Criado", EDITOU: "Editado", INATIVOU: "Inativado", REATIVOU: "Reativado",

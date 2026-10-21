@@ -21,10 +21,12 @@ from app.core.config import settings
 from app.core.database import Base, SessionLocal, engine
 from app.core.security import gerar_hash_senha
 from app.core.tempo import hoje_local
+from app.models.assembleia import Assembleia, ItemPauta, Voto
 from app.models.comunicado import Comunicado
 from app.models.condominio import Condominio, Unidade
 from app.models.enums import (
     CanalVerificacao, CategoriaComunicado, CategoriaDespesa, CategoriaDocumento, CategoriaVeiculo,
+    EscolhaVoto, MaioriaExigida,
     FormaPagamento, Papel, PrioridadeOcorrencia, PrioridadeOrdemServico, StatusCobranca,
     StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
     StatusVisitante,
@@ -270,9 +272,11 @@ def criar(db) -> dict:
 
         for unidade in ("101", "102", "204", "301", "302", "410"):
             valor = Decimal("320.00") if unidade != "410" else Decimal("410.00")
-            vencimento = mes.replace(day=10)
-            # A competência mais antiga já está quitada; a do meio tem um
-            # inadimplente; a atual está toda em aberto.
+            # A competência vence no dia 10 do mês seguinte. A mais antiga já
+            # está quitada; a do meio tem um inadimplente (o 302); a atual
+            # está toda em aberto, sem ninguém atrasado nela — senão, na
+            # demonstração, nenhum apartamento estaria quite para votar.
+            vencimento = (mes.replace(day=28) + timedelta(days=4)).replace(day=10)
             if atras == 2:
                 situacao = StatusCobranca.PAGA
             elif atras == 1:
@@ -317,6 +321,37 @@ def criar(db) -> dict:
                            categoria=categoria,
                            descricao=descricao, valor=Decimal(valor), data=data,
                            fornecedor=fornecedor))
+
+    # ── Assembleias: uma encerrada, com resultado, e uma em votação ───
+    E = EscolhaVoto
+    for titulo, descricao, abre, dias, itens, votos in [
+        ("Assembleia geral ordinária", "Prestação de contas e obras do ano.",
+         AGORA - timedelta(days=30), 3,
+         [("Aprovar as contas do semestre", MaioriaExigida.SIMPLES),
+          ("Pintura da fachada (R$ 42 mil, rateados em 6 parcelas)", MaioriaExigida.DOIS_TERCOS)],
+         # 3 de 6 apartamentos a favor da pintura: maioria dos votos, mas
+         # não os 2/3 do condomínio — a pintura não passa.
+         {"204": (E.A_FAVOR, E.A_FAVOR), "301": (E.A_FAVOR, E.A_FAVOR),
+          "102": (E.A_FAVOR, E.CONTRA), "410": (E.ABSTENCAO, E.A_FAVOR)}),
+        ("Assembleia extraordinária — portão e piscina", "Votação pelo SmartCondo.",
+         AGORA - timedelta(hours=2), 5,
+         [("Troca do portão da garagem (R$ 18 mil, em 3 parcelas)", MaioriaExigida.SIMPLES),
+          ("Piscina aberta das 8h às 22h", MaioriaExigida.SIMPLES)],
+         {"301": (E.A_FAVOR, E.A_FAVOR)}),
+    ]:
+        assembleia = Assembleia(
+            condominio_id=condominio.id, convocada_por_id=sindico.id, titulo=titulo,
+            descricao=descricao, abre_em=abre, encerra_em=abre + timedelta(days=dias),
+            itens=[ItemPauta(ordem=n, titulo=t, maioria=m)
+                   for n, (t, m) in enumerate(itens, start=1)],
+        )
+        db.add(assembleia)
+        db.flush()
+        for unidade, escolhas in votos.items():
+            for item, escolha in zip(assembleia.itens, escolhas):
+                db.add(Voto(item_id=item.id, unidade_id=unidades[unidade].id,
+                            usuario_id=moradores[unidade].id, escolha=escolha,
+                            votado_em=abre + timedelta(hours=3)))
 
     # ── Comunicados ───────────────────────────────────────────────────
     for titulo, conteudo, categoria, fixado, dias in [

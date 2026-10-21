@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Assembleias</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-mobile">
+
+  <header class="app-bar">
+    <div class="app-bar-inner">
+      <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
+        <span class="brand-name">Smart<strong>Condo</strong></span>
+      </a>
+      <div class="app-bar-right">
+        <a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/user.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">João Silva</span><span class="profile-role">Morador</span></a>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-wrapper">
+
+    <a href="dashboard.html" class="dash-back">
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Morador
+    </a>
+
+    <div class="dash-greeting">
+      <p class="greeting-sub">Decisões do condomínio</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/stamp.svg" width="26" height="26" alt=""> Assembleias</h1>
+      <p class="greeting-condo">Vote de onde estiver — um voto por apartamento</p>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/stamp.svg" width="16" height="16" alt=""> Assembleias do Condomínio</h2>
+    <div id="listaAssembleias" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoAssembleias">Carregando…</p>
+
+  </main>
+
+<script src="../../assets/js/assembleias.js"></script>
+<script>
+/* Assembleias para o morador: a pauta, a cédula quando a votação está
+   aberta e o apartamento pode votar, e o resultado depois de encerrada. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api, assembleias = window.SmartCondo.assembleias;
+  var usuario = api.protegerPagina('morador');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+
+  function cedula(a) {
+    var form = document.createElement('form');
+    form.className = 'cedula';
+    form.noValidate = true;
+    a.itens.forEach(function(item) {
+      var grupo = document.createElement('fieldset');
+      var legenda = document.createElement('legend');
+      legenda.textContent = item.ordem + '. ' + item.titulo;
+      grupo.appendChild(legenda);
+      var opcoes = document.createElement('div');
+      opcoes.className = 'opcoes-voto';
+      Object.keys(assembleias.ESCOLHA).forEach(function(escolha) {
+        var rotulo = document.createElement('label');
+        var radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'voto-' + item.id;
+        radio.value = escolha;
+        rotulo.appendChild(radio);
+        rotulo.appendChild(document.createTextNode(' ' + assembleias.ESCOLHA[escolha]));
+        opcoes.appendChild(rotulo);
+      });
+      grupo.appendChild(opcoes);
+      form.appendChild(grupo);
+    });
+    var erro = document.createElement('p');
+    erro.className = 'form-erro';
+    erro.setAttribute('role', 'alert');
+    var enviar = document.createElement('button');
+    enviar.type = 'submit';
+    enviar.className = 'action-btn';
+    enviar.textContent = 'Confirmar o voto do apartamento';
+    form.appendChild(erro);
+    form.appendChild(enviar);
+
+    form.addEventListener('submit', function(evento) {
+      evento.preventDefault();
+      var votos = [];
+      var faltando = false;
+      a.itens.forEach(function(item) {
+        var marcado = form.querySelector('input[name="voto-' + item.id + '"]:checked');
+        if (!marcado) { faltando = true; return; }
+        votos.push({ item_id: item.id, escolha: marcado.value });
+      });
+      if (faltando) { erro.textContent = 'Escolha uma opção em cada item da pauta.'; return; }
+      if (!confirm('O voto vale pelo apartamento e não pode ser mudado depois. Confirmar?')) return;
+      enviar.disabled = true;
+      api.post('/assembleias/' + a.id + '/votos', { votos: votos })
+        .then(carregar)
+        .catch(function(e) { enviar.disabled = false; erro.textContent = e.message; });
+    });
+    return form;
+  }
+
+  function carregar() {
+    campo('estadoAssembleias').textContent = 'Carregando…';
+    return api.get('/assembleias')
+      .then(function(lista) {
+        var caixa = campo('listaAssembleias');
+        caixa.innerHTML = '';
+        campo('estadoAssembleias').textContent = lista.length ? '' : 'Nenhuma assembleia convocada ainda.';
+        lista.forEach(function(a) {
+          var cartao = assembleias.cartao(a);
+          if (a.situacao === 'aberta') {
+            if (a.posso_votar) {
+              cartao.appendChild(cedula(a));
+            } else if (a.motivo_sem_voto) {
+              var aviso = document.createElement('p');
+              aviso.className = a.meu_apartamento_votou ? 'form-erro sucesso' : 'aviso-sem-morador';
+              aviso.textContent = a.motivo_sem_voto;
+              cartao.appendChild(aviso);
+            }
+          }
+          caixa.appendChild(cartao);
+        });
+      })
+      .catch(function(e) { campo('estadoAssembleias').textContent = e.message; });
+  }
+
+  campo('hdrName').textContent = usuario.nome;
+  carregar();
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

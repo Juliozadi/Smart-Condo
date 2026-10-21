@@ -298,6 +298,12 @@ const requisitosFuncionais = [
     descricao: 'O sistema permite ao síndico lançar as despesas do condomínio e mostra a todos o balancete do mês: o que entrou, o que saiu e o saldo, como manda o Código Civil (art. 1.348, VIII: compete ao síndico prestar contas).',
     entradas: 'O síndico informa categoria (água, energia, limpeza, manutenção, segurança, pessoal, administração, obras ou outros), descrição, valor, data do pagamento (não futura) e, se quiser, o fornecedor e a nota fiscal ou o recibo (PDF ou imagem).',
     saidas: 'A despesa entra no balancete do mês em que foi paga. O morador vê, mês a mês, as receitas (todo o dinheiro recebido, multa e juros incluídos), as despesas por categoria, o saldo do mês, o anterior e o acumulado, e abre cada comprovante; a portaria não vê. Lançada errada, a despesa é corrigida ou cancelada com motivo: sai do balancete, mas fica guardada, com quem fez cada alteração.' },
+
+  { id: 'RF049', nome: 'Realizar assembleia virtual',
+    atores: 'Síndico, Morador', prioridade: 'Importante',
+    descricao: 'O sistema permite ao síndico convocar uma assembleia com votação pelo SmartCondo, como admite o Código Civil (art. 1.354-A, incluído pela Lei 14.309/2022), e a cada apartamento votar de onde estiver.',
+    entradas: 'O síndico informa título, convocação, o período da votação (até 30 dias) e os itens da pauta, cada um com a maioria que exige: simples, 2/3 dos apartamentos (como para mudar a convenção, art. 1.351) ou unanimidade. Vota, uma vez por apartamento e em todos os itens, o proprietário — ou, se nenhum mora lá, o inquilino —, desde que o apartamento esteja quite (art. 1.335, III).',
+    saidas: 'Todos os moradores recebem a convocação. Durante a votação, todos — o síndico inclusive — veem só quantos apartamentos já votaram; encerrada, cada item mostra os votos a favor, contra e abstenções e se foi aprovado. O voto não muda depois de dado, e dois moradores do mesmo apartamento não votam duas vezes. O síndico cancela com motivo, e os moradores são avisados.' },
 ];
 
 // ── 10 Requisitos não funcionais ────────────────────────────────────

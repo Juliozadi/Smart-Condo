@@ -3,11 +3,13 @@
 Importar tudo aqui garante que o Alembic e o SQLAlchemy enxerguem todas as
 tabelas ao resolver o mapeamento e gerar as migrações.
 """
+from app.models.assembleia import Assembleia, ItemPauta, Voto
 from app.models.comunicado import Comunicado, LeituraComunicado
 from app.models.condominio import Condominio, Unidade
 from app.models.documento_cadastro import DocumentoCadastro
 from app.models.enums import (
     CanalVerificacao, CategoriaComunicado, CategoriaDespesa, CategoriaDocumento, CategoriaVeiculo,
+    EscolhaVoto, MaioriaExigida,
     FinalidadeCodigo, FormaPagamento, Papel, PrioridadeOrdemServico, StatusCobranca,
     StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
     StatusVisitante, TipoDocumentoCadastro, TipoMovimentacao, TipoOcupacao,
@@ -21,6 +23,7 @@ from app.models.registro import RegistroAlteracao
 from app.models.usuario import CodigoVerificacao, PermissaoPorteiro, Usuario
 
 __all__ = [
+    "Assembleia", "ItemPauta", "Voto",
     "Cobranca", "CodigoVerificacao", "Comunicado", "Condominio", "Despesa", "Documento",
     "DocumentoCadastro",
     "Encomenda", "EspacoComum", "LeituraComunicado", "Mensagem", "MovimentacaoVeiculo",
@@ -29,7 +32,7 @@ __all__ = [
     "Usuario",
     "AutorizacaoVisita", "Visitante",
     "CanalVerificacao", "CategoriaComunicado", "CategoriaDespesa", "CategoriaDocumento",
-    "CategoriaVeiculo",
+    "CategoriaVeiculo", "EscolhaVoto", "MaioriaExigida",
     "FinalidadeCodigo", "FormaPagamento", "Papel", "PrioridadeOrdemServico",
     "StatusCobranca", "StatusEncomenda", "StatusOcorrencia", "StatusOrdemServico",
     "StatusReserva", "StatusUsuario", "StatusVisitante", "TipoDocumentoCadastro",

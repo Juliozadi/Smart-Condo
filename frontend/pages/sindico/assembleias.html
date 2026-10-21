@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Assembleias</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script><link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-desktop">
+  <header class="app-bar"><div class="app-bar-inner wide">
+    <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
+    <div class="app-bar-right"><a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role">Síndico</span></a><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
+  </div></header>
+  <main class="dash-wrapper wide">
+    <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
+    <div class="dash-greeting">
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/stamp.svg" width="26" height="26" alt=""> Assembleias</h1>
+      <p class="greeting-condo">Convocação e votação pelo SmartCondo — cada apartamento vota de onde estiver</p>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Convocar Assembleia</h2>
+    <div class="form-card">
+      <form id="formAssembleia" novalidate>
+        <div class="form-group">
+          <label for="aTitulo">Título</label>
+          <input type="text" id="aTitulo" required minlength="3" maxlength="180" placeholder="Ex: Assembleia geral ordinária">
+        </div>
+        <div class="form-group">
+          <label for="aDescricao">Convocação (opcional)</label>
+          <textarea id="aDescricao" maxlength="4000" rows="3" placeholder="O que será discutido e por quê"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="aAbre">A votação abre em</label>
+            <input type="datetime-local" id="aAbre" required>
+          </div>
+          <div class="form-group">
+            <label for="aEncerra">E encerra em</label>
+            <input type="datetime-local" id="aEncerra" required>
+          </div>
+        </div>
+        <fieldset class="regras-espaco pauta-campos">
+          <legend>Pauta</legend>
+          <div id="itensPauta"></div>
+          <button type="button" class="contato-btn" id="btnNovoItem">+ Adicionar item</button>
+        </fieldset>
+        <p class="aviso-notificacao">
+          <img src="../../assets/img/icons/bullhorn.svg" alt="">
+          <span>Todos os moradores recebem a convocação. Cada apartamento vota uma vez em cada item:
+          o proprietário ou, se nenhum mora lá, o inquilino — e só quem está em dia com o condomínio
+          (Código Civil, art. 1.335, III). O resultado só aparece quando a votação encerra. Para
+          mudar a convenção, o Código Civil pede <strong>2/3 dos apartamentos</strong> (art. 1.351).</span>
+        </p>
+        <p class="form-erro" id="erroAssembleia" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;">Convocar</button>
+      </form>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/stamp.svg" width="16" height="16" alt=""> Assembleias do Condomínio</h2>
+    <div id="listaAssembleias" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoAssembleias">Carregando…</p>
+  </main>
+
+<script src="../../assets/js/validation.js"></script>
+<script src="../../assets/js/assembleias.js"></script>
+<script>
+/* Assembleias do síndico: convoca com a pauta, acompanha quantos
+   apartamentos votaram e vê o resultado ao fim; pode cancelar com motivo. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api, assembleias = window.SmartCondo.assembleias;
+  var usuario = api.protegerPagina('sindico');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+  function local(d) {
+    function dd(n) { return ('0' + n).slice(-2); }
+    return d.getFullYear() + '-' + dd(d.getMonth() + 1) + '-' + dd(d.getDate()) +
+      'T' + dd(d.getHours()) + ':' + dd(d.getMinutes());
+  }
+
+  // ── Itens da pauta ────────────────────────────────────────────────
+  var proximo = 0;
+  function novoItem(titulo) {
+    proximo += 1;
+    var linha = document.createElement('div');
+    linha.className = 'item-pauta';
+    var grupoTitulo = document.createElement('div');
+    grupoTitulo.className = 'form-group';
+    var rotulo = document.createElement('label');
+    rotulo.htmlFor = 'itemTitulo' + proximo;
+    rotulo.textContent = 'Item';
+    var entrada = document.createElement('input');
+    entrada.type = 'text';
+    entrada.id = 'itemTitulo' + proximo;
+    entrada.className = 'item-titulo';
+    entrada.maxLength = 180;
+    entrada.placeholder = 'Ex: Aprovar as contas do semestre';
+    entrada.value = titulo || '';
+    grupoTitulo.appendChild(rotulo);
+    grupoTitulo.appendChild(entrada);
+
+    var grupoMaioria = document.createElement('div');
+    grupoMaioria.className = 'form-group';
+    var rotuloMaioria = document.createElement('label');
+    rotuloMaioria.htmlFor = 'itemMaioria' + proximo;
+    rotuloMaioria.textContent = 'Para aprovar';
+    var maioria = document.createElement('select');
+    maioria.id = 'itemMaioria' + proximo;
+    maioria.className = 'item-maioria';
+    Object.keys(assembleias.MAIORIA).forEach(function(chave) {
+      var op = document.createElement('option');
+      op.value = chave;
+      op.textContent = assembleias.MAIORIA[chave].charAt(0).toUpperCase() +
+                       assembleias.MAIORIA[chave].slice(1);
+      maioria.appendChild(op);
+    });
+    var remover = document.createElement('button');
+    remover.type = 'button';
+    remover.className = 'contato-btn perigo-texto item-remover';
+    remover.textContent = 'Remover';
+    remover.setAttribute('aria-label', 'Remover este item da pauta');
+    remover.addEventListener('click', function() {
+      if (campo('itensPauta').children.length > 1) linha.remove();
+    });
+    grupoMaioria.appendChild(rotuloMaioria);
+    grupoMaioria.appendChild(maioria);
+
+    linha.appendChild(grupoTitulo);
+    linha.appendChild(grupoMaioria);
+    linha.appendChild(remover);
+    campo('itensPauta').appendChild(linha);
+    return entrada;
+  }
+  campo('btnNovoItem').addEventListener('click', function() { novoItem().focus(); });
+
+  function prepararFormulario() {
+    campo('itensPauta').innerHTML = '';
+    novoItem();
+    var abre = new Date(Date.now() + 10 * 60 * 1000);
+    campo('aAbre').value = local(abre);
+    campo('aEncerra').value = local(new Date(abre.getTime() + 3 * 24 * 3600 * 1000));
+  }
+
+  // ── Lista ─────────────────────────────────────────────────────────
+  function carregar() {
+    campo('estadoAssembleias').textContent = 'Carregando…';
+    return api.get('/assembleias')
+      .then(function(lista) {
+        var caixa = campo('listaAssembleias');
+        caixa.innerHTML = '';
+        campo('estadoAssembleias').textContent = lista.length ? '' : 'Nenhuma assembleia convocada ainda.';
+        lista.forEach(function(a) {
+          var cartao = assembleias.cartao(a);
+          if (a.situacao === 'agendada' || a.situacao === 'aberta') {
+            var cancelar = document.createElement('button');
+            cancelar.type = 'button';
+            cancelar.className = 'contato-btn perigo-texto';
+            cancelar.textContent = 'Cancelar assembleia';
+            cancelar.addEventListener('click', function() {
+              var motivo = prompt('Motivo do cancelamento (os moradores recebem):', '');
+              if (motivo === null) return;
+              if (motivo.trim().length < 3) { alert('Informe o motivo do cancelamento.'); return; }
+              cancelar.disabled = true;
+              api.post('/assembleias/' + a.id + '/cancelamento', { motivo: motivo.trim() })
+                .then(carregar)
+                .catch(function(e) { cancelar.disabled = false; alert(e.message); });
+            });
+            cartao.appendChild(cancelar);
+          }
+          caixa.appendChild(cartao);
+        });
+      })
+      .catch(function(e) { campo('estadoAssembleias').textContent = e.message; });
+  }
+
+  campo('formAssembleia').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('erroAssembleia');
+    erro.className = 'form-erro';
+    erro.textContent = '';
+    var itens = [];
+    var incompleto = false;
+    campo('itensPauta').querySelectorAll('.item-pauta').forEach(function(linha) {
+      var titulo = linha.querySelector('.item-titulo').value.trim();
+      if (titulo.length < 3) { incompleto = true; return; }
+      itens.push({ titulo: titulo, maioria: linha.querySelector('.item-maioria').value });
+    });
+    var corpo = {
+      titulo: campo('aTitulo').value.trim(),
+      descricao: campo('aDescricao').value.trim() || null,
+      abre_em: campo('aAbre').value,
+      encerra_em: campo('aEncerra').value,
+      itens: itens
+    };
+    if (corpo.titulo.length < 3) { erro.textContent = 'Escreva o título da assembleia.'; return; }
+    if (incompleto || !itens.length) { erro.textContent = 'Escreva cada item da pauta (pelo menos 3 letras).'; return; }
+    if (!corpo.abre_em || !corpo.encerra_em) { erro.textContent = 'Informe quando a votação abre e encerra.'; return; }
+    if (corpo.encerra_em <= corpo.abre_em) { erro.textContent = 'O fim da votação precisa ser depois do início.'; return; }
+
+    var botao = this.querySelector('button[type=submit]');
+    botao.disabled = true;
+    api.post('/assembleias', corpo)
+      .then(function() {
+        campo('formAssembleia').reset();
+        prepararFormulario();
+        erro.className = 'form-erro sucesso';
+        erro.textContent = 'Assembleia convocada. Os moradores foram avisados.';
+        return carregar();
+      })
+      .catch(function(e) { erro.textContent = e.message; })
+      .then(function() { botao.disabled = false; });
+  });
+
+  campo('hdrName').textContent = usuario.nome;
+  prepararFormulario();
+  carregar();
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

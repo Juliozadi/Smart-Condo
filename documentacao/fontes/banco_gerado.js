@@ -4,6 +4,99 @@
  */
 const dicionario = [
   {
+    "nome": "assembleias",
+    "resumo": "As assembleias virtuais convocadas pelo síndico (Código Civil, art. 1.354-A): o período de votação e, se cancelada, o motivo.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio que realiza a assembleia"
+      },
+      {
+        "coluna": "convocada_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que convocou"
+      },
+      {
+        "coluna": "titulo",
+        "tipo": "VARCHAR(180)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Nome da assembleia"
+      },
+      {
+        "coluna": "descricao",
+        "tipo": "TEXT",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Texto da convocação"
+      },
+      {
+        "coluna": "abre_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que a votação abre; antes disso, só a convocação"
+      },
+      {
+        "coluna": "encerra_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que a votação encerra; depois dele aparece o resultado. No máximo 30 dias depois da abertura"
+      },
+      {
+        "coluna": "motivo_cancelamento",
+        "tipo": "VARCHAR(300)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Por que o síndico cancelou a assembleia; os moradores recebem"
+      },
+      {
+        "coluna": "criado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que o registro foi criado, preenchido pelo banco"
+      },
+      {
+        "coluna": "atualizado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "inativo_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando a assembleia foi cancelada; vazio enquanto vale"
+      },
+      {
+        "coluna": "inativado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que cancelou"
+      }
+    ],
+    "regras": [
+      "CHECK ((encerra_em > abre_em))"
+    ]
+  },
+  {
     "nome": "autorizacoes_visita",
     "resumo": "As entradas liberadas pelo morador antes de o visitante chegar — a diarista, o prestador da reforma, os convidados da festa —, que a portaria registra sem esperar a resposta dele.",
     "colunas": [
@@ -1032,6 +1125,55 @@ const dicionario = [
     "regras": [
       "CHECK ((horario_fechamento > horario_abertura))"
     ]
+  },
+  {
+    "nome": "itens_pauta",
+    "resumo": "Os itens da pauta de cada assembleia, com a maioria que cada um exige para ser aprovado.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "assembleia_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Assembleia a que o item pertence"
+      },
+      {
+        "coluna": "ordem",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Posição do item na pauta"
+      },
+      {
+        "coluna": "titulo",
+        "tipo": "VARCHAR(180)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "O que está sendo votado"
+      },
+      {
+        "coluna": "descricao",
+        "tipo": "TEXT",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Detalhes do item, como o orçamento"
+      },
+      {
+        "coluna": "maioria",
+        "tipo": "ENUM",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Quantos votos aprovam: maioria simples (mais a favor que contra), 2/3 de todos os apartamentos ou unanimidade — tipo enumerado maioria_exigida, valores: SIMPLES, DOIS_TERCOS, UNANIMIDADE"
+      }
+    ],
+    "regras": []
   },
   {
     "nome": "leituras_comunicado",
@@ -2276,10 +2418,79 @@ const dicionario = [
       }
     ],
     "regras": []
+  },
+  {
+    "nome": "votos",
+    "resumo": "O voto de cada apartamento em cada item da pauta: um por apartamento, garantido pelo banco.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "item_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Item da pauta votado"
+      },
+      {
+        "coluna": "unidade_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Apartamento que votou; um voto por apartamento em cada item"
+      },
+      {
+        "coluna": "usuario_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Morador que votou pelo apartamento"
+      },
+      {
+        "coluna": "escolha",
+        "tipo": "ENUM",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "A favor, contra ou abstenção — tipo enumerado escolha_voto, valores: A_FAVOR, CONTRA, ABSTENCAO"
+      },
+      {
+        "coluna": "votado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento do voto; o voto não pode ser mudado depois"
+      }
+    ],
+    "regras": [
+      "UNIQUE (item_id, unidade_id)"
+    ]
   }
 ];
 
 const relacoes = [
+  {
+    "origem": "assembleias",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio que realiza a assembleia"
+  },
+  {
+    "origem": "assembleias",
+    "coluna": "convocada_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que convocou"
+  },
+  {
+    "origem": "assembleias",
+    "coluna": "inativado_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que cancelou"
+  },
   {
     "origem": "autorizacoes_visita",
     "coluna": "autorizado_por_id",
@@ -2429,6 +2640,12 @@ const relacoes = [
     "coluna": "inativado_por_id",
     "destino": "usuarios",
     "texto": "Síndico que inativou o espaço"
+  },
+  {
+    "origem": "itens_pauta",
+    "coluna": "assembleia_id",
+    "destino": "assembleias",
+    "texto": "Assembleia a que o item pertence"
   },
   {
     "origem": "leituras_comunicado",
@@ -2633,6 +2850,24 @@ const relacoes = [
     "coluna": "unidade_id",
     "destino": "unidades",
     "texto": "Unidade visitada"
+  },
+  {
+    "origem": "votos",
+    "coluna": "item_id",
+    "destino": "itens_pauta",
+    "texto": "Item da pauta votado"
+  },
+  {
+    "origem": "votos",
+    "coluna": "unidade_id",
+    "destino": "unidades",
+    "texto": "Apartamento que votou; um voto por apartamento em cada item"
+  },
+  {
+    "origem": "votos",
+    "coluna": "usuario_id",
+    "destino": "usuarios",
+    "texto": "Morador que votou pelo apartamento"
   }
 ];
 
@@ -2658,12 +2893,20 @@ const enumerados = [
     "valores": "MORADOR, VISITANTE, PRESTADOR"
   },
   {
+    "nome": "escolha_voto",
+    "valores": "A_FAVOR, CONTRA, ABSTENCAO"
+  },
+  {
     "nome": "finalidade_codigo",
     "valores": "CONFIRMACAO_CADASTRO, RECUPERACAO_SENHA"
   },
   {
     "nome": "forma_pagamento",
     "valores": "PIX, BOLETO, DEBITO_AUTOMATICO, CARTAO"
+  },
+  {
+    "nome": "maioria_exigida",
+    "valores": "SIMPLES, DOIS_TERCOS, UNANIMIDADE"
   },
   {
     "nome": "papel_usuario",

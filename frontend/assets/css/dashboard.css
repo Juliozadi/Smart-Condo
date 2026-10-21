@@ -2304,3 +2304,36 @@ label.contato-btn { position: relative; cursor: pointer; }
   background: var(--surface); color: var(--text); font: inherit; font-size: 14px; font-weight: 600;
 }
 .layout-mobile .barra-acoes { flex-direction: row; align-items: center; }
+
+/* Assembleia virtual */
+.assembleia { margin-bottom: 16px; }
+.assembleia-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.assembleia-topo h3 { font-size: 16px; }
+.assembleia-periodo, .assembleia-quorum { font-size: 13px; color: var(--text-2); margin: 6px 0; }
+.assembleia-descricao { font-size: 13px; color: var(--text-2); margin: 4px 0; }
+.assembleia-pauta { margin: 10px 0 12px 20px; display: flex; flex-direction: column; gap: 10px; }
+.assembleia-pauta li { font-size: 14px; color: var(--text); }
+.assembleia-maioria { font-size: 12px; color: var(--text-2); }
+.assembleia-meu-voto { font-size: 12px; font-weight: 700; color: var(--primary-texto); margin-top: 3px; }
+.assembleia-resultado { font-size: 13px; color: var(--text-2); margin-top: 4px; }
+.assembleia-resultado .badge { margin-right: 6px; }
+.cedula { border-top: 1px dashed var(--border); padding-top: 12px; margin-top: 4px; }
+.cedula fieldset { border: 0; padding: 0; margin: 0 0 12px; }
+.cedula legend { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.cedula .opcoes-voto { display: flex; flex-wrap: wrap; gap: 8px; }
+.cedula .opcoes-voto label {
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; cursor: pointer;
+  border: 1.5px solid var(--border); border-radius: var(--radius-md);
+  font-size: 13px; font-weight: 600; color: var(--text); background: var(--surface);
+}
+.cedula .opcoes-voto label:has(input:checked) { border-color: var(--primary-texto); background: var(--surface-2); }
+.cedula .opcoes-voto input { accent-color: var(--primary); margin: 0; }
+.pauta-campos .item-pauta {
+  display: grid; grid-template-columns: 1fr 220px auto; gap: 12px; align-items: end;
+}
+.pauta-campos .item-remover { margin-bottom: 14px; padding: 9px 12px; }
+.pauta-campos #btnNovoItem { margin-bottom: 10px; }
+@media (max-width: 640px) {
+  .pauta-campos .item-pauta { grid-template-columns: 1fr; gap: 0; }
+  .pauta-campos .item-remover { justify-self: start; }
+}

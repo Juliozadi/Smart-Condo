@@ -112,6 +112,20 @@ INSERT INTO despesas (id, condominio_id, lancada_por_id, categoria, descricao, v
 INSERT INTO despesas (id, condominio_id, lancada_por_id, categoria, descricao, valor, data, fornecedor, comprovante_arquivo, criado_em, atualizado_em) VALUES (12, 1, 2, 'AGUA', 'Água e esgoto', 198.90, '2026-09-08', 'Águas Guariroba', NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 INSERT INTO despesas (id, condominio_id, lancada_por_id, categoria, descricao, valor, data, fornecedor, comprovante_arquivo, criado_em, atualizado_em) VALUES (13, 1, 2, 'ADMINISTRACAO', 'Tarifas bancárias', 39.90, '2026-09-12', NULL, NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 
+-- Assembleia virtual encerrada: as contas passam por maioria simples; a
+-- pintura tem 3 de 7 apartamentos a favor e não chega aos 2/3.
+INSERT INTO assembleias (id, condominio_id, convocada_por_id, titulo, descricao, abre_em, encerra_em, motivo_cancelamento, criado_em, atualizado_em) VALUES (1, 1, 2, 'Assembleia geral ordinária', 'Prestação de contas e obras do ano.', '2026-09-01 22:00:00+00', '2026-09-04 22:00:00+00', NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
+INSERT INTO itens_pauta (id, assembleia_id, ordem, titulo, descricao, maioria) VALUES (1, 1, 1, 'Aprovar as contas do semestre', NULL, 'SIMPLES');
+INSERT INTO itens_pauta (id, assembleia_id, ordem, titulo, descricao, maioria) VALUES (2, 1, 2, 'Pintura da fachada (R$ 42 mil, rateados em 6 parcelas)', NULL, 'DOIS_TERCOS');
+INSERT INTO votos (id, item_id, unidade_id, usuario_id, escolha, votado_em) VALUES (1, 1, 3, 5, 'A_FAVOR', '2026-09-02 01:00:00+00');
+INSERT INTO votos (id, item_id, unidade_id, usuario_id, escolha, votado_em) VALUES (2, 2, 3, 5, 'A_FAVOR', '2026-09-02 01:00:00+00');
+INSERT INTO votos (id, item_id, unidade_id, usuario_id, escolha, votado_em) VALUES (3, 1, 4, 6, 'A_FAVOR', '2026-09-02 01:00:00+00');
+INSERT INTO votos (id, item_id, unidade_id, usuario_id, escolha, votado_em) VALUES (4, 2, 4, 6, 'A_FAVOR', '2026-09-02 01:00:00+00');
+INSERT INTO votos (id, item_id, unidade_id, usuario_id, escolha, votado_em) VALUES (5, 1, 2, 7, 'A_FAVOR', '2026-09-02 01:00:00+00');
+INSERT INTO votos (id, item_id, unidade_id, usuario_id, escolha, votado_em) VALUES (6, 2, 2, 7, 'CONTRA', '2026-09-02 01:00:00+00');
+INSERT INTO votos (id, item_id, unidade_id, usuario_id, escolha, votado_em) VALUES (7, 1, 6, 8, 'ABSTENCAO', '2026-09-02 01:00:00+00');
+INSERT INTO votos (id, item_id, unidade_id, usuario_id, escolha, votado_em) VALUES (8, 2, 6, 8, 'A_FAVOR', '2026-09-02 01:00:00+00');
+
 INSERT INTO comunicados (id, condominio_id, autor_id, titulo, conteudo, categoria, fixado, publicado_em, criado_em, atualizado_em) VALUES (1, 1, 2, 'Manutenção da piscina', 'A piscina ficará fechada no dia 20 para limpeza e troca da bomba. A reabertura está prevista para as 8h do dia seguinte.', 'MANUTENCAO', false, '2026-09-20 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 INSERT INTO comunicados (id, condominio_id, autor_id, titulo, conteudo, categoria, fixado, publicado_em, criado_em, atualizado_em) VALUES (2, 1, 2, 'Assembleia geral ordinária', 'Convocamos todos os condôminos para a assembleia no salão de festas, às 19h30. A pauta inclui a prestação de contas e o orçamento do ano.', 'URGENTE', true, '2026-09-18 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 INSERT INTO comunicados (id, condominio_id, autor_id, titulo, conteudo, categoria, fixado, publicado_em, criado_em, atualizado_em) VALUES (3, 1, 2, 'Nova regra para a churrasqueira', 'As reservas passam a ser liberadas com até 30 dias de antecedência, por ordem de chegada.', 'GERAL', false, '2026-09-13 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
@@ -190,6 +204,12 @@ SELECT setval('cobrancas_id_seq', (SELECT COALESCE(MAX(id), 1) FROM cobrancas));
 SELECT setval('pagamentos_id_seq', (SELECT COALESCE(MAX(id), 1) FROM pagamentos));
 
 SELECT setval('despesas_id_seq', (SELECT COALESCE(MAX(id), 1) FROM despesas));
+
+SELECT setval('assembleias_id_seq', (SELECT COALESCE(MAX(id), 1) FROM assembleias));
+
+SELECT setval('itens_pauta_id_seq', (SELECT COALESCE(MAX(id), 1) FROM itens_pauta));
+
+SELECT setval('votos_id_seq', (SELECT COALESCE(MAX(id), 1) FROM votos));
 
 SELECT setval('comunicados_id_seq', (SELECT COALESCE(MAX(id), 1) FROM comunicados));
 

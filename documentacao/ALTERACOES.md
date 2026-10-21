@@ -15,11 +15,11 @@ não tinha.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | Novo RF048: prestação de contas — despesas e balancete do mês |
-| 11 Diagrama de caso de uso | Novo caso: prestar contas — agora 29 casos de uso |
-| 14 a 17 | Nova tabela despesas — agora 24 entidades, 296 atributos e 59 relacionamentos |
-| 21 API REST | 122 endpoints: despesas (lançar, listar, corrigir, cancelar, comprovante) e balancete do mês |
-| 23 Testes | 527 casos no servidor e 112 testes de interface |
+| 9 Requisitos funcionais | Novo RF048: prestação de contas — despesas e balancete do mês. Novo RF049: assembleia virtual com votação |
+| 11 Diagrama de caso de uso | Novos casos: prestar contas, convocar assembleia e votar em assembleia — agora 31 casos de uso |
+| 14 a 17 | Novas tabelas despesas, assembleias, itens_pauta e votos — agora 27 entidades, 320 atributos e 66 relacionamentos; o DER ganha um quarto recorte, de gestão |
+| 21 API REST | 127 endpoints: despesas (lançar, listar, corrigir, cancelar, comprovante) e balancete do mês; assembleias (convocar, listar, votar, cancelar) |
+| 23 Testes | 544 casos no servidor e 113 testes de interface |
 
 **Situações tratadas.**
 - O morador paga a taxa todo mês e não sabe para onde vai o dinheiro; o
@@ -29,6 +29,20 @@ não tinha.
   veem o mesmo balancete do mês: receitas, despesas por categoria, saldo
   do mês e acumulado. Despesa lançada errada é corrigida ou cancelada com
   motivo, e nada é apagado.
+- A assembleia é marcada no salão numa noite de semana, vai meia dúzia
+  de pessoas e as decisões valem para todos; desde a Lei 14.309/2022
+  (Código Civil, art. 1.354-A) ela pode ser eletrônica, e o sistema não
+  tinha assembleia nenhuma. Agora o síndico convoca pela tela, com a
+  pauta e o período de votação, e cada apartamento vota de onde estiver,
+  uma vez em cada item. Vota o proprietário — ou o inquilino, se nenhum
+  proprietário mora lá — e só o apartamento quite (art. 1.335, III).
+  Cada item diz a maioria que exige: simples, 2/3 de todos os
+  apartamentos (como para mudar a convenção, art. 1.351) ou
+  unanimidade. Durante a votação ninguém vê o placar, nem o síndico; no
+  fim, cada item mostra os votos e se passou.
+- Na carga de demonstração, a taxa do mês passa a vencer no dia 10 do
+  mês seguinte: vencendo no próprio mês, a partir do dia 11 todos os
+  apartamentos ficavam em atraso — e ninguém poderia votar.
 
 ## Versão 2.7 — situações reais do dia a dia
 

@@ -140,6 +140,19 @@ class StatusOrdemServico(str, enum.Enum):
     CANCELADA = "cancelada"
 
 
+class MaioriaExigida(str, enum.Enum):
+    """Quantos votos um item da pauta precisa para ser aprovado."""
+    SIMPLES = "simples"            # mais a favor que contra (art. 1.352)
+    DOIS_TERCOS = "dois_tercos"    # 2/3 de todas as unidades (arts. 1.341 e 1.351)
+    UNANIMIDADE = "unanimidade"    # todas as unidades
+
+
+class EscolhaVoto(str, enum.Enum):
+    A_FAVOR = "a_favor"
+    CONTRA = "contra"
+    ABSTENCAO = "abstencao"
+
+
 class CategoriaDespesa(str, enum.Enum):
     """Para onde vai o dinheiro do condomínio, na prestação de contas."""
     AGUA = "agua"
