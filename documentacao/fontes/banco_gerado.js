@@ -517,6 +517,106 @@ const dicionario = [
     ]
   },
   {
+    "nome": "despesas",
+    "resumo": "O que o condomínio gastou, com o comprovante: a outra metade da prestação de contas, que os moradores veem no balancete do mês.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio que pagou"
+      },
+      {
+        "coluna": "lancada_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que lançou a despesa"
+      },
+      {
+        "coluna": "categoria",
+        "tipo": "ENUM",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Para onde foi o dinheiro: água, energia, limpeza, manutenção, segurança, pessoal, administração, obras ou outros — tipo enumerado categoria_despesa, valores: AGUA, ENERGIA, LIMPEZA, MANUTENCAO, SEGURANCA, PESSOAL, ADMINISTRACAO, OBRAS, OUTROS"
+      },
+      {
+        "coluna": "descricao",
+        "tipo": "VARCHAR(180)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "O que foi pago"
+      },
+      {
+        "coluna": "valor",
+        "tipo": "NUMERIC(10,2)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Valor pago; precisa ser maior que zero"
+      },
+      {
+        "coluna": "data",
+        "tipo": "DATE",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Dia do pagamento; é por ele que a despesa entra no balancete do mês. Não pode ser futuro"
+      },
+      {
+        "coluna": "fornecedor",
+        "tipo": "VARCHAR(120)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quem recebeu, quando houver"
+      },
+      {
+        "coluna": "comprovante_arquivo",
+        "tipo": "VARCHAR(100)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Nome do arquivo da nota fiscal ou do recibo, gravado pela API sem endereço público"
+      },
+      {
+        "coluna": "criado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que o registro foi criado, preenchido pelo banco"
+      },
+      {
+        "coluna": "atualizado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "inativo_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando a despesa foi cancelada por ter sido lançada errada; ela sai do balancete, e o motivo fica no registro"
+      },
+      {
+        "coluna": "inativado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que cancelou a despesa"
+      }
+    ],
+    "regras": [
+      "CHECK ((valor > (0)::numeric))"
+    ]
+  },
+  {
     "nome": "documentos",
     "resumo": "Os documentos do condomínio disponibilizados aos moradores: convenção, regimento, atas, plantas e prestações de contas.",
     "colunas": [
@@ -2247,6 +2347,24 @@ const relacoes = [
     "texto": "Síndico responsável pelo condomínio"
   },
   {
+    "origem": "despesas",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio que pagou"
+  },
+  {
+    "origem": "despesas",
+    "coluna": "inativado_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que cancelou a despesa"
+  },
+  {
+    "origem": "despesas",
+    "coluna": "lancada_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que lançou a despesa"
+  },
+  {
     "origem": "documentos",
     "coluna": "condominio_id",
     "destino": "condominios",
@@ -2526,6 +2644,10 @@ const enumerados = [
   {
     "nome": "categoria_comunicado",
     "valores": "GERAL, MANUTENCAO, FINANCEIRO, SEGURANCA, EVENTO, URGENTE"
+  },
+  {
+    "nome": "categoria_despesa",
+    "valores": "AGUA, ENERGIA, LIMPEZA, MANUTENCAO, SEGURANCA, PESSOAL, ADMINISTRACAO, OBRAS, OUTROS"
   },
   {
     "nome": "categoria_documento",

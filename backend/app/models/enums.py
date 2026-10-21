@@ -140,6 +140,19 @@ class StatusOrdemServico(str, enum.Enum):
     CANCELADA = "cancelada"
 
 
+class CategoriaDespesa(str, enum.Enum):
+    """Para onde vai o dinheiro do condomínio, na prestação de contas."""
+    AGUA = "agua"
+    ENERGIA = "energia"
+    LIMPEZA = "limpeza"
+    MANUTENCAO = "manutencao"
+    SEGURANCA = "seguranca"
+    PESSOAL = "pessoal"
+    ADMINISTRACAO = "administracao"
+    OBRAS = "obras"
+    OUTROS = "outros"
+
+
 class CategoriaDocumento(str, enum.Enum):
     """Documentação, seção 13.6: atas, convenção e regimento interno."""
     CONVENCAO = "convencao"

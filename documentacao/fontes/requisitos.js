@@ -292,6 +292,12 @@ const requisitosFuncionais = [
     descricao: 'O sistema acrescenta à cobrança paga depois do vencimento a multa e os juros previstos no Código Civil (art. 1.336, § 1º): multa de até 2% sobre o débito e, sem outro valor na convenção, juros de 1% ao mês, contados por dia de atraso.',
     entradas: 'O síndico define os percentuais do condomínio, até esses limites; os condomínios começam com 2% e 1% ao mês. Num acordo, o síndico pode receber sem os encargos.',
     saidas: 'O morador vê, em cada cobrança vencida, a multa, os juros e o total de hoje, e paga esse total. No pagamento parcial, o dinheiro abate primeiro a multa e os juros (art. 354) e o resto abate o valor, e o pagamento precisa ao menos cobri-los. Cada pagamento guarda quanto foi de encargos; o total recebido do painel os inclui; a dispensa fica registrada, com quem dispensou e quanto.' },
+
+  { id: 'RF048', nome: 'Prestar contas do condomínio',
+    atores: 'Síndico, Morador', prioridade: 'Importante',
+    descricao: 'O sistema permite ao síndico lançar as despesas do condomínio e mostra a todos o balancete do mês: o que entrou, o que saiu e o saldo, como manda o Código Civil (art. 1.348, VIII: compete ao síndico prestar contas).',
+    entradas: 'O síndico informa categoria (água, energia, limpeza, manutenção, segurança, pessoal, administração, obras ou outros), descrição, valor, data do pagamento (não futura) e, se quiser, o fornecedor e a nota fiscal ou o recibo (PDF ou imagem).',
+    saidas: 'A despesa entra no balancete do mês em que foi paga. O morador vê, mês a mês, as receitas (todo o dinheiro recebido, multa e juros incluídos), as despesas por categoria, o saldo do mês, o anterior e o acumulado, e abre cada comprovante; a portaria não vê. Lançada errada, a despesa é corrigida ou cancelada com motivo: sai do balancete, mas fica guardada, com quem fez cada alteração.' },
 ];
 
 // ── 10 Requisitos não funcionais ────────────────────────────────────

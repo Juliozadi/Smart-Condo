@@ -8,14 +8,14 @@ Documentação, seção 6 (História do Usuário):
 """
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from app.core.tempo import hoje_local
 from decimal import Decimal
 
-from pydantic import Field, model_validator
+from pydantic import Field, field_validator, model_validator
 
-from app.models.enums import FormaPagamento, StatusCobranca
+from app.models.enums import CategoriaDespesa, FormaPagamento, StatusCobranca
 from app.schemas.admin import RegistroSaida
 from app.schemas.comuns import EnderecoWeb, SchemaBase
 
@@ -132,3 +132,93 @@ class ResumoFinanceiro(SchemaBase):
     total_recebido: Decimal
     cobrancas_abertas: int
     unidades_inadimplentes: int
+
+
+# ── Prestação de contas ──────────────────────────────────────────────
+def _data_da_despesa(dia: date) -> date:
+    hoje = hoje_local()
+    if dia > hoje:
+        raise ValueError("A despesa entra quando é paga: a data não pode ser futura.")
+    # Como a cobrança: contas de condomínio prescrevem em 5 anos.
+    if dia < hoje - timedelta(days=5 * 366):
+        raise ValueError("A data não pode ser de mais de 5 anos atrás.")
+    return dia
+
+
+def _vazio_e_nada(valor):
+    if isinstance(valor, str) and not valor.strip():
+        return None
+    return valor
+
+
+class DespesaEntrada(SchemaBase):
+    categoria: CategoriaDespesa
+    descricao: str = Field(min_length=3, max_length=180)
+    valor: Decimal = Field(gt=0, max_digits=10, decimal_places=2)
+    data: date
+    fornecedor: str | None = Field(default=None, max_length=120)
+
+    _fornecedor_vazio = field_validator("fornecedor", mode="before")(_vazio_e_nada)
+
+    @field_validator("data")
+    @classmethod
+    def _data(cls, dia: date) -> date:
+        return _data_da_despesa(dia)
+
+
+class DespesaAtualizacao(SchemaBase):
+    """Correção de uma despesa lançada errada. Só o que veio muda; o
+    fornecedor pode ser apagado, o resto não fica vazio."""
+    categoria: CategoriaDespesa | None = None
+    descricao: str | None = Field(default=None, min_length=3, max_length=180)
+    valor: Decimal | None = Field(default=None, gt=0, max_digits=10, decimal_places=2)
+    data: date | None = None
+    fornecedor: str | None = Field(default=None, max_length=120)
+
+    _fornecedor_vazio = field_validator("fornecedor", mode="before")(_vazio_e_nada)
+
+    @field_validator("data")
+    @classmethod
+    def _data(cls, dia: date | None) -> date | None:
+        return None if dia is None else _data_da_despesa(dia)
+
+    @model_validator(mode="after")
+    def _sem_nulos(self) -> "DespesaAtualizacao":
+        for campo in self.model_fields_set - {"fornecedor"}:
+            if getattr(self, campo) is None:
+                raise ValueError(f"O campo {campo} não pode ficar vazio.")
+        return self
+
+
+class DespesaSaida(SchemaBase):
+    id: int
+    categoria: CategoriaDespesa
+    descricao: str
+    valor: Decimal
+    data: date
+    fornecedor: str | None = None
+    # Caminho na API, que confere quem pode abrir. None sem comprovante.
+    comprovante_url: str | None = None
+    lancada_por_nome: str | None = None
+    cancelada: bool = False
+    criado_em: datetime
+    # Só para o síndico: "Editado por Fulano em ...".
+    ultima_alteracao: RegistroSaida | None = None
+
+
+class TotalPorCategoria(SchemaBase):
+    categoria: CategoriaDespesa
+    total: Decimal
+
+
+class Balancete(SchemaBase):
+    """O mês do condomínio: o que entrou, o que saiu e o saldo."""
+    mes: str
+    # Todo o dinheiro recebido no mês, multa e juros incluídos.
+    receitas: Decimal
+    despesas: Decimal
+    saldo_do_mes: Decimal
+    # Receitas menos despesas de todos os meses anteriores.
+    saldo_anterior: Decimal
+    saldo_acumulado: Decimal
+    por_categoria: list[TotalPorCategoria]

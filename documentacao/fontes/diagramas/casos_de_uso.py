@@ -29,6 +29,7 @@ CASOS = [
     ("Avaliar reserva",                 ["SIN"],                      ESQ),
     ("Responder ocorrência",            ["SIN"],                      ESQ),
     ("Registrar pagamento",             ["SIN", "MOR"],               ESQ),
+    ("Prestar contas",                  ["SIN", "MOR"],               ESQ),
     ("Registrar visitante",             ["POR"],                      DIR),
     ("Registrar encomenda",             ["POR"],                      DIR),
     ("Registrar veículo",               ["POR"],                      DIR),

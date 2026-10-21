@@ -34,6 +34,7 @@ TABELAS = {
     "ordens_servico": "As ordens de serviço de manutenção abertas pelo síndico, com prioridade, custo e acompanhamento.",
     "cobrancas": "As cobranças emitidas para cada unidade, por competência.",
     "pagamentos": "Os pagamentos registrados para cada cobrança. Uma cobrança pode receber mais de um pagamento.",
+    "despesas": "O que o condomínio gastou, com o comprovante: a outra metade da prestação de contas, que os moradores veem no balancete do mês.",
     "preferencias_cobranca": "O dia do mês e a forma de pagamento que cada morador prefere.",
     "visitantes": "Os visitantes anunciados pela portaria e a confirmação do morador.",
     "autorizacoes_visita": "As entradas liberadas pelo morador antes de o visitante chegar — a diarista, o prestador da reforma, os convidados da festa —, que a portaria registra sem esperar a resposta dele.",
@@ -181,6 +182,14 @@ DESCRICOES = {
     "pagamentos.comprovante_url": "Endereço do comprovante, quando houver",
     "pagamentos.observacao": "Anotação sobre o pagamento",
 
+    "despesas.categoria": "Para onde foi o dinheiro: água, energia, limpeza, manutenção, segurança, pessoal, administração, obras ou outros",
+    "despesas.descricao": "O que foi pago",
+    "despesas.valor": "Valor pago; precisa ser maior que zero",
+    "despesas.data": "Dia do pagamento; é por ele que a despesa entra no balancete do mês. Não pode ser futuro",
+    "despesas.fornecedor": "Quem recebeu, quando houver",
+    "despesas.comprovante_arquivo": "Nome do arquivo da nota fiscal ou do recibo, gravado pela API sem endereço público",
+    "despesas.inativo_em": "Quando a despesa foi cancelada por ter sido lançada errada; ela sai do balancete, e o motivo fica no registro",
+
     "preferencias_cobranca.dia_vencimento": "Dia do mês escolhido pelo morador; limitado a 28 para existir em todos os meses",
     "preferencias_cobranca.forma_preferida": "Forma de pagamento preferida",
 
@@ -237,6 +246,9 @@ DESCRICOES = {
 
 # O que cada vínculo significa, quando o nome da coluna não basta.
 VINCULOS = {
+    "despesas.condominio_id": "Condomínio que pagou",
+    "despesas.lancada_por_id": "Síndico que lançou a despesa",
+    "despesas.inativado_por_id": "Síndico que cancelou a despesa",
     "condominios.sindico_id": "Síndico responsável pelo condomínio",
     "condominios.inativado_por_id": "Administrador que inativou o condomínio",
     "comunicados.inativado_por_id": "Síndico que removeu o comunicado",

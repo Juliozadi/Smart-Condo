@@ -31,6 +31,7 @@ DOCUMENTO = "documento"
 ESPACO = "espaco"
 UNIDADE = "unidade"
 COBRANCA = "cobranca"
+DESPESA = "despesa"
 
 ROTULO_ACAO = {
     CRIOU: "Criado", EDITOU: "Editado", INATIVOU: "Inativado", REATIVOU: "Reativado",

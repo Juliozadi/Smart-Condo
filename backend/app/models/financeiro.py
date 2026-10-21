@@ -19,8 +19,8 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-from app.models.base import TimestampMixin
-from app.models.enums import FormaPagamento, StatusCobranca
+from app.models.base import InativacaoMixin, TimestampMixin
+from app.models.enums import CategoriaDespesa, FormaPagamento, StatusCobranca
 
 if TYPE_CHECKING:
     from app.models.condominio import Unidade
@@ -129,3 +129,39 @@ class Pagamento(Base, TimestampMixin):
 
     def __repr__(self) -> str:
         return f"<Pagamento {self.id} cobranca={self.cobranca_id} {self.forma.value}>"
+
+
+class Despesa(Base, TimestampMixin, InativacaoMixin):
+    """O que o condomínio gastou — a outra metade da prestação de contas
+    (Código Civil, art. 1.348, VIII). A despesa lançada errada é cancelada
+    com motivo (InativacaoMixin): sai do balancete, mas fica guardada."""
+
+    __tablename__ = "despesas"
+    __table_args__ = (
+        CheckConstraint("valor > 0", name="ck_despesa_valor_positivo"),
+        Index("ix_despesas_condominio_data", "condominio_id", "data"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    condominio_id: Mapped[int] = mapped_column(
+        ForeignKey("condominios.id", ondelete="CASCADE"), nullable=False
+    )
+    lancada_por_id: Mapped[int | None] = mapped_column(
+        ForeignKey("usuarios.id", ondelete="SET NULL"), index=True
+    )
+
+    categoria: Mapped[CategoriaDespesa] = mapped_column(
+        SAEnum(CategoriaDespesa, name="categoria_despesa"), nullable=False
+    )
+    descricao: Mapped[str] = mapped_column(String(180), nullable=False)
+    valor: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    # O dia em que foi paga; é por ela que a despesa entra no balancete.
+    data: Mapped[date] = mapped_column(Date, nullable=False)
+    fornecedor: Mapped[str | None] = mapped_column(String(120))
+    # Nota fiscal ou recibo, em pasta privada; quem abre passa pela API.
+    comprovante_arquivo: Mapped[str | None] = mapped_column(String(100))
+
+    lancada_por: Mapped["Usuario | None"] = relationship(foreign_keys=[lancada_por_id])
+
+    def __repr__(self) -> str:
+        return f"<Despesa {self.id} {self.categoria.value} {self.valor}>"

@@ -24,7 +24,7 @@ from app.core.tempo import hoje_local
 from app.models.comunicado import Comunicado
 from app.models.condominio import Condominio, Unidade
 from app.models.enums import (
-    CanalVerificacao, CategoriaComunicado, CategoriaDocumento, CategoriaVeiculo,
+    CanalVerificacao, CategoriaComunicado, CategoriaDespesa, CategoriaDocumento, CategoriaVeiculo,
     FormaPagamento, Papel, PrioridadeOcorrencia, PrioridadeOrdemServico, StatusCobranca,
     StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
     StatusVisitante,
@@ -32,7 +32,7 @@ from app.models.enums import (
 )
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
 from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico
-from app.models.financeiro import Cobranca, Pagamento, PreferenciaCobranca
+from app.models.financeiro import Cobranca, Despesa, Pagamento, PreferenciaCobranca
 from app.models.portaria import Encomenda, Ocorrencia, Visitante
 from app.models.usuario import PermissaoPorteiro, Usuario
 from app.services import arquivos, registro
@@ -91,7 +91,7 @@ def limpar(db) -> None:
     # os registros que apontavam para eles, só ocupariam espaço — e são
     # dados pessoais sem finalidade.
     for pasta in ("fotos", arquivos.PORTARIA, arquivos.OCORRENCIAS, arquivos.DOCUMENTOS,
-                  arquivos.CONDOMINIO):
+                  arquivos.CONDOMINIO, arquivos.DESPESAS):
         for arquivo in arquivos._pasta(pasta).iterdir():
             if arquivo.is_file():
                 arquivo.unlink()
@@ -296,6 +296,27 @@ def criar(db) -> dict:
                     valor=valor, forma=FormaPagamento.PIX,
                     pago_em=datetime.combine(vencimento, time(10, 30), tzinfo=timezone.utc),
                 ))
+
+    # ── Despesas: a prestação de contas dos mesmos três meses ────────
+    for atras in (2, 1, 0):
+        mes = primeiro_dia
+        for _ in range(atras):
+            mes = (mes - timedelta(days=1)).replace(day=1)
+        for dia, categoria, descricao, valor, fornecedor in [
+            (5, CategoriaDespesa.LIMPEZA, "Limpeza das áreas comuns", "780.00",
+             "Brilho Serviços"),
+            (8, CategoriaDespesa.ENERGIA, "Energia das áreas comuns", "312.37", "Energisa"),
+            (8, CategoriaDespesa.AGUA, "Água e esgoto", "198.90", "Águas Guariroba"),
+            (12, CategoriaDespesa.ADMINISTRACAO, "Tarifas bancárias", "39.90", None),
+        ] + ([(15, CategoriaDespesa.MANUTENCAO, "Troca da bomba da piscina", "980.00",
+               "Hidráulica Silva")] if atras == 1 else []):
+            data = mes.replace(day=dia)
+            if data > HOJE:
+                continue
+            db.add(Despesa(condominio_id=condominio.id, lancada_por_id=sindico.id,
+                           categoria=categoria,
+                           descricao=descricao, valor=Decimal(valor), data=data,
+                           fornecedor=fornecedor))
 
     # ── Comunicados ───────────────────────────────────────────────────
     for titulo, conteudo, categoria, fixado, dias in [

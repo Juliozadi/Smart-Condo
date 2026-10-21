@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS
+    despesas,
     registros_alteracao,
     documentos_cadastro,
     mensagens,
@@ -27,6 +28,7 @@ CASCADE;
 DROP TYPE IF EXISTS
     canal_verificacao,
     categoria_comunicado,
+    categoria_despesa,
     categoria_documento,
     categoria_veiculo,
     finalidade_codigo,
@@ -58,6 +60,18 @@ CREATE TYPE categoria_comunicado AS ENUM (
     'SEGURANCA',
     'EVENTO',
     'URGENTE'
+);
+
+CREATE TYPE categoria_despesa AS ENUM (
+    'AGUA',
+    'ENERGIA',
+    'LIMPEZA',
+    'MANUTENCAO',
+    'SEGURANCA',
+    'PESSOAL',
+    'ADMINISTRACAO',
+    'OBRAS',
+    'OUTROS'
 );
 
 CREATE TYPE categoria_documento AS ENUM (
@@ -485,6 +499,37 @@ ALTER TABLE ONLY pagamentos ALTER COLUMN id SET DEFAULT nextval('pagamentos_id_s
 ALTER TABLE ONLY pagamentos
     ADD CONSTRAINT pagamentos_pkey PRIMARY KEY (id);
 
+-- O que o condomínio gastou: a outra metade da prestação de contas
+-- (Código Civil, art. 1.348, VIII). A lançada errada é cancelada com
+-- motivo (inativo_em) e sai do balancete; nada é apagado.
+CREATE TABLE despesas (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    lancada_por_id integer,
+    categoria categoria_despesa NOT NULL,
+    descricao character varying(180) NOT NULL,
+    valor numeric(10,2) NOT NULL,
+    data date NOT NULL,
+    fornecedor character varying(120),
+    comprovante_arquivo character varying(100),
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    inativo_em timestamp with time zone,
+    inativado_por_id integer,
+    CONSTRAINT ck_despesa_valor_positivo CHECK ((valor > (0)::numeric))
+);
+CREATE SEQUENCE despesas_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE despesas_id_seq OWNED BY despesas.id;
+ALTER TABLE ONLY despesas ALTER COLUMN id SET DEFAULT nextval('despesas_id_seq'::regclass);
+ALTER TABLE ONLY despesas
+    ADD CONSTRAINT despesas_pkey PRIMARY KEY (id);
+
 CREATE TABLE comunicados (
     id integer NOT NULL,
     condominio_id integer NOT NULL,
@@ -902,6 +947,15 @@ ALTER TABLE ONLY ordens_servico
 ALTER TABLE ONLY ordens_servico
     ADD CONSTRAINT ordens_servico_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY despesas
+    ADD CONSTRAINT despesas_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY despesas
+    ADD CONSTRAINT despesas_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY despesas
+    ADD CONSTRAINT despesas_lancada_por_id_fkey FOREIGN KEY (lancada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
 ALTER TABLE ONLY pagamentos
     ADD CONSTRAINT pagamentos_cobranca_id_fkey FOREIGN KEY (cobranca_id) REFERENCES cobrancas(id) ON DELETE CASCADE;
 
@@ -1059,6 +1113,10 @@ CREATE INDEX ix_ordens_servico_condominio_id ON ordens_servico USING btree (cond
 CREATE INDEX ix_ordens_servico_prioridade ON ordens_servico USING btree (prioridade);
 
 CREATE INDEX ix_ordens_servico_status ON ordens_servico USING btree (status);
+
+CREATE INDEX ix_despesas_condominio_data ON despesas USING btree (condominio_id, data);
+
+CREATE INDEX ix_despesas_lancada_por_id ON despesas USING btree (lancada_por_id);
 
 CREATE INDEX ix_pagamentos_cobranca_id ON pagamentos USING btree (cobranca_id);
 

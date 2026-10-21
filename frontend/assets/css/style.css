@@ -926,6 +926,8 @@ body.modo-leitura .stats-row { display: none !important; }
 
 .form-group select,
 .form-group input[type="date"],
+.form-group input[type="month"],
+.form-group input[type="number"],
 .form-group input[type="time"],
 .form-group input[type="text"],
 .form-group input[type="tel"],

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Prestação de Contas</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-mobile">
+
+  <header class="app-bar">
+    <div class="app-bar-inner">
+      <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
+        <span class="brand-name">Smart<strong>Condo</strong></span>
+      </a>
+      <div class="app-bar-right">
+        <a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/user.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">João Silva</span><span class="profile-role">Morador</span></a>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-wrapper">
+
+    <a href="dashboard.html" class="dash-back">
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Morador
+    </a>
+
+    <div class="dash-greeting">
+      <p class="greeting-sub">Transparência do condomínio</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="26" height="26" alt=""> Prestação de Contas</h1>
+      <p class="greeting-condo">Para onde vai o dinheiro da taxa, mês a mês</p>
+    </div>
+
+    <div class="barra-acoes">
+      <label for="mesContas" class="rotulo-mes">Mês</label>
+      <input type="month" id="mesContas">
+    </div>
+
+    <div class="balance-card">
+      <p class="balance-label" id="cRotuloMes">Saldo do caixa</p>
+      <p class="balance-value" id="cSaldoAcumulado">—</p>
+      <p class="balance-sub">Tudo o que foi recebido menos tudo o que foi gasto, até o fim do mês</p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card teal"><span class="stat-value" id="cReceitas">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Receitas</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="cDespesas">—</span><span class="stat-label"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt="">Despesas</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="cSaldoMes">—</span><span class="stat-label"><img src="../../assets/img/icons/financeiro.svg" width="16" height="16" alt="">Saldo do mês</span></div>
+    </div>
+    <p class="secao-ajuda">Saldo dos meses anteriores: <strong id="cSaldoAnterior">—</strong></p>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/financeiro.svg" width="16" height="16" alt=""> Para Onde Foi o Dinheiro</h2>
+    <div class="form-card" id="listaCategorias"></div>
+    <p class="estado-lista" id="estadoCategorias">Carregando…</p>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Despesas do Mês</h2>
+    <div class="list-items" id="listaDespesas" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoDespesas">Carregando…</p>
+
+  </main>
+
+<script src="../../assets/js/contas.js"></script>
+<script>
+/* Prestação de contas para o morador: o mesmo balancete que o síndico vê,
+   e cada despesa com o comprovante. Só leitura. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api, contas = window.SmartCondo.contas;
+  var usuario = api.protegerPagina('morador');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+
+  function carregar() {
+    var mes = campo('mesContas').value || contas.mesAtual();
+    campo('estadoDespesas').textContent = 'Carregando…';
+    return contas.carregar(mes)
+      .then(function(r) {
+        contas.desenharBalancete(r[0]);
+        var lista = campo('listaDespesas');
+        lista.innerHTML = '';
+        campo('estadoDespesas').textContent = r[1].length ? '' : 'Nenhuma despesa lançada neste mês.';
+        r[1].forEach(function(d) { lista.appendChild(contas.cartaoDespesa(d)); });
+      })
+      .catch(function(e) { campo('estadoDespesas').textContent = e.message; });
+  }
+
+  campo('mesContas').value = contas.mesAtual();
+  campo('mesContas').max = contas.mesAtual();
+  campo('mesContas').addEventListener('change', carregar);
+  campo('hdrName').textContent = usuario.nome;
+  carregar();
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

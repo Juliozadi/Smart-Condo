@@ -7,6 +7,29 @@ O texto escrito pelo grupo foi **preservado**. As mudanças abaixo são de
 duas naturezas: correções do que não correspondia mais ao sistema, e
 seções novas descrevendo o que foi construído desde então.
 
+## Versão 2.8 — o que todo condomínio de verdade usa
+
+Depois da versão 2.7, o professor pediu mais funcionalidades. Esta
+versão traz o que um condomínio real usa no dia a dia e o sistema ainda
+não tinha.
+
+| Seção | O que mudou |
+|---|---|
+| 9 Requisitos funcionais | Novo RF048: prestação de contas — despesas e balancete do mês |
+| 11 Diagrama de caso de uso | Novo caso: prestar contas — agora 29 casos de uso |
+| 14 a 17 | Nova tabela despesas — agora 24 entidades, 296 atributos e 59 relacionamentos |
+| 21 API REST | 122 endpoints: despesas (lançar, listar, corrigir, cancelar, comprovante) e balancete do mês |
+| 23 Testes | 527 casos no servidor e 112 testes de interface |
+
+**Situações tratadas.**
+- O morador paga a taxa todo mês e não sabe para onde vai o dinheiro; o
+  síndico precisa prestar contas (Código Civil, art. 1.348, VIII), e o
+  sistema só registrava o que entrava. Agora o síndico lança cada
+  despesa — categoria, fornecedor, nota fiscal — e moradores e síndico
+  veem o mesmo balancete do mês: receitas, despesas por categoria, saldo
+  do mês e acumulado. Despesa lançada errada é corrigida ou cancelada com
+  motivo, e nada é apagado.
+
 ## Versão 2.7 — situações reais do dia a dia
 
 Na apresentação de 09/10, o professor apontou que, na vida real, o

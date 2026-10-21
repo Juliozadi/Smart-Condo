@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Prestação de Contas</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script><link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-desktop">
+  <header class="app-bar"><div class="app-bar-inner wide">
+    <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
+    <div class="app-bar-right"><a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role">Síndico</span></a><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
+  </div></header>
+  <main class="dash-wrapper wide">
+    <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
+    <div class="dash-greeting">
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="26" height="26" alt=""> Prestação de Contas</h1>
+      <p class="greeting-condo">O que entra, o que sai e o saldo do condomínio — os moradores veem o mesmo balancete</p>
+    </div>
+
+    <div class="barra-acoes">
+      <label for="mesContas" class="rotulo-mes">Mês</label>
+      <input type="month" id="mesContas">
+    </div>
+
+    <div class="balance-card">
+      <p class="balance-label" id="cRotuloMes">Saldo do caixa</p>
+      <p class="balance-value" id="cSaldoAcumulado">—</p>
+      <p class="balance-sub">Tudo o que foi recebido menos tudo o que foi gasto, até o fim do mês</p>
+    </div>
+    <div class="admin-stats">
+      <div class="admin-stat teal"><span class="stat-value" id="cReceitas">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Receitas do mês</span></div>
+      <div class="admin-stat red"><span class="stat-value" id="cDespesas">—</span><span class="stat-label"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt="">Despesas do mês</span></div>
+      <div class="admin-stat blue"><span class="stat-value" id="cSaldoMes">—</span><span class="stat-label"><img src="../../assets/img/icons/financeiro.svg" width="16" height="16" alt="">Saldo do mês</span></div>
+      <div class="admin-stat amber"><span class="stat-value" id="cSaldoAnterior">—</span><span class="stat-label"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Saldo anterior</span></div>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/financeiro.svg" width="16" height="16" alt=""> Despesas por Categoria</h2>
+    <div class="form-card" id="listaCategorias"></div>
+    <p class="estado-lista" id="estadoCategorias">Carregando…</p>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Lançar Despesa</h2>
+    <div class="form-card">
+      <form id="formDespesa" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="dCategoria">Categoria</label>
+            <select id="dCategoria" required>
+              <option value="" disabled selected>Selecione</option>
+              <option value="agua">Água</option>
+              <option value="energia">Energia</option>
+              <option value="limpeza">Limpeza</option>
+              <option value="manutencao">Manutenção</option>
+              <option value="seguranca">Segurança</option>
+              <option value="pessoal">Pessoal (salários e encargos)</option>
+              <option value="administracao">Administração</option>
+              <option value="obras">Obras</option>
+              <option value="outros">Outros</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="dValor">Valor (R$)</label>
+            <input type="number" id="dValor" min="0.01" step="0.01" required placeholder="Ex: 312.37">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="dDescricao">Descrição</label>
+          <input type="text" id="dDescricao" required minlength="3" maxlength="180" placeholder="Ex: Energia das áreas comuns">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="dData">Pago em</label>
+            <input type="date" id="dData" required>
+          </div>
+          <div class="form-group">
+            <label for="dFornecedor">Fornecedor (opcional)</label>
+            <input type="text" id="dFornecedor" maxlength="120" placeholder="Ex: Energisa">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="dComprovante">Nota fiscal ou recibo (opcional)</label>
+          <input type="file" id="dComprovante" accept="application/pdf,image/jpeg,image/png,image/webp">
+        </div>
+        <p class="aviso-notificacao">
+          <img src="../../assets/img/icons/bullhorn.svg" alt="">
+          <span>A despesa entra no balancete do mês em que foi paga, e os moradores a veem com
+          o comprovante. Lançou errado? Corrija ou cancele com o motivo — nada é apagado.</span>
+        </p>
+        <p class="form-erro" id="erroDespesa" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;">Lançar Despesa</button>
+      </form>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Despesas do Mês</h2>
+    <div class="list-items" id="listaDespesas" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoDespesas">Carregando…</p>
+  </main>
+
+  <!-- Correção de uma despesa lançada errada -->
+  <div class="modal-fundo" id="modalDespesa" role="dialog" aria-modal="true" aria-labelledby="despesaTitulo">
+    <div class="modal-caixa">
+      <h2 class="modal-titulo" id="despesaTitulo"><img src="../../assets/img/icons/file-invoice-dollar.svg" alt="">Corrigir despesa</h2>
+      <form id="formCorrecao" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eCategoria">Categoria <span class="req">*</span></label>
+            <select id="eCategoria" required></select>
+          </div>
+          <div class="form-group">
+            <label for="eValor">Valor (R$) <span class="req">*</span></label>
+            <input type="number" id="eValor" min="0.01" step="0.01" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="eDescricao">Descrição <span class="req">*</span></label>
+          <input type="text" id="eDescricao" required minlength="3" maxlength="180">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eData">Pago em <span class="req">*</span></label>
+            <input type="date" id="eData" required>
+          </div>
+          <div class="form-group">
+            <label for="eFornecedor">Fornecedor</label>
+            <input type="text" id="eFornecedor" maxlength="120">
+          </div>
+        </div>
+        <p class="modal-erro" id="correcaoErro" role="alert"></p>
+        <div class="modal-acoes">
+          <button type="button" class="btn-secundario" id="btnCancelar">Fechar</button>
+          <button type="submit" class="btn-primario">Salvar correção</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<script src="../../assets/js/validation.js"></script>
+<script src="../../assets/js/admin-ui.js"></script>
+<script src="../../assets/js/contas.js"></script>
+<script>
+/* Prestação de contas do síndico: lança as despesas do condomínio, com o
+   comprovante, e acompanha o balancete que os moradores também veem. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api, ui = window.SmartCondo.ui, contas = window.SmartCondo.contas;
+  var usuario = api.protegerPagina('sindico');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+
+  // O servidor confere pelo conteúdo; aqui só se poupa o envio do que
+  // claramente não é PDF nem imagem.
+  function tipoAceito(arquivo) {
+    return /^(application\/pdf|image\/(jpeg|png|webp))$/.test(arquivo.type);
+  }
+
+  function enviarComprovante(id, arquivo) {
+    var dados = new FormData();
+    dados.append('arquivo', arquivo);
+    return api.put('/financeiro/despesas/' + id + '/comprovante', dados);
+  }
+
+  function acoes(d, item) {
+    var corrigir = document.createElement('button');
+    corrigir.type = 'button';
+    corrigir.className = 'contato-btn';
+    corrigir.textContent = 'Corrigir';
+    corrigir.setAttribute('aria-label', 'Corrigir a despesa ' + d.descricao);
+    corrigir.addEventListener('click', function() { abrirCorrecao(d); });
+
+    var anexar = document.createElement('label');
+    anexar.className = 'contato-btn';
+    anexar.textContent = d.comprovante_url ? 'Trocar comprovante' : 'Anexar comprovante';
+    var arquivo = document.createElement('input');
+    arquivo.type = 'file';
+    arquivo.accept = 'application/pdf,image/jpeg,image/png,image/webp';
+    arquivo.className = 'oculto-acessivel';
+    arquivo.setAttribute('aria-label', 'Comprovante da despesa ' + d.descricao);
+    arquivo.addEventListener('change', function() {
+      if (!arquivo.files[0]) return;
+      if (!tipoAceito(arquivo.files[0])) { alert('Envie um PDF ou uma imagem JPG, PNG ou WebP.'); return; }
+      enviarComprovante(d.id, arquivo.files[0])
+        .then(carregar)
+        .catch(function(e) { alert(e.message); });
+    });
+    anexar.appendChild(arquivo);
+
+    var cancelar = document.createElement('button');
+    cancelar.type = 'button';
+    cancelar.className = 'contato-btn perigo-texto';
+    cancelar.textContent = 'Cancelar';
+    cancelar.setAttribute('aria-label', 'Cancelar a despesa ' + d.descricao);
+    cancelar.addEventListener('click', function() {
+      var motivo = prompt('Motivo do cancelamento (fica no histórico):', '');
+      if (motivo === null) return;
+      if (motivo.trim().length < 3) { alert('Informe o motivo do cancelamento.'); return; }
+      cancelar.disabled = true;
+      api.post('/financeiro/despesas/' + d.id + '/cancelamento', { motivo: motivo.trim() })
+        .then(carregar)
+        .catch(function(e) { cancelar.disabled = false; alert(e.message); });
+    });
+
+    item.appendChild(corrigir);
+    item.appendChild(anexar);
+    item.appendChild(cancelar);
+  }
+
+  function carregar() {
+    var mes = campo('mesContas').value || contas.mesAtual();
+    campo('estadoDespesas').textContent = 'Carregando…';
+    return contas.carregar(mes)
+      .then(function(r) {
+        contas.desenharBalancete(r[0]);
+        var lista = campo('listaDespesas');
+        lista.innerHTML = '';
+        campo('estadoDespesas').textContent = r[1].length ? '' : 'Nenhuma despesa lançada neste mês.';
+        r[1].forEach(function(d) { lista.appendChild(contas.cartaoDespesa(d, acoes)); });
+      })
+      .catch(function(e) { campo('estadoDespesas').textContent = e.message; });
+  }
+
+  campo('formDespesa').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('erroDespesa');
+    erro.className = 'form-erro';
+    erro.textContent = '';
+    var corpo = {
+      categoria: campo('dCategoria').value,
+      descricao: campo('dDescricao').value.trim(),
+      valor: campo('dValor').value,
+      data: campo('dData').value,
+      fornecedor: campo('dFornecedor').value.trim() || null
+    };
+    if (!corpo.categoria) { erro.textContent = 'Escolha a categoria.'; return; }
+    if (corpo.descricao.length < 3) { erro.textContent = 'Descreva a despesa.'; return; }
+    if (!corpo.valor || Number(corpo.valor) <= 0) { erro.textContent = 'Informe o valor.'; return; }
+    if (!corpo.data) { erro.textContent = 'Informe a data do pagamento.'; return; }
+    if (corpo.data > contas.hojeIso()) {
+      erro.textContent = 'A despesa entra quando é paga: a data não pode ser futura.';
+      return;
+    }
+    var arquivo = campo('dComprovante').files[0];
+    if (arquivo && !tipoAceito(arquivo)) {
+      erro.textContent = 'O comprovante precisa ser um PDF ou uma imagem JPG, PNG ou WebP.';
+      return;
+    }
+    var botao = this.querySelector('button[type=submit]');
+    botao.disabled = true;
+    api.post('/financeiro/despesas', corpo)
+      .then(function(d) {
+        if (!arquivo) return null;
+        return enviarComprovante(d.id, arquivo)
+          .then(function() { return null; }, function(e) { return e.message; });
+      })
+      .then(function(falha) {
+        campo('formDespesa').reset();
+        campo('dData').value = contas.hojeIso();
+        erro.className = 'form-erro' + (falha ? '' : ' sucesso');
+        erro.textContent = falha
+          ? 'Despesa lançada, mas o comprovante não foi enviado: ' + falha
+          : 'Despesa lançada. Ela já aparece no balancete dos moradores.';
+        // Mostra o mês em que a despesa entrou.
+        campo('mesContas').value = corpo.data.slice(0, 7);
+        return carregar();
+      })
+      .catch(function(e) { erro.textContent = e.message; })
+      .then(function() { botao.disabled = false; });
+  });
+
+  // ── Correção ──────────────────────────────────────────────────────
+  var modal = ui.modal('modalDespesa', 'formCorrecao', 'correcaoErro');
+  var corrigindo = null;
+  Object.keys(contas.CATEGORIAS).forEach(function(chave) {
+    var op = document.createElement('option');
+    op.value = chave;
+    op.textContent = contas.CATEGORIAS[chave];
+    campo('eCategoria').appendChild(op);
+  });
+  function abrirCorrecao(d) {
+    corrigindo = d;
+    modal.limpar();
+    campo('eCategoria').value = d.categoria;
+    campo('eValor').value = Number(d.valor).toFixed(2);
+    campo('eDescricao').value = d.descricao;
+    campo('eData').value = d.data;
+    campo('eFornecedor').value = d.fornecedor || '';
+    modal.abrir();
+  }
+  modal.aoEnviar(function() {
+    var corpo = {
+      categoria: campo('eCategoria').value,
+      valor: campo('eValor').value,
+      descricao: campo('eDescricao').value.trim(),
+      data: campo('eData').value,
+      fornecedor: campo('eFornecedor').value.trim() || null
+    };
+    if (!corpo.valor || corpo.descricao.length < 3 || !corpo.data) {
+      modal.erro('Preencha a categoria, o valor, a descrição e a data.');
+      return null;
+    }
+    return api.put('/financeiro/despesas/' + corrigindo.id, corpo);
+  }, function() {
+    modal.fechar();
+    carregar();
+  });
+
+  campo('mesContas').value = contas.mesAtual();
+  campo('mesContas').max = contas.mesAtual();
+  campo('mesContas').addEventListener('change', carregar);
+  campo('dData').value = contas.hojeIso();
+  campo('dData').max = contas.hojeIso();
+  campo('hdrName').textContent = usuario.nome;
+  carregar();
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

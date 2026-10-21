@@ -7,7 +7,7 @@ from app.models.comunicado import Comunicado, LeituraComunicado
 from app.models.condominio import Condominio, Unidade
 from app.models.documento_cadastro import DocumentoCadastro
 from app.models.enums import (
-    CanalVerificacao, CategoriaComunicado, CategoriaDocumento, CategoriaVeiculo,
+    CanalVerificacao, CategoriaComunicado, CategoriaDespesa, CategoriaDocumento, CategoriaVeiculo,
     FinalidadeCodigo, FormaPagamento, Papel, PrioridadeOrdemServico, StatusCobranca,
     StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
     StatusVisitante, TipoDocumentoCadastro, TipoMovimentacao, TipoOcupacao,
@@ -15,20 +15,21 @@ from app.models.enums import (
 from app.models.mensagem import Mensagem
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
 from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico
-from app.models.financeiro import Cobranca, Pagamento, PreferenciaCobranca
+from app.models.financeiro import Cobranca, Despesa, Pagamento, PreferenciaCobranca
 from app.models.portaria import AutorizacaoVisita, Encomenda, Ocorrencia, Visitante
 from app.models.registro import RegistroAlteracao
 from app.models.usuario import CodigoVerificacao, PermissaoPorteiro, Usuario
 
 __all__ = [
-    "Cobranca", "CodigoVerificacao", "Comunicado", "Condominio", "Documento",
+    "Cobranca", "CodigoVerificacao", "Comunicado", "Condominio", "Despesa", "Documento",
     "DocumentoCadastro",
     "Encomenda", "EspacoComum", "LeituraComunicado", "Mensagem", "MovimentacaoVeiculo",
     "Ocorrencia", "OrdemServico", "Pagamento", "PermissaoPorteiro",
     "PreferenciaCobranca", "RegistroAlteracao", "RegistroOcupacao", "Reserva", "Unidade",
     "Usuario",
     "AutorizacaoVisita", "Visitante",
-    "CanalVerificacao", "CategoriaComunicado", "CategoriaDocumento", "CategoriaVeiculo",
+    "CanalVerificacao", "CategoriaComunicado", "CategoriaDespesa", "CategoriaDocumento",
+    "CategoriaVeiculo",
     "FinalidadeCodigo", "FormaPagamento", "Papel", "PrioridadeOrdemServico",
     "StatusCobranca", "StatusEncomenda", "StatusOcorrencia", "StatusOrdemServico",
     "StatusReserva", "StatusUsuario", "StatusVisitante", "TipoDocumentoCadastro",

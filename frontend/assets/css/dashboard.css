@@ -2271,3 +2271,36 @@ body.tema-escuro .chat-avatar.sindico, body.tema-escuro .chat-avatar.porteiro { 
 /* Apartamento sem morador no sistema, nos formulários da portaria */
 .aviso-sem-morador { font-size: 13px; font-weight: 600; color: var(--erro); margin: -4px 0 12px; }
 .aviso-sem-morador[hidden] { display: none; }
+
+/* Prestação de contas: barras por categoria e lista de despesas */
+.categoria-despesa {
+  display: grid; grid-template-columns: 130px 1fr auto; align-items: center; gap: 12px;
+  padding: 6px 0; font-size: 13px; color: var(--text);
+}
+.categoria-nome { font-weight: 600; }
+.categoria-barra { height: 10px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
+.categoria-barra span { display: block; height: 100%; border-radius: 5px; background: var(--primary); }
+.categoria-valor { font-weight: 700; font-variant-numeric: tabular-nums; }
+.valor-despesa { font-weight: 800; font-size: 14px; color: var(--text); white-space: nowrap; }
+.despesa-cancelada { opacity: .6; }
+.despesa-cancelada .valor-despesa { text-decoration: line-through; }
+.balance-value.negativo { color: #ffd9d4; }
+.rotulo-mes { font-size: 13px; font-weight: 700; color: var(--text-2); align-self: center; }
+.contato-btn.perigo-texto { color: var(--erro); }
+.contato-btn:focus-within { outline: 2px solid var(--primary); outline-offset: 2px; }
+/* Campo de arquivo escondido à vista, mas alcançável pelo teclado: o
+   rótulo em volta faz as vezes de botão. */
+.oculto-acessivel {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+@media (max-width: 640px) {
+  .categoria-despesa { grid-template-columns: 96px 1fr auto; gap: 8px; }
+}
+label.contato-btn { position: relative; cursor: pointer; }
+/* O mês do balancete, na barra de ações */
+.barra-acoes input[type="month"] {
+  padding: 9px 12px; border-radius: var(--radius-xs); border: 1.5px solid var(--border);
+  background: var(--surface); color: var(--text); font: inherit; font-size: 14px; font-weight: 600;
+}
+.layout-mobile .barra-acoes { flex-direction: row; align-items: center; }
