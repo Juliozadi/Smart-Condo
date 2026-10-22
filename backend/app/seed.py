@@ -29,10 +29,11 @@ from app.models.enums import (
     EscolhaVoto, MaioriaExigida,
     FormaPagamento, Papel, PrioridadeOcorrencia, PrioridadeOrdemServico, StatusCobranca,
     StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
-    StatusVisitante,
-    TipoMovimentacao, TipoOcupacao,
+    StatusMudanca, StatusVisitante,
+    TipoMovimentacao, TipoMudanca, TipoOcupacao,
 )
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
+from app.models.mudanca import Mudanca
 from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico, VeiculoUnidade
 from app.models.financeiro import Cobranca, Despesa, Pagamento, PreferenciaCobranca
 from app.models.portaria import Encomenda, Ocorrencia, Visitante
@@ -328,6 +329,24 @@ def criar(db) -> dict:
         db.add(VeiculoUnidade(condominio_id=condominio.id, unidade_id=unidades[unidade].id,
                               cadastrado_por_id=moradores[unidade].id, placa=placa,
                               modelo=modelo, cor=cor))
+
+    # ── Mudanças: uma aprovada (a portaria vê) e uma para o síndico avaliar ──
+    def dia_util(a_partir: int) -> date:
+        dia = HOJE + timedelta(days=a_partir)
+        while dia.isoweekday() > 5:
+            dia += timedelta(days=1)
+        return dia
+
+    db.add(Mudanca(condominio_id=condominio.id, unidade_id=unidades["102"].id,
+                   solicitada_por_id=moradores["102"].id, tipo=TipoMudanca.SAIDA,
+                   data=dia_util(1), hora_inicio=time(8), hora_fim=time(12),
+                   empresa="Transportes Pantanal", status=StatusMudanca.APROVADA,
+                   avaliada_por_id=sindico.id, avaliada_em=AGORA - timedelta(days=2)))
+    db.add(Mudanca(condominio_id=condominio.id, unidade_id=unidades["410"].id,
+                   solicitada_por_id=moradores["410"].id, tipo=TipoMudanca.CHEGADA,
+                   data=dia_util(5), hora_inicio=time(13), hora_fim=time(17),
+                   empresa="Mudanças Rápidas", observacao="Móveis grandes: piano e sofá de canto.",
+                   status=StatusMudanca.PENDENTE))
 
     # ── Assembleias: uma encerrada, com resultado, e uma em votação ───
     E = EscolhaVoto

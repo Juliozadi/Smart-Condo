@@ -2342,3 +2342,16 @@ label.contato-btn { position: relative; cursor: pointer; }
 .placa-cadastrada { letter-spacing: 2px; font-variant-numeric: tabular-nums; }
 .placa-reconhecida { margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--teal, #0d9488); }
 .placa-reconhecida.desconhecida { color: var(--muted); font-weight: 500; }
+
+/* ── Agendamento de mudança ──────────────────────────────────────── */
+.regras-mudanca { margin: 0 0 16px; padding-left: 18px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+.ocupados-dia { font-size: 13px; color: var(--muted); margin: -4px 0 12px; min-height: 0; }
+.ocupados-dia:empty { display: none; }
+.ocupados-dia.fechado { color: var(--erro); font-weight: 600; }
+.mudanca-lado { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+.mudanca .mudanca-obs { font-style: italic; margin-top: 4px; }
+.mudanca .mudanca-motivo { color: var(--erro); font-weight: 600; margin-top: 4px; }
+@media (max-width: 520px) {
+  .reserve-card.mudanca { flex-wrap: wrap; }
+  .mudanca-lado { flex-direction: row; align-items: center; width: 100%; justify-content: flex-end; }
+}

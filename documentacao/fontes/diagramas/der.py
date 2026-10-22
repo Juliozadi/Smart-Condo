@@ -41,8 +41,8 @@ RECORTES = [
         "visitantes", "autorizacoes_visita", "encomendas", "movimentacoes_veiculo",
         "veiculos_unidade",
     ]),
-    ("Gestão — assembleias e prestação de contas", [
-        "assembleias", "itens_pauta", "votos", "despesas",
+    ("Gestão — assembleias, prestação de contas e mudanças", [
+        "assembleias", "itens_pauta", "votos", "despesas", "mudancas",
     ]),
 ]
 
@@ -185,6 +185,7 @@ def figura_geral(tabelas, ligacoes, arquivo):
         "mensagens": (0.335, 0.56), "documentos_cadastro": (0.665, 0.56),
         "registros_alteracao": (0.665, 0.76), "autorizacoes_visita": (0.68, 0.14),
         "despesas": (0.335, 0.76), "veiculos_unidade": (0.70, 0.44),
+        "mudancas": (0.335, 0.14),
         "assembleias": (0.17, 0.62), "itens_pauta": (0.10, 0.46), "votos": (0.27, 0.46),
     }
     for origem, _, destino in ligacoes:

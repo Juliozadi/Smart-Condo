@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Mudança</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-mobile">
+
+  <header class="app-bar">
+    <div class="app-bar-inner">
+      <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
+        <span class="brand-name">Smart<strong>Condo</strong></span>
+      </a>
+      <div class="app-bar-right">
+        <a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/user.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">João Silva</span><span class="profile-role">Morador</span></a>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-wrapper">
+
+    <a href="dashboard.html" class="dash-back">
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Morador
+    </a>
+
+    <div class="dash-greeting">
+      <p class="greeting-sub">Chegando ou de saída</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/box-open.svg" width="26" height="26" alt=""> Mudança</h1>
+      <p class="greeting-condo">Agende o dia e o horário; a portaria fica sabendo</p>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Agendar Mudança</h2>
+    <div class="form-card">
+      <ul class="regras-mudanca" id="regrasMudanca" aria-label="Regras do regimento"></ul>
+      <form id="formMudanca" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="mTipo">A mudança é</label>
+            <select id="mTipo" required>
+              <option value="chegada">Chegada ao apartamento</option>
+              <option value="saida">Saída do apartamento</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="mData">Dia</label>
+            <input type="date" id="mData" required aria-describedby="ocupadosDia">
+          </div>
+        </div>
+        <p class="ocupados-dia" id="ocupadosDia" aria-live="polite"></p>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="mInicio">Das</label>
+            <input type="time" id="mInicio" required value="08:00" step="900">
+          </div>
+          <div class="form-group">
+            <label for="mFim">Às</label>
+            <input type="time" id="mFim" required value="12:00" step="900">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="mEmpresa">Empresa de mudança (opcional)</label>
+          <input type="text" id="mEmpresa" maxlength="120" autocomplete="off" placeholder="Ex: Transportes Pantanal">
+        </div>
+        <div class="form-group">
+          <label for="mObservacao">Recado para o síndico e a portaria (opcional)</label>
+          <textarea id="mObservacao" maxlength="300" rows="2" placeholder="Ex: móveis grandes, precisa da garagem"></textarea>
+        </div>
+        <p class="form-erro" id="erroMudanca" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;">Pedir ao síndico</button>
+      </form>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/box-open.svg" width="16" height="16" alt=""> Mudanças do Apartamento</h2>
+    <div class="reserve-list" id="listaMudancas" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoMudancas">Carregando…</p>
+
+  </main>
+
+<script src="../../assets/js/mudancas.js"></script>
+<script>
+/* Mudança do morador: pede o dia e o horário dentro do regimento, vê os
+   horários já tomados no dia (sem saber de quem) e acompanha a avaliação
+   do síndico. Quem mora no apartamento vê e cancela as mesmas mudanças. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api, mudancas = window.SmartCondo.mudancas;
+  var usuario = api.protegerPagina('morador');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+  var regras = null;
+
+  function mostrarRegras(r) {
+    regras = r;
+    var lista = campo('regrasMudanca');
+    lista.innerHTML = '';
+    mudancas.frasesDasRegras(r).forEach(function(frase) {
+      var li = document.createElement('li');
+      li.textContent = frase;
+      lista.appendChild(li);
+    });
+    campo('mData').min = mudancas.somarDias(r.antecedencia_minima_dias);
+    campo('mData').max = mudancas.somarDias(r.antecedencia_maxima_dias);
+  }
+
+  // Ao escolher o dia: o que o regimento permite e o que já está tomado.
+  var consulta = 0;
+  campo('mData').addEventListener('change', function() {
+    var aviso = campo('ocupadosDia');
+    var dia = this.value;
+    var minha = ++consulta;
+    aviso.textContent = '';
+    aviso.className = 'ocupados-dia';
+    if (!dia || !regras) return;
+    var h = regras.horarios[mudancas.diaDaSemana(dia)];
+    if (!h) {
+      aviso.className = 'ocupados-dia fechado';
+      aviso.textContent = 'Nesse dia não há mudança, pelo regimento.';
+      return;
+    }
+    api.get('/mudancas/ocupados?data=' + dia).then(function(lista) {
+      if (minha !== consulta) return;
+      var texto = 'Nesse dia: das ' + mudancas.horaCurta(h.inicio) + ' às ' + mudancas.horaCurta(h.fim) + '. ';
+      texto += lista.length
+        ? 'Já tomados: ' + lista.map(function(o) {
+            return mudancas.hora(o.inicio) + '–' + mudancas.hora(o.fim);
+          }).join(', ') + '.'
+        : 'Nenhuma outra mudança marcada.';
+      aviso.textContent = texto;
+    }).catch(function() { /* o pedido confere de novo */ });
+  });
+
+  function carregar() {
+    campo('estadoMudancas').textContent = 'Carregando…';
+    return api.get('/mudancas').then(function(lista) {
+      var caixa = campo('listaMudancas');
+      caixa.innerHTML = '';
+      campo('estadoMudancas').textContent = lista.length ? '' : 'Nenhuma mudança agendada.';
+      lista.forEach(function(m) {
+        var card = mudancas.cartao(m, false);
+        if (m.status === 'pendente' || m.status === 'aprovada') {
+          var cancelar = document.createElement('button');
+          cancelar.type = 'button';
+          cancelar.className = 'contato-btn perigo-texto';
+          cancelar.textContent = 'Cancelar';
+          cancelar.setAttribute('aria-label', 'Cancelar a mudança de ' + m.data.split('-').reverse().join('/'));
+          cancelar.addEventListener('click', function() {
+            if (!confirm('Cancelar esta mudança? O horário fica livre para outro apartamento.')) return;
+            cancelar.disabled = true;
+            api.post('/mudancas/' + m.id + '/cancelamento', {})
+              .then(carregar)
+              .catch(function(e) { cancelar.disabled = false; alert(e.message); });
+          });
+          card.acoes.appendChild(cancelar);
+        }
+        caixa.appendChild(card);
+      });
+    }).catch(function(e) { campo('estadoMudancas').textContent = e.message; });
+  }
+
+  campo('formMudanca').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('erroMudanca');
+    erro.className = 'form-erro';
+    erro.textContent = '';
+    var corpo = {
+      tipo: campo('mTipo').value,
+      data: campo('mData').value,
+      hora_inicio: campo('mInicio').value,
+      hora_fim: campo('mFim').value,
+      empresa: campo('mEmpresa').value.trim() || null,
+      observacao: campo('mObservacao').value.trim() || null
+    };
+    if (!corpo.data) { erro.textContent = 'Escolha o dia da mudança.'; return; }
+    if (!corpo.hora_inicio || !corpo.hora_fim) { erro.textContent = 'Informe o horário.'; return; }
+    if (corpo.hora_fim <= corpo.hora_inicio) {
+      erro.textContent = 'O horário de término precisa ser depois do início.'; return;
+    }
+    var botao = this.querySelector('button[type=submit]');
+    botao.disabled = true;
+    api.post('/mudancas', corpo)
+      .then(function() {
+        campo('formMudanca').reset();
+        campo('ocupadosDia').textContent = '';
+        erro.className = 'form-erro sucesso';
+        erro.textContent = 'Pedido enviado. O síndico avalia e você recebe a resposta por e-mail.';
+        return carregar();
+      })
+      .catch(function(e) { erro.textContent = e.message; })
+      .then(function() { botao.disabled = false; });
+  });
+
+  campo('hdrName').textContent = usuario.nome;
+  api.get('/mudancas/regras').then(mostrarRegras).catch(function() {});
+  carregar();
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

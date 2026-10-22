@@ -310,6 +310,12 @@ const requisitosFuncionais = [
     descricao: 'O sistema permite ao morador cadastrar as placas dos carros do apartamento, para que a portaria reconheça o carro na chegada sem perguntar de quem é.',
     entradas: 'O morador informa a placa (padrão antigo ou Mercosul) e, se quiser, o modelo e a cor; o síndico pode cadastrar para qualquer apartamento. Cada apartamento cadastra até 10 veículos.',
     saidas: 'Ao digitar a placa na portaria, aparece o apartamento, o modelo e a cor, e o formulário já vem preenchido com o apartamento e com entrada ou saída, conforme o carro esteja ou não no pátio. Quem mora no apartamento vê e remove os mesmos veículos; o vizinho não os vê. Uma placa só vale para um apartamento: cadastrada em outro, o sistema recusa sem dizer qual. Quando quem cadastrou se muda, o veículo deixa de ser reconhecido e a placa fica livre.' },
+
+  { id: 'RF051', nome: 'Agendar mudança',
+    atores: 'Morador, Síndico, Porteiro', prioridade: 'Importante',
+    descricao: 'O sistema permite ao morador agendar a mudança — chegada ou saída — dentro das regras do regimento, ao síndico aprovar ou recusar, e à portaria ver as mudanças aprovadas.',
+    entradas: 'O morador informa se é chegada ou saída, o dia, o horário e, se quiser, a empresa e um recado. A regra padrão: pelo menos 2 dias de antecedência e até um ano; de segunda a sexta das 8h às 18h, no sábado das 8h às 12h, e domingo não. Ao escolher o dia, a tela mostra os horários já tomados, sem dizer de quem.',
+    saidas: 'Uma mudança de cada vez em cada bloco: o horário que se sobrepõe a outra pendente ou aprovada é recusado. O síndico recebe o pedido por e-mail e aprova, ou recusa com motivo; o morador recebe a resposta. A portaria vê as aprovadas de hoje em diante. O morador cancela a sua; o síndico cancela com motivo, e o morador é avisado. A pendente cujo horário chega sem avaliação vira recusada; a aprovada que passou, realizada.' },
 ];
 
 // ── 10 Requisitos não funcionais ────────────────────────────────────

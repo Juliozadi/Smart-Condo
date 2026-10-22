@@ -157,6 +157,9 @@ INSERT INTO ordens_servico (id, condominio_id, tipo, descricao, local, prioridad
 INSERT INTO veiculos_unidade (id, condominio_id, unidade_id, cadastrado_por_id, placa, modelo, cor, criado_em, atualizado_em) VALUES (1, 1, 3, 5, 'RIO2A18', 'Gol', 'Prata', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 INSERT INTO veiculos_unidade (id, condominio_id, unidade_id, cadastrado_por_id, placa, modelo, cor, criado_em, atualizado_em) VALUES (2, 1, 4, 6, 'QAZ1B23', 'Onix', 'Branco', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 
+INSERT INTO mudancas (id, condominio_id, unidade_id, solicitada_por_id, tipo, data, hora_inicio, hora_fim, empresa, observacao, status, avaliada_por_id, avaliada_em, motivo_recusa, cancelada_por_id, cancelada_em, motivo_cancelamento, criado_em, atualizado_em) VALUES (1, 1, 2, 7, 'SAIDA', '2026-09-22', '08:00', '12:00', 'Transportes Pantanal', NULL, 'APROVADA', 2, '2026-09-19 14:00:00+00', NULL, NULL, NULL, NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
+INSERT INTO mudancas (id, condominio_id, unidade_id, solicitada_por_id, tipo, data, hora_inicio, hora_fim, empresa, observacao, status, avaliada_por_id, avaliada_em, motivo_recusa, cancelada_por_id, cancelada_em, motivo_cancelamento, criado_em, atualizado_em) VALUES (2, 1, 6, 8, 'CHEGADA', '2026-09-28', '13:00', '17:00', 'Mudanças Rápidas', 'Móveis grandes: piano e sofá de canto.', 'PENDENTE', NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
+
 INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo, tipo_conteudo, tamanho_kb, unidade_id, publicado_por_id, publicado_em, criado_em, atualizado_em) VALUES (1, 1, 'Convenção do Condomínio', 'Documento registrado em cartório.', 'CONVENCAO', NULL, NULL, 820, NULL, 2, '2026-09-11 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo, tipo_conteudo, tamanho_kb, unidade_id, publicado_por_id, publicado_em, criado_em, atualizado_em) VALUES (2, 1, 'Regimento Interno', 'Regras de convivência e uso das áreas comuns.', 'REGIMENTO', NULL, NULL, 410, NULL, 2, '2026-09-11 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo, tipo_conteudo, tamanho_kb, unidade_id, publicado_por_id, publicado_em, criado_em, atualizado_em) VALUES (3, 1, 'Ata da Assembleia de Março', 'Prestação de contas e eleição do conselho.', 'ATA', NULL, NULL, 180, NULL, 2, '2026-09-11 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
@@ -225,6 +228,8 @@ SELECT setval('ocorrencias_id_seq', (SELECT COALESCE(MAX(id), 1) FROM ocorrencia
 SELECT setval('movimentacoes_veiculo_id_seq', (SELECT COALESCE(MAX(id), 1) FROM movimentacoes_veiculo));
 
 SELECT setval('veiculos_unidade_id_seq', (SELECT COALESCE(MAX(id), 1) FROM veiculos_unidade));
+
+SELECT setval('mudancas_id_seq', (SELECT COALESCE(MAX(id), 1) FROM mudancas));
 
 SELECT setval('ordens_servico_id_seq', (SELECT COALESCE(MAX(id), 1) FROM ordens_servico));
 

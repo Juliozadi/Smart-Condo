@@ -15,11 +15,11 @@ não tinha.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | Novo RF048: prestação de contas — despesas e balancete do mês. Novo RF049: assembleia virtual com votação. Novo RF050: os veículos do apartamento, que a portaria reconhece pela placa |
-| 11 Diagrama de caso de uso | Novos casos: prestar contas, convocar assembleia, votar em assembleia e cadastrar veículo — agora 32 casos de uso |
-| 14 a 17 | Novas tabelas despesas, assembleias, itens_pauta, votos e veiculos_unidade — agora 28 entidades, 331 atributos e 70 relacionamentos; o DER ganha um quarto recorte, de gestão |
-| 21 API REST | 131 endpoints: despesas (lançar, listar, corrigir, cancelar, comprovante) e balancete do mês; assembleias (convocar, listar, votar, cancelar); veículos do apartamento (cadastrar, listar, remover) e a consulta da placa pela portaria |
-| 23 Testes | 557 casos no servidor e 114 testes de interface |
+| 9 Requisitos funcionais | Novo RF048: prestação de contas — despesas e balancete do mês. Novo RF049: assembleia virtual com votação. Novo RF050: os veículos do apartamento, que a portaria reconhece pela placa. Novo RF051: agendamento de mudança |
+| 11 Diagrama de caso de uso | Novos casos: prestar contas, convocar assembleia, votar em assembleia, cadastrar veículo e agendar mudança — agora 33 casos de uso |
+| 14 a 17 | Novas tabelas despesas, assembleias, itens_pauta, votos, veiculos_unidade e mudancas — agora 29 entidades, 350 atributos e 75 relacionamentos; o DER ganha um quarto recorte, de gestão |
+| 21 API REST | 137 endpoints: despesas (lançar, listar, corrigir, cancelar, comprovante) e balancete do mês; assembleias (convocar, listar, votar, cancelar); veículos do apartamento (cadastrar, listar, remover) e a consulta da placa pela portaria; mudanças (regras, horários tomados, agendar, listar, avaliar, cancelar) |
+| 23 Testes | 581 casos no servidor e 115 testes de interface |
 
 **Situações tratadas.**
 - O morador paga a taxa todo mês e não sabe para onde vai o dinheiro; o
@@ -49,6 +49,17 @@ não tinha.
   o sistema recusa sem dizer qual (a placa do vizinho é dado dele). Se
   quem cadastrou se muda, o carro deixa de ser reconhecido sozinho e a
   placa fica livre.
+- O caminhão de mudança chegava sem aviso, ocupava o elevador de
+  serviço a manhã inteira e encontrava outra mudança na mesma hora; a
+  portaria não sabia se podia deixar entrar. Agora o morador agenda a
+  chegada ou a saída pela tela, dentro do regimento (pelo menos 2 dias
+  de antecedência; de segunda a sexta das 8h às 18h, sábado das 8h às
+  12h, domingo não), vendo os horários já tomados no dia sem saber de
+  quem. Uma mudança de cada vez em cada bloco. O síndico aprova ou recusa
+  com motivo, e o morador recebe a resposta; a portaria vê as aprovadas.
+  A pendente que chega ao horário sem avaliação vira recusada.
+- Nos celulares, os campos lado a lado que viram coluna ficam com o mesmo
+  espaçamento dos outros (antes, colados no campo de baixo).
 - Na carga de demonstração, a taxa do mês passa a vencer no dia 10 do
   mês seguinte: vencendo no próprio mês, a partir do dia 11 todos os
   apartamentos ficavam em atraso — e ninguém poderia votar.

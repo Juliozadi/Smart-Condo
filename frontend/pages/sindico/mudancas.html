@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Mudanças</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script><link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-desktop">
+  <header class="app-bar"><div class="app-bar-inner wide">
+    <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
+    <div class="app-bar-right"><a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role">Síndico</span></a><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
+  </div></header>
+  <main class="dash-wrapper wide">
+    <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
+    <div class="dash-greeting">
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/box-open.svg" width="26" height="26" alt=""> Mudanças</h1>
+      <p class="greeting-condo">Os moradores pedem o dia e o horário; você aprova, e a portaria fica sabendo</p>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Regras do Regimento</h2>
+    <div class="form-card">
+      <ul class="regras-mudanca" id="regrasMudanca"></ul>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Para Avaliar</h2>
+    <div class="reserve-list" id="listaPendentes" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoPendentes">Carregando…</p>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Agendadas</h2>
+    <div class="reserve-list" id="listaAprovadas"></div>
+    <p class="estado-lista" id="estadoAprovadas"></p>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Histórico</h2>
+    <div class="reserve-list" id="listaHistorico"></div>
+    <p class="estado-lista" id="estadoHistorico"></p>
+  </main>
+
+<script src="../../assets/js/mudancas.js"></script>
+<script>
+/* Mudanças para o síndico: aprova ou recusa (com motivo) as pedidas,
+   cancela uma agendada se precisar (o morador recebe o motivo) e vê o
+   histórico. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api, mudancas = window.SmartCondo.mudancas;
+  var usuario = api.protegerPagina('sindico');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+  function botao(texto, classe, rotulo, acao) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'contato-btn' + (classe ? ' ' + classe : '');
+    b.textContent = texto;
+    b.setAttribute('aria-label', rotulo);
+    b.addEventListener('click', function() { acao(b); });
+    return b;
+  }
+  function enviar(b, caminho, corpo) {
+    b.disabled = true;
+    api.post(caminho, corpo).then(carregar)
+      .catch(function(e) { b.disabled = false; alert(e.message); });
+  }
+  function pedirMotivo(pergunta) {
+    var motivo = prompt(pergunta, '');
+    if (motivo === null) return null;
+    if (motivo.trim().length < 3) { alert('Informe o motivo; o morador recebe.'); return null; }
+    return motivo.trim();
+  }
+
+  function preencher(lista, idLista, idEstado, vazio, comAcoes) {
+    var caixa = campo(idLista);
+    caixa.innerHTML = '';
+    campo(idEstado).textContent = lista.length ? '' : vazio;
+    lista.forEach(function(m) {
+      var card = mudancas.cartao(m, true);
+      var quando = 'do apto ' + m.unidade + ' em ' + m.data.split('-').reverse().join('/');
+      if (comAcoes && m.status === 'pendente') {
+        card.acoes.appendChild(botao('Aprovar', null, 'Aprovar a mudança ' + quando, function(b) {
+          enviar(b, '/mudancas/' + m.id + '/avaliacao', { aprovada: true });
+        }));
+        card.acoes.appendChild(botao('Recusar', 'perigo-texto', 'Recusar a mudança ' + quando, function(b) {
+          var motivo = pedirMotivo('Motivo da recusa (o morador recebe):');
+          if (motivo) enviar(b, '/mudancas/' + m.id + '/avaliacao', { aprovada: false, motivo: motivo });
+        }));
+      }
+      if (comAcoes && m.status === 'aprovada') {
+        card.acoes.appendChild(botao('Cancelar', 'perigo-texto', 'Cancelar a mudança ' + quando, function(b) {
+          var motivo = pedirMotivo('Motivo do cancelamento (o morador recebe):');
+          if (motivo) enviar(b, '/mudancas/' + m.id + '/cancelamento', { motivo: motivo });
+        }));
+      }
+      caixa.appendChild(card);
+    });
+  }
+
+  function carregar() {
+    return api.get('/mudancas').then(function(lista) {
+      function crescente(a, b) { return (a.data + a.hora_inicio) < (b.data + b.hora_inicio) ? -1 : 1; }
+      var pendentes = lista.filter(function(m) { return m.status === 'pendente'; }).sort(crescente);
+      var aprovadas = lista.filter(function(m) { return m.status === 'aprovada'; }).sort(crescente);
+      var historico = lista.filter(function(m) {
+        return m.status !== 'pendente' && m.status !== 'aprovada';
+      }).slice(0, 30);
+      preencher(pendentes, 'listaPendentes', 'estadoPendentes', 'Nenhuma mudança esperando avaliação.', true);
+      preencher(aprovadas, 'listaAprovadas', 'estadoAprovadas', 'Nenhuma mudança agendada.', true);
+      preencher(historico, 'listaHistorico', 'estadoHistorico', 'Nada no histórico ainda.', false);
+    }).catch(function(e) { campo('estadoPendentes').textContent = e.message; });
+  }
+
+  api.get('/mudancas/regras').then(function(r) {
+    var ul = campo('regrasMudanca');
+    mudancas.frasesDasRegras(r).forEach(function(frase) {
+      var li = document.createElement('li');
+      li.textContent = frase;
+      ul.appendChild(li);
+    });
+  }).catch(function() {});
+  campo('hdrName').textContent = usuario.nome;
+  carregar();
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

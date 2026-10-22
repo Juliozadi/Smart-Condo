@@ -166,6 +166,21 @@ class CategoriaDespesa(str, enum.Enum):
     OUTROS = "outros"
 
 
+class TipoMudanca(str, enum.Enum):
+    """Quem está chegando ao apartamento ou saindo dele."""
+    CHEGADA = "chegada"
+    SAIDA = "saida"
+
+
+class StatusMudanca(str, enum.Enum):
+    """O síndico aprova ou recusa; a portaria só deixa entrar a aprovada."""
+    PENDENTE = "pendente"
+    APROVADA = "aprovada"
+    RECUSADA = "recusada"
+    CANCELADA = "cancelada"
+    CONCLUIDA = "concluida"
+
+
 class CategoriaDocumento(str, enum.Enum):
     """Documentação, seção 13.6: atas, convenção e regimento interno."""
     CONVENCAO = "convencao"

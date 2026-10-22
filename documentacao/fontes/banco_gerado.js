@@ -1370,6 +1370,148 @@ const dicionario = [
     "regras": []
   },
   {
+    "nome": "mudancas",
+    "resumo": "As mudanças pedidas pelos moradores — dia, horário e empresa — com a avaliação do síndico; a portaria vê as aprovadas.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio da mudança"
+      },
+      {
+        "coluna": "unidade_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Apartamento que muda"
+      },
+      {
+        "coluna": "solicitada_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Morador que pediu a mudança"
+      },
+      {
+        "coluna": "tipo",
+        "tipo": "ENUM",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Se é a chegada de quem vai morar no apartamento ou a saída de quem vai embora — tipo enumerado tipo_mudanca, valores: CHEGADA, SAIDA"
+      },
+      {
+        "coluna": "data",
+        "tipo": "DATE",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Dia da mudança, dentro do regimento: com antecedência mínima e nunca no domingo"
+      },
+      {
+        "coluna": "hora_inicio",
+        "tipo": "TIME",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Início do horário reservado para a mudança"
+      },
+      {
+        "coluna": "hora_fim",
+        "tipo": "TIME",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Fim do horário; uma mudança de cada vez em cada bloco"
+      },
+      {
+        "coluna": "empresa",
+        "tipo": "VARCHAR(120)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Empresa que faz a mudança, quando informada"
+      },
+      {
+        "coluna": "observacao",
+        "tipo": "VARCHAR(300)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Recado do morador para o síndico e a portaria"
+      },
+      {
+        "coluna": "status",
+        "tipo": "ENUM",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Pendente, aprovada, recusada, cancelada ou realizada — tipo enumerado status_mudanca, valores: PENDENTE, APROVADA, RECUSADA, CANCELADA, CONCLUIDA"
+      },
+      {
+        "coluna": "avaliada_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que aprovou ou recusou"
+      },
+      {
+        "coluna": "avaliada_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Momento em que o síndico aprovou ou recusou"
+      },
+      {
+        "coluna": "motivo_recusa",
+        "tipo": "VARCHAR(300)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Por que o síndico recusou; o morador recebe"
+      },
+      {
+        "coluna": "cancelada_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Quem cancelou: um morador do apartamento ou o síndico"
+      },
+      {
+        "coluna": "cancelada_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Momento do cancelamento"
+      },
+      {
+        "coluna": "motivo_cancelamento",
+        "tipo": "VARCHAR(300)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Por que foi cancelada; obrigatório quando é o síndico quem cancela"
+      },
+      {
+        "coluna": "criado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que o registro foi criado, preenchido pelo banco"
+      },
+      {
+        "coluna": "atualizado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da última alteração do registro"
+      }
+    ],
+    "regras": [
+      "CHECK ((hora_fim > hora_inicio))"
+    ]
+  },
+  {
     "nome": "ocorrencias",
     "resumo": "Os problemas e reclamações registrados por moradores e porteiros, e a resposta do síndico.",
     "colunas": [
@@ -2780,6 +2922,36 @@ const relacoes = [
     "texto": "Unidade à qual o veículo está ligado, quando houver"
   },
   {
+    "origem": "mudancas",
+    "coluna": "avaliada_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que aprovou ou recusou"
+  },
+  {
+    "origem": "mudancas",
+    "coluna": "cancelada_por_id",
+    "destino": "usuarios",
+    "texto": "Quem cancelou: um morador do apartamento ou o síndico"
+  },
+  {
+    "origem": "mudancas",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio da mudança"
+  },
+  {
+    "origem": "mudancas",
+    "coluna": "solicitada_por_id",
+    "destino": "usuarios",
+    "texto": "Morador que pediu a mudança"
+  },
+  {
+    "origem": "mudancas",
+    "coluna": "unidade_id",
+    "destino": "unidades",
+    "texto": "Apartamento que muda"
+  },
+  {
     "origem": "ocorrencias",
     "coluna": "aberta_por_id",
     "destino": "usuarios",
@@ -3037,6 +3209,10 @@ const enumerados = [
     "valores": "AGUARDANDO_RETIRADA, RETIRADA, RECUSADA"
   },
   {
+    "nome": "status_mudanca",
+    "valores": "PENDENTE, APROVADA, RECUSADA, CANCELADA, CONCLUIDA"
+  },
+  {
     "nome": "status_ocorrencia",
     "valores": "ABERTA, EM_ANALISE, RESOLVIDA, ARQUIVADA"
   },
@@ -3063,6 +3239,10 @@ const enumerados = [
   {
     "nome": "tipo_movimentacao",
     "valores": "ENTRADA, SAIDA"
+  },
+  {
+    "nome": "tipo_mudanca",
+    "valores": "CHEGADA, SAIDA"
   },
   {
     "nome": "tipo_ocupacao",

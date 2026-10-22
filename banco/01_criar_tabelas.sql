@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS
+    mudancas,
     veiculos_unidade,
     votos,
     itens_pauta,
@@ -46,11 +47,13 @@ DROP TYPE IF EXISTS
     status_encomenda,
     status_ocorrencia,
     status_ordem_servico,
+    status_mudanca,
     status_reserva,
     status_usuario,
     status_visitante,
     tipo_documento_cadastro,
     tipo_movimentacao,
+    tipo_mudanca,
     tipo_ocupacao
 CASCADE;
 
@@ -167,6 +170,14 @@ CREATE TYPE status_ordem_servico AS ENUM (
     'CANCELADA'
 );
 
+CREATE TYPE status_mudanca AS ENUM (
+    'PENDENTE',
+    'APROVADA',
+    'RECUSADA',
+    'CANCELADA',
+    'CONCLUIDA'
+);
+
 CREATE TYPE status_reserva AS ENUM (
     'PENDENTE',
     'APROVADA',
@@ -200,6 +211,11 @@ CREATE TYPE tipo_documento_cadastro AS ENUM (
 
 CREATE TYPE tipo_movimentacao AS ENUM (
     'ENTRADA',
+    'SAIDA'
+);
+
+CREATE TYPE tipo_mudanca AS ENUM (
+    'CHEGADA',
     'SAIDA'
 );
 
@@ -845,6 +861,42 @@ ALTER TABLE ONLY veiculos_unidade ALTER COLUMN id SET DEFAULT nextval('veiculos_
 ALTER TABLE ONLY veiculos_unidade
     ADD CONSTRAINT veiculos_unidade_pkey PRIMARY KEY (id);
 
+-- Mudanças pedidas pelo morador e avaliadas pelo síndico; a portaria vê
+-- as aprovadas. Uma de cada vez em cada bloco (conferido pela API).
+CREATE TABLE mudancas (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    solicitada_por_id integer,
+    tipo tipo_mudanca NOT NULL,
+    data date NOT NULL,
+    hora_inicio time without time zone NOT NULL,
+    hora_fim time without time zone NOT NULL,
+    empresa character varying(120),
+    observacao character varying(300),
+    status status_mudanca NOT NULL,
+    avaliada_por_id integer,
+    avaliada_em timestamp with time zone,
+    motivo_recusa character varying(300),
+    cancelada_por_id integer,
+    cancelada_em timestamp with time zone,
+    motivo_cancelamento character varying(300),
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT ck_mudanca_intervalo CHECK ((hora_fim > hora_inicio))
+);
+CREATE SEQUENCE mudancas_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE mudancas_id_seq OWNED BY mudancas.id;
+ALTER TABLE ONLY mudancas ALTER COLUMN id SET DEFAULT nextval('mudancas_id_seq'::regclass);
+ALTER TABLE ONLY mudancas
+    ADD CONSTRAINT mudancas_pkey PRIMARY KEY (id);
+
 CREATE TABLE ordens_servico (
     id integer NOT NULL,
     condominio_id integer NOT NULL,
@@ -1087,6 +1139,21 @@ ALTER TABLE ONLY veiculos_unidade
 ALTER TABLE ONLY veiculos_unidade
     ADD CONSTRAINT veiculos_unidade_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY mudancas
+    ADD CONSTRAINT mudancas_avaliada_por_id_fkey FOREIGN KEY (avaliada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY mudancas
+    ADD CONSTRAINT mudancas_cancelada_por_id_fkey FOREIGN KEY (cancelada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY mudancas
+    ADD CONSTRAINT mudancas_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY mudancas
+    ADD CONSTRAINT mudancas_solicitada_por_id_fkey FOREIGN KEY (solicitada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY mudancas
+    ADD CONSTRAINT mudancas_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY votos
     ADD CONSTRAINT votos_item_id_fkey FOREIGN KEY (item_id) REFERENCES itens_pauta(id) ON DELETE CASCADE;
 
@@ -1276,6 +1343,16 @@ CREATE INDEX ix_veiculos_unidade_condominio_id ON veiculos_unidade USING btree (
 CREATE INDEX ix_veiculos_unidade_unidade_id ON veiculos_unidade USING btree (unidade_id);
 
 CREATE UNIQUE INDEX uq_veiculo_placa_ativa ON veiculos_unidade USING btree (condominio_id, placa) WHERE (inativo_em IS NULL);
+
+CREATE INDEX ix_mudancas_condominio_data ON mudancas USING btree (condominio_id, data);
+
+CREATE INDEX ix_mudancas_condominio_id ON mudancas USING btree (condominio_id);
+
+CREATE INDEX ix_mudancas_solicitada_por_id ON mudancas USING btree (solicitada_por_id);
+
+CREATE INDEX ix_mudancas_status ON mudancas USING btree (status);
+
+CREATE INDEX ix_mudancas_unidade_id ON mudancas USING btree (unidade_id);
 
 CREATE INDEX ix_votos_item_id ON votos USING btree (item_id);
 

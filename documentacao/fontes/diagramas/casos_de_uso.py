@@ -31,6 +31,7 @@ CASOS = [
     ("Registrar pagamento",             ["SIN", "MOR"],               ESQ),
     ("Prestar contas",                  ["SIN", "MOR"],               ESQ),
     ("Convocar assembleia",             ["SIN"],                      ESQ),
+    ("Agendar mudança",                 ["SIN", "POR", "MOR"],        ESQ),
     ("Registrar visitante",             ["POR"],                      DIR),
     ("Registrar encomenda",             ["POR"],                      DIR),
     ("Registrar veículo",               ["POR"],                      DIR),
