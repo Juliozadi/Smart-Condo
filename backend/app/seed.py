@@ -38,7 +38,7 @@ from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico, Ve
 from app.models.financeiro import Cobranca, Despesa, Pagamento, PreferenciaCobranca
 from app.models.portaria import Encomenda, Ocorrencia, Visitante
 from app.models.usuario import PermissaoPorteiro, Usuario
-from app.services import arquivos, registro
+from app.services import arquivos, perfis, registro
 
 SENHA = "smartcondo123"
 HOJE = hoje_local()
@@ -195,6 +195,18 @@ def criar(db) -> dict:
         Papel.MORADOR, condominio_id=condominio.id, unidade_id=unidades["502"].id,
         tipo_ocupacao=TipoOcupacao.INQUILINO, status=StatusUsuario.AGUARDANDO_APROVACAO,
     )
+    db.flush()
+
+    # ── Uma pessoa, vários perfis (services/perfis.py) ────────────────
+    # O síndico mora no 101; o João, além do 204, onde mora, é dono do 302,
+    # que alugou — vê as cobranças e vota por ele, mas não a portaria.
+    for dono, unidade, reside in [(sindico, "101", True), (moradores["204"], "302", False)]:
+        db.add(Usuario(
+            nome=dono.nome, email=dono.email, cpf=dono.cpf, telefone=dono.telefone,
+            senha_hash=perfis.SEM_SENHA, papel=Papel.MORADOR, status=StatusUsuario.ATIVO,
+            condominio_id=condominio.id, unidade_id=unidades[unidade].id,
+            tipo_ocupacao=TipoOcupacao.PROPRIETARIO, reside=reside, conta_principal_id=dono.id,
+        ))
     db.flush()
 
     # ── Espaços comuns ────────────────────────────────────────────────
@@ -593,6 +605,9 @@ Pronto. Contas criadas (todas com a senha "{SENHA}"):
 
   pedro@smartcondo.com está aguardando aprovação do síndico — use para
   demonstrar a tela de aprovação de cadastros.
+
+  Perfis: o síndico também mora no 101, e o morador@ (João, 204) é dono
+  do 302, alugado. Os dois trocam de perfil no topo da tela.
 
   Código de acesso do condomínio: PALM-2025
   (é o que o morador informa ao se cadastrar)

@@ -140,8 +140,17 @@ class UsuarioSaida(SchemaBase):
     condominio_id: int | None = None
     unidade: UnidadeResumo | None = None
     tipo_ocupacao: TipoOcupacao | None = None
+    # Falso no proprietário que não mora no apartamento: a tela esconde a
+    # portaria do apartamento (visitas, encomendas, reservas, mudanças).
+    reside: bool = True
     foto_url: str | None = None
     criado_em: datetime
+    # A pessoa tem outro perfil (síndico que mora, outro apartamento): a
+    # tela mostra a troca de perfil.
+    possui_outros_perfis: bool = False
+    # Na fila do síndico: é outro apartamento de quem já tem cadastro (a
+    # identidade já foi conferida), e não um cadastro novo.
+    perfil_vinculado: bool = False
 
     # Quem avaliou o cadastro, quando e — na recusa — por quê. O síndico
     # e o administrador precisam disso na fila de aprovação; o próprio
@@ -175,6 +184,25 @@ class UsuarioAtualizacao(SchemaBase):
     # (PUT /usuarios/eu/foto). Aceitar um endereço livre deixava qualquer
     # usuário apontar a própria foto para um servidor de terceiros, que
     # passaria a ver quem abre a tela.
+
+
+class PerfilDisponivel(SchemaBase):
+    """Um dos perfis da pessoa, na troca de perfil do topo da tela."""
+    usuario_id: int
+    papel: Papel
+    status: StatusUsuario
+    condominio: str | None = None
+    unidade: str | None = None
+    tipo_ocupacao: TipoOcupacao | None = None
+    reside: bool = True
+    atual: bool = False
+
+
+class ApartamentoVinculo(SchemaBase):
+    """Outro apartamento da mesma pessoa no condomínio."""
+    unidade_id: int
+    tipo_ocupacao: TipoOcupacao = TipoOcupacao.PROPRIETARIO
+    reside: bool = True
 
 
 class AprovacaoUsuario(SchemaBase):

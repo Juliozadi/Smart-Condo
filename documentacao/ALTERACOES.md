@@ -15,11 +15,11 @@ não tinha.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | Novo RF048: prestação de contas — despesas e balancete do mês. Novo RF049: assembleia virtual com votação. Novo RF050: os veículos do apartamento, que a portaria reconhece pela placa. Novo RF051: agendamento de mudança |
-| 11 Diagrama de caso de uso | Novos casos: prestar contas, convocar assembleia, votar em assembleia, cadastrar veículo e agendar mudança — agora 33 casos de uso |
-| 14 a 17 | Novas tabelas despesas, assembleias, itens_pauta, votos, veiculos_unidade e mudancas — agora 29 entidades, 350 atributos e 75 relacionamentos; o DER ganha um quarto recorte, de gestão |
-| 21 API REST | 137 endpoints: despesas (lançar, listar, corrigir, cancelar, comprovante) e balancete do mês; assembleias (convocar, listar, votar, cancelar); veículos do apartamento (cadastrar, listar, remover) e a consulta da placa pela portaria; mudanças (regras, horários tomados, agendar, listar, avaliar, cancelar) |
-| 23 Testes | 581 casos no servidor e 115 testes de interface |
+| 9 Requisitos funcionais | Novo RF048: prestação de contas — despesas e balancete do mês. Novo RF049: assembleia virtual com votação. Novo RF050: os veículos do apartamento, que a portaria reconhece pela placa. Novo RF051: agendamento de mudança. Novo RF052: mais de um perfil com o mesmo login (o síndico que também mora, o morador eleito síndico). Novo RF053: o proprietário de mais de um apartamento, morando ou não neles. RF049: o proprietário vota mesmo sem morar no apartamento |
+| 11 Diagrama de caso de uso | Novos casos: prestar contas, convocar assembleia, votar em assembleia, cadastrar veículo, agendar mudança, trocar de perfil e vincular outro apartamento — agora 35 casos de uso |
+| 14 a 17 | Novas tabelas despesas, assembleias, itens_pauta, votos, veiculos_unidade e mudancas; usuarios ganha reside e conta_principal_id, e o e-mail e o CPF passam a ser únicos entre os cadastros com login — agora 29 entidades, 352 atributos e 76 relacionamentos; o DER ganha um quarto recorte, de gestão |
+| 21 API REST | 141 endpoints: despesas (lançar, listar, corrigir, cancelar, comprovante) e balancete do mês; assembleias (convocar, listar, votar, cancelar); veículos do apartamento (cadastrar, listar, remover) e a consulta da placa pela portaria; mudanças (regras, horários tomados, agendar, listar, avaliar, cancelar); perfis da pessoa e troca de perfil; acrescentar e tirar apartamentos do próprio cadastro |
+| 23 Testes | 595 casos no servidor e 118 testes de interface |
 
 **Situações tratadas.**
 - O morador paga a taxa todo mês e não sabe para onde vai o dinheiro; o
@@ -35,7 +35,7 @@ não tinha.
   tinha assembleia nenhuma. Agora o síndico convoca pela tela, com a
   pauta e o período de votação, e cada apartamento vota de onde estiver,
   uma vez em cada item. Vota o proprietário — ou o inquilino, se nenhum
-  proprietário mora lá — e só o apartamento quite (art. 1.335, III).
+  proprietário tem cadastro — e só o apartamento quite (art. 1.335, III).
   Cada item diz a maioria que exige: simples, 2/3 de todos os
   apartamentos (como para mudar a convenção, art. 1.351) ou
   unanimidade. Durante a votação ninguém vê o placar, nem o síndico; no
@@ -58,6 +58,22 @@ não tinha.
   quem. Uma mudança de cada vez em cada bloco. O síndico aprova ou recusa
   com motivo, e o morador recebe a resposta; a portaria vê as aprovadas.
   A pendente que chega ao horário sem avaliação vira recusada.
+- O síndico que mora no condomínio paga a taxa, reserva o salão e vota
+  como qualquer morador — mas o CPF só podia ter um cadastro, e ele não
+  tinha como ser morador. O morador eleito síndico precisava de outro
+  e-mail e outra senha. Agora a mesma pessoa tem um perfil por papel,
+  com um login só, e troca de perfil no topo da tela: o síndico informa
+  o apartamento no próprio perfil; para o morador eleito, o administrador
+  cadastra o síndico com o e-mail e o CPF que ele já usa. Trocar a senha
+  encerra as sessões de todos os perfis. Quando o mandato acaba, a pessoa
+  continua entrando como moradora, com a mesma senha.
+- O dono de dois apartamentos — um onde mora, outro alugado — só podia
+  ter um. Agora ele acrescenta o outro no perfil (o síndico confirma) e
+  escolhe por qual apartamento está agindo. No que não mora, vê as
+  cobranças e a prestação de contas e vota nas assembleias (o
+  proprietário vota mesmo sem morar), mas visitas, encomendas, reservas,
+  carros e mudanças são do inquilino, e os avisos da portaria não vão
+  para o dono.
 - Nos celulares, os campos lado a lado que viram coluna ficam com o mesmo
   espaçamento dos outros (antes, colados no campo de baixo).
 - Na carga de demonstração, a taxa do mês passa a vencer no dia 10 do

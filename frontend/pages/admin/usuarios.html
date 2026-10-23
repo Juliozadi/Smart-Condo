@@ -122,6 +122,9 @@
             <input type="text" id="uCpf" class="mask-cpf" required maxlength="14" placeholder="000.000.000-00">
           </div>
         </div>
+        <p class="captura-dica" id="dicaSindicoMorador" hidden>Morador eleito síndico, ou síndico de
+        outro condomínio? Use o e-mail e o CPF que a pessoa já usa: ela ganha o perfil de síndico na
+        mesma conta e entra com a senha de sempre (a senha abaixo não é usada).</p>
 
         <div class="form-row">
           <div class="form-group">
@@ -214,6 +217,7 @@
     // Administrador não pertence a condomínio: atravessa todos.
     campo('grupoCondominio').hidden = campo('uPapel').value === 'admin';
     campo('camposMorador').hidden = !ehMorador;
+    campo('dicaSindicoMorador').hidden = !!editando || campo('uPapel').value !== 'sindico';
     if (!ehMorador) {
       campo('uUnidade').value = '';
       campo('uBloco').value = '';

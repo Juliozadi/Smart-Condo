@@ -309,7 +309,9 @@ CREATE TABLE usuarios (
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
     versao_sessao integer DEFAULT 0 NOT NULL,
-    unidade_desde timestamp with time zone DEFAULT now() NOT NULL
+    unidade_desde timestamp with time zone DEFAULT now() NOT NULL,
+    reside boolean DEFAULT true NOT NULL,
+    conta_principal_id integer
 );
 CREATE SEQUENCE usuarios_id_seq
     AS integer
@@ -1217,6 +1219,11 @@ ALTER TABLE ONLY usuarios
 ALTER TABLE ONLY usuarios
     ADD CONSTRAINT fk_usuarios_avaliado_por_id_usuarios FOREIGN KEY (avaliado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
 
+-- Perfil vinculado (o síndico que também mora, o dono de outro
+-- apartamento): aponta para o cadastro com login da mesma pessoa.
+ALTER TABLE ONLY usuarios
+    ADD CONSTRAINT usuarios_conta_principal_id_fkey FOREIGN KEY (conta_principal_id) REFERENCES usuarios(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY autorizacoes_visita
     ADD CONSTRAINT autorizacoes_visita_autorizado_por_id_fkey FOREIGN KEY (autorizado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
 
@@ -1416,9 +1423,17 @@ CREATE UNIQUE INDEX ix_permissoes_porteiro_porteiro_id ON permissoes_porteiro US
 
 CREATE UNIQUE INDEX ix_preferencias_cobranca_morador_id ON preferencias_cobranca USING btree (morador_id);
 
-CREATE UNIQUE INDEX ix_usuarios_cpf ON usuarios USING btree (cpf);
+CREATE INDEX ix_usuarios_cpf ON usuarios USING btree (cpf);
 
-CREATE UNIQUE INDEX ix_usuarios_email ON usuarios USING btree (email);
+CREATE INDEX ix_usuarios_email ON usuarios USING btree (email);
+
+CREATE INDEX ix_usuarios_conta_principal_id ON usuarios USING btree (conta_principal_id);
+
+-- E-mail e CPF são de uma pessoa só, entre os cadastros com login; os
+-- perfis vinculados repetem os dados dela.
+CREATE UNIQUE INDEX uq_usuarios_cpf_principal ON usuarios USING btree (cpf) WHERE (conta_principal_id IS NULL);
+
+CREATE UNIQUE INDEX uq_usuarios_email_principal ON usuarios USING btree (email) WHERE (conta_principal_id IS NULL);
 
 CREATE INDEX ix_registros_alteracao_autor_id ON registros_alteracao USING btree (autor_id);
 

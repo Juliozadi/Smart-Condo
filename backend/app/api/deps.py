@@ -58,6 +58,33 @@ def get_usuario_atual(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=_motivo_inativo(usuario.status),
         )
+    # Perfil vinculado (services/perfis.py): vale enquanto a conta com
+    # login da pessoa estiver ativa.
+    if usuario.conta_principal_id is not None and (
+        usuario.conta_principal is None or usuario.conta_principal.status != StatusUsuario.ATIVO
+    ):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=_motivo_inativo(StatusUsuario.INATIVO))
+    return usuario
+
+
+def conferir_que_mora(usuario: Usuario) -> None:
+    """A portaria do apartamento — visitas, encomendas, carros, mudanças,
+    reservas — é de quem mora lá. O proprietário que não mora (alugou,
+    está vazio) paga, vota e acompanha as contas, e só."""
+    if usuario.papel == Papel.MORADOR and not usuario.reside:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Você é proprietário deste apartamento, mas não mora nele: visitas, "
+                   "encomendas, reservas, carros e mudanças são de quem mora lá.",
+        )
+
+
+def exigir_morador_residente(usuario: Usuario = Depends(get_usuario_atual)) -> Usuario:
+    if usuario.papel != Papel.MORADOR:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Esta ação é permitida apenas para: morador.")
+    conferir_que_mora(usuario)
     return usuario
 
 

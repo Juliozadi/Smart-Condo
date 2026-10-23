@@ -2283,7 +2283,7 @@ const dicionario = [
   },
   {
     "nome": "usuarios",
-    "resumo": "Todas as pessoas que acessam o sistema, em qualquer papel: administrador, síndico, porteiro e morador.",
+    "resumo": "Todas as pessoas que acessam o sistema, em qualquer papel: administrador, síndico, porteiro e morador. Quem tem mais de um papel ou apartamento (o síndico que também mora, o dono de dois apartamentos) tem um cadastro por perfil, todos ligados ao cadastro com o login.",
     "colunas": [
       {
         "coluna": "id",
@@ -2438,6 +2438,20 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Desde quando mora na unidade atual; renovado na transferência e na reativação. O morador só vê os visitantes e as encomendas a partir daqui"
+      },
+      {
+        "coluna": "reside",
+        "tipo": "BOOLEAN",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Se o morador mora na unidade; falso no proprietário que alugou: ele paga e vota, mas visitas, encomendas, reservas, carros e mudanças são de quem mora lá"
+      },
+      {
+        "coluna": "conta_principal_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "No perfil vinculado, o cadastro com login da mesma pessoa; vazio no cadastro principal. E-mail e CPF são únicos entre os principais"
       }
     ],
     "regras": []
@@ -3076,6 +3090,12 @@ const relacoes = [
     "coluna": "condominio_id",
     "destino": "condominios",
     "texto": "Condomínio em que o usuário atua; vazio apenas para o administrador da plataforma"
+  },
+  {
+    "origem": "usuarios",
+    "coluna": "conta_principal_id",
+    "destino": "usuarios",
+    "texto": "No perfil vinculado, o cadastro com login da mesma pessoa; vazio no cadastro principal. E-mail e CPF são únicos entre os principais"
   },
   {
     "origem": "usuarios",

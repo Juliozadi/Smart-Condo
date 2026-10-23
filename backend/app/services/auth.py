@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, object_session
 
 from app.core.config import settings
 from app.core.security import (
@@ -18,7 +18,7 @@ from app.core.security import (
 )
 from app.models.enums import CanalVerificacao, FinalidadeCodigo, Papel, StatusUsuario
 from app.models.usuario import CodigoVerificacao, Usuario
-from app.services import notificacao
+from app.services import notificacao, perfis
 
 MAX_TENTATIVAS_CODIGO = 5
 
@@ -27,12 +27,17 @@ def _agora() -> datetime:
     return datetime.now(timezone.utc)
 
 
+# Login, recuperação de senha e "já existe cadastro" olham só o cadastro
+# principal da pessoa: os perfis vinculados repetem e-mail e CPF, sem
+# login próprio (services/perfis.py).
 def buscar_por_email(db: Session, email: str) -> Usuario | None:
-    return db.scalar(select(Usuario).where(Usuario.email == email.lower()))
+    return db.scalar(select(Usuario).where(
+        Usuario.email == email.lower(), Usuario.conta_principal_id.is_(None)))
 
 
 def buscar_por_cpf(db: Session, cpf: str) -> Usuario | None:
-    return db.scalar(select(Usuario).where(Usuario.cpf == cpf))
+    return db.scalar(select(Usuario).where(
+        Usuario.cpf == cpf, Usuario.conta_principal_id.is_(None)))
 
 
 def garantir_email_e_cpf_livres(db: Session, email: str, cpf: str) -> None:
@@ -274,7 +279,7 @@ def autenticar(db: Session, email: str, senha: str) -> Usuario:
     # disparava (40 senhas conferidas em paralelo, contra um limite de 5).
     usuario = db.scalar(
         select(Usuario)
-        .where(Usuario.email == email.lower())
+        .where(Usuario.email == email.lower(), Usuario.conta_principal_id.is_(None))
         .with_for_update()
         .execution_options(populate_existing=True)
     )
@@ -314,8 +319,13 @@ def autenticar(db: Session, email: str, senha: str) -> Usuario:
 
 
 def encerrar_sessoes(usuario: Usuario) -> None:
-    """Invalida todos os tokens já emitidos para o usuário."""
-    usuario.versao_sessao = (usuario.versao_sessao or 0) + 1
+    """Invalida todos os tokens já emitidos para a pessoa, em todos os
+    perfis: a senha é uma só, e quem roubou a sessão de um perfil não
+    pode continuar no outro."""
+    db = object_session(usuario)
+    alvos = perfis.da_pessoa(db, usuario) if db is not None else [usuario]
+    for perfil in alvos:
+        perfil.versao_sessao = (perfil.versao_sessao or 0) + 1
 
 
 def trocar_senha(db: Session, usuario: Usuario, senha_atual: str, nova_senha: str) -> None:

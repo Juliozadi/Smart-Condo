@@ -66,7 +66,7 @@ UNION ALL SELECT 'comunicados', COUNT(*) FROM comunicados;
 |---|---|
 | `condominios` | Condomínios cadastrados pelo administrador |
 | `unidades` | Apartamentos ou casas de cada condomínio |
-| `usuarios` | Administradores, síndicos, porteiros e moradores |
+| `usuarios` | Administradores, síndicos, porteiros e moradores; quem tem mais de um papel ou apartamento tem um perfil por papel, ligado ao cadastro com o login |
 | `permissoes_porteiro` | O que cada porteiro pode fazer, definido pelo síndico |
 | `codigos_verificacao` | Códigos de confirmação e de recuperação de senha |
 | `espacos_comuns` | Salão, churrasqueira, piscina, academia e demais áreas |

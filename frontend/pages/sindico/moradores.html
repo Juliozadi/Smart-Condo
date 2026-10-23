@@ -290,7 +290,17 @@
       ' · Cadastrado em ' + dataCurta(u.criado_em);
     info.appendChild(titulo);
     info.appendChild(sub);
-    info.appendChild(documentosDoCadastro(u));
+    if (u.perfil_vinculado) {
+      // Quem já tem cadastro pedindo mais um apartamento: a identidade já
+      // foi conferida; falta confirmar que o apartamento é dele.
+      var vinculo = document.createElement('p');
+      vinculo.className = 'comunicado-autor';
+      vinculo.textContent = 'Já tem cadastro no condomínio — pede para acrescentar este ' +
+        'apartamento' + (u.reside === false ? ', sem morar nele.' : '.');
+      info.appendChild(vinculo);
+    } else {
+      info.appendChild(documentosDoCadastro(u));
+    }
 
     var acoes = document.createElement('div');
     acoes.className = 'acoes-aprovacao';

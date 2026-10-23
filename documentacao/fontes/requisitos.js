@@ -302,7 +302,7 @@ const requisitosFuncionais = [
   { id: 'RF049', nome: 'Realizar assembleia virtual',
     atores: 'Síndico, Morador', prioridade: 'Importante',
     descricao: 'O sistema permite ao síndico convocar uma assembleia com votação pelo SmartCondo, como admite o Código Civil (art. 1.354-A, incluído pela Lei 14.309/2022), e a cada apartamento votar de onde estiver.',
-    entradas: 'O síndico informa título, convocação, o período da votação (até 30 dias) e os itens da pauta, cada um com a maioria que exige: simples, 2/3 dos apartamentos (como para mudar a convenção, art. 1.351) ou unanimidade. Vota, uma vez por apartamento e em todos os itens, o proprietário — ou, se nenhum mora lá, o inquilino —, desde que o apartamento esteja quite (art. 1.335, III).',
+    entradas: 'O síndico informa título, convocação, o período da votação (até 30 dias) e os itens da pauta, cada um com a maioria que exige: simples, 2/3 dos apartamentos (como para mudar a convenção, art. 1.351) ou unanimidade. Vota, uma vez por apartamento e em todos os itens, o proprietário, more ou não no apartamento — ou, se nenhum proprietário tem cadastro, o inquilino —, desde que o apartamento esteja quite (art. 1.335, III).',
     saidas: 'Todos os moradores recebem a convocação. Durante a votação, todos — o síndico inclusive — veem só quantos apartamentos já votaram; encerrada, cada item mostra os votos a favor, contra e abstenções e se foi aprovado. O voto não muda depois de dado, e dois moradores do mesmo apartamento não votam duas vezes. O síndico cancela com motivo, e os moradores são avisados.' },
 
   { id: 'RF050', nome: 'Cadastrar os veículos do apartamento',
@@ -316,6 +316,18 @@ const requisitosFuncionais = [
     descricao: 'O sistema permite ao morador agendar a mudança — chegada ou saída — dentro das regras do regimento, ao síndico aprovar ou recusar, e à portaria ver as mudanças aprovadas.',
     entradas: 'O morador informa se é chegada ou saída, o dia, o horário e, se quiser, a empresa e um recado. A regra padrão: pelo menos 2 dias de antecedência e até um ano; de segunda a sexta das 8h às 18h, no sábado das 8h às 12h, e domingo não. Ao escolher o dia, a tela mostra os horários já tomados, sem dizer de quem.',
     saidas: 'Uma mudança de cada vez em cada bloco: o horário que se sobrepõe a outra pendente ou aprovada é recusado. O síndico recebe o pedido por e-mail e aprova, ou recusa com motivo; o morador recebe a resposta. A portaria vê as aprovadas de hoje em diante. O morador cancela a sua; o síndico cancela com motivo, e o morador é avisado. A pendente cujo horário chega sem avaliação vira recusada; a aprovada que passou, realizada.' },
+
+  { id: 'RF052', nome: 'Usar mais de um perfil com o mesmo login',
+    atores: 'Síndico, Morador, Administrador', prioridade: 'Importante',
+    descricao: 'O sistema permite que a mesma pessoa tenha mais de um perfil — o síndico que também mora no condomínio, o morador eleito síndico, o síndico profissional de mais de um condomínio — e troque de um para outro no topo da tela, sem outra senha.',
+    entradas: 'O síndico que mora informa o apartamento no próprio perfil, e o perfil de morador vale na hora. Para o morador eleito síndico, o administrador cadastra o síndico com o e-mail e o CPF que a pessoa já usa.',
+    saidas: 'A pessoa entra com o mesmo e-mail e senha e escolhe o perfil; cada perfil faz o que o papel permite, e só isso. Trocar a senha encerra as sessões de todos os perfis. Quando o mandato acaba, o perfil de síndico é inativado e a pessoa continua entrando como moradora; quando sai do apartamento do login, mas tem outro, continua entrando pelo outro. E-mail e CPF continuam de uma pessoa só.' },
+
+  { id: 'RF053', nome: 'Ter mais de um apartamento no condomínio',
+    atores: 'Morador, Síndico', prioridade: 'Importante',
+    descricao: 'O sistema permite ao proprietário de mais de um apartamento acompanhar cada um com o mesmo login — morando ou não neles.',
+    entradas: 'O morador escolhe o apartamento, diz se é proprietário ou inquilino e se mora nele; o síndico aprova ou recusa, como num cadastro novo.',
+    saidas: 'Cada apartamento vira um perfil. No que o dono não mora (alugado ou vazio), ele vê as cobranças, a prestação de contas, os comunicados e vota nas assembleias — o proprietário vota mesmo sem morar —, mas visitas, encomendas, reservas, carros e mudanças ficam com quem mora lá, e os avisos da portaria não vão para ele. O apartamento sai do cadastro quando ele quiser (vendeu), e o histórico fica.' },
 ];
 
 // ── 10 Requisitos não funcionais ────────────────────────────────────

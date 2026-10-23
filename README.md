@@ -179,7 +179,7 @@ backend/
 ```
 
 **Total:** 43 páginas HTML, 2 arquivos CSS, 9 arquivos JS, 43 ícones SVG e
-uma API com 137 endpoints.
+uma API com 141 endpoints.
 
 ---
 
@@ -199,7 +199,7 @@ uvicorn app.main:app --reload
 
 Documentação interativa da API em <http://localhost:8000/docs>.
 
-**137 endpoints**, cobrindo os casos de uso e as histórias de usuário da
+**141 endpoints**, cobrindo os casos de uso e as histórias de usuário da
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e

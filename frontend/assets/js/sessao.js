@@ -86,6 +86,14 @@
       s.src = api.base + 'assets/js/chat.js';
       document.body.appendChild(s);
     }
+
+    // A troca de perfil (o síndico que também mora, o dono de outro
+    // apartamento) só aparece para quem tem mais de um.
+    if (usuario.possui_outros_perfis && !global.SmartCondo.perfis) {
+      var p = document.createElement('script');
+      p.src = api.base + 'assets/js/perfis.js';
+      document.body.appendChild(p);
+    }
   }
 
   if (document.readyState === 'loading') {

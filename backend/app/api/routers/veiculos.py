@@ -13,7 +13,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import (
-    exigir_condominio, exigir_papel, exigir_permissao_do_porteiro, exigir_permissao_porteiro,
+    conferir_que_mora, exigir_condominio, exigir_papel, exigir_permissao_do_porteiro, exigir_permissao_porteiro,
 )
 from app.core.database import get_db
 from app.models.condominio import Unidade
@@ -60,7 +60,7 @@ def _dono_mora_la():
             Usuario.id == VeiculoUnidade.cadastrado_por_id,
             Usuario.unidade_id == VeiculoUnidade.unidade_id,
             Usuario.papel == Papel.MORADOR, Usuario.status == StatusUsuario.ATIVO,
-            Usuario.unidade_desde <= VeiculoUnidade.criado_em,
+            Usuario.reside.is_(True), Usuario.unidade_desde <= VeiculoUnidade.criado_em,
         ),
     )
 
@@ -103,6 +103,7 @@ def listar_cadastrados(
     exigir_permissao_do_porteiro(db, usuario, "registrar_veiculos")
     consulta = _cadastrados(usuario.condominio_id)
     if usuario.papel == Papel.MORADOR:
+        conferir_que_mora(usuario)
         consulta = consulta.where(VeiculoUnidade.unidade_id == usuario.unidade_id)
     elif usuario.papel not in (Papel.SINDICO, Papel.PORTEIRO):
         return []
@@ -136,6 +137,7 @@ def cadastrar_veiculo(
     db: Session = Depends(get_db),
 ) -> VeiculoCadastradoSaida:
     if usuario.papel == Papel.MORADOR:
+        conferir_que_mora(usuario)
         unidade_id = usuario.unidade_id
     else:
         if dados.unidade_id is None:
@@ -196,6 +198,7 @@ def remover_veiculo(
     usuario: Usuario = Depends(exigir_papel(Papel.MORADOR, Papel.SINDICO)),
     db: Session = Depends(get_db),
 ) -> Mensagem:
+    conferir_que_mora(usuario)
     veiculo = db.scalar(_cadastrados(usuario.condominio_id)
                         .where(VeiculoUnidade.id == veiculo_id).with_for_update(of=VeiculoUnidade))
     if veiculo is None or (usuario.papel == Papel.MORADOR

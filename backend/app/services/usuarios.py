@@ -19,7 +19,7 @@ from app.models.enums import Papel, StatusReserva, StatusUsuario
 from app.models.espaco import Reserva
 from app.models.usuario import PermissaoPorteiro, Usuario
 from app.services import auth as servico_auth
-from app.services import registro
+from app.services import perfis, registro
 
 ROTULOS_USUARIO = {
     "nome": "o nome", "email": "o e-mail", "telefone": "o telefone",
@@ -93,7 +93,13 @@ def criar_usuario(
             detail="Este condomínio está inativo. Reative-o antes de cadastrar alguém.",
         )
 
-    servico_auth.garantir_email_e_cpf_livres(db, dados.email, dados.cpf)
+    # O morador eleito síndico (ou o síndico profissional que cuida de mais
+    # de um condomínio): com o e-mail e o CPF que a pessoa já usa, ela
+    # ganha o perfil de síndico na mesma conta, sem outra senha.
+    mesma_pessoa = (perfis.pessoa_com_email_e_cpf(db, dados.email, dados.cpf)
+                    if dados.papel == Papel.SINDICO else None)
+    if mesma_pessoa is None:
+        servico_auth.garantir_email_e_cpf_livres(db, dados.email, dados.cpf)
 
     # Um condomínio tem um síndico responsável de cada vez.
     if dados.papel == Papel.SINDICO:
@@ -112,6 +118,12 @@ def criar_usuario(
                     "Inative o atual antes de cadastrar outro."
                 ),
             )
+
+    if mesma_pessoa is not None:
+        usuario = perfis.vincular_sindico(db, mesma_pessoa, condominio.id)
+        if condominio.sindico_id is None:
+            condominio.sindico_id = usuario.id
+        return usuario
 
     unidade = None
     if dados.papel == Papel.MORADOR:
@@ -144,9 +156,18 @@ def criar_usuario(
     return usuario
 
 
+DADOS_DA_PESSOA = ("nome", "telefone", "data_nascimento")
+
+
 def atualizar_usuario(db: Session, usuario: Usuario, dados) -> Usuario:
     campos = dados.model_dump(exclude_unset=True)
 
+    if usuario.conta_principal_id is not None and (campos.get("email") or campos.get("senha")):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Este é um perfil de quem tem outro cadastro: o e-mail e a senha se "
+                   "mudam no cadastro principal da pessoa.",
+        )
     novo_email = campos.pop("email", None)
     if novo_email and novo_email.lower() != usuario.email:
         if servico_auth.buscar_por_email(db, novo_email):
@@ -154,7 +175,9 @@ def atualizar_usuario(db: Session, usuario: Usuario, dados) -> Usuario:
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Já existe um cadastro com este e-mail.",
             )
-        usuario.email = novo_email.lower()
+        # O e-mail é da pessoa: os avisos de todos os perfis vão para ele.
+        for perfil in perfis.da_pessoa(db, usuario):
+            perfil.email = novo_email.lower()
 
     nova_senha = campos.pop("senha", None)
     if nova_senha:
@@ -204,10 +227,15 @@ def atualizar_usuario(db: Session, usuario: Usuario, dados) -> Usuario:
 
     for campo, valor in campos.items():
         setattr(usuario, campo, valor)
+    pessoais = {c: campos[c] for c in DADOS_DA_PESSOA if c in campos}
+    if pessoais:
+        perfis.sincronizar_dados(db, usuario, pessoais)
     if usuario.status == StatusUsuario.ATIVO:
         confirmar_unidade(db, usuario.unidade_id)
 
     db.flush()
+    if novo_status == StatusUsuario.INATIVO:
+        perfis.promover_se_preciso(db, usuario)
     return usuario
 
 
@@ -365,3 +393,4 @@ def remover_usuario(db: Session, usuario: Usuario, quem_remove: Usuario) -> None
     cancelar_reservas_futuras(db, usuario)
     usuario.status = StatusUsuario.INATIVO
     db.flush()
+    perfis.promover_se_preciso(db, usuario)

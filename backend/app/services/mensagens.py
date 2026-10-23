@@ -27,9 +27,14 @@ LIMITE_CONVERSA = 200
 
 
 def _contatos_query(usuario: Usuario):
+    # Os outros perfis da mesma pessoa (o síndico e o morador que ele também
+    # é) não são contatos: ninguém conversa consigo mesmo.
+    dono = usuario.conta_principal_id or usuario.id
     return select(Usuario).where(
         Usuario.condominio_id == usuario.condominio_id,
         Usuario.id != usuario.id,
+        Usuario.id != dono,
+        or_(Usuario.conta_principal_id.is_(None), Usuario.conta_principal_id != dono),
         Usuario.status == StatusUsuario.ATIVO,
         Usuario.papel.in_(PODE_FALAR_COM.get(usuario.papel, set())),
     )

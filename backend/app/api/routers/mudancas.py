@@ -15,7 +15,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import and_, func, or_, select, update
 from sqlalchemy.orm import Session, selectinload
 
-from app.api.deps import exigir_condominio, exigir_papel
+from app.api.deps import (
+    conferir_que_mora, exigir_condominio, exigir_morador_residente, exigir_papel,
+)
 from app.core.database import get_db
 from app.core.tempo import agora_local
 from app.models.condominio import Unidade
@@ -123,7 +125,7 @@ def _sindicos(db: Session, condominio_id: int) -> list[Usuario]:
 def _moradores(db: Session, unidade_id: int) -> list[Usuario]:
     return list(db.scalars(select(Usuario).where(
         Usuario.unidade_id == unidade_id, Usuario.papel == Papel.MORADOR,
-        Usuario.status == StatusUsuario.ATIVO,
+        Usuario.status == StatusUsuario.ATIVO, Usuario.reside.is_(True),
     )).all())
 
 
@@ -178,7 +180,7 @@ def regras(_: Usuario = Depends(exigir_condominio)) -> RegrasMudanca:
             summary="Horários já tomados num dia, sem dizer de quem")
 def ocupados(
     data: date = Query(...),
-    morador: Usuario = Depends(exigir_papel(Papel.MORADOR)),
+    morador: Usuario = Depends(exigir_morador_residente),
     db: Session = Depends(get_db),
 ) -> list[HorarioDoDia]:
     unidade = db.get(Unidade, morador.unidade_id) if morador.unidade_id else None
@@ -212,6 +214,7 @@ def listar(
         ordem = (Mudanca.data, Mudanca.hora_inicio)
     else:
         if usuario.papel == Papel.MORADOR:
+            conferir_que_mora(usuario)
             consulta = consulta.where(_do_morador(usuario))
         if status_ is not None:
             consulta = consulta.where(Mudanca.status == status_)
@@ -223,7 +226,7 @@ def listar(
              summary="Pedir a mudança")
 def agendar(
     dados: MudancaEntrada,
-    morador: Usuario = Depends(exigir_papel(Papel.MORADOR)),
+    morador: Usuario = Depends(exigir_morador_residente),
     db: Session = Depends(get_db),
 ) -> MudancaSaida:
     unidade = db.get(Unidade, morador.unidade_id) if morador.unidade_id else None
@@ -312,6 +315,7 @@ def cancelar(
     usuario: Usuario = Depends(exigir_papel(Papel.SINDICO, Papel.MORADOR)),
     db: Session = Depends(get_db),
 ) -> MudancaSaida:
+    conferir_que_mora(usuario)
     m = _mudanca_visivel(db, usuario, mudanca_id)
     if m.status not in STATUS_QUE_OCUPAM:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,

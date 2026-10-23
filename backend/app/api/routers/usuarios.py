@@ -30,13 +30,14 @@ from app.schemas.admin import (
     UsuarioAdminAtualizacao, UsuarioAdminEntrada, UsuarioAdminSaida,
 )
 from app.schemas.usuario import (
-    AprovacaoUsuario, CadastroPorteiro, CadastroSaida, PerfilSaida,
+    ApartamentoVinculo, AprovacaoUsuario, CadastroPorteiro, CadastroSaida, PerfilDisponivel,
+    PerfilSaida,
     PermissoesPorteiroEntrada, PermissoesPorteiroSaida, UsuarioAtualizacao, UsuarioSaida,
     UsuarioSindicoSaida,
 )
 from app.services import arquivos as servico_arquivos
 from app.services import documentos_cadastro
-from app.services import registro
+from app.services import perfis, registro
 from app.services import usuarios as servico_usuarios
 from app.services import auth as servico_auth
 from app.services import notificacao
@@ -389,7 +390,13 @@ def aprovar_usuario(
         documentos_cadastro.descartar_todos(db, usuario.id)
 
     # A tela do cadastro promete avisar por e-mail quando o síndico decidir.
-    if dados.aprovado:
+    if dados.aprovado and usuario.conta_principal_id is not None:
+        titulo, mensagem = (
+            "Apartamento aprovado",
+            f"O síndico confirmou o apartamento {usuario.unidade.identificacao} no seu "
+            "cadastro. Entre como sempre e troque de perfil no topo da tela.",
+        )
+    elif dados.aprovado:
         titulo, mensagem = (
             "Cadastro aprovado",
             "O síndico aprovou o seu cadastro. Você já pode entrar com o seu e-mail e senha.",
@@ -461,14 +468,14 @@ def atualizar_perfil(
     novos = dados.model_dump(exclude_unset=True)
     # Fica no histórico como as edições do síndico e do administrador.
     descricao = registro.campos_alterados(usuario, novos, servico_usuarios.ROTULOS_USUARIO)
-    for campo, valor in novos.items():
-        setattr(usuario, campo, valor)
+    # Nome, telefone e nascimento são da pessoa: valem em todos os perfis.
+    perfis.sincronizar_dados(db, usuario, novos)
     if descricao:
         registro.registrar(db, usuario, registro.EDITOU, registro.USUARIO, usuario.id,
                            descricao + " no próprio perfil")
     db.commit()
     db.refresh(usuario)
-    return usuario
+    return perfis.com_perfis(db, usuario, PerfilSaida)
 
 
 @router.put("/eu/foto", response_model=PerfilSaida, summary="Envia ou troca a foto de perfil")
@@ -488,7 +495,7 @@ def enviar_foto(
         raise HTTPException(status_code=422, detail=str(erro)) from erro
 
     anterior = usuario.foto_url
-    usuario.foto_url = nova
+    perfis.sincronizar_dados(db, usuario, {"foto_url": nova})
     db.commit()
     # A antiga só sai do disco depois que a nova foi gravada no banco:
     # se o commit falhasse, o usuário não ficaria sem nenhuma.
@@ -503,11 +510,70 @@ def remover_foto(
     db: Session = Depends(get_db),
 ) -> Usuario:
     anterior = usuario.foto_url
-    usuario.foto_url = None
+    perfis.sincronizar_dados(db, usuario, {"foto_url": None})
     db.commit()
     servico_arquivos.apagar_foto(anterior)
     db.refresh(usuario)
     return usuario
+
+
+# ── Outros apartamentos da mesma pessoa (services/perfis.py) ────────
+@router.post("/eu/apartamentos", response_model=PerfilDisponivel,
+             status_code=status.HTTP_201_CREATED,
+             summary="Vincula outro apartamento ao próprio cadastro")
+def vincular_apartamento(
+    dados: ApartamentoVinculo,
+    usuario: Usuario = Depends(get_usuario_atual),
+    db: Session = Depends(get_db),
+) -> PerfilDisponivel:
+    """O síndico que mora no condomínio, o dono de mais de um apartamento:
+    um perfil de morador a mais na mesma conta. Vale na hora para quem é o
+    síndico; para os outros, o síndico aprova, como num cadastro novo."""
+    perfil = perfis.vincular_apartamento(db, usuario, dados.unidade_id, dados.tipo_ocupacao,
+                                         dados.reside)
+    unidade = perfil.unidade.identificacao
+    registro.registrar(db, usuario, registro.CRIOU, registro.USUARIO, perfil.id,
+                       f"Vinculou o apartamento {unidade} ao próprio cadastro")
+    db.commit()
+    db.refresh(perfil)
+    if perfil.status == StatusUsuario.AGUARDANDO_APROVACAO:
+        sindicos = db.scalars(select(Usuario).where(
+            Usuario.condominio_id == perfil.condominio_id, Usuario.papel == Papel.SINDICO,
+            Usuario.status == StatusUsuario.ATIVO)).all()
+        for s in sindicos:
+            notificacao.notificar(
+                s.email, CanalVerificacao.EMAIL, "Apartamento para aprovar",
+                f"{perfil.nome}, que já tem cadastro no SmartCondo, informou ser "
+                f"{perfil.tipo_ocupacao.value} do apartamento {unidade}"
+                f"{'' if perfil.reside else ' (sem morar nele)'}. Aprove ou recuse na tela "
+                "de moradores.")
+    return perfis.disponivel(perfil, usuario)
+
+
+@router.delete("/eu/apartamentos/{perfil_id}", response_model=Mensagem,
+               summary="Tira um apartamento do próprio cadastro")
+def desvincular_apartamento(
+    perfil_id: int,
+    usuario: Usuario = Depends(get_usuario_atual),
+    db: Session = Depends(get_db),
+) -> Mensagem:
+    """Vendeu o apartamento, ou o síndico se mudou: o perfil é inativado,
+    e o histórico fica. O cadastro com o login não sai por aqui."""
+    alvo = next((p for p in perfis.da_pessoa(db, usuario) if p.id == perfil_id), None)
+    if alvo is None or alvo.status not in perfis.VIGENTES:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Apartamento não encontrado no seu cadastro.")
+    if alvo.conta_principal_id is None or alvo.papel != Papel.MORADOR:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Este é o cadastro do seu login; para sair dele, fale com o síndico.")
+    db.refresh(alvo, with_for_update=True)
+    alvo.status = StatusUsuario.INATIVO
+    servico_usuarios.cancelar_reservas_futuras(db, alvo)
+    registro.registrar(db, usuario, registro.INATIVOU, registro.USUARIO, alvo.id,
+                       "Tirou o apartamento do próprio cadastro")
+    db.commit()
+    return Mensagem(detalhe="Apartamento retirado do seu cadastro.")
 
 
 @router.delete(
@@ -536,6 +602,9 @@ def inativar_usuario(
     usuario.status = StatusUsuario.INATIVO
     servico_usuarios.cancelar_reservas_futuras(db, usuario)
     registro.registrar(db, sindico, registro.INATIVOU, registro.USUARIO, usuario.id)
+    db.flush()
+    # Saiu deste apartamento mas tem outro: continua entrando por ele.
+    perfis.promover_se_preciso(db, usuario)
     db.commit()
     # Os registros ficam; os documentos do cadastro, não: sem vínculo com
     # o condomínio, acabou a finalidade de guardá-los (LGPD, art. 16).

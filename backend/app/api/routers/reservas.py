@@ -11,7 +11,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import and_, func, or_, select, update
 from sqlalchemy.orm import Session, selectinload
 
-from app.api.deps import exigir_condominio, exigir_papel, get_usuario_atual
+from app.api.deps import (
+    exigir_condominio, exigir_morador_residente, exigir_papel, get_usuario_atual,
+)
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.tempo import agora_local, hoje_local
@@ -499,7 +501,7 @@ def consultar_agenda(
 )
 def solicitar_reserva(
     dados: ReservaEntrada,
-    morador: Usuario = Depends(exigir_papel(Papel.MORADOR)),
+    morador: Usuario = Depends(exigir_morador_residente),
     db: Session = Depends(get_db),
 ) -> ReservaSaida:
     # Antes da conferência de conflito: a pendente cujo horário chegou sem
@@ -581,7 +583,7 @@ def solicitar_reserva(
 
 @router.get("/reservas/minhas", response_model=list[ReservaSaida], summary="Minhas reservas")
 def minhas_reservas(
-    morador: Usuario = Depends(exigir_papel(Papel.MORADOR)), db: Session = Depends(get_db)
+    morador: Usuario = Depends(exigir_morador_residente), db: Session = Depends(get_db)
 ) -> list[ReservaSaida]:
     _encerrar_passadas(db, morador.condominio_id)
     reservas = db.scalars(
@@ -597,7 +599,7 @@ def minhas_reservas(
 )
 def cancelar_reserva(
     reserva_id: int,
-    morador: Usuario = Depends(exigir_papel(Papel.MORADOR)),
+    morador: Usuario = Depends(exigir_morador_residente),
     db: Session = Depends(get_db),
 ) -> ReservaSaida:
     # Travada até o commit: o síndico pode estar avaliando enquanto o

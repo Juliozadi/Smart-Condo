@@ -32,19 +32,28 @@
     </div>
 
     <div class="stats-row">
-      <div class="stat-card teal"><span class="stat-value" id="totReservas">—</span><span class="stat-label"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt="">Reservas</span></div>
+      <div class="stat-card teal" data-reside><span class="stat-value" id="totReservas">—</span><span class="stat-label"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt="">Reservas</span></div>
       <div class="stat-card amber"><span class="stat-value" id="totPendente">—</span><span class="stat-label"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Pendente</span></div>
       <div class="stat-card blue"><span class="stat-value" id="totComunicados">—</span><span class="stat-label"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt="">Comunicados</span></div>
     </div>
 
+    <p class="aviso-nao-reside" id="avisoNaoReside" hidden>
+      <img src="../../assets/img/icons/building.svg" width="16" height="16" alt="">
+      <span>Você é proprietário deste apartamento, mas não mora nele: aqui ficam as cobranças,
+      a prestação de contas e as assembleias. Visitas, encomendas, reservas, carros e mudanças
+      são de quem mora lá.</span>
+    </p>
+
     <!-- Portaria: confirmações e avisos em tempo real — doc, seção 6 -->
+    <div data-reside>
     <h2 class="section-title"><img src="../../assets/img/icons/shield-halved.svg" width="16" height="16" alt=""> Portaria</h2>
     <div class="portaria-lista" id="portariaLista" aria-live="polite"></div>
     <p class="estado-lista" id="estadoPortaria">Carregando…</p>
+    </div>
 
     <h2 class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Serviços</h2>
     <div class="dash-grid">
-      <a href="reservas.html" class="dash-card">
+      <a href="reservas.html" class="dash-card" data-reside>
         <div class="card-icon icon-teal"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt="Reservas"></div>
         <div class="card-info"><h3>Minhas Reservas</h3><p>Salão, churrasqueira, academia, piscina</p></div>
         
@@ -74,17 +83,17 @@
         <div class="card-info"><h3>Documentos</h3><p>Atas, regimento e convenção interna</p></div>
         
       </a>
-      <a href="visitantes.html" class="dash-card">
+      <a href="visitantes.html" class="dash-card" data-reside>
         <div class="card-icon icon-teal"><img src="../../assets/img/icons/id-card.svg" width="16" height="16" alt="Visitantes"></div>
         <div class="card-info"><h3>Visitantes</h3><p>Autorize diarista, prestadores e convidados</p></div>
         
       </a>
-      <a href="veiculos.html" class="dash-card">
+      <a href="veiculos.html" class="dash-card" data-reside>
         <div class="card-icon icon-blue"><img src="../../assets/img/icons/car.svg" width="16" height="16" alt="Veículos"></div>
         <div class="card-info"><h3>Veículos</h3><p>Placas que a portaria reconhece</p></div>
         
       </a>
-      <a href="mudancas.html" class="dash-card">
+      <a href="mudancas.html" class="dash-card" data-reside>
         <div class="card-icon icon-yellow"><img src="../../assets/img/icons/box-open.svg" width="16" height="16" alt="Mudança"></div>
         <div class="card-info"><h3>Mudança</h3><p>Agende o dia e o horário da mudança</p></div>
         
@@ -100,6 +109,7 @@
     <div class="notif-list" id="listaComunicados"></div>
     <p class="estado-lista" id="estadoComunicados">Carregando…</p>
 
+    <div data-reside>
     <h2 class="section-title"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Próximas Reservas</h2>
     <div class="reserve-list" id="listaReservas"></div>
     <p class="estado-lista" id="estadoReservas">Carregando…</p>
@@ -107,6 +117,7 @@
     <a href="reservas.html" class="action-btn outline">
       <img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Nova Reserva
     </a>
+    </div>
 
   </main>
 
@@ -398,10 +409,17 @@
       campo('saudacaoCondominio').textContent = unidade ? 'Apto ' + unidade : '';
     });
 
-  carregarPortaria().catch(function(e) { campo('estadoPortaria').textContent = e.message; });
   carregarComunicados();
-  carregarReservas();
   carregarFinanceiro();
+  if (usuario.reside === false) {
+    // O proprietário que não mora: a portaria do apartamento é do inquilino.
+    document.querySelectorAll('[data-reside]').forEach(function(el) { el.hidden = true; });
+    campo('avisoNaoReside').hidden = false;
+    campo('totReservas').textContent = '—';
+  } else {
+    carregarPortaria().catch(function(e) { campo('estadoPortaria').textContent = e.message; });
+    carregarReservas();
+  }
 })();
 </script>
 <script src="../../assets/js/sessao.js"></script>

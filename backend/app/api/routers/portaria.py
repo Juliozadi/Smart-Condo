@@ -28,8 +28,8 @@ from sqlalchemy import exists, func, or_, select, update
 from sqlalchemy.orm import Session, contains_eager, selectinload
 
 from app.api.deps import (
-    exigir_condominio, exigir_papel, exigir_permissao_do_porteiro, exigir_permissao_porteiro,
-    porteiro_tem_permissao,
+    conferir_que_mora, exigir_condominio, exigir_papel, exigir_morador_residente, exigir_permissao_do_porteiro,
+    exigir_permissao_porteiro, porteiro_tem_permissao,
 )
 from app.core.config import settings
 from app.core.database import get_db
@@ -94,7 +94,7 @@ def _moradores(db: Session, unidade: Unidade) -> list[Usuario]:
     return list(db.scalars(
         select(Usuario).where(
             Usuario.unidade_id == unidade.id, Usuario.papel == Papel.MORADOR,
-            Usuario.status == StatusUsuario.ATIVO,
+            Usuario.status == StatusUsuario.ATIVO, Usuario.reside.is_(True),
         )
     ).all())
 
@@ -177,7 +177,7 @@ def _pode_ver_foto(db: Session, usuario: Usuario, unidade: Unidade, permissao: s
     if usuario.papel == Papel.SINDICO:
         return True
     if usuario.papel == Papel.MORADOR:
-        return do_morador
+        return do_morador and usuario.reside
     if usuario.papel == Papel.PORTEIRO:
         return porteiro_tem_permissao(db, usuario, permissao)
     return False
@@ -302,6 +302,7 @@ def listar_visitantes(
     )
     # O morador só enxerga os visitantes da própria unidade, desde que mora nela.
     if usuario.papel == Papel.MORADOR:
+        conferir_que_mora(usuario)
         consulta = consulta.where(
             Visitante.unidade_id == usuario.unidade_id,
             Visitante.criado_em >= usuario.unidade_desde,
@@ -321,7 +322,7 @@ def listar_visitantes(
 def confirmar_visitante(
     visitante_id: int,
     dados: ConfirmacaoVisitante,
-    morador: Usuario = Depends(exigir_papel(Papel.MORADOR)),
+    morador: Usuario = Depends(exigir_morador_residente),
     db: Session = Depends(get_db),
 ) -> VisitanteSaida:
     """"o cliente confirme se é ou não seu convidado" (seção 6)."""
@@ -467,6 +468,7 @@ def _autorizador_mora_la():
         Usuario.unidade_id == AutorizacaoVisita.unidade_id,
         Usuario.papel == Papel.MORADOR,
         Usuario.status == StatusUsuario.ATIVO,
+        Usuario.reside.is_(True),
         Usuario.unidade_desde <= AutorizacaoVisita.criado_em,
     )
 
@@ -542,7 +544,7 @@ def _autorizacao_para_entrada(db: Session, unidade: Unidade, autorizacao_id: int
 )
 def autorizar_visita(
     dados: AutorizacaoEntrada,
-    morador: Usuario = Depends(exigir_papel(Papel.MORADOR)),
+    morador: Usuario = Depends(exigir_morador_residente),
     db: Session = Depends(get_db),
 ) -> AutorizacaoSaida:
     # Trava o apartamento: dois pedidos ao mesmo tempo não passam juntos
@@ -606,6 +608,7 @@ def listar_autorizacoes(
     )
     para_morador = usuario.papel == Papel.MORADOR
     if para_morador:
+        conferir_que_mora(usuario)
         consulta = consulta.where(AutorizacaoVisita.unidade_id == usuario.unidade_id)
         ordem = (AutorizacaoVisita.valida_de, AutorizacaoVisita.id)
     else:
@@ -632,7 +635,7 @@ def listar_autorizacoes(
 )
 def revogar_autorizacao(
     autorizacao_id: int,
-    morador: Usuario = Depends(exigir_papel(Papel.MORADOR)),
+    morador: Usuario = Depends(exigir_morador_residente),
     db: Session = Depends(get_db),
 ) -> AutorizacaoSaida:
     autorizacao = db.get(AutorizacaoVisita, autorizacao_id, with_for_update=True)
@@ -709,6 +712,7 @@ def listar_encomendas(
         Unidade.condominio_id == usuario.condominio_id
     )
     if usuario.papel == Papel.MORADOR:
+        conferir_que_mora(usuario)
         consulta = consulta.where(
             Encomenda.unidade_id == usuario.unidade_id,
             (Encomenda.criado_em >= usuario.unidade_desde)
@@ -731,7 +735,7 @@ def listar_encomendas(
 def confirmar_retirada(
     encomenda_id: int,
     dados: RetiradaEncomenda,
-    morador: Usuario = Depends(exigir_papel(Papel.MORADOR)),
+    morador: Usuario = Depends(exigir_morador_residente),
     db: Session = Depends(get_db),
 ) -> EncomendaSaida:
     """"o porteiro me envia... uma foto ou vídeo para que eu confirmasse a

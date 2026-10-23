@@ -6,7 +6,8 @@ Código Civil:
   - art. 1.335, III: vota o condômino quite — apartamento com cobrança
     vencida não vota;
   - art. 1.352: as deliberações são por maioria; um voto por apartamento,
-    dado pelo proprietário ou, se nenhum mora lá, pelo inquilino;
+    dado pelo proprietário (more ou não no apartamento) ou, se nenhum
+    proprietário tem cadastro, pelo inquilino;
   - arts. 1.341 e 1.351: algumas matérias pedem 2/3 dos condôminos, e
     aí contam todas as unidades, não só as que votaram.
 
@@ -88,8 +89,8 @@ def _motivo_sem_voto(db: Session, morador: Usuario) -> str | None:
             Usuario.tipo_ocupacao == TipoOcupacao.PROPRIETARIO,
         ).limit(1))
         if proprietario is not None or morador.tipo_ocupacao != TipoOcupacao.INQUILINO:
-            return ("Quem vota pelo apartamento é o proprietário — ou, se nenhum mora lá, "
-                    "o inquilino.")
+            return ("Quem vota pelo apartamento é o proprietário — ou, se nenhum tem "
+                    "cadastro, o inquilino.")
     em_atraso = db.scalar(select(Cobranca.id).where(
         Cobranca.unidade_id == morador.unidade_id,
         Cobranca.status.in_((StatusCobranca.ABERTA, StatusCobranca.VENCIDA)),
