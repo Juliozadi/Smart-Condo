@@ -269,6 +269,13 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "origem",
+        "tipo": "ENUM",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "De onde vem a cobrança: a taxa do mês (uma por apartamento e mês), uma multa ou o uso de um espaço — tipo enumerado origem_cobranca, valores: TAXA, MULTA, USO_ESPACO"
       }
     ],
     "regras": [
@@ -1178,6 +1185,155 @@ const dicionario = [
       "CHECK (((dia_semana >= 1) AND (dia_semana <= 7)))",
       "CHECK ((hora_fim > hora_inicio))",
       "UNIQUE (condominio_id, dia_semana)"
+    ]
+  },
+  {
+    "nome": "infracoes",
+    "resumo": "As advertências e multas do síndico a um apartamento, com o prazo e a defesa do morador e a decisão do síndico; a multa mantida vira cobrança (Código Civil, art. 1.336, § 2º).",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio da notificação"
+      },
+      {
+        "coluna": "unidade_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Apartamento notificado"
+      },
+      {
+        "coluna": "aplicada_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que notificou"
+      },
+      {
+        "coluna": "tipo",
+        "tipo": "ENUM",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Advertência (sem valor) ou multa — tipo enumerado tipo_infracao, valores: ADVERTENCIA, MULTA"
+      },
+      {
+        "coluna": "descricao",
+        "tipo": "TEXT",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "O que aconteceu, como o síndico descreveu na notificação"
+      },
+      {
+        "coluna": "artigo",
+        "tipo": "VARCHAR(120)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "O artigo do regimento ou da convenção descumprido"
+      },
+      {
+        "coluna": "ocorrida_em",
+        "tipo": "DATE",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Dia da infração, no último ano"
+      },
+      {
+        "coluna": "valor",
+        "tipo": "NUMERIC(10,2)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Valor da multa, até 5 vezes a contribuição mensal; vazio na advertência"
+      },
+      {
+        "coluna": "prazo_defesa",
+        "tipo": "DATE",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Último dia para o apartamento apresentar a defesa (de 5 a 30 dias depois da notificação)"
+      },
+      {
+        "coluna": "status",
+        "tipo": "ENUM",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Notificada, com defesa apresentada, mantida ou anulada — tipo enumerado status_infracao, valores: NOTIFICADA, DEFESA_APRESENTADA, CONFIRMADA, ANULADA"
+      },
+      {
+        "coluna": "defesa",
+        "tipo": "TEXT",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "A defesa do morador, como ele escreveu"
+      },
+      {
+        "coluna": "defesa_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Momento em que a defesa foi apresentada"
+      },
+      {
+        "coluna": "defesa_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Morador que apresentou a defesa"
+      },
+      {
+        "coluna": "decisao_motivo",
+        "tipo": "TEXT",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Por que o síndico manteve ou anulou; o apartamento recebe"
+      },
+      {
+        "coluna": "decidida_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Momento da decisão"
+      },
+      {
+        "coluna": "decidida_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que decidiu"
+      },
+      {
+        "coluna": "cobranca_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "A cobrança gerada pela multa mantida"
+      },
+      {
+        "coluna": "criado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que o registro foi criado, preenchido pelo banco"
+      },
+      {
+        "coluna": "atualizado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da última alteração do registro"
+      }
+    ],
+    "regras": [
+      "CHECK ((((tipo = 'MULTA'::tipo_infracao) AND (valor > (0)::numeric)) OR ((tipo = 'ADVERTENCIA'::tipo_infracao) AND (valor IS NULL))))"
     ]
   },
   {
@@ -2942,6 +3098,42 @@ const relacoes = [
     "texto": "Condomínio cujo regimento define o horário"
   },
   {
+    "origem": "infracoes",
+    "coluna": "aplicada_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que notificou"
+  },
+  {
+    "origem": "infracoes",
+    "coluna": "cobranca_id",
+    "destino": "cobrancas",
+    "texto": "A cobrança gerada pela multa mantida"
+  },
+  {
+    "origem": "infracoes",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio da notificação"
+  },
+  {
+    "origem": "infracoes",
+    "coluna": "decidida_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que decidiu"
+  },
+  {
+    "origem": "infracoes",
+    "coluna": "defesa_por_id",
+    "destino": "usuarios",
+    "texto": "Morador que apresentou a defesa"
+  },
+  {
+    "origem": "infracoes",
+    "coluna": "unidade_id",
+    "destino": "unidades",
+    "texto": "Apartamento notificado"
+  },
+  {
     "origem": "itens_pauta",
     "coluna": "assembleia_id",
     "destino": "assembleias",
@@ -3269,6 +3461,10 @@ const enumerados = [
     "valores": "SIMPLES, DOIS_TERCOS, UNANIMIDADE"
   },
   {
+    "nome": "origem_cobranca",
+    "valores": "TAXA, MULTA, USO_ESPACO"
+  },
+  {
     "nome": "papel_usuario",
     "valores": "SINDICO, PORTEIRO, MORADOR, ADMIN"
   },
@@ -3287,6 +3483,10 @@ const enumerados = [
   {
     "nome": "status_encomenda",
     "valores": "AGUARDANDO_RETIRADA, RETIRADA, RECUSADA"
+  },
+  {
+    "nome": "status_infracao",
+    "valores": "NOTIFICADA, DEFESA_APRESENTADA, CONFIRMADA, ANULADA"
   },
   {
     "nome": "status_mudanca",
@@ -3315,6 +3515,10 @@ const enumerados = [
   {
     "nome": "tipo_documento_cadastro",
     "valores": "IDENTIDADE, COMPROVANTE_RESIDENCIA, ESCRITURA"
+  },
+  {
+    "nome": "tipo_infracao",
+    "valores": "ADVERTENCIA, MULTA"
   },
   {
     "nome": "tipo_movimentacao",

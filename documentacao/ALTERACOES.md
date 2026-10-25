@@ -15,11 +15,11 @@ não tinha.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | Novo RF048: prestação de contas — despesas e balancete do mês. Novo RF049: assembleia virtual com votação. Novo RF050: os veículos do apartamento, que a portaria reconhece pela placa. Novo RF051: agendamento de mudança, com as regras do regimento que o síndico define. Novo RF052: mais de um perfil com o mesmo login (o síndico que também mora, o morador eleito síndico). Novo RF053: o proprietário de mais de um apartamento, morando ou não neles. RF049: o proprietário vota mesmo sem morar no apartamento |
-| 11 Diagrama de caso de uso | Novos casos: prestar contas, convocar assembleia, votar em assembleia, cadastrar veículo, agendar mudança, trocar de perfil e vincular outro apartamento — agora 35 casos de uso |
-| 14 a 17 | Novas tabelas despesas, assembleias, itens_pauta, votos, veiculos_unidade, mudancas e horarios_mudanca; condominios ganha mudanca_antecedencia_dias; usuarios ganha reside e conta_principal_id, e o e-mail e o CPF passam a ser únicos entre os cadastros com login — agora 30 entidades, 358 atributos e 77 relacionamentos; o DER ganha um quarto recorte, de gestão |
-| 21 API REST | 142 endpoints: despesas (lançar, listar, corrigir, cancelar, comprovante) e balancete do mês; assembleias (convocar, listar, votar, cancelar); veículos do apartamento (cadastrar, listar, remover) e a consulta da placa pela portaria; mudanças (consultar e definir as regras, horários tomados, agendar, listar, avaliar, cancelar); perfis da pessoa e troca de perfil; acrescentar e tirar apartamentos do próprio cadastro |
-| 23 Testes | 604 casos no servidor e 119 testes de interface |
+| 9 Requisitos funcionais | Novo RF048: prestação de contas — despesas e balancete do mês. Novo RF049: assembleia virtual com votação. Novo RF050: os veículos do apartamento, que a portaria reconhece pela placa. Novo RF051: agendamento de mudança, com as regras do regimento que o síndico define. Novo RF052: mais de um perfil com o mesmo login (o síndico que também mora, o morador eleito síndico). Novo RF053: o proprietário de mais de um apartamento, morando ou não neles. RF049: o proprietário vota mesmo sem morar no apartamento. Novo RF054: advertências e multas com direito de defesa |
+| 11 Diagrama de caso de uso | Novos casos: prestar contas, convocar assembleia, votar em assembleia, cadastrar veículo, agendar mudança, trocar de perfil, vincular outro apartamento, notificar infração e apresentar defesa — agora 37 casos de uso |
+| 14 a 17 | Novas tabelas despesas, assembleias, itens_pauta, votos, veiculos_unidade, mudancas, horarios_mudanca e infracoes; condominios ganha mudanca_antecedencia_dias; cobrancas ganha origem (taxa, multa ou uso de espaço); usuarios ganha reside e conta_principal_id, e o e-mail e o CPF passam a ser únicos entre os cadastros com login — agora 31 entidades, 379 atributos e 83 relacionamentos; o DER ganha um quarto recorte, de gestão |
+| 21 API REST | 146 endpoints: despesas (lançar, listar, corrigir, cancelar, comprovante) e balancete do mês; assembleias (convocar, listar, votar, cancelar); veículos do apartamento (cadastrar, listar, remover) e a consulta da placa pela portaria; mudanças (consultar e definir as regras, horários tomados, agendar, listar, avaliar, cancelar); perfis da pessoa e troca de perfil; acrescentar e tirar apartamentos do próprio cadastro; advertências e multas (notificar, listar, defender, decidir) |
+| 23 Testes | 620 casos no servidor e 120 testes de interface |
 
 **Situações tratadas.**
 - O morador paga a taxa todo mês e não sabe para onde vai o dinheiro; o
@@ -80,6 +80,16 @@ não tinha.
   proprietário vota mesmo sem morar), mas visitas, encomendas, reservas,
   carros e mudanças são do inquilino, e os avisos da portaria não vão
   para o dono.
+- A festa até as 3h, o cachorro sujando o hall, a obra sem aviso: o
+  síndico mandava bilhete por baixo da porta, e a multa aplicada sem dar
+  chance de defesa costuma cair na Justiça. Agora ele notifica o
+  apartamento pelo sistema — advertência ou multa, com o artigo do
+  regimento —, os moradores recebem por e-mail e têm de 5 a 30 dias para
+  se defender. O síndico decide depois da defesa ou do prazo, sempre com
+  o motivo. A multa vai até 5 vezes a taxa mensal (Código Civil, art.
+  1.336, § 2º) e, mantida, entra nas cobranças do apartamento ao lado da
+  taxa do mês; o síndico vê as reincidências dos últimos 12 meses (art.
+  1.337).
 - Nos celulares, os campos lado a lado que viram coluna ficam com o mesmo
   espaçamento dos outros (antes, colados no campo de baixo).
 - Na carga de demonstração, a taxa do mês passa a vencer no dia 10 do

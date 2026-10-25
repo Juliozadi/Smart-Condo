@@ -29,10 +29,11 @@ from app.models.enums import (
     EscolhaVoto, MaioriaExigida,
     FormaPagamento, Papel, PrioridadeOcorrencia, PrioridadeOrdemServico, StatusCobranca,
     StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
-    StatusMudanca, StatusVisitante,
-    TipoMovimentacao, TipoMudanca, TipoOcupacao,
+    StatusInfracao, StatusMudanca, StatusVisitante,
+    TipoInfracao, TipoMovimentacao, TipoMudanca, TipoOcupacao,
 )
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
+from app.models.infracao import Infracao
 from app.models.mudanca import Mudanca
 from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico, VeiculoUnidade
 from app.models.financeiro import Cobranca, Despesa, Pagamento, PreferenciaCobranca
@@ -359,6 +360,37 @@ def criar(db) -> dict:
                    data=dia_util(5), hora_inicio=time(13), hora_fim=time(17),
                    empresa="Mudanças Rápidas", observacao="Móveis grandes: piano e sofá de canto.",
                    status=StatusMudanca.PENDENTE))
+
+    # ── Advertências e multas: uma para o João se defender, uma para o
+    #    síndico decidir e uma antiga, já mantida ────────────────────────
+    regimento = "Regimento interno, art. 12 (silêncio das 22h às 8h)"
+    db.add(Infracao(
+        condominio_id=condominio.id, unidade_id=unidades["204"].id, aplicada_por_id=sindico.id,
+        tipo=TipoInfracao.MULTA, artigo=regimento, valor=Decimal("160.00"),
+        descricao="Som alto e convidados no corredor depois da meia-noite de sábado, com "
+                  "reclamação de três apartamentos.",
+        ocorrida_em=HOJE - timedelta(days=3), prazo_defesa=HOJE + timedelta(days=7),
+        status=StatusInfracao.NOTIFICADA,
+    ))
+    db.add(Infracao(
+        condominio_id=condominio.id, unidade_id=unidades["301"].id, aplicada_por_id=sindico.id,
+        tipo=TipoInfracao.ADVERTENCIA, artigo="Regimento interno, art. 18 (animais)",
+        descricao="Cachorro solto e sem coleira no hall e no elevador social.",
+        ocorrida_em=HOJE - timedelta(days=12), prazo_defesa=HOJE - timedelta(days=2),
+        status=StatusInfracao.DEFESA_APRESENTADA, defesa_por_id=moradores["301"].id,
+        defesa="O cachorro escapou quando a porta do apartamento abriu; foi a primeira vez e "
+               "já instalamos um portão.",
+        defesa_em=AGORA - timedelta(days=5),
+    ))
+    db.add(Infracao(
+        condominio_id=condominio.id, unidade_id=unidades["410"].id, aplicada_por_id=sindico.id,
+        tipo=TipoInfracao.ADVERTENCIA, artigo="Regimento interno, art. 9 (garagem)",
+        descricao="Carro estacionado na vaga de visitantes por três dias seguidos.",
+        ocorrida_em=HOJE - timedelta(days=60), prazo_defesa=HOJE - timedelta(days=50),
+        status=StatusInfracao.CONFIRMADA, decidida_por_id=sindico.id,
+        decisao_motivo="Sem defesa no prazo; câmeras confirmam.",
+        decidida_em=AGORA - timedelta(days=49),
+    ))
 
     # ── Assembleias: uma encerrada, com resultado, e uma em votação ───
     E = EscolhaVoto

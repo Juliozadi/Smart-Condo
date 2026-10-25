@@ -16,7 +16,7 @@ from app.api.deps import exigir_condominio, exigir_papel, exigir_permissao_porte
 from app.core.database import get_db
 from app.core.tempo import hoje_local
 from app.models.condominio import Condominio, Unidade
-from app.models.enums import Papel, StatusCobranca, StatusUsuario
+from app.models.enums import OrigemCobranca, Papel, StatusCobranca, StatusUsuario
 from app.models.financeiro import Cobranca, Pagamento, PreferenciaCobranca
 from app.models.usuario import Usuario
 from app.schemas.financeiro import (
@@ -88,7 +88,7 @@ def _cobranca_saida(db: Session, c: Cobranca, total_pago: Decimal | None = None,
     return CobrancaSaida(
         id=c.id, unidade_id=c.unidade_id, unidade=c.unidade.identificacao,
         competencia=c.competencia, descricao=c.descricao, valor=c.valor,
-        vencimento=c.vencimento, status=c.status, total_pago=pago,
+        vencimento=c.vencimento, status=c.status, origem=c.origem, total_pago=pago,
         dias_atraso=encargos.dias_atraso, multa=encargos.multa, juros=encargos.juros,
         total_atualizado=(c.valor - pago + encargos.total) if em_aberto else ZERO,
         criado_em=c.criado_em,
@@ -190,7 +190,7 @@ def gerar_cobranca(
     ja_existe = db.scalar(
         select(Cobranca).where(
             Cobranca.unidade_id == unidade.id, Cobranca.competencia == competencia,
-            Cobranca.status != StatusCobranca.CANCELADA,
+            Cobranca.status != StatusCobranca.CANCELADA, Cobranca.origem == OrigemCobranca.TAXA,
         )
     )
     if ja_existe is not None:

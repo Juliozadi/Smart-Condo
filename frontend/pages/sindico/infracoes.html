@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Advertências e Multas</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script><link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-desktop">
+  <header class="app-bar"><div class="app-bar-inner wide">
+    <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
+    <div class="app-bar-right"><a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role">Síndico</span></a><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
+  </div></header>
+  <main class="dash-wrapper wide">
+    <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
+    <div class="dash-greeting">
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/triangle-exclamation.svg" width="26" height="26" alt=""> Advertências e Multas</h1>
+      <p class="greeting-condo">Notificação, defesa e decisão — como pede o Código Civil</p>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Notificar um Apartamento</h2>
+    <div class="form-card">
+      <form id="formInfracao" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="iUnidade">Apartamento</label>
+            <select id="iUnidade" required><option value="">Carregando…</option></select>
+          </div>
+          <div class="form-group">
+            <label for="iTipo">Tipo</label>
+            <select id="iTipo" required>
+              <option value="advertencia">Advertência</option>
+              <option value="multa">Multa</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="iData">Quando aconteceu</label>
+            <input type="date" id="iData" required>
+          </div>
+          <div class="form-group">
+            <label for="iPrazo">Prazo para a defesa</label>
+            <select id="iPrazo">
+              <option value="5">5 dias</option>
+              <option value="10" selected>10 dias</option>
+              <option value="15">15 dias</option>
+              <option value="30">30 dias</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" id="grupoValor" hidden>
+          <label for="iValor">Valor da multa (R$)</label>
+          <input type="number" id="iValor" min="0.01" step="0.01" inputmode="decimal" aria-describedby="dicaValor">
+          <p class="captura-dica" id="dicaValor">Até 5 vezes a taxa mensal do apartamento (Código Civil, art. 1.336, § 2º).</p>
+        </div>
+        <div class="form-group">
+          <label for="iArtigo">Artigo do regimento ou da convenção (opcional)</label>
+          <input type="text" id="iArtigo" maxlength="120" placeholder="Ex: Regimento interno, art. 12">
+        </div>
+        <div class="form-group">
+          <label for="iDescricao">O que aconteceu</label>
+          <textarea id="iDescricao" required minlength="10" maxlength="2000" rows="3"
+                    placeholder="Descreva o fato: o quê, onde e quem reclamou"></textarea>
+        </div>
+        <p class="aviso-notificacao">
+          <img src="../../assets/img/icons/shield-halved.svg" alt="">
+          <span>Os moradores do apartamento recebem por e-mail e podem se defender no prazo. Você
+          decide depois da defesa ou do fim do prazo, sempre com o motivo; só então a multa entra
+          nas cobranças do apartamento.</span>
+        </p>
+        <p class="form-erro" id="erroInfracao" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;">Notificar</button>
+      </form>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Para Decidir</h2>
+    <div id="listaDecidir" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoDecidir">Carregando…</p>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/bullhorn.svg" width="16" height="16" alt=""> Aguardando Defesa</h2>
+    <div id="listaAguardando"></div>
+    <p class="estado-lista" id="estadoAguardando"></p>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Histórico</h2>
+    <div id="listaHistorico"></div>
+    <p class="estado-lista" id="estadoHistorico"></p>
+  </main>
+
+<script src="../../assets/js/infracoes.js"></script>
+<script>
+/* Advertências e multas do síndico: notifica o apartamento, acompanha o
+   prazo de defesa e decide — mantém ou anula, com o motivo. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api, infracoes = window.SmartCondo.infracoes;
+  var usuario = api.protegerPagina('sindico');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+  function hojeIso() {
+    var d = new Date();
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+  }
+
+  campo('iTipo').addEventListener('change', function() {
+    campo('grupoValor').hidden = this.value !== 'multa';
+  });
+  campo('iData').max = hojeIso();
+  campo('iData').value = hojeIso();
+
+  api.get('/condominios/meu/unidades').then(function(lista) {
+    var select = campo('iUnidade');
+    select.innerHTML = '<option value="">Escolha</option>';
+    lista.forEach(function(u) {
+      var op = document.createElement('option');
+      op.value = u.id;
+      op.textContent = 'Apto ' + (u.bloco && u.bloco !== 'unico' ? u.bloco + ' ' : '') + u.numero;
+      select.appendChild(op);
+    });
+  }).catch(function() {});
+
+  function decidir(i, manter, botao) {
+    var motivo = prompt(manter
+      ? 'Por que a ' + (i.tipo === 'multa' ? 'multa' : 'advertência') + ' fica mantida? (o apartamento recebe)'
+      : 'Por que anular? (o apartamento recebe)', '');
+    if (motivo === null) return;
+    if (motivo.trim().length < 3) { alert('Escreva o motivo da decisão.'); return; }
+    botao.disabled = true;
+    api.post('/infracoes/' + i.id + '/decisao', { manter: manter, motivo: motivo.trim() })
+      .then(carregar)
+      .catch(function(e) { botao.disabled = false; alert(e.message); });
+  }
+
+  function botao(texto, classe, rotulo, acao) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'contato-btn' + (classe ? ' ' + classe : '');
+    b.textContent = texto;
+    b.setAttribute('aria-label', rotulo);
+    b.addEventListener('click', function() { acao(b); });
+    return b;
+  }
+
+  function preencher(lista, idLista, idEstado, vazio) {
+    var caixa = campo(idLista);
+    caixa.innerHTML = '';
+    campo(idEstado).textContent = lista.length ? '' : vazio;
+    lista.forEach(function(i) {
+      var card = infracoes.cartao(i, true);
+      if (i.pode_decidir) {
+        var acoes = document.createElement('div');
+        acoes.className = 'infracao-acoes';
+        var quem = 'do apto ' + i.unidade + ' de ' + infracoes.data(i.ocorrida_em);
+        acoes.appendChild(botao('Manter', null, 'Manter a notificação ' + quem, function(b) { decidir(i, true, b); }));
+        acoes.appendChild(botao('Anular', 'perigo-texto', 'Anular a notificação ' + quem, function(b) { decidir(i, false, b); }));
+        card.appendChild(acoes);
+      }
+      caixa.appendChild(card);
+    });
+  }
+
+  function carregar() {
+    return api.get('/infracoes').then(function(lista) {
+      preencher(lista.filter(function(i) { return i.pode_decidir; }),
+                'listaDecidir', 'estadoDecidir', 'Nada para decidir agora.');
+      preencher(lista.filter(function(i) { return i.status === 'notificada' && !i.pode_decidir; }),
+                'listaAguardando', 'estadoAguardando', 'Nenhum apartamento no prazo de defesa.');
+      preencher(lista.filter(function(i) { return i.status === 'confirmada' || i.status === 'anulada'; }),
+                'listaHistorico', 'estadoHistorico', 'Nenhuma notificação decidida ainda.');
+    }).catch(function(e) { campo('estadoDecidir').textContent = e.message; });
+  }
+
+  campo('formInfracao').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('erroInfracao');
+    erro.className = 'form-erro';
+    erro.textContent = '';
+    var corpo = {
+      unidade_id: +campo('iUnidade').value,
+      tipo: campo('iTipo').value,
+      ocorrida_em: campo('iData').value,
+      prazo_defesa_dias: +campo('iPrazo').value,
+      artigo: campo('iArtigo').value.trim() || null,
+      descricao: campo('iDescricao').value.trim()
+    };
+    if (corpo.tipo === 'multa') corpo.valor = campo('iValor').value;
+    if (!corpo.unidade_id) { erro.textContent = 'Escolha o apartamento.'; return; }
+    if (!corpo.ocorrida_em) { erro.textContent = 'Informe quando aconteceu.'; return; }
+    if (corpo.descricao.length < 10) { erro.textContent = 'Descreva o que aconteceu (pelo menos 10 letras).'; return; }
+    if (corpo.tipo === 'multa' && !(+corpo.valor > 0)) { erro.textContent = 'Informe o valor da multa.'; return; }
+    var botaoEnviar = this.querySelector('button[type=submit]');
+    botaoEnviar.disabled = true;
+    api.post('/infracoes', corpo)
+      .then(function(i) {
+        campo('formInfracao').reset();
+        campo('grupoValor').hidden = true;
+        campo('iData').value = hojeIso();
+        erro.className = 'form-erro sucesso';
+        erro.textContent = 'Apartamento ' + i.unidade + ' notificado. A defesa vai até ' +
+          infracoes.data(i.prazo_defesa) + '.';
+        return carregar();
+      })
+      .catch(function(e) { erro.textContent = e.message; })
+      .then(function() { botaoEnviar.disabled = false; });
+  });
+
+  campo('hdrName').textContent = usuario.nome;
+  carregar();
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

@@ -33,6 +33,7 @@ UNIDADE = "unidade"
 COBRANCA = "cobranca"
 DESPESA = "despesa"
 ASSEMBLEIA = "assembleia"
+INFRACAO = "infracao"
 
 ROTULO_ACAO = {
     CRIOU: "Criado", EDITOU: "Editado", INATIVOU: "Inativado", REATIVOU: "Reativado",

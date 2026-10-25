@@ -18,6 +18,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.routers import (
     admin, arquivos, assembleias, auth, comunicados, condominios, contas, documentos, financeiro,
+    infracoes,
     manutencao, mensagens, mudancas, portaria, reservas, usuarios, veiculos,
 )
 from app.core.config import settings
@@ -210,6 +211,7 @@ app.include_router(comunicados.router, prefix="/api/v1")
 app.include_router(assembleias.router, prefix="/api/v1")
 app.include_router(veiculos.router, prefix="/api/v1")
 app.include_router(mudancas.router, prefix="/api/v1")
+app.include_router(infracoes.router, prefix="/api/v1")
 app.include_router(manutencao.router, prefix="/api/v1")
 app.include_router(documentos.router, prefix="/api/v1")
 app.include_router(arquivos.router, prefix="/api/v1")

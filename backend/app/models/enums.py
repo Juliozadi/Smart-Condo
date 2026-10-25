@@ -72,6 +72,14 @@ class StatusCobranca(str, enum.Enum):
     CANCELADA = "cancelada"
 
 
+class OrigemCobranca(str, enum.Enum):
+    """De onde vem a cobrança. A taxa condominial é uma por apartamento e
+    mês; multa e uso de espaço entram ao lado dela."""
+    TAXA = "taxa"
+    MULTA = "multa"
+    USO_ESPACO = "uso_espaco"
+
+
 class StatusVisitante(str, enum.Enum):
     """O morador confirma ou recusa a entrada do visitante (seção 6)."""
     AGUARDANDO_CONFIRMACAO = "aguardando_confirmacao"
@@ -179,6 +187,22 @@ class StatusMudanca(str, enum.Enum):
     RECUSADA = "recusada"
     CANCELADA = "cancelada"
     CONCLUIDA = "concluida"
+
+
+class TipoInfracao(str, enum.Enum):
+    """Código Civil, art. 1.336, § 2º: a convenção prevê a multa; antes
+    dela, muitos regimentos pedem a advertência."""
+    ADVERTENCIA = "advertencia"
+    MULTA = "multa"
+
+
+class StatusInfracao(str, enum.Enum):
+    """Notificada, o apartamento tem prazo para se defender; o síndico
+    decide depois da defesa ou do fim do prazo."""
+    NOTIFICADA = "notificada"
+    DEFESA_APRESENTADA = "defesa_apresentada"
+    CONFIRMADA = "confirmada"
+    ANULADA = "anulada"
 
 
 class CategoriaDocumento(str, enum.Enum):

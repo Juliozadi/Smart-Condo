@@ -12,9 +12,10 @@ from app.models.enums import (
     EscolhaVoto, MaioriaExigida,
     FinalidadeCodigo, FormaPagamento, Papel, PrioridadeOrdemServico, StatusCobranca,
     StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
-    StatusMudanca, StatusVisitante, TipoDocumentoCadastro, TipoMovimentacao, TipoMudanca,
-    TipoOcupacao,
+    OrigemCobranca, StatusInfracao, StatusMudanca, StatusVisitante, TipoDocumentoCadastro,
+    TipoInfracao, TipoMovimentacao, TipoMudanca, TipoOcupacao,
 )
+from app.models.infracao import Infracao
 from app.models.mensagem import Mensagem
 from app.models.mudanca import HorarioMudanca, Mudanca
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
@@ -29,7 +30,7 @@ __all__ = [
     "Cobranca", "CodigoVerificacao", "Comunicado", "Condominio", "Despesa", "Documento",
     "DocumentoCadastro",
     "Encomenda", "EspacoComum", "LeituraComunicado", "Mensagem", "MovimentacaoVeiculo", "Mudanca",
-    "HorarioMudanca",
+    "HorarioMudanca", "Infracao",
     "Ocorrencia", "OrdemServico", "Pagamento", "PermissaoPorteiro",
     "PreferenciaCobranca", "RegistroAlteracao", "RegistroOcupacao", "Reserva", "Unidade",
     "Usuario", "VeiculoUnidade",
@@ -39,5 +40,6 @@ __all__ = [
     "FinalidadeCodigo", "FormaPagamento", "Papel", "PrioridadeOrdemServico",
     "StatusCobranca", "StatusEncomenda", "StatusOcorrencia", "StatusOrdemServico",
     "StatusMudanca", "StatusReserva", "StatusUsuario", "StatusVisitante", "TipoDocumentoCadastro",
-    "TipoMovimentacao", "TipoMudanca", "TipoOcupacao",
+    "TipoMovimentacao", "TipoMudanca", "TipoOcupacao", "OrigemCobranca", "StatusInfracao",
+    "TipoInfracao",
 ]

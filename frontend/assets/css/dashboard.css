@@ -2431,3 +2431,13 @@ label.contato-btn { position: relative; cursor: pointer; }
   .regra-dia { grid-template-columns: 1fr auto 1fr; gap: 6px 8px; margin-bottom: 12px; }
   .regra-dia-nome { grid-column: 1 / -1; }
 }
+
+/* ── Advertências e multas ───────────────────────────────────────── */
+.infracao-descricao { font-size: 14px; color: var(--text); margin: 8px 0; line-height: 1.5; }
+.infracao-prazo { font-size: 13px; font-weight: 700; color: var(--aviso); margin: 4px 0; }
+.infracao-reincidencia { font-size: 12px; font-weight: 600; color: var(--erro); margin: 4px 0; }
+.infracao-defesa { margin: 10px 0; padding: 10px 14px; border-left: 3px solid var(--info);
+  background: var(--surface-2); border-radius: var(--radius-sm); font-size: 13px; color: var(--text-2); }
+.infracao-decisao { font-size: 13px; color: var(--text-2); margin: 8px 0 0; }
+.infracao-acoes { display: flex; gap: 8px; margin-top: 12px; }
+.infracao-defesa-form { margin-top: 12px; }

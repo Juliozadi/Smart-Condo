@@ -4,7 +4,7 @@ Scripts SQL do banco, prontos para rodar no **pgAdmin**.
 
 | Arquivo | O que faz |
 |---|---|
-| `01_criar_tabelas.sql` | Cria os tipos, as 30 tabelas, as chaves e os índices |
+| `01_criar_tabelas.sql` | Cria os tipos, as 31 tabelas, as chaves e os índices |
 | `02_carga_dados.sql` | Carrega um condomínio completo de demonstração |
 
 Os dois arquivos são SQL puro, sem comentários — as explicações ficam
@@ -60,7 +60,7 @@ UNION ALL SELECT 'comunicados', COUNT(*) FROM comunicados;
 
 ---
 
-## As 30 tabelas
+## As 31 tabelas
 
 | Tabela | Guarda |
 |---|---|
@@ -73,7 +73,7 @@ UNION ALL SELECT 'comunicados', COUNT(*) FROM comunicados;
 | `reservas` | Pedidos de reserva, aprovados ou recusados pelo síndico |
 | `registros_ocupacao` | Contagem de pessoas nas áreas de uso livre |
 | `preferencias_cobranca` | Dia do vencimento e forma de pagamento do morador |
-| `cobrancas` | Taxa condominial por unidade e competência |
+| `cobrancas` | Taxa condominial por unidade e competência, multas e uso de espaço |
 | `pagamentos` | Pagamentos recebidos, com meio, valor e data |
 | `despesas` | O que o condomínio gastou, com o comprovante: a prestação de contas |
 | `assembleias` | Assembleias virtuais: convocação, período de votação e cancelamento |
@@ -89,6 +89,7 @@ UNION ALL SELECT 'comunicados', COUNT(*) FROM comunicados;
 | `veiculos_unidade` | Placas cadastradas por apartamento, para a portaria reconhecer o carro |
 | `mudancas` | Mudanças pedidas pelo morador e aprovadas ou recusadas pelo síndico |
 | `horarios_mudanca` | Dias e horários de mudança do regimento de cada condomínio |
+| `infracoes` | Advertências e multas do síndico, com a defesa do morador e a decisão |
 | `ordens_servico` | Manutenção aberta e acompanhada pelo síndico |
 | `documentos` | Atas, convenção, regimento e plantas |
 | `documentos_cadastro` | RG, comprovante de residência e escritura enviados no cadastro do morador |

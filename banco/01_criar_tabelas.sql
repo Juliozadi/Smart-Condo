@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS
+    infracoes,
     horarios_mudanca,
     mudancas,
     veiculos_unidade,
@@ -41,11 +42,13 @@ DROP TYPE IF EXISTS
     finalidade_codigo,
     maioria_exigida,
     forma_pagamento,
+    origem_cobranca,
     papel_usuario,
     prioridade_ocorrencia,
     prioridade_ordem_servico,
     status_cobranca,
     status_encomenda,
+    status_infracao,
     status_ocorrencia,
     status_ordem_servico,
     status_mudanca,
@@ -53,6 +56,7 @@ DROP TYPE IF EXISTS
     status_usuario,
     status_visitante,
     tipo_documento_cadastro,
+    tipo_infracao,
     tipo_movimentacao,
     tipo_mudanca,
     tipo_ocupacao
@@ -76,6 +80,12 @@ CREATE TYPE escolha_voto AS ENUM (
     'A_FAVOR',
     'CONTRA',
     'ABSTENCAO'
+);
+
+CREATE TYPE origem_cobranca AS ENUM (
+    'TAXA',
+    'MULTA',
+    'USO_ESPACO'
 );
 
 CREATE TYPE maioria_exigida AS ENUM (
@@ -157,6 +167,13 @@ CREATE TYPE status_encomenda AS ENUM (
     'RECUSADA'
 );
 
+CREATE TYPE status_infracao AS ENUM (
+    'NOTIFICADA',
+    'DEFESA_APRESENTADA',
+    'CONFIRMADA',
+    'ANULADA'
+);
+
 CREATE TYPE status_ocorrencia AS ENUM (
     'ABERTA',
     'EM_ANALISE',
@@ -213,6 +230,11 @@ CREATE TYPE tipo_documento_cadastro AS ENUM (
 CREATE TYPE tipo_movimentacao AS ENUM (
     'ENTRADA',
     'SAIDA'
+);
+
+CREATE TYPE tipo_infracao AS ENUM (
+    'ADVERTENCIA',
+    'MULTA'
 );
 
 CREATE TYPE tipo_mudanca AS ENUM (
@@ -495,6 +517,8 @@ CREATE TABLE cobrancas (
     status status_cobranca NOT NULL,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    -- Taxa do mês, multa por infração ou uso de espaço.
+    origem origem_cobranca DEFAULT 'TAXA'::origem_cobranca NOT NULL,
     CONSTRAINT ck_cobranca_valor_positivo CHECK ((valor > (0)::numeric))
 );
 CREATE SEQUENCE cobrancas_id_seq
@@ -508,8 +532,9 @@ ALTER SEQUENCE cobrancas_id_seq OWNED BY cobrancas.id;
 ALTER TABLE ONLY cobrancas ALTER COLUMN id SET DEFAULT nextval('cobrancas_id_seq'::regclass);
 ALTER TABLE ONLY cobrancas
     ADD CONSTRAINT cobrancas_pkey PRIMARY KEY (id);
--- Uma cobrança por unidade e mês, sem contar as canceladas.
-CREATE UNIQUE INDEX uq_cobranca_competencia ON cobrancas USING btree (unidade_id, competencia) WHERE (status <> 'CANCELADA'::status_cobranca);
+-- Uma taxa condominial por unidade e mês, sem contar as canceladas; multa
+-- e uso de espaço entram ao lado dela.
+CREATE UNIQUE INDEX uq_cobranca_competencia ON cobrancas USING btree (unidade_id, competencia) WHERE ((status <> 'CANCELADA'::status_cobranca) AND (origem = 'TAXA'::origem_cobranca));
 
 CREATE TABLE pagamentos (
     id integer NOT NULL,
@@ -903,6 +928,43 @@ ALTER TABLE ONLY mudancas ALTER COLUMN id SET DEFAULT nextval('mudancas_id_seq':
 ALTER TABLE ONLY mudancas
     ADD CONSTRAINT mudancas_pkey PRIMARY KEY (id);
 
+-- Advertências e multas do síndico ao apartamento, com a defesa e a
+-- decisão; a multa mantida vira cobrança (Código Civil, art. 1.336, § 2º).
+CREATE TABLE infracoes (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    aplicada_por_id integer,
+    tipo tipo_infracao NOT NULL,
+    descricao text NOT NULL,
+    artigo character varying(120),
+    ocorrida_em date NOT NULL,
+    valor numeric(10,2),
+    prazo_defesa date NOT NULL,
+    status status_infracao NOT NULL,
+    defesa text,
+    defesa_em timestamp with time zone,
+    defesa_por_id integer,
+    decisao_motivo text,
+    decidida_em timestamp with time zone,
+    decidida_por_id integer,
+    cobranca_id integer,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT ck_infracao_valor CHECK ((((tipo = 'MULTA'::tipo_infracao) AND (valor > (0)::numeric)) OR ((tipo = 'ADVERTENCIA'::tipo_infracao) AND (valor IS NULL))))
+);
+CREATE SEQUENCE infracoes_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE infracoes_id_seq OWNED BY infracoes.id;
+ALTER TABLE ONLY infracoes ALTER COLUMN id SET DEFAULT nextval('infracoes_id_seq'::regclass);
+ALTER TABLE ONLY infracoes
+    ADD CONSTRAINT infracoes_pkey PRIMARY KEY (id);
+
 -- Dias e horários em que o regimento permite mudança; o dia sem linha
 -- não tem mudança. Condomínio sem nenhuma linha segue a regra padrão.
 CREATE TABLE horarios_mudanca (
@@ -1170,6 +1232,24 @@ ALTER TABLE ONLY veiculos_unidade
 ALTER TABLE ONLY veiculos_unidade
     ADD CONSTRAINT veiculos_unidade_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY infracoes
+    ADD CONSTRAINT infracoes_aplicada_por_id_fkey FOREIGN KEY (aplicada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY infracoes
+    ADD CONSTRAINT infracoes_cobranca_id_fkey FOREIGN KEY (cobranca_id) REFERENCES cobrancas(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY infracoes
+    ADD CONSTRAINT infracoes_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY infracoes
+    ADD CONSTRAINT infracoes_decidida_por_id_fkey FOREIGN KEY (decidida_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY infracoes
+    ADD CONSTRAINT infracoes_defesa_por_id_fkey FOREIGN KEY (defesa_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY infracoes
+    ADD CONSTRAINT infracoes_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY horarios_mudanca
     ADD CONSTRAINT horarios_mudanca_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
 
@@ -1384,6 +1464,12 @@ CREATE INDEX ix_veiculos_unidade_unidade_id ON veiculos_unidade USING btree (uni
 CREATE UNIQUE INDEX uq_veiculo_placa_ativa ON veiculos_unidade USING btree (condominio_id, placa) WHERE (inativo_em IS NULL);
 
 CREATE INDEX ix_horarios_mudanca_condominio_id ON horarios_mudanca USING btree (condominio_id);
+
+CREATE INDEX ix_infracoes_condominio_id ON infracoes USING btree (condominio_id);
+
+CREATE INDEX ix_infracoes_status ON infracoes USING btree (status);
+
+CREATE INDEX ix_infracoes_unidade_criado ON infracoes USING btree (unidade_id, criado_em);
 
 CREATE INDEX ix_mudancas_condominio_data ON mudancas USING btree (condominio_id, data);
 

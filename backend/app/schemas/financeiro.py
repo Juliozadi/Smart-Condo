@@ -15,7 +15,7 @@ from decimal import Decimal
 
 from pydantic import Field, field_validator, model_validator
 
-from app.models.enums import CategoriaDespesa, FormaPagamento, StatusCobranca
+from app.models.enums import CategoriaDespesa, FormaPagamento, OrigemCobranca, StatusCobranca
 from app.schemas.admin import RegistroSaida
 from app.schemas.comuns import EnderecoWeb, SchemaBase
 
@@ -83,6 +83,8 @@ class CobrancaSaida(SchemaBase):
     valor: Decimal
     vencimento: date
     status: StatusCobranca
+    # Taxa do mês, multa por infração ou uso de espaço.
+    origem: OrigemCobranca = OrigemCobranca.TAXA
     # O que já abateu do valor (sem a multa e os juros pagos).
     total_pago: Decimal
     # Paga hoje: os encargos do atraso sobre o que falta, e o total a pagar.

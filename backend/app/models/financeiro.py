@@ -20,7 +20,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
 from app.models.base import InativacaoMixin, TimestampMixin
-from app.models.enums import CategoriaDespesa, FormaPagamento, StatusCobranca
+from app.models.enums import CategoriaDespesa, FormaPagamento, OrigemCobranca, StatusCobranca
 
 if TYPE_CHECKING:
     from app.models.condominio import Unidade
@@ -56,10 +56,11 @@ class Cobranca(Base, TimestampMixin):
 
     __tablename__ = "cobrancas"
     __table_args__ = (
-        # Uma cobrança por unidade e mês — sem contar a cancelada, que fica
-        # guardada e não impede lançar a correta.
+        # Uma taxa condominial por unidade e mês — sem contar a cancelada,
+        # que fica guardada e não impede lançar a correta. Multa e uso de
+        # espaço entram ao lado da taxa do mês.
         Index("uq_cobranca_competencia", "unidade_id", "competencia", unique=True,
-              postgresql_where=text("status <> 'CANCELADA'")),
+              postgresql_where=text("status <> 'CANCELADA' AND origem = 'TAXA'")),
         CheckConstraint("valor > 0", name="ck_cobranca_valor_positivo"),
     )
 
@@ -79,6 +80,10 @@ class Cobranca(Base, TimestampMixin):
         nullable=False,
         default=StatusCobranca.ABERTA,
         index=True,
+    )
+    origem: Mapped[OrigemCobranca] = mapped_column(
+        SAEnum(OrigemCobranca, name="origem_cobranca"),
+        nullable=False, default=OrigemCobranca.TAXA, server_default=text("'TAXA'"),
     )
 
     unidade: Mapped["Unidade"] = relationship()

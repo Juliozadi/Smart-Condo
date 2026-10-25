@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Advertências e Multas</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-mobile">
+
+  <header class="app-bar">
+    <div class="app-bar-inner">
+      <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
+        <span class="brand-name">Smart<strong>Condo</strong></span>
+      </a>
+      <div class="app-bar-right">
+        <a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/user.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">João Silva</span><span class="profile-role">Morador</span></a>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-wrapper">
+
+    <a href="dashboard.html" class="dash-back">
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Morador
+    </a>
+
+    <div class="dash-greeting">
+      <p class="greeting-sub">Do síndico para o apartamento</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/triangle-exclamation.svg" width="26" height="26" alt=""> Advertências e Multas</h1>
+      <p class="greeting-condo">Você pode se defender antes da decisão</p>
+    </div>
+
+    <p class="aviso-notificacao">
+      <img src="../../assets/img/icons/shield-halved.svg" alt="">
+      <span>Quando o síndico notifica o apartamento, você tem um prazo para contar o seu lado. A
+      multa só vale depois da decisão dele, sempre com o motivo, e vai até 5 vezes a taxa mensal
+      (Código Civil, art. 1.336, § 2º).</span>
+    </p>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt=""> Notificações do Apartamento</h2>
+    <div id="listaInfracoes" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoInfracoes">Carregando…</p>
+
+  </main>
+
+<script src="../../assets/js/infracoes.js"></script>
+<script>
+/* Advertências e multas do apartamento: o que o síndico notificou, o prazo
+   e o formulário da defesa; depois, a decisão e o motivo. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api, infracoes = window.SmartCondo.infracoes;
+  var usuario = api.protegerPagina('morador');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+
+  function formularioDefesa(i) {
+    var form = document.createElement('form');
+    form.className = 'infracao-defesa-form';
+    form.noValidate = true;
+    var id = 'defesa' + i.id;
+    form.innerHTML =
+      '<div class="form-group"><label for="' + id + '">Sua defesa</label>' +
+      '<textarea id="' + id + '" rows="3" maxlength="4000" placeholder="Conte o seu lado: o que aconteceu, testemunhas, o que já foi feito"></textarea></div>' +
+      '<p class="form-erro" role="alert"></p>' +
+      '<button type="submit" class="action-btn compacto">Enviar a defesa</button>';
+    form.addEventListener('submit', function(evento) {
+      evento.preventDefault();
+      var erro = form.querySelector('.form-erro');
+      var texto = form.querySelector('textarea').value.trim();
+      if (texto.length < 10) { erro.textContent = 'Escreva a defesa (pelo menos 10 letras).'; return; }
+      if (!confirm('Enviar a defesa? Depois de enviada, ela não muda.')) return;
+      var botao = form.querySelector('button');
+      botao.disabled = true;
+      api.post('/infracoes/' + i.id + '/defesa', { texto: texto })
+        .then(carregar)
+        .catch(function(e) { botao.disabled = false; erro.textContent = e.message; });
+    });
+    return form;
+  }
+
+  function carregar() {
+    campo('estadoInfracoes').textContent = 'Carregando…';
+    return api.get('/infracoes').then(function(lista) {
+      var caixa = campo('listaInfracoes');
+      caixa.innerHTML = '';
+      campo('estadoInfracoes').textContent = lista.length ? '' : 'Nenhuma advertência ou multa para o apartamento.';
+      lista.forEach(function(i) {
+        var card = infracoes.cartao(i, false);
+        if (i.pode_defender) card.appendChild(formularioDefesa(i));
+        caixa.appendChild(card);
+      });
+    }).catch(function(e) { campo('estadoInfracoes').textContent = e.message; });
+  }
+
+  campo('hdrName').textContent = usuario.nome;
+  carregar();
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>
