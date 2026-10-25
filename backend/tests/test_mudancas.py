@@ -248,3 +248,59 @@ def test_quem_chega_nao_ve_a_mudanca_de_quem_saiu(cliente, cenario):
                         headers=cab(tok_dani)).status_code == 404
     # A Ana já morava lá: continua vendo.
     assert [x["id"] for x in cliente.get(URL, headers=cab(cenario["ana"])).json()] == [m["id"]]
+
+
+# ── Regras do regimento de cada condomínio ───────────────────────────
+
+def definir_regras(cliente, tok, antecedencia=2, horarios=None):
+    horarios = horarios if horarios is not None else {
+        str(d): {"inicio": "08:00", "fim": "18:00"} for d in range(1, 6)}
+    return cliente.put(f"{URL}/regras", json={"antecedencia_minima_dias": antecedencia,
+                                              "horarios": horarios}, headers=cab(tok))
+
+
+def test_sindico_define_as_regras_do_condominio(cliente, cenario):
+    """Cada regimento é um: aqui, 5 dias de aviso, das 9h às 17h, e nada
+    de mudança no sábado."""
+    horarios = {str(d): {"inicio": "09:00", "fim": "17:00"} for d in range(1, 6)}
+    r = definir_regras(cliente, cenario["sindico"], antecedencia=5, horarios=horarios)
+    assert r.status_code == 200, r.text
+    regras = cliente.get(f"{URL}/regras", headers=cab(cenario["ana"])).json()
+    assert regras["antecedencia_minima_dias"] == 5
+    assert sorted(regras["horarios"]) == ["1", "2", "3", "4", "5"]
+
+    # O primeiro dia útil entre amanhã e daqui a 4 dias: cedo demais.
+    cedo = next(d for d in (hoje_local() + timedelta(days=n) for n in range(1, 5))
+                if d.isoweekday() <= 5)
+    r = agendar(cliente, cenario["ana"], cedo, "09:00", "12:00")
+    assert r.status_code == 400 and "5 dias" in r.json()["detalhe"]
+    r = agendar(cliente, cenario["ana"], proximo(6, a_partir=6), "09:00", "11:00")
+    assert r.status_code == 400 and "sábado" in r.json()["detalhe"]
+    r = agendar(cliente, cenario["ana"], dia_util(6), "08:00", "12:00")
+    assert r.status_code == 400 and "9h" in r.json()["detalhe"]
+    assert agendar(cliente, cenario["ana"], dia_util(6), "09:00", "17:00").status_code == 201
+
+
+def test_domingo_liberado(cliente, cenario):
+    horarios = {"7": {"inicio": "10:00", "fim": "14:00"}, "1": {"inicio": "08:00", "fim": "18:00"}}
+    assert definir_regras(cliente, cenario["sindico"], horarios=horarios).status_code == 200
+    assert agendar(cliente, cenario["ana"], proximo(7), "10:00", "13:30").status_code == 201
+    r = agendar(cliente, cenario["ana"], proximo(7), "10:00", "15:00")
+    assert r.status_code == 400 and "14h" in r.json()["detalhe"]
+
+
+@pytest.mark.parametrize("antecedencia,horarios", [
+    (2, {"1": {"inicio": "18:00", "fim": "08:00"}}),     # fim antes do início
+    (2, {}),                                              # nenhum dia
+    (2, {"8": {"inicio": "08:00", "fim": "18:00"}}),      # dia que não existe
+    (61, {"1": {"inicio": "08:00", "fim": "18:00"}}),     # antecedência demais
+    (-1, {"1": {"inicio": "08:00", "fim": "18:00"}}),
+])
+def test_regras_invalidas(cliente, cenario, antecedencia, horarios):
+    r = definir_regras(cliente, cenario["sindico"], antecedencia, horarios)
+    assert r.status_code == 422, r.text
+
+
+def test_so_o_sindico_define_as_regras(cliente, cenario):
+    assert definir_regras(cliente, cenario["ana"]).status_code == 403
+    assert definir_regras(cliente, cenario["porteiro"]).status_code == 403

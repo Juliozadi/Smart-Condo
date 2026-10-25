@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS
+    horarios_mudanca,
     mudancas,
     veiculos_unidade,
     votos,
@@ -247,8 +248,11 @@ CREATE TABLE condominios (
     -- (Código Civil, art. 1.336, § 1º).
     multa_atraso numeric(4,2) DEFAULT 2.00 NOT NULL,
     juros_mensais numeric(4,2) DEFAULT 1.00 NOT NULL,
+    -- Com quantos dias de aviso o morador agenda a mudança (regimento).
+    mudanca_antecedencia_dias integer DEFAULT 2 NOT NULL,
     CONSTRAINT ck_condominio_juros CHECK (((juros_mensais >= (0)::numeric) AND (juros_mensais <= (1)::numeric))),
-    CONSTRAINT ck_condominio_multa CHECK (((multa_atraso >= (0)::numeric) AND (multa_atraso <= (2)::numeric)))
+    CONSTRAINT ck_condominio_multa CHECK (((multa_atraso >= (0)::numeric) AND (multa_atraso <= (2)::numeric))),
+    CONSTRAINT ck_condominio_mudanca_antecedencia CHECK (((mudanca_antecedencia_dias >= 0) AND (mudanca_antecedencia_dias <= 60)))
 );
 CREATE SEQUENCE condominios_id_seq
     AS integer
@@ -899,6 +903,31 @@ ALTER TABLE ONLY mudancas ALTER COLUMN id SET DEFAULT nextval('mudancas_id_seq':
 ALTER TABLE ONLY mudancas
     ADD CONSTRAINT mudancas_pkey PRIMARY KEY (id);
 
+-- Dias e horários em que o regimento permite mudança; o dia sem linha
+-- não tem mudança. Condomínio sem nenhuma linha segue a regra padrão.
+CREATE TABLE horarios_mudanca (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    dia_semana integer NOT NULL,
+    hora_inicio time without time zone NOT NULL,
+    hora_fim time without time zone NOT NULL,
+    CONSTRAINT ck_horario_mudanca_dia CHECK (((dia_semana >= 1) AND (dia_semana <= 7))),
+    CONSTRAINT ck_horario_mudanca_intervalo CHECK ((hora_fim > hora_inicio))
+);
+CREATE SEQUENCE horarios_mudanca_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE horarios_mudanca_id_seq OWNED BY horarios_mudanca.id;
+ALTER TABLE ONLY horarios_mudanca ALTER COLUMN id SET DEFAULT nextval('horarios_mudanca_id_seq'::regclass);
+ALTER TABLE ONLY horarios_mudanca
+    ADD CONSTRAINT horarios_mudanca_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY horarios_mudanca
+    ADD CONSTRAINT uq_horario_mudanca_dia UNIQUE (condominio_id, dia_semana);
+
 CREATE TABLE ordens_servico (
     id integer NOT NULL,
     condominio_id integer NOT NULL,
@@ -1141,6 +1170,9 @@ ALTER TABLE ONLY veiculos_unidade
 ALTER TABLE ONLY veiculos_unidade
     ADD CONSTRAINT veiculos_unidade_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY horarios_mudanca
+    ADD CONSTRAINT horarios_mudanca_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY mudancas
     ADD CONSTRAINT mudancas_avaliada_por_id_fkey FOREIGN KEY (avaliada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
 
@@ -1350,6 +1382,8 @@ CREATE INDEX ix_veiculos_unidade_condominio_id ON veiculos_unidade USING btree (
 CREATE INDEX ix_veiculos_unidade_unidade_id ON veiculos_unidade USING btree (unidade_id);
 
 CREATE UNIQUE INDEX uq_veiculo_placa_ativa ON veiculos_unidade USING btree (condominio_id, placa) WHERE (inativo_em IS NULL);
+
+CREATE INDEX ix_horarios_mudanca_condominio_id ON horarios_mudanca USING btree (condominio_id);
 
 CREATE INDEX ix_mudancas_condominio_data ON mudancas USING btree (condominio_id, data);
 

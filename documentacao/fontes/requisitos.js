@@ -314,7 +314,7 @@ const requisitosFuncionais = [
   { id: 'RF051', nome: 'Agendar mudança',
     atores: 'Morador, Síndico, Porteiro', prioridade: 'Importante',
     descricao: 'O sistema permite ao morador agendar a mudança — chegada ou saída — dentro das regras do regimento, ao síndico aprovar ou recusar, e à portaria ver as mudanças aprovadas.',
-    entradas: 'O morador informa se é chegada ou saída, o dia, o horário e, se quiser, a empresa e um recado. A regra padrão: pelo menos 2 dias de antecedência e até um ano; de segunda a sexta das 8h às 18h, no sábado das 8h às 12h, e domingo não. Ao escolher o dia, a tela mostra os horários já tomados, sem dizer de quem.',
+    entradas: 'O morador informa se é chegada ou saída, o dia, o horário e, se quiser, a empresa e um recado. Valem as regras do regimento, que o síndico define: o aviso mínimo (de 0 a 60 dias) e, para cada dia da semana, se pode haver mudança e em que horário. Sem definição, a regra padrão: pelo menos 2 dias de antecedência e até um ano; de segunda a sexta das 8h às 18h, no sábado das 8h às 12h, e domingo não. Ao escolher o dia, a tela mostra os horários já tomados, sem dizer de quem.',
     saidas: 'Uma mudança de cada vez em cada bloco: o horário que se sobrepõe a outra pendente ou aprovada é recusado. O síndico recebe o pedido por e-mail e aprova, ou recusa com motivo; o morador recebe a resposta. A portaria vê as aprovadas de hoje em diante. O morador cancela a sua; o síndico cancela com motivo, e o morador é avisado. A pendente cujo horário chega sem avaliação vira recusada; a aprovada que passou, realizada.' },
 
   { id: 'RF052', nome: 'Usar mais de um perfil com o mesmo login',

@@ -10,7 +10,8 @@ from datetime import date, datetime, time
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
-    CheckConstraint, Date, DateTime, Enum as SAEnum, ForeignKey, Index, String, Time,
+    CheckConstraint, Date, DateTime, Enum as SAEnum, ForeignKey, Index, Integer, String, Time,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -73,3 +74,25 @@ class Mudanca(Base, TimestampMixin):
 
     def __repr__(self) -> str:
         return f"<Mudanca {self.id} {self.data} {self.status.value}>"
+
+
+class HorarioMudanca(Base):
+    """Em que dias e horários o regimento do condomínio permite mudança.
+    O dia da semana que não tem linha não tem mudança. O condomínio que
+    nunca definiu segue a regra padrão (routers/mudancas.py)."""
+
+    __tablename__ = "horarios_mudanca"
+    __table_args__ = (
+        UniqueConstraint("condominio_id", "dia_semana", name="uq_horario_mudanca_dia"),
+        CheckConstraint("dia_semana BETWEEN 1 AND 7", name="ck_horario_mudanca_dia"),
+        CheckConstraint("hora_fim > hora_inicio", name="ck_horario_mudanca_intervalo"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    condominio_id: Mapped[int] = mapped_column(
+        ForeignKey("condominios.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    # 1 = segunda ... 7 = domingo (ISO 8601).
+    dia_semana: Mapped[int] = mapped_column(Integer, nullable=False)
+    hora_inicio: Mapped[time] = mapped_column(Time, nullable=False)
+    hora_fim: Mapped[time] = mapped_column(Time, nullable=False)

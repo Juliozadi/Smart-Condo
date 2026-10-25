@@ -16,7 +16,7 @@ from app.models.enums import (
     TipoOcupacao,
 )
 from app.models.mensagem import Mensagem
-from app.models.mudanca import Mudanca
+from app.models.mudanca import HorarioMudanca, Mudanca
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
 from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico, VeiculoUnidade
 from app.models.financeiro import Cobranca, Despesa, Pagamento, PreferenciaCobranca
@@ -29,6 +29,7 @@ __all__ = [
     "Cobranca", "CodigoVerificacao", "Comunicado", "Condominio", "Despesa", "Documento",
     "DocumentoCadastro",
     "Encomenda", "EspacoComum", "LeituraComunicado", "Mensagem", "MovimentacaoVeiculo", "Mudanca",
+    "HorarioMudanca",
     "Ocorrencia", "OrdemServico", "Pagamento", "PermissaoPorteiro",
     "PreferenciaCobranca", "RegistroAlteracao", "RegistroOcupacao", "Reserva", "Unidade",
     "Usuario", "VeiculoUnidade",

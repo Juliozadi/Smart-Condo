@@ -24,6 +24,22 @@
     <h2 class="section-title"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Regras do Regimento</h2>
     <div class="form-card">
       <ul class="regras-mudanca" id="regrasMudanca"></ul>
+      <button type="button" class="contato-btn" id="btnEditarRegras" aria-expanded="false"
+              aria-controls="formRegras">Editar as regras</button>
+      <form id="formRegras" class="regras-form" novalidate hidden>
+        <div class="form-group regras-antecedencia">
+          <label for="rAntecedencia">Aviso mínimo (dias)</label>
+          <input type="number" id="rAntecedencia" min="0" max="60" step="1" required>
+        </div>
+        <fieldset class="regras-dias">
+          <legend>Dias e horários permitidos</legend>
+          <div id="regrasDias"></div>
+        </fieldset>
+        <p class="captura-dica">Valem para os pedidos feitos daqui em diante; as mudanças já
+        agendadas continuam de pé.</p>
+        <p class="form-erro" id="erroRegras" role="alert"></p>
+        <button type="submit" class="action-btn compacto">Salvar as regras</button>
+      </form>
     </div>
 
     <h2 class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Para Avaliar</h2>
@@ -112,14 +128,79 @@
     }).catch(function(e) { campo('estadoPendentes').textContent = e.message; });
   }
 
-  api.get('/mudancas/regras').then(function(r) {
+  // ── Regras do regimento: o síndico define os dias e horários ──────
+  var NOMES = ['', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+  function mostrarRegras(r) {
     var ul = campo('regrasMudanca');
+    ul.innerHTML = '';
     mudancas.frasesDasRegras(r).forEach(function(frase) {
       var li = document.createElement('li');
       li.textContent = frase;
       ul.appendChild(li);
     });
-  }).catch(function() {});
+    campo('rAntecedencia').value = r.antecedencia_minima_dias;
+    var caixa = campo('regrasDias');
+    caixa.innerHTML = '';
+    for (var dia = 1; dia <= 7; dia++) {
+      var h = r.horarios[dia];
+      var linha = document.createElement('div');
+      linha.className = 'regra-dia';
+      linha.dataset.dia = dia;
+      linha.innerHTML =
+        '<label class="regra-dia-nome"><input type="checkbox" id="rPermite' + dia + '" class="regra-permite"> ' +
+          NOMES[dia] + '</label>' +
+        '<label class="oculto-acessivel" for="rIni' + dia + '">Início — ' + NOMES[dia] + '</label>' +
+        '<input type="time" id="rIni' + dia + '" class="regra-inicio" step="900">' +
+        '<span aria-hidden="true">às</span>' +
+        '<label class="oculto-acessivel" for="rFim' + dia + '">Fim — ' + NOMES[dia] + '</label>' +
+        '<input type="time" id="rFim' + dia + '" class="regra-fim" step="900">';
+      var permite = linha.querySelector('.regra-permite');
+      var ini = linha.querySelector('.regra-inicio'), fim = linha.querySelector('.regra-fim');
+      permite.checked = !!h;
+      ini.value = h ? mudancas.hora(h.inicio) : '08:00';
+      fim.value = h ? mudancas.hora(h.fim) : '18:00';
+      ini.disabled = fim.disabled = !h;
+      permite.addEventListener('change', (function(i, f, p) {
+        return function() { i.disabled = f.disabled = !p.checked; };
+      })(ini, fim, permite));
+      caixa.appendChild(linha);
+    }
+  }
+  campo('btnEditarRegras').addEventListener('click', function() {
+    var form = campo('formRegras');
+    form.hidden = !form.hidden;
+    this.setAttribute('aria-expanded', String(!form.hidden));
+  });
+  campo('formRegras').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('erroRegras');
+    erro.className = 'form-erro';
+    erro.textContent = '';
+    var horarios = {};
+    var problema = '';
+    campo('regrasDias').querySelectorAll('.regra-dia').forEach(function(linha) {
+      if (!linha.querySelector('.regra-permite').checked) return;
+      var ini = linha.querySelector('.regra-inicio').value, fim = linha.querySelector('.regra-fim').value;
+      if (!ini || !fim || fim <= ini) problema = 'Em ' + NOMES[+linha.dataset.dia].toLowerCase() +
+        ', o fim do horário precisa ser depois do início.';
+      horarios[linha.dataset.dia] = { inicio: ini, fim: fim };
+    });
+    var antecedencia = parseInt(campo('rAntecedencia').value, 10);
+    if (isNaN(antecedencia) || antecedencia < 0 || antecedencia > 60) problema = 'O aviso mínimo vai de 0 a 60 dias.';
+    if (!Object.keys(horarios).length) problema = 'Escolha pelo menos um dia para as mudanças.';
+    if (problema) { erro.textContent = problema; return; }
+    var botao = this.querySelector('button[type=submit]');
+    botao.disabled = true;
+    api.put('/mudancas/regras', { antecedencia_minima_dias: antecedencia, horarios: horarios })
+      .then(function(r) {
+        mostrarRegras(r);
+        erro.className = 'form-erro sucesso';
+        erro.textContent = 'Regras salvas. Os moradores já veem as novas.';
+      })
+      .catch(function(e) { erro.textContent = e.message; })
+      .then(function() { botao.disabled = false; });
+  });
+  api.get('/mudancas/regras').then(mostrarRegras).catch(function() {});
   campo('hdrName').textContent = usuario.nome;
   carregar();
 })();

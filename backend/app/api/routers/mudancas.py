@@ -12,7 +12,7 @@ from __future__ import annotations
 from datetime import date, datetime, time, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import and_, func, or_, select, update
+from sqlalchemy import and_, delete, func, or_, select, update
 from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import (
@@ -20,21 +20,22 @@ from app.api.deps import (
 )
 from app.core.database import get_db
 from app.core.tempo import agora_local
-from app.models.condominio import Unidade
+from app.models.condominio import Condominio, Unidade
 from app.models.enums import CanalVerificacao, Papel, StatusMudanca, StatusUsuario
-from app.models.mudanca import Mudanca
+from app.models.mudanca import HorarioMudanca, Mudanca
 from app.models.usuario import Usuario
 from app.schemas.mudanca import (
     ANTECEDENCIA_MAXIMA_DIAS, AvaliacaoMudanca, CancelamentoMudanca, HorarioDoDia,
-    MudancaEntrada, MudancaSaida, RegrasMudanca,
+    MudancaEntrada, MudancaSaida, RegrasMudanca, RegrasMudancaEntrada,
 )
-from app.services import notificacao
+from app.services import notificacao, registro
 
 router = APIRouter(prefix="/mudancas", tags=["Mudanças"])
 
-# O que o regimento costuma dizer: aviso prévio para o síndico avaliar e
-# a portaria se preparar; de segunda a sábado, em horário comercial, e
-# no sábado só de manhã (o barulho no fim de semana incomoda); domingo não.
+# A regra padrão, para o condomínio cujo síndico ainda não definiu a do
+# regimento: aviso prévio para o síndico avaliar e a portaria se preparar;
+# de segunda a sábado, em horário comercial, e no sábado só de manhã (o
+# barulho no fim de semana incomoda); domingo não.
 ANTECEDENCIA_MINIMA_DIAS = 2
 HORARIOS = {
     1: (time(8), time(18)), 2: (time(8), time(18)), 3: (time(8), time(18)),
@@ -134,22 +135,40 @@ def _avisar(destinos: list[Usuario], titulo: str, mensagem: str) -> None:
         notificacao.notificar(u.email, CanalVerificacao.EMAIL, titulo, mensagem)
 
 
-def _conferir_regimento(dados: MudancaEntrada, hoje: date) -> None:
+NOS_DIAS = {1: "às segundas-feiras", 2: "às terças-feiras", 3: "às quartas-feiras",
+            4: "às quintas-feiras", 5: "às sextas-feiras", 6: "aos sábados", 7: "aos domingos"}
+
+
+def _regras_do_condominio(db: Session, condominio_id: int) -> tuple[int, dict[int, tuple]]:
+    """O aviso mínimo e os horários de cada dia, como o síndico definiu;
+    sem definição, a regra padrão."""
+    linhas = db.scalars(select(HorarioMudanca).where(
+        HorarioMudanca.condominio_id == condominio_id)).all()
+    condominio = db.get(Condominio, condominio_id)
+    antecedencia = condominio.mudanca_antecedencia_dias if condominio else ANTECEDENCIA_MINIMA_DIAS
+    if not linhas:
+        return antecedencia, dict(HORARIOS)
+    return antecedencia, {h.dia_semana: (h.hora_inicio, h.hora_fim) for h in linhas}
+
+
+def _conferir_regimento(dados: MudancaEntrada, hoje: date, antecedencia: int,
+                        horarios: dict[int, tuple]) -> None:
     def recusar(motivo: str):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=motivo)
 
-    if dados.data < hoje + timedelta(days=ANTECEDENCIA_MINIMA_DIAS):
-        recusar(f"Agende a mudança com pelo menos {ANTECEDENCIA_MINIMA_DIAS} dias de "
+    if dados.data < hoje + timedelta(days=antecedencia):
+        recusar(f"Agende a mudança com pelo menos {antecedencia} dias de "
                 "antecedência, para o síndico avaliar e a portaria se preparar.")
-    horario = HORARIOS.get(dados.data.isoweekday())
+    dia = dados.data.isoweekday()
+    horario = horarios.get(dia)
     if horario is None:
-        recusar("Não há mudança aos domingos, pelo regimento do condomínio.")
+        recusar(f"Não há mudança {NOS_DIAS[dia]}, pelo regimento do condomínio.")
     inicio, fim = horario
+    nos_dias = NOS_DIAS[dia][0].upper() + NOS_DIAS[dia][1:]
     if dados.hora_inicio < inicio:
-        recusar(f"A mudança pode começar a partir das {_hora(inicio)}.")
+        recusar(f"{nos_dias}, a mudança pode começar a partir das {_hora(inicio)}.")
     if dados.hora_fim > fim:
-        dias = "Aos sábados" if dados.data.isoweekday() == 6 else "De segunda a sexta"
-        recusar(f"{dias}, a mudança precisa terminar até as {_hora(fim)}.")
+        recusar(f"{nos_dias}, a mudança precisa terminar até as {_hora(fim)}.")
 
 
 def _mudanca_visivel(db: Session, usuario: Usuario, mudanca_id: int) -> Mudanca:
@@ -167,13 +186,50 @@ def _mudanca_visivel(db: Session, usuario: Usuario, mudanca_id: int) -> Mudanca:
     return m
 
 
-@router.get("/regras", response_model=RegrasMudanca, summary="Regras do regimento para mudanças")
-def regras(_: Usuario = Depends(exigir_condominio)) -> RegrasMudanca:
+def _regras_saida(db: Session, condominio_id: int) -> RegrasMudanca:
+    antecedencia, horarios = _regras_do_condominio(db, condominio_id)
     return RegrasMudanca(
-        antecedencia_minima_dias=ANTECEDENCIA_MINIMA_DIAS,
+        antecedencia_minima_dias=antecedencia,
         antecedencia_maxima_dias=ANTECEDENCIA_MAXIMA_DIAS,
-        horarios={dia: HorarioDoDia(inicio=i, fim=f) for dia, (i, f) in HORARIOS.items()},
+        horarios={dia: HorarioDoDia(inicio=i, fim=f) for dia, (i, f) in sorted(horarios.items())},
     )
+
+
+def _descrever(antecedencia: int, horarios: dict[int, tuple]) -> str:
+    dias = "; ".join(f"{NOS_DIAS[d]} das {_hora(i)} às {_hora(f)}"
+                     for d, (i, f) in sorted(horarios.items()))
+    return f"Regras de mudança: {antecedencia} dias de aviso; {dias}"
+
+
+@router.get("/regras", response_model=RegrasMudanca, summary="Regras do regimento para mudanças")
+def regras(usuario: Usuario = Depends(exigir_condominio),
+           db: Session = Depends(get_db)) -> RegrasMudanca:
+    return _regras_saida(db, usuario.condominio_id)
+
+
+@router.put("/regras", response_model=RegrasMudanca,
+            summary="Define as regras de mudança do regimento")
+def definir_regras(
+    dados: RegrasMudancaEntrada,
+    sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
+    db: Session = Depends(get_db),
+) -> RegrasMudanca:
+    """Valem para os pedidos feitos daqui em diante; as mudanças já
+    agendadas continuam de pé (o síndico cancela, com motivo, se preciso)."""
+    condominio = db.get(Condominio, sindico.condominio_id, with_for_update=True)
+    antes = _descrever(*_regras_do_condominio(db, condominio.id))
+    condominio.mudanca_antecedencia_dias = dados.antecedencia_minima_dias
+    db.execute(delete(HorarioMudanca).where(HorarioMudanca.condominio_id == condominio.id))
+    for dia, h in dados.horarios.items():
+        db.add(HorarioMudanca(condominio_id=condominio.id, dia_semana=dia,
+                              hora_inicio=h.inicio, hora_fim=h.fim))
+    db.flush()
+    depois = _descrever(*_regras_do_condominio(db, condominio.id))
+    if depois != antes:
+        registro.registrar(db, sindico, registro.EDITOU, registro.CONDOMINIO, condominio.id,
+                           depois)
+    db.commit()
+    return _regras_saida(db, condominio.id)
 
 
 @router.get("/ocupados", response_model=list[HorarioDoDia],
@@ -234,7 +290,7 @@ def agendar(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Seu cadastro não está ligado a um apartamento.")
     agora = _agora()
-    _conferir_regimento(dados, agora.date())
+    _conferir_regimento(dados, agora.date(), *_regras_do_condominio(db, morador.condominio_id))
 
     # Dois pedidos para o mesmo bloco e dia esperam um pelo outro; sem isso,
     # os dois passariam pela conferência de horário ao mesmo tempo.

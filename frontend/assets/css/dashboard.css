@@ -2416,3 +2416,18 @@ label.contato-btn { position: relative; cursor: pointer; }
 .layout-mobile .perfil-trocar-texto { display: none; }
 .layout-mobile.com-perfis .profile-name { display: none; }
 .apto-form .form-group { margin-bottom: 0; }
+.regras-form { margin-top: 14px; }
+.regras-form[hidden] { display: none; }
+.regras-antecedencia { max-width: 220px; }
+.regras-dias { border: 0; padding: 0; margin: 4px 0 10px; }
+.regras-dias legend { font-size: 13px; font-weight: 600; color: var(--text-2); margin-bottom: 8px; }
+.regra-dia { display: grid; grid-template-columns: 130px 150px auto 150px; justify-content: start; gap: 10px; align-items: center; margin-bottom: 8px; }
+.regra-dia input[type=time] { width: 100%; min-width: 0; box-sizing: border-box; }
+.regra-dia-nome { display: flex; gap: 8px; align-items: center; font-size: 13px; font-weight: 600; }
+.regra-dia input[type=time] { padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface-2); font: inherit; color: var(--text); }
+.regra-dia input[type=time]:disabled { opacity: .45; }
+@media (max-width: 520px) {
+  .regra-dia { grid-template-columns: 1fr auto 1fr; gap: 6px 8px; margin-bottom: 12px; }
+  .regra-dia-nome { grid-column: 1 / -1; }
+}

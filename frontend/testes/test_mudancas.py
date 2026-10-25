@@ -41,9 +41,10 @@ def test_morador_pede_sindico_aprova_e_portaria_ve(navegador):
         pg.fill("#mEmpresa", "Mudanças do Teste")
         pg.click("#formMudanca button[type=submit]")
         pg.wait_for_selector("#erroMudanca.sucesso", timeout=8000)
-        cartao = pg.locator("#listaMudancas .mudanca", has_text="Mudanças do Teste")
+        # Rodado de novo, o teste encontra os cancelados de antes: vale o pendente.
+        cartao = pg.locator("#listaMudancas .mudanca", has_text="Mudanças do Teste").filter(
+            has_text="Aguardando o síndico")
         cartao.wait_for(timeout=8000)
-        assert "Aguardando o síndico" in cartao.inner_text()
         assert pg.erros == []
         ctx.close()
 
@@ -68,4 +69,41 @@ def test_morador_pede_sindico_aprova_e_portaria_ve(navegador):
             if m["empresa"] == "Mudanças do Teste" and m["status"] in ("pendente", "aprovada"):
                 pg.request.post(f"{API}/mudancas/{m['id']}/cancelamento", headers=morador,
                                 data={})
+        ctx.close()
+
+
+PADRAO = {"antecedencia_minima_dias": 2,
+          "horarios": {**{str(d): {"inicio": "08:00", "fim": "18:00"} for d in range(1, 6)},
+                       "6": {"inicio": "08:00", "fim": "12:00"}}}
+
+
+def test_sindico_muda_as_regras_e_o_morador_ve(navegador):
+    ctx, pg = abrir(navegador, papel="sindico")
+    sindico = token_da_aba(pg)
+    try:
+        ir(pg, "pages/sindico/mudancas.html", 1500)
+        pg.click("#btnEditarRegras")
+        pg.fill("#rAntecedencia", "4")
+        domingo = pg.locator(".regra-dia[data-dia='7']")
+        domingo.locator(".regra-permite").check()
+        pg.fill("#rIni7", "10:00")
+        pg.fill("#rFim7", "14:00")
+        # Fim antes do início não sai da tela.
+        pg.fill("#rFim1", "07:00")
+        pg.click("#formRegras button[type=submit]")
+        pg.get_by_text("o fim do horário precisa ser depois do início").wait_for(timeout=4000)
+        pg.fill("#rFim1", "18:00")
+        pg.click("#formRegras button[type=submit]")
+        pg.wait_for_selector("#erroRegras.sucesso", timeout=8000)
+        pg.get_by_text("Domingo, das 10h às 14h.").wait_for(timeout=4000)
+        assert pg.erros == []
+        ctx.close()
+
+        ctx, pg = abrir(navegador, papel="morador")
+        ir(pg, "pages/morador/mudancas.html", 1500)
+        pg.get_by_text("Peça com pelo menos 4 dias de antecedência").wait_for(timeout=8000)
+        pg.get_by_text("Domingo, das 10h às 14h.").wait_for(timeout=4000)
+        assert pg.erros == []
+    finally:
+        pg.request.put(f"{API}/mudancas/regras", headers=sindico, data=PADRAO)
         ctx.close()

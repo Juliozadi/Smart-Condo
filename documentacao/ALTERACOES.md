@@ -15,11 +15,11 @@ não tinha.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | Novo RF048: prestação de contas — despesas e balancete do mês. Novo RF049: assembleia virtual com votação. Novo RF050: os veículos do apartamento, que a portaria reconhece pela placa. Novo RF051: agendamento de mudança. Novo RF052: mais de um perfil com o mesmo login (o síndico que também mora, o morador eleito síndico). Novo RF053: o proprietário de mais de um apartamento, morando ou não neles. RF049: o proprietário vota mesmo sem morar no apartamento |
+| 9 Requisitos funcionais | Novo RF048: prestação de contas — despesas e balancete do mês. Novo RF049: assembleia virtual com votação. Novo RF050: os veículos do apartamento, que a portaria reconhece pela placa. Novo RF051: agendamento de mudança, com as regras do regimento que o síndico define. Novo RF052: mais de um perfil com o mesmo login (o síndico que também mora, o morador eleito síndico). Novo RF053: o proprietário de mais de um apartamento, morando ou não neles. RF049: o proprietário vota mesmo sem morar no apartamento |
 | 11 Diagrama de caso de uso | Novos casos: prestar contas, convocar assembleia, votar em assembleia, cadastrar veículo, agendar mudança, trocar de perfil e vincular outro apartamento — agora 35 casos de uso |
-| 14 a 17 | Novas tabelas despesas, assembleias, itens_pauta, votos, veiculos_unidade e mudancas; usuarios ganha reside e conta_principal_id, e o e-mail e o CPF passam a ser únicos entre os cadastros com login — agora 29 entidades, 352 atributos e 76 relacionamentos; o DER ganha um quarto recorte, de gestão |
-| 21 API REST | 141 endpoints: despesas (lançar, listar, corrigir, cancelar, comprovante) e balancete do mês; assembleias (convocar, listar, votar, cancelar); veículos do apartamento (cadastrar, listar, remover) e a consulta da placa pela portaria; mudanças (regras, horários tomados, agendar, listar, avaliar, cancelar); perfis da pessoa e troca de perfil; acrescentar e tirar apartamentos do próprio cadastro |
-| 23 Testes | 595 casos no servidor e 118 testes de interface |
+| 14 a 17 | Novas tabelas despesas, assembleias, itens_pauta, votos, veiculos_unidade, mudancas e horarios_mudanca; condominios ganha mudanca_antecedencia_dias; usuarios ganha reside e conta_principal_id, e o e-mail e o CPF passam a ser únicos entre os cadastros com login — agora 30 entidades, 358 atributos e 77 relacionamentos; o DER ganha um quarto recorte, de gestão |
+| 21 API REST | 142 endpoints: despesas (lançar, listar, corrigir, cancelar, comprovante) e balancete do mês; assembleias (convocar, listar, votar, cancelar); veículos do apartamento (cadastrar, listar, remover) e a consulta da placa pela portaria; mudanças (consultar e definir as regras, horários tomados, agendar, listar, avaliar, cancelar); perfis da pessoa e troca de perfil; acrescentar e tirar apartamentos do próprio cadastro |
+| 23 Testes | 604 casos no servidor e 119 testes de interface |
 
 **Situações tratadas.**
 - O morador paga a taxa todo mês e não sabe para onde vai o dinheiro; o
@@ -58,6 +58,12 @@ não tinha.
   quem. Uma mudança de cada vez em cada bloco. O síndico aprova ou recusa
   com motivo, e o morador recebe a resposta; a portaria vê as aprovadas.
   A pendente que chega ao horário sem avaliação vira recusada.
+- Cada condomínio tem o seu regimento: num, a mudança vai até as 17h e
+  nunca no sábado; noutro, pede 5 dias de aviso; noutro, vale no domingo
+  de manhã. O síndico define, na tela de mudanças, o aviso mínimo e, dia
+  a dia, se pode haver mudança e em que horário; o morador passa a ver e
+  a cumprir as regras do seu condomínio. As mudanças já agendadas
+  continuam de pé.
 - O síndico que mora no condomínio paga a taxa, reserva o salão e vota
   como qualquer morador — mas o CPF só podia ter um cadastro, e ele não
   tinha como ser morador. O morador eleito síndico precisava de outro

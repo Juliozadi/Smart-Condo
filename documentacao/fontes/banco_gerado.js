@@ -602,10 +602,18 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Juros ao mês, em %, contados por dia de atraso; de 0 a 1 (Código Civil, art. 1.336, § 1º)"
+      },
+      {
+        "coluna": "mudanca_antecedencia_dias",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Com quantos dias de aviso o morador agenda a mudança, pelo regimento; de 0 a 60"
       }
     ],
     "regras": [
       "CHECK (((juros_mensais >= (0)::numeric) AND (juros_mensais <= (1)::numeric)))",
+      "CHECK (((mudanca_antecedencia_dias >= 0) AND (mudanca_antecedencia_dias <= 60)))",
       "CHECK (((multa_atraso >= (0)::numeric) AND (multa_atraso <= (2)::numeric)))"
     ]
   },
@@ -1124,6 +1132,52 @@ const dicionario = [
     ],
     "regras": [
       "CHECK ((horario_fechamento > horario_abertura))"
+    ]
+  },
+  {
+    "nome": "horarios_mudanca",
+    "resumo": "Os dias da semana e os horários em que o regimento de cada condomínio permite mudança; o dia sem linha não tem mudança.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio cujo regimento define o horário"
+      },
+      {
+        "coluna": "dia_semana",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Dia da semana, de 1 (segunda) a 7 (domingo); um horário por dia"
+      },
+      {
+        "coluna": "hora_inicio",
+        "tipo": "TIME",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "A partir de que horas a mudança pode começar nesse dia"
+      },
+      {
+        "coluna": "hora_fim",
+        "tipo": "TIME",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Até que horas a mudança precisa terminar nesse dia"
+      }
+    ],
+    "regras": [
+      "CHECK (((dia_semana >= 1) AND (dia_semana <= 7)))",
+      "CHECK ((hora_fim > hora_inicio))",
+      "UNIQUE (condominio_id, dia_semana)"
     ]
   },
   {
@@ -2880,6 +2934,12 @@ const relacoes = [
     "coluna": "inativado_por_id",
     "destino": "usuarios",
     "texto": "Síndico que inativou o espaço"
+  },
+  {
+    "origem": "horarios_mudanca",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio cujo regimento define o horário"
   },
   {
     "origem": "itens_pauta",

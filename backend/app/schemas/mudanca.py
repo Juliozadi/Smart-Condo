@@ -85,6 +85,32 @@ class HorarioDoDia(SchemaBase):
     inicio: time
     fim: time
 
+    @field_validator("inicio", "fim")
+    @classmethod
+    def sem_fuso(cls, valor: time) -> time:
+        if valor.tzinfo is not None:
+            raise ValueError("Informe o horário sem fuso, no horário do condomínio.")
+        return valor
+
+
+class RegrasMudancaEntrada(SchemaBase):
+    """O regimento do condomínio: aviso mínimo e, para cada dia da semana
+    em que pode haver mudança, o horário. Dia que não vem não tem mudança."""
+    antecedencia_minima_dias: int = Field(ge=0, le=60)
+    horarios: dict[int, HorarioDoDia]
+
+    @field_validator("horarios")
+    @classmethod
+    def conferir_dias(cls, horarios: dict[int, HorarioDoDia]) -> dict[int, HorarioDoDia]:
+        if not horarios:
+            raise ValueError("Escolha pelo menos um dia da semana para as mudanças.")
+        for dia, h in horarios.items():
+            if not 1 <= dia <= 7:
+                raise ValueError("Os dias da semana vão de 1 (segunda) a 7 (domingo).")
+            if h.fim <= h.inicio:
+                raise ValueError("Em cada dia, o fim do horário precisa ser depois do início.")
+        return horarios
+
 
 class RegrasMudanca(SchemaBase):
     antecedencia_minima_dias: int

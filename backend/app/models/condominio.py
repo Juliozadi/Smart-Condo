@@ -28,6 +28,8 @@ class Condominio(Base, TimestampMixin, InativacaoMixin):
         # na convenção, juros de 1% ao mês.
         CheckConstraint("multa_atraso BETWEEN 0 AND 2", name="ck_condominio_multa"),
         CheckConstraint("juros_mensais BETWEEN 0 AND 1", name="ck_condominio_juros"),
+        CheckConstraint("mudanca_antecedencia_dias BETWEEN 0 AND 60",
+                        name="ck_condominio_mudanca_antecedencia"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -59,6 +61,11 @@ class Condominio(Base, TimestampMixin, InativacaoMixin):
     )
     juros_mensais: Mapped[Decimal] = mapped_column(
         Numeric(4, 2), nullable=False, default=Decimal("1.00"), server_default=text("1.00")
+    )
+    # Com quantos dias de aviso o morador agenda a mudança; os horários de
+    # cada dia ficam em horarios_mudanca (regimento interno).
+    mudanca_antecedencia_dias: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=2, server_default=text("2")
     )
 
     # O síndico que cadastrou o condomínio (pré-requisito da seção 12:
