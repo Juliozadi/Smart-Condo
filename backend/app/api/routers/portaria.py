@@ -115,11 +115,17 @@ def _avisar_sindico(db: Session, unidade: Unidade, titulo: str, mensagem: str) -
         notificacao.notificar(sindico.email, CanalVerificacao.EMAIL, titulo, mensagem)
 
 
-def _visitante_saida(v: Visitante, unidade: Unidade | None = None) -> VisitanteSaida:
+def _visitante_saida(v: Visitante, unidade: Unidade | None = None,
+                     para_morador: bool = False) -> VisitanteSaida:
+    # O morador reconhece a visita pelo nome, pela foto e por parte do
+    # documento; o número inteiro fica com a portaria e o síndico, que
+    # registraram e respondem por ele (LGPD, art. 6º, III: necessidade).
     return VisitanteSaida(
         id=v.id, unidade_id=v.unidade_id,
         unidade=(unidade or v.unidade).identificacao,
-        nome=v.nome, documento=v.documento, tipo_visita=v.tipo_visita,
+        nome=v.nome,
+        documento=_documento_mascarado(v.documento) if para_morador else v.documento,
+        tipo_visita=v.tipo_visita,
         placa_veiculo=v.placa_veiculo,
         foto_url=f"/portaria/visitantes/{v.id}/foto" if v.foto_arquivo else None,
         status=v.status,
@@ -311,7 +317,8 @@ def listar_visitantes(
         consulta = consulta.where(Visitante.status == status_visitante)
 
     visitantes = db.scalars(consulta.order_by(Visitante.id.desc())).all()
-    return [_visitante_saida(v) for v in visitantes]
+    para_morador = usuario.papel == Papel.MORADOR
+    return [_visitante_saida(v, para_morador=para_morador) for v in visitantes]
 
 
 @router.post(
@@ -367,7 +374,7 @@ def confirmar_visitante(
                 f"{visitante.nome}: entrada "
                 f"{'liberada' if dados.confirmado else 'recusada'}.",
             )
-    return _visitante_saida(visitante)
+    return _visitante_saida(visitante, para_morador=True)
 
 
 @router.post(

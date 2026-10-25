@@ -132,6 +132,21 @@ def test_morador_so_ve_os_visitantes_da_propria_unidade(cliente, cenario):
     assert len(do_porteiro) == 2
 
 
+def test_morador_ve_so_parte_do_documento_da_visita(cliente, cenario):
+    """O morador reconhece a visita pelo nome, pela foto e por parte do
+    documento; o CPF inteiro fica com a portaria e o síndico."""
+    v = registrar_visitante(cliente, cenario["porteiro"], cenario["u204"]).json()
+    doc = v["documento"]
+    assert len(doc) == 11   # a portaria, que registrou, vê inteiro
+    lista = cliente.get("/api/v1/portaria/visitantes", headers=cab(cenario["ana"])).json()
+    assert lista[0]["documento"] == f"***.{doc[3:6]}.{doc[6:9]}-**"
+    r = cliente.post(f"/api/v1/portaria/visitantes/{v['id']}/confirmacao",
+                     json={"confirmado": True}, headers=cab(cenario["ana"]))
+    assert doc not in r.text
+    assert cliente.get("/api/v1/portaria/visitantes",
+                       headers=cab(cenario["sindico"])).json()[0]["documento"] == doc
+
+
 def test_saida_so_apos_a_entrada(cliente, cenario):
     v = registrar_visitante(cliente, cenario["porteiro"], cenario["u204"]).json()
 

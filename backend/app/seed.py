@@ -422,18 +422,18 @@ def criar(db) -> dict:
     # ── Portaria ──────────────────────────────────────────────────────
     db.add(Visitante(
         unidade_id=unidades["204"].id, registrado_por_id=carlos.id,
-        nome="Marcos Alves", documento="01864196947", tipo_visita="Visita pessoal",
+        nome="Marcos Alves", documento="05234167844", tipo_visita="Visita pessoal",
         status=StatusVisitante.AGUARDANDO_CONFIRMACAO,
     ))
     db.add(Visitante(
         unidade_id=unidades["301"].id, registrado_por_id=carlos.id,
-        nome="Fernanda Souza", documento="01617283592", tipo_visita="Visita pessoal",
+        nome="Fernanda Souza", documento="05234168573", tipo_visita="Visita pessoal",
         status=StatusVisitante.DENTRO, entrada_em=AGORA - timedelta(hours=2),
         confirmado_por_id=moradores["301"].id, confirmado_em=AGORA - timedelta(hours=2),
     ))
     db.add(Visitante(
         unidade_id=unidades["102"].id, registrado_por_id=renata.id,
-        nome="Lucas Oliveira", documento="01493826859", tipo_visita="Prestador de serviço",
+        nome="Lucas Oliveira", documento="05234169200", tipo_visita="Prestador de serviço",
         placa_veiculo="ABC1D23", status=StatusVisitante.SAIU,
         entrada_em=AGORA - timedelta(hours=6), saida_em=AGORA - timedelta(hours=1),
         confirmado_por_id=moradores["102"].id, confirmado_em=AGORA - timedelta(hours=6),
