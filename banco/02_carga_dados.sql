@@ -213,6 +213,13 @@ SELECT setval('registros_ocupacao_id_seq', (SELECT COALESCE(MAX(id), 1) FROM reg
 
 SELECT setval('preferencias_cobranca_id_seq', (SELECT COALESCE(MAX(id), 1) FROM preferencias_cobranca));
 
+-- Taxa de uso dos espaços: o salão e as churrasqueiras cobram; a festa do
+-- 204, já aprovada, tem a taxa nas cobranças do apartamento.
+UPDATE espacos_comuns SET taxa_uso = 150.00 WHERE id = 1;
+UPDATE espacos_comuns SET taxa_uso = 60.00 WHERE id IN (2, 3);
+INSERT INTO cobrancas (id, unidade_id, competencia, descricao, valor, vencimento, status, origem, criado_em, atualizado_em) VALUES (19, 3, '2026-09-01', 'Uso do espaço Salão de Festas em 25/09/2026', 150.00, '2026-09-25', 'ABERTA', 'USO_ESPACO', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
+UPDATE reservas SET cobranca_id = 19 WHERE id = 1;
+
 SELECT setval('cobrancas_id_seq', (SELECT COALESCE(MAX(id), 1) FROM cobrancas));
 
 SELECT setval('pagamentos_id_seq', (SELECT COALESCE(MAX(id), 1) FROM pagamentos));

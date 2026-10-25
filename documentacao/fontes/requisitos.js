@@ -99,7 +99,7 @@ const requisitosFuncionais = [
   { id: 'RF015', nome: 'Cadastrar espaço comum',
     atores: 'Síndico', prioridade: 'Importante',
     descricao: 'O sistema permite cadastrar os espaços do condomínio — salão de festas, churrasqueira, academia, piscina — indicando capacidade, se exigem reserva e se exigem aprovação do síndico.',
-    entradas: 'O síndico informa nome, tipo (reservável ou de uso livre), capacidade e descrição, e pode marcar o espaço como em manutenção. No espaço reservável, define também as regras de uso, todas opcionais: horário de funcionamento, antecedência mínima, duração máxima de cada reserva e quantas reservas futuras cada apartamento pode ter. Depois, pela mesma tela, edita, inativa ou reativa o espaço.',
+    entradas: 'O síndico informa nome, tipo (reservável ou de uso livre), capacidade e descrição, e pode marcar o espaço como em manutenção e definir uma taxa de uso, cobrada quando a reserva é aprovada. No espaço reservável, define também as regras de uso, todas opcionais: horário de funcionamento, antecedência mínima, duração máxima de cada reserva e quantas reservas futuras cada apartamento pode ter. Depois, pela mesma tela, edita, inativa ou reativa o espaço.',
     saidas: 'O espaço passa a aparecer para os moradores, na agenda de reservas ou no painel de ocupação, conforme as regras definidas. Em manutenção, não aceita novas reservas. Nada é apagado: inativado, o espaço sai das telas, as reservas de hoje em diante são canceladas e o histórico fica guardado; reativado, volta a aparecer. Cada alteração registra quem a fez.' },
 
   { id: 'RF016', nome: 'Solicitar reserva de espaço',
@@ -112,7 +112,7 @@ const requisitosFuncionais = [
     atores: 'Síndico', prioridade: 'Essencial',
     descricao: 'O sistema apresenta ao síndico as reservas pendentes e permite aprovar ou recusar cada uma, registrando quem avaliou e quando. O síndico também cancela a reserva já aprovada que ainda não começou (vazamento no salão, obra, evento do condomínio), informando o motivo.',
     entradas: 'A reserva deve estar pendente e pertencer a um espaço do condomínio do síndico. Se o horário já passou, ela só pode ser recusada; e a que chega ao horário sem avaliação é recusada pelo sistema, com o motivo para o morador.',
-    saidas: 'A reserva passa a "aprovada", "recusada" ou "cancelada", e o morador vê o resultado e o motivo na sua lista de reservas; a recusada e a cancelada pelo síndico que ainda estão por vir aparecem no topo, e o cancelamento também chega por e-mail. Fica registrado quem cancelou e quando.' },
+    saidas: 'A reserva passa a "aprovada", "recusada" ou "cancelada", e o morador vê o resultado e o motivo na sua lista de reservas; a recusada e a cancelada pelo síndico que ainda estão por vir aparecem no topo, e o cancelamento também chega por e-mail. Fica registrado quem cancelou e quando. Aprovada a reserva de um espaço com taxa de uso, a taxa entra nas cobranças do apartamento, com vencimento no dia da reserva; cancelada a reserva, por quem for, a taxa sai das cobranças, a não ser que já tenha sido paga — a devolução fica com o síndico.' },
 
   { id: 'RF018', nome: 'Cancelar a própria reserva',
     atores: 'Morador', prioridade: 'Importante',

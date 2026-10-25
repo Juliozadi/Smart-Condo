@@ -1135,10 +1135,18 @@ const dicionario = [
         "obrigatorio": "Não",
         "chave": "",
         "descricao": "Regra de uso: quantas reservas futuras deste espaço cada apartamento pode ter ao mesmo tempo"
+      },
+      {
+        "coluna": "taxa_uso",
+        "tipo": "NUMERIC(10,2)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Taxa de uso (limpeza, gás, desgaste), cobrada do apartamento quando o síndico aprova a reserva; vazia, sem taxa"
       }
     ],
     "regras": [
-      "CHECK ((horario_fechamento > horario_abertura))"
+      "CHECK ((horario_fechamento > horario_abertura))",
+      "CHECK (((taxa_uso IS NULL) OR (taxa_uso > (0)::numeric)))"
     ]
   },
   {
@@ -2413,6 +2421,13 @@ const dicionario = [
         "obrigatorio": "Não",
         "chave": "",
         "descricao": "Por que a reserva foi cancelada (síndico, espaço inativado ou cadastro inativado); o morador vê este texto"
+      },
+      {
+        "coluna": "cobranca_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "A cobrança da taxa de uso, gerada quando o síndico aprovou; cancelada a reserva antes de paga, a cobrança também é"
       }
     ],
     "regras": [
@@ -3312,6 +3327,12 @@ const relacoes = [
     "coluna": "cancelada_por_id",
     "destino": "usuarios",
     "texto": "Quem cancelou a reserva: o próprio morador ou o síndico"
+  },
+  {
+    "origem": "reservas",
+    "coluna": "cobranca_id",
+    "destino": "cobrancas",
+    "texto": "A cobrança da taxa de uso, gerada quando o síndico aprovou; cancelada a reserva antes de paga, a cobrança também é"
   },
   {
     "origem": "reservas",

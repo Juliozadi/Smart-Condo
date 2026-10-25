@@ -109,10 +109,18 @@
               <input type="number" id="eDuracao" min="1" max="24" step="1" placeholder="Ex: 6">
             </div>
           </div>
-          <div class="form-group">
-            <label for="eLimite">Reservas futuras por apartamento</label>
-            <input type="number" id="eLimite" min="1" max="50" step="1" placeholder="Ex: 1 (vazio = sem limite)">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="eLimite">Reservas futuras por apartamento</label>
+              <input type="number" id="eLimite" min="1" max="50" step="1" placeholder="Ex: 1 (vazio = sem limite)">
+            </div>
+            <div class="form-group">
+              <label for="eTaxa">Taxa de uso (R$)</label>
+              <input type="number" id="eTaxa" min="0.01" step="0.01" inputmode="decimal" placeholder="Ex: 150,00 (vazio = sem taxa)">
+            </div>
           </div>
+          <p class="captura-dica">A taxa de uso entra nas cobranças do apartamento quando você aprova
+          a reserva, e sai se ela for cancelada antes de paga.</p>
         </fieldset>
         <label class="permissao-item" for="eManutencao">
           <input type="checkbox" id="eManutencao"> Em manutenção (não aceita novas reservas)
@@ -332,6 +340,7 @@
       campo('eAntecedencia').value = e.antecedencia_minima_dias != null ? e.antecedencia_minima_dias : '';
       campo('eDuracao').value = e.duracao_maxima_horas || '';
       campo('eLimite').value = e.limite_por_unidade || '';
+      campo('eTaxa').value = e.taxa_uso || '';
     }
     mostrarRegras();
     modal.abrir();
@@ -350,6 +359,7 @@
     if (e.antecedencia_minima_dias) partes.push(e.antecedencia_minima_dias + ' dia(s) de antecedência');
     if (e.duracao_maxima_horas) partes.push('até ' + e.duracao_maxima_horas + 'h por reserva');
     if (e.limite_por_unidade) partes.push(e.limite_por_unidade + ' reserva(s) futura(s) por apto');
+    if (e.taxa_uso) partes.push('taxa de uso ' + Number(e.taxa_uso).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
     return partes.join(' · ');
   }
 
@@ -466,7 +476,8 @@
       horario_fechamento: fecha || null,
       antecedencia_minima_dias: numero('eAntecedencia'),
       duracao_maxima_horas: numero('eDuracao'),
-      limite_por_unidade: numero('eLimite')
+      limite_por_unidade: numero('eLimite'),
+      taxa_uso: livre || campo('eTaxa').value === '' ? null : campo('eTaxa').value
     };
     return editandoId
       ? api.put('/espacos/' + editandoId, corpo)

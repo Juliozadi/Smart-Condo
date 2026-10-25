@@ -129,6 +129,7 @@
   function diaMes(iso) { var p = partes(iso); return { dia: ('0' + p.d).slice(-2), mes: MESES[p.m - 1] || '' }; }
   function dataCurta(iso) { var p = partes(iso); return ('0' + p.d).slice(-2) + '/' + ('0' + p.m).slice(-2); }
   function hora(h) { return (h || '').slice(0, 5).replace(':', 'h'); }
+  function dinheiro(v) { return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
   function periodo(r) { return hora(r.hora_inicio) + '–' + hora(r.hora_fim); }
   function hoje() {
     var d = new Date();
@@ -252,6 +253,9 @@
       partes.push(e.limite_por_unidade + (e.limite_por_unidade === 1 ? ' reserva futura' : ' reservas futuras') +
                   ' por apartamento');
     }
+    if (e && e.taxa_uso) {
+      partes.push('taxa de uso de ' + dinheiro(e.taxa_uso) + ', nas cobranças do apartamento quando o síndico aprovar');
+    }
     campo('regrasEspaco').textContent = partes.length ? 'Regras deste espaço: ' + partes.join(' · ') + '.' : '';
   }
   campo('reserv_espacoDesejado').addEventListener('change', mostrarRegrasEspaco);
@@ -300,7 +304,8 @@
     var h = document.createElement('h3');
     h.textContent = r.espaco_nome;
     var p = document.createElement('p');
-    p.textContent = periodo(r) + (r.pessoas_estimadas ? ' · ' + r.pessoas_estimadas + ' pessoas' : '');
+    p.textContent = periodo(r) + (r.pessoas_estimadas ? ' · ' + r.pessoas_estimadas + ' pessoas' : '') +
+      (r.taxa_uso ? ' · taxa de uso ' + dinheiro(r.taxa_uso) : '');
     info.appendChild(h); info.appendChild(p);
     var explicacao = motivoDe(r);
     if (explicacao) {

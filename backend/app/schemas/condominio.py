@@ -4,6 +4,8 @@ Documentação, seção 12 — caso de uso "Cadastro do condomínio" (síndico).
 """
 from __future__ import annotations
 
+from decimal import Decimal
+
 from datetime import datetime, time
 
 from pydantic import Field, field_validator, model_validator
@@ -91,6 +93,8 @@ class RegrasDoEspaco(SchemaBase):
     antecedencia_minima_dias: int | None = Field(default=None, ge=0, le=180)
     duracao_maxima_horas: int | None = Field(default=None, ge=1, le=24)
     limite_por_unidade: int | None = Field(default=None, ge=1, le=50)
+    # Cobrada do apartamento quando o síndico aprova a reserva.
+    taxa_uso: Decimal | None = Field(default=None, gt=0, max_digits=10, decimal_places=2)
 
     @field_validator("horario_abertura", "horario_fechamento")
     @classmethod
@@ -165,6 +169,7 @@ class EspacoSaida(SchemaBase):
     antecedencia_minima_dias: int | None = None
     duracao_maxima_horas: int | None = None
     limite_por_unidade: int | None = None
+    taxa_uso: Decimal | None = None
     inativo: bool = False
     # Só para o síndico: "Editado por Fulano em 28/09 14:32".
     ultima_alteracao: RegistroSaida | None = None

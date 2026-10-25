@@ -7,6 +7,7 @@ alugou, para evitar conflitos".
 from __future__ import annotations
 
 from datetime import date, datetime, time
+from decimal import Decimal
 
 from pydantic import Field, field_validator, model_validator
 
@@ -54,6 +55,10 @@ class ReservaSaida(SchemaBase):
     # próprio morador: a tela explica, com o motivo.
     cancelada_pelo_sindico: bool = False
     motivo_cancelamento: str | None = None
+    # A taxa de uso do espaço: a da cobrança, se já aprovada; senão a do
+    # espaço, para o morador saber antes.
+    taxa_uso: Decimal | None = None
+    cobranca_id: int | None = None
     criado_em: datetime
 
 

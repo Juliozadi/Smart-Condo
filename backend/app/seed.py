@@ -39,7 +39,7 @@ from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico, Ve
 from app.models.financeiro import Cobranca, Despesa, Pagamento, PreferenciaCobranca
 from app.models.portaria import Encomenda, Ocorrencia, Visitante
 from app.models.usuario import PermissaoPorteiro, Usuario
-from app.services import arquivos, perfis, registro
+from app.services import arquivos, cobrancas, perfis, registro
 
 SENHA = "smartcondo123"
 HOJE = hoje_local()
@@ -235,6 +235,9 @@ def criar(db) -> dict:
     salao.horario_abertura, salao.horario_fechamento = _hora(8), _hora(23)
     salao.antecedencia_minima_dias = 2
     salao.limite_por_unidade = 1
+    # Taxa de uso, cobrada quando o síndico aprova a reserva.
+    salao.taxa_uso = Decimal("150.00")
+    espacos["Churrasqueira 1"].taxa_uso = espacos["Churrasqueira 2"].taxa_uso = Decimal("60.00")
     db.flush()
 
     # ── Ocupação atual das áreas de uso livre ─────────────────────────
@@ -245,12 +248,16 @@ def criar(db) -> dict:
         ))
 
     # ── Reservas ──────────────────────────────────────────────────────
-    db.add(Reserva(
-        espaco_id=espacos["Salão de Festas"].id, morador_id=moradores["204"].id,
+    festa = Reserva(
+        espaco_id=salao.id, morador_id=moradores["204"].id,
         data=HOJE + timedelta(days=4), hora_inicio=_hora(14), hora_fim=_hora(22),
         pessoas_estimadas=50, observacoes="Aniversário de 15 anos",
         status=StatusReserva.APROVADA, avaliada_por_id=sindico.id, avaliada_em=AGORA,
-    ))
+    )
+    db.add(festa)
+    db.flush()
+    # Aprovada: a taxa de uso do salão já está nas cobranças do 204.
+    cobrancas.gerar_taxa_de_uso(db, festa, salao, unidades["204"].id, HOJE)
     db.add(Reserva(
         espaco_id=espacos["Churrasqueira 2"].id, morador_id=moradores["301"].id,
         data=HOJE + timedelta(days=11), hora_inicio=_hora(11), hora_fim=_hora(18),

@@ -139,6 +139,7 @@ DESCRICOES = {
     "espacos_comuns.antecedencia_minima_dias": "Regra de uso: com quantos dias de antecedência, no mínimo, a reserva precisa ser feita",
     "espacos_comuns.duracao_maxima_horas": "Regra de uso: quantas horas cada reserva pode durar, no máximo",
     "espacos_comuns.limite_por_unidade": "Regra de uso: quantas reservas futuras deste espaço cada apartamento pode ter ao mesmo tempo",
+    "espacos_comuns.taxa_uso": "Taxa de uso (limpeza, gás, desgaste), cobrada do apartamento quando o síndico aprova a reserva; vazia, sem taxa",
 
     "reservas.data": "Dia da reserva",
     "reservas.hora_inicio": "Hora de início",
@@ -317,6 +318,7 @@ VINCULOS = {
     "usuarios.conta_principal_id": "No perfil vinculado, o cadastro com login da mesma pessoa; vazio no cadastro principal. E-mail e CPF são únicos entre os principais",
     "reservas.avaliada_por_id": "Síndico que aprovou ou recusou a reserva",
     "reservas.cancelada_por_id": "Quem cancelou a reserva: o próprio morador ou o síndico",
+    "reservas.cobranca_id": "A cobrança da taxa de uso, gerada quando o síndico aprovou; cancelada a reserva antes de paga, a cobrança também é",
     "ocorrencias.aberta_por_id": "Quem registrou a ocorrência",
     "ocorrencias.respondida_por_id": "Síndico que respondeu",
     "ordens_servico.aberta_por_id": "Síndico que abriu a ordem",

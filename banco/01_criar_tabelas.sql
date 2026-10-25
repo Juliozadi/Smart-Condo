@@ -418,7 +418,10 @@ CREATE TABLE espacos_comuns (
     antecedencia_minima_dias integer,
     duracao_maxima_horas integer,
     limite_por_unidade integer,
-    CONSTRAINT ck_espaco_horario CHECK ((horario_fechamento > horario_abertura))
+    -- Taxa de uso, cobrada quando o síndico aprova a reserva; vazia, sem taxa.
+    taxa_uso numeric(10,2),
+    CONSTRAINT ck_espaco_horario CHECK ((horario_fechamento > horario_abertura)),
+    CONSTRAINT ck_espaco_taxa_uso CHECK (((taxa_uso IS NULL) OR (taxa_uso > (0)::numeric)))
 );
 CREATE SEQUENCE espacos_comuns_id_seq
     AS integer
@@ -450,6 +453,8 @@ CREATE TABLE reservas (
     cancelada_por_id integer,
     cancelada_em timestamp with time zone,
     motivo_cancelamento text,
+    -- A cobrança da taxa de uso, gerada na aprovação.
+    cobranca_id integer,
     CONSTRAINT ck_reserva_intervalo CHECK ((hora_fim > hora_inicio))
 );
 CREATE SEQUENCE reservas_id_seq
@@ -1231,6 +1236,9 @@ ALTER TABLE ONLY veiculos_unidade
 
 ALTER TABLE ONLY veiculos_unidade
     ADD CONSTRAINT veiculos_unidade_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY reservas
+    ADD CONSTRAINT reservas_cobranca_id_fkey FOREIGN KEY (cobranca_id) REFERENCES cobrancas(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY infracoes
     ADD CONSTRAINT infracoes_aplicada_por_id_fkey FOREIGN KEY (aplicada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;

@@ -19,6 +19,7 @@ from app.models.enums import Papel, StatusReserva, StatusUsuario
 from app.models.espaco import Reserva
 from app.models.usuario import PermissaoPorteiro, Usuario
 from app.services import auth as servico_auth
+from app.services import cobrancas as servico_cobrancas
 from app.services import perfis, registro
 
 ROTULOS_USUARIO = {
@@ -273,7 +274,15 @@ def cancelar_reservas_futuras(db: Session, usuario: Usuario) -> int:
     """Quem deixa o condomínio não segura mais os espaços: as reservas de
     hoje em diante, pendentes ou aprovadas, são canceladas. Sem isso, o
     salão continuava bloqueado por quem já tinha se mudado. As passadas
-    ficam como estão, no histórico."""
+    ficam como estão, no histórico. A taxa de uso delas, se não paga,
+    sai das cobranças."""
+    taxas = db.scalars(select(Reserva.cobranca_id).where(
+        Reserva.morador_id == usuario.id, Reserva.cobranca_id.is_not(None),
+        Reserva.status.in_((StatusReserva.PENDENTE, StatusReserva.APROVADA)),
+        Reserva.data >= hoje_local(),
+    )).all()
+    for cobranca_id in taxas:
+        servico_cobrancas.cancelar_taxa_de_uso(db, cobranca_id)
     return db.execute(
         update(Reserva)
         .where(

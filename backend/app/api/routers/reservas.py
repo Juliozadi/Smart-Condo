@@ -30,6 +30,7 @@ from app.schemas.reserva import (
     AvaliacaoReserva, CancelamentoReserva, OcupacaoAgenda, ReservaEntrada, ReservaSaida,
     ReservaSindicoSaida,
 )
+from app.services import cobrancas as servico_cobrancas
 from app.services import notificacao, registro
 
 router = APIRouter(prefix="/espacos", tags=["Espaços e Reservas"])
@@ -183,6 +184,9 @@ def _para_saida(reserva: Reserva) -> ReservaSaida:
                                 and reserva.cancelada_por_id is not None
                                 and reserva.cancelada_por_id != reserva.morador_id),
         motivo_cancelamento=reserva.motivo_cancelamento,
+        taxa_uso=(reserva.cobranca.valor if reserva.cobranca else
+                  reserva.espaco.taxa_uso if reserva.status == StatusReserva.PENDENTE else None),
+        cobranca_id=reserva.cobranca_id,
         criado_em=reserva.criado_em,
     )
 
@@ -234,6 +238,7 @@ ROTULOS_ESPACO = {
     "horario_abertura": "o horário", "horario_fechamento": "o horário",
     "antecedencia_minima_dias": "a antecedência", "duracao_maxima_horas": "a duração máxima",
     "limite_por_unidade": "o limite por apartamento",
+    "taxa_uso": "a taxa de uso",
 }
 
 
@@ -315,6 +320,7 @@ def inativar_espaco(
         reserva.cancelada_por_id = sindico.id
         reserva.cancelada_em = agora
         reserva.motivo_cancelamento = MOTIVO_ESPACO_INATIVADO
+        servico_cobrancas.cancelar_taxa_de_uso(db, reserva.cobranca_id)
     canceladas = len(afetadas)
     espaco.inativo_em = agora
     espaco.inativado_por_id = sindico.id
@@ -624,6 +630,7 @@ def cancelar_reserva(
     reserva.status = StatusReserva.CANCELADA
     reserva.cancelada_por_id = morador.id
     reserva.cancelada_em = datetime.now(timezone.utc)
+    servico_cobrancas.cancelar_taxa_de_uso(db, reserva.cobranca_id)
     db.commit()
     db.refresh(reserva)
     return _para_saida(reserva)
@@ -699,6 +706,13 @@ def avaliar_reserva(
     reserva.motivo_recusa = None if dados.aprovada else dados.motivo
     reserva.avaliada_por_id = sindico.id
     reserva.avaliada_em = datetime.now(timezone.utc)
+    # A taxa de uso do espaço entra nas cobranças do apartamento.
+    if dados.aprovada and reserva.morador.unidade_id:
+        taxa = servico_cobrancas.gerar_taxa_de_uso(db, reserva, reserva.espaco,
+                                                    reserva.morador.unidade_id, hoje_local())
+        if taxa is not None:
+            registro.registrar(db, sindico, registro.CRIOU, registro.COBRANCA, taxa.id,
+                               f"Taxa de uso da reserva {reserva.id}")
 
     db.commit()
     db.refresh(reserva)
@@ -752,6 +766,7 @@ def cancelar_pelo_sindico(
     reserva.cancelada_por_id = sindico.id
     reserva.cancelada_em = datetime.now(timezone.utc)
     reserva.motivo_cancelamento = dados.motivo
+    servico_cobrancas.cancelar_taxa_de_uso(db, reserva.cobranca_id)
     db.commit()
     db.refresh(reserva)
     _avisar_cancelamento(reserva, reserva.espaco.nome)

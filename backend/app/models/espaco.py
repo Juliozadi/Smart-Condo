@@ -12,10 +12,11 @@ Seção 11.5.3: o síndico aprova ou recusa a reserva.
 from __future__ import annotations
 
 from datetime import date, datetime, time
+from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
-    Boolean, CheckConstraint, Date, DateTime, Enum as SAEnum, ForeignKey, Integer,
+    Boolean, CheckConstraint, Date, DateTime, Enum as SAEnum, ForeignKey, Integer, Numeric,
     String, Text, Time,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -25,6 +26,7 @@ from app.models.base import InativacaoMixin, TimestampMixin
 from app.models.enums import StatusReserva
 
 if TYPE_CHECKING:
+    from app.models.financeiro import Cobranca
     from app.models.usuario import Usuario
 
 
@@ -32,6 +34,7 @@ class EspacoComum(Base, TimestampMixin, InativacaoMixin):
     __tablename__ = "espacos_comuns"
     __table_args__ = (
         CheckConstraint("horario_fechamento > horario_abertura", name="ck_espaco_horario"),
+        CheckConstraint("taxa_uso IS NULL OR taxa_uso > 0", name="ck_espaco_taxa_uso"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -59,6 +62,9 @@ class EspacoComum(Base, TimestampMixin, InativacaoMixin):
     antecedencia_minima_dias: Mapped[int | None] = mapped_column(Integer)
     duracao_maxima_horas: Mapped[int | None] = mapped_column(Integer)
     limite_por_unidade: Mapped[int | None] = mapped_column(Integer)
+    # Taxa de uso (limpeza, gás, desgaste), cobrada do apartamento quando o
+    # síndico aprova a reserva; vazia, o espaço não tem taxa.
+    taxa_uso: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
 
     reservas: Mapped[list["Reserva"]] = relationship(
         back_populates="espaco", cascade="all, delete-orphan"
@@ -113,8 +119,13 @@ class Reserva(Base, TimestampMixin):
     )
     cancelada_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     motivo_cancelamento: Mapped[str | None] = mapped_column(Text)
+    # A taxa de uso, quando o espaço tem: a cobrança gerada na aprovação.
+    cobranca_id: Mapped[int | None] = mapped_column(
+        ForeignKey("cobrancas.id", ondelete="SET NULL")
+    )
 
     espaco: Mapped["EspacoComum"] = relationship(back_populates="reservas")
+    cobranca: Mapped["Cobranca | None"] = relationship()
     morador: Mapped["Usuario"] = relationship(foreign_keys=[morador_id])
 
     def __repr__(self) -> str:
