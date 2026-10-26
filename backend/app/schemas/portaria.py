@@ -37,6 +37,8 @@ class AutorizacaoEntrada(SchemaBase):
     dias_semana: list[Annotated[int, Field(ge=1, le=7)]] | None = Field(
         default=None, max_length=7)
     observacao: str | None = Field(default=None, max_length=300)
+    # Pode levar a chave do apartamento deixada na portaria.
+    pode_retirar_chave: bool = False
 
     _vazios = field_validator("documento", "observacao", mode="before")(_vazio_e_nada)
 
@@ -58,6 +60,8 @@ class AutorizacaoEntrada(SchemaBase):
             raise ValueError("A autorização pode começar em até um ano.")
         if self.valida_ate - self.valida_de > PERIODO_MAXIMO_AUTORIZACAO:
             raise ValueError("A autorização vale por no máximo um ano; depois, renove.")
+        if self.pode_retirar_chave and not self.documento:
+            raise ValueError("Para retirar a chave, informe o CPF: a portaria confere o documento.")
         return self
 
 
@@ -72,6 +76,7 @@ class AutorizacaoSaida(SchemaBase):
     valida_ate: date
     dias_semana: list[int] | None = None
     observacao: str | None = None
+    pode_retirar_chave: bool = False
     autorizado_por_nome: str | None = None
     # Se a portaria pode registrar a entrada hoje, e se a pessoa já entrou
     # (e ainda não saiu) por esta autorização.

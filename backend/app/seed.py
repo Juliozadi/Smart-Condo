@@ -33,6 +33,7 @@ from app.models.enums import (
     TipoInfracao, TipoMovimentacao, TipoMudanca, TipoOcupacao,
 )
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
+from app.models.chave import Chave, MovimentacaoChave
 from app.models.declaracao import DeclaracaoQuitacao
 from app.models.infracao import Infracao
 from app.models.preventiva import PlanoManutencao, RealizacaoManutencao
@@ -40,7 +41,7 @@ from app.models.livro import AnotacaoPortaria, CienciaAnotacao
 from app.models.mudanca import Mudanca
 from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico, VeiculoUnidade
 from app.models.financeiro import Cobranca, Despesa, Pagamento, PreferenciaCobranca
-from app.models.portaria import Encomenda, Ocorrencia, Visitante
+from app.models.portaria import AutorizacaoVisita, Encomenda, Ocorrencia, Visitante
 from app.models.usuario import PermissaoPorteiro, Usuario
 from app.services import arquivos, cobrancas, perfis, registro
 from app.services.quitacao import VALIDADE_DIAS, novo_codigo
@@ -452,6 +453,47 @@ def criar(db) -> dict:
                 plano_id=plano.id, data=somar_meses(ultima, -meses * i),
                 custo=Decimal(custo), registrada_por_id=sindico.id,
             ))
+    db.flush()
+
+    # ── Chaves: o quadro da portaria. A da churrasqueira saiu há duas horas
+    #    com o Bruno; a cópia do 204 está com a Rosa, a diarista que o João
+    #    autorizou a buscá-la (com o CPF conferido)
+    rosa = AutorizacaoVisita(
+        unidade_id=unidades["204"].id, autorizado_por_id=moradores["204"].id,
+        nome="Rosa Lima", documento="61932675140", tipo="Diarista",
+        valida_de=HOJE, valida_ate=HOJE + timedelta(days=90),
+        observacao="Pega a chave na portaria às terças e sextas.", pode_retirar_chave=True,
+    )
+    db.add(rosa)
+    chaves = {}
+    for nome, posicao, unidade, observacao in [
+        ("Salão de festas", "A1", None, None),
+        ("Churrasqueira", "A2", None, None),
+        ("Piscina — portão", "A3", None, None),
+        ("Casa de máquinas", "B1", None, "Só para a empresa do elevador e o zelador."),
+        ("Apto 204 — cópia", "C1", "204", "Deixada pelo João para a diarista."),
+    ]:
+        chaves[nome] = Chave(condominio_id=condominio.id, nome=nome, posicao=posicao,
+                             unidade_id=unidades[unidade].id if unidade else None,
+                             observacao=observacao)
+        db.add(chaves[nome])
+    db.flush()
+    db.add(MovimentacaoChave(
+        chave_id=chaves["Salão de festas"].id, retirada_por_nome="Ana Beatriz Rocha (301)",
+        retirada_em=AGORA - timedelta(days=1, hours=6), retirada_registrada_por_id=carlos.id,
+        devolvida_em=AGORA - timedelta(days=1), devolucao_registrada_por_id=renata.id,
+    ))
+    db.add(MovimentacaoChave(
+        chave_id=chaves["Churrasqueira"].id, retirada_por_nome="Bruno Cardoso (102)",
+        retirada_em=AGORA - timedelta(hours=2), retirada_registrada_por_id=carlos.id,
+    ))
+    # Sem retirada_em: vale a hora do banco, a mesma do cadastro do João, e
+    # ele vê no histórico da chave dele.
+    db.add(MovimentacaoChave(
+        chave_id=chaves["Apto 204 — cópia"].id, retirada_por_nome=rosa.nome,
+        retirada_por_documento=rosa.documento, autorizacao_id=rosa.id,
+        retirada_registrada_por_id=carlos.id,
+    ))
     db.flush()
 
     # ── Livro da portaria: a Renata passou o turno da noite com um aviso

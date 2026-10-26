@@ -39,7 +39,8 @@ RECORTES = [
     ("Financeiro e portaria", [
         "cobrancas", "pagamentos", "preferencias_cobranca",
         "visitantes", "autorizacoes_visita", "encomendas", "movimentacoes_veiculo",
-        "ciencias_anotacao", "anotacoes_portaria", "veiculos_unidade",
+        "movimentacoes_chave", "chaves", "veiculos_unidade", "ciencias_anotacao",
+        "anotacoes_portaria",
     ]),
     ("Gestão — assembleias, contas, mudanças, infrações, declarações e manutenção", [
         "assembleias", "itens_pauta", "votos", "despesas", "mudancas", "horarios_mudanca",
@@ -191,6 +192,7 @@ def figura_geral(tabelas, ligacoes, arquivo):
         "anotacoes_portaria": (0.665, 0.86), "ciencias_anotacao": (0.845, 0.78),
         "declaracoes_quitacao": (0.658, 0.66),
         "planos_manutencao": (0.17, 0.78), "realizacoes_manutencao": (0.34, 0.66),
+        "chaves": (0.335, 0.07), "movimentacoes_chave": (0.17, 0.145),
         "assembleias": (0.17, 0.62), "itens_pauta": (0.10, 0.46), "votos": (0.27, 0.46),
     }
     for origem, _, destino in ligacoes:

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Quadro de Chaves</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-desktop">
+  <header class="app-bar"><div class="app-bar-inner">
+    <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
+    <div class="app-bar-right"><a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role">Síndico</span></a><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
+  </div></header>
+  <main class="dash-wrapper">
+    <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
+    <div class="dash-greeting">
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/key.svg" width="26" height="26" alt=""> Quadro de Chaves</h1>
+      <p class="greeting-condo">As chaves que a portaria guarda, e com quem estão</p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card teal"><span class="stat-value" id="totPortaria">—</span><span class="stat-label"><img src="../../assets/img/icons/key.svg" width="16" height="16" alt="">Na portaria</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totFora">—</span><span class="stat-label"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Fora</span></div>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/key.svg" width="16" height="16" alt=""> Quadro de Chaves</h2>
+    <div id="listaChaves" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoChaves">Carregando…</p>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Pôr uma Chave no Quadro</h2>
+    <div class="form-card">
+      <form id="formChave" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cNome">Nome da chave</label>
+            <input type="text" id="cNome" maxlength="80" required placeholder="Ex: Salão de festas">
+          </div>
+          <div class="form-group">
+            <label for="cUnidade">De quem é</label>
+            <select id="cUnidade"><option value="">Área comum</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cPosicao">Posição no quadro (opcional)</label>
+            <input type="text" id="cPosicao" maxlength="20" placeholder="Ex: A3">
+          </div>
+          <div class="form-group">
+            <label for="cObservacao">Observação (opcional)</label>
+            <input type="text" id="cObservacao" maxlength="300" placeholder="Ex: só para o zelador">
+          </div>
+        </div>
+        <p class="captura-dica">A chave de um apartamento só sai para quem mora lá ou para quem o
+        morador autorizou a retirá-la; o apartamento é avisado quando ela sai e quando volta.</p>
+        <p class="form-erro" id="erroChave" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;">Pôr no quadro</button>
+      </form>
+    </div>
+  </main>
+
+<script src="../../assets/js/validation.js"></script>
+<script src="../../assets/js/chaves.js"></script>
+<script>window.SmartCondo.chaves.montar('sindico');</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

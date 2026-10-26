@@ -246,11 +246,95 @@ const dicionario = [
         "obrigatorio": "Não",
         "chave": "FK",
         "descricao": "Morador que revogou a autorização"
+      },
+      {
+        "coluna": "pode_retirar_chave",
+        "tipo": "BOOLEAN",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Se a pessoa pode levar a chave do apartamento deixada na portaria; exige o CPF, que a portaria confere"
       }
     ],
     "regras": [
       "CHECK ((valida_ate >= valida_de))"
     ]
+  },
+  {
+    "nome": "chaves",
+    "resumo": "O quadro de chaves da portaria: as das áreas comuns e as dos apartamentos que os moradores deixam, que só saem para quem mora lá ou para quem o morador autorizou. Remover é inativar.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio da portaria que guarda a chave"
+      },
+      {
+        "coluna": "unidade_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Apartamento dono da chave; vazio, chave de área comum"
+      },
+      {
+        "coluna": "nome",
+        "tipo": "VARCHAR(80)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Como a portaria chama a chave; único entre as chaves do quadro"
+      },
+      {
+        "coluna": "posicao",
+        "tipo": "VARCHAR(20)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Onde fica no quadro de chaves, como A3"
+      },
+      {
+        "coluna": "observacao",
+        "tipo": "VARCHAR(300)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Recado sobre a chave (para quem ela sai, de onde é)"
+      },
+      {
+        "coluna": "criado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que o registro foi criado, preenchido pelo banco"
+      },
+      {
+        "coluna": "atualizado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "inativo_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando a chave saiu do quadro; vazio enquanto está nele. O histórico fica guardado"
+      },
+      {
+        "coluna": "inativado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Quem tirou a chave do quadro"
+      }
+    ],
+    "regras": []
   },
   {
     "nome": "ciencias_anotacao",
@@ -1690,6 +1774,90 @@ const dicionario = [
       "CHECK ((remetente_id <> destinatario_id))",
       "CHECK (((char_length(texto) >= 1) AND (char_length(texto) <= 2000)))"
     ]
+  },
+  {
+    "nome": "movimentacoes_chave",
+    "resumo": "Cada retirada de uma chave e a devolução dela: quem levou, quem entregou e quem recebeu de volta. Uma chave só está fora uma vez.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "chave_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "A chave que saiu"
+      },
+      {
+        "coluna": "retirada_por_nome",
+        "tipo": "VARCHAR(160)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Quem levou a chave, como estava no momento"
+      },
+      {
+        "coluna": "retirada_por_documento",
+        "tipo": "VARCHAR(20)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Documento de quem levou: o informado na chave de área comum, ou o CPF conferido da pessoa autorizada"
+      },
+      {
+        "coluna": "morador_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Morador do apartamento que levou a chave dele"
+      },
+      {
+        "coluna": "autorizacao_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "A autorização do morador com que a pessoa levou a chave do apartamento"
+      },
+      {
+        "coluna": "retirada_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Quando a chave saiu"
+      },
+      {
+        "coluna": "retirada_registrada_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Porteiro ou síndico que entregou a chave"
+      },
+      {
+        "coluna": "devolvida_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando voltou; vazio enquanto está fora"
+      },
+      {
+        "coluna": "devolucao_registrada_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Porteiro ou síndico que recebeu a chave de volta"
+      },
+      {
+        "coluna": "observacao",
+        "tipo": "VARCHAR(300)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Recado da portaria sobre a retirada"
+      }
+    ],
+    "regras": []
   },
   {
     "nome": "movimentacoes_veiculo",
@@ -3355,6 +3523,24 @@ const relacoes = [
     "texto": "Apartamento para o qual a entrada está liberada"
   },
   {
+    "origem": "chaves",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio da portaria que guarda a chave"
+  },
+  {
+    "origem": "chaves",
+    "coluna": "inativado_por_id",
+    "destino": "usuarios",
+    "texto": "Quem tirou a chave do quadro"
+  },
+  {
+    "origem": "chaves",
+    "coluna": "unidade_id",
+    "destino": "unidades",
+    "texto": "Apartamento dono da chave; vazio, chave de área comum"
+  },
+  {
     "origem": "ciencias_anotacao",
     "coluna": "anotacao_id",
     "destino": "anotacoes_portaria",
@@ -3599,6 +3785,36 @@ const relacoes = [
     "coluna": "remetente_id",
     "destino": "usuarios",
     "texto": "Quem enviou a mensagem"
+  },
+  {
+    "origem": "movimentacoes_chave",
+    "coluna": "autorizacao_id",
+    "destino": "autorizacoes_visita",
+    "texto": "A autorização do morador com que a pessoa levou a chave do apartamento"
+  },
+  {
+    "origem": "movimentacoes_chave",
+    "coluna": "chave_id",
+    "destino": "chaves",
+    "texto": "A chave que saiu"
+  },
+  {
+    "origem": "movimentacoes_chave",
+    "coluna": "devolucao_registrada_por_id",
+    "destino": "usuarios",
+    "texto": "Porteiro ou síndico que recebeu a chave de volta"
+  },
+  {
+    "origem": "movimentacoes_chave",
+    "coluna": "morador_id",
+    "destino": "usuarios",
+    "texto": "Morador do apartamento que levou a chave dele"
+  },
+  {
+    "origem": "movimentacoes_chave",
+    "coluna": "retirada_registrada_por_id",
+    "destino": "usuarios",
+    "texto": "Porteiro ou síndico que entregou a chave"
   },
   {
     "origem": "movimentacoes_veiculo",

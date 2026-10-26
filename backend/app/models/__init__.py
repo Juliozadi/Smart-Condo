@@ -15,6 +15,7 @@ from app.models.enums import (
     OrigemCobranca, StatusInfracao, StatusMudanca, StatusVisitante, TipoDocumentoCadastro,
     TipoInfracao, TipoMovimentacao, TipoMudanca, TipoOcupacao,
 )
+from app.models.chave import Chave, MovimentacaoChave
 from app.models.declaracao import DeclaracaoQuitacao
 from app.models.preventiva import PlanoManutencao, RealizacaoManutencao
 from app.models.infracao import Infracao
@@ -34,7 +35,7 @@ __all__ = [
     "DocumentoCadastro",
     "Encomenda", "EspacoComum", "LeituraComunicado", "Mensagem", "MovimentacaoVeiculo", "Mudanca",
     "HorarioMudanca", "Infracao", "AnotacaoPortaria", "CienciaAnotacao", "DeclaracaoQuitacao",
-    "PlanoManutencao", "RealizacaoManutencao",
+    "PlanoManutencao", "RealizacaoManutencao", "Chave", "MovimentacaoChave",
     "Ocorrencia", "OrdemServico", "Pagamento", "PermissaoPorteiro",
     "PreferenciaCobranca", "RegistroAlteracao", "RegistroOcupacao", "Reserva", "Unidade",
     "Usuario", "VeiculoUnidade",

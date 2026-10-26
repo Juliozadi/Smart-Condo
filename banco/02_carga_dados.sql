@@ -192,6 +192,16 @@ INSERT INTO realizacoes_manutencao (id, plano_id, data, custo, observacao, regis
 INSERT INTO realizacoes_manutencao (id, plano_id, data, custo, observacao, registrada_por_id, despesa_id, criado_em) VALUES (5, 3, '2026-07-15', 450.00, NULL, 2, NULL, '2026-09-21 01:45:00.611498+00');
 INSERT INTO realizacoes_manutencao (id, plano_id, data, custo, observacao, registrada_por_id, despesa_id, criado_em) VALUES (6, 4, '2026-05-23', 380.00, NULL, 2, NULL, '2026-09-21 01:45:00.611498+00');
 
+INSERT INTO autorizacoes_visita (id, unidade_id, autorizado_por_id, nome, documento, tipo, valida_de, valida_ate, dias_semana, observacao, criado_em, atualizado_em, inativo_em, inativado_por_id, pode_retirar_chave) VALUES (1, 3, 5, 'Rosa Lima', '61932675140', 'Diarista', '2026-09-20', '2026-12-19', NULL, 'Pega a chave na portaria às terças e sextas.', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00', NULL, NULL, true);
+INSERT INTO chaves (id, condominio_id, unidade_id, nome, posicao, observacao, criado_em, atualizado_em, inativo_em, inativado_por_id) VALUES (1, 1, NULL, 'Salão de festas', 'A1', NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00', NULL, NULL);
+INSERT INTO chaves (id, condominio_id, unidade_id, nome, posicao, observacao, criado_em, atualizado_em, inativo_em, inativado_por_id) VALUES (2, 1, NULL, 'Churrasqueira', 'A2', NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00', NULL, NULL);
+INSERT INTO chaves (id, condominio_id, unidade_id, nome, posicao, observacao, criado_em, atualizado_em, inativo_em, inativado_por_id) VALUES (3, 1, NULL, 'Piscina — portão', 'A3', NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00', NULL, NULL);
+INSERT INTO chaves (id, condominio_id, unidade_id, nome, posicao, observacao, criado_em, atualizado_em, inativo_em, inativado_por_id) VALUES (4, 1, NULL, 'Casa de máquinas', 'B1', 'Só para a empresa do elevador e o zelador.', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00', NULL, NULL);
+INSERT INTO chaves (id, condominio_id, unidade_id, nome, posicao, observacao, criado_em, atualizado_em, inativo_em, inativado_por_id) VALUES (5, 1, 3, 'Apto 204 — cópia', 'C1', 'Deixada pelo João para a diarista.', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00', NULL, NULL);
+INSERT INTO movimentacoes_chave (id, chave_id, retirada_por_nome, retirada_por_documento, morador_id, autorizacao_id, retirada_em, retirada_registrada_por_id, devolvida_em, devolucao_registrada_por_id, observacao) VALUES (1, 1, 'Ana Beatriz Rocha (301)', NULL, NULL, NULL, '2026-09-19 19:45:00.611498+00', 3, '2026-09-20 01:45:00.611498+00', 4, NULL);
+INSERT INTO movimentacoes_chave (id, chave_id, retirada_por_nome, retirada_por_documento, morador_id, autorizacao_id, retirada_em, retirada_registrada_por_id, devolvida_em, devolucao_registrada_por_id, observacao) VALUES (2, 2, 'Bruno Cardoso (102)', NULL, NULL, NULL, '2026-09-20 23:45:00.611498+00', 3, NULL, NULL, NULL);
+INSERT INTO movimentacoes_chave (id, chave_id, retirada_por_nome, retirada_por_documento, morador_id, autorizacao_id, retirada_em, retirada_registrada_por_id, devolvida_em, devolucao_registrada_por_id, observacao) VALUES (3, 5, 'Rosa Lima', '61932675140', NULL, 1, '2026-09-21 01:45:00.611498+00', 3, NULL, NULL, NULL);
+
 INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo, tipo_conteudo, tamanho_kb, unidade_id, publicado_por_id, publicado_em, criado_em, atualizado_em) VALUES (1, 1, 'Convenção do Condomínio', 'Documento registrado em cartório.', 'CONVENCAO', NULL, NULL, 820, NULL, 2, '2026-09-11 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo, tipo_conteudo, tamanho_kb, unidade_id, publicado_por_id, publicado_em, criado_em, atualizado_em) VALUES (2, 1, 'Regimento Interno', 'Regras de convivência e uso das áreas comuns.', 'REGIMENTO', NULL, NULL, 410, NULL, 2, '2026-09-11 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo, tipo_conteudo, tamanho_kb, unidade_id, publicado_por_id, publicado_em, criado_em, atualizado_em) VALUES (3, 1, 'Ata da Assembleia de Março', 'Prestação de contas e eleição do conselho.', 'ATA', NULL, NULL, 180, NULL, 2, '2026-09-11 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
@@ -281,6 +291,12 @@ SELECT setval('declaracoes_quitacao_id_seq', (SELECT COALESCE(MAX(id), 1) FROM d
 SELECT setval('planos_manutencao_id_seq', (SELECT COALESCE(MAX(id), 1) FROM planos_manutencao));
 
 SELECT setval('realizacoes_manutencao_id_seq', (SELECT COALESCE(MAX(id), 1) FROM realizacoes_manutencao));
+
+SELECT setval('autorizacoes_visita_id_seq', (SELECT COALESCE(MAX(id), 1) FROM autorizacoes_visita));
+
+SELECT setval('chaves_id_seq', (SELECT COALESCE(MAX(id), 1) FROM chaves));
+
+SELECT setval('movimentacoes_chave_id_seq', (SELECT COALESCE(MAX(id), 1) FROM movimentacoes_chave));
 
 SELECT setval('ordens_servico_id_seq', (SELECT COALESCE(MAX(id), 1) FROM ordens_servico));
 

@@ -15,7 +15,7 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
-    CheckConstraint, Date, DateTime, Enum as SAEnum, ForeignKey, String, Text,
+    Boolean, CheckConstraint, Date, DateTime, Enum as SAEnum, ForeignKey, String, Text, false,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -61,6 +61,11 @@ class AutorizacaoVisita(Base, TimestampMixin, InativacaoMixin):
     # para terça e sexta. Vazio: todos os dias do período.
     dias_semana: Mapped[str | None] = mapped_column(String(7))
     observacao: Mapped[str | None] = mapped_column(String(300))
+    # Pode levar a chave do apartamento que o morador deixou na portaria
+    # (só com o CPF na autorização: a portaria confere o documento).
+    pode_retirar_chave: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=false()
+    )
 
     unidade: Mapped["Unidade"] = relationship()
     autorizado_por: Mapped["Usuario | None"] = relationship(foreign_keys=[autorizado_por_id])

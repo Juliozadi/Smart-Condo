@@ -284,7 +284,7 @@ const requisitosFuncionais = [
   { id: 'RF046', nome: 'Autorizar visitante com antecedência',
     atores: 'Morador, Porteiro', prioridade: 'Importante',
     descricao: 'O sistema permite ao morador liberar a entrada de alguém antes de a pessoa chegar — a diarista que vem toda terça e sexta, o prestador da reforma, os convidados da festa —, para que a portaria registre a entrada sem esperar a resposta dele.',
-    entradas: 'O morador informa nome, tipo (diarista, prestador, familiar, convidado…), o período (de hoje até no máximo um ano) e, se quiser, o CPF, os dias da semana e um recado para a portaria. Na chegada, o porteiro escolhe a pessoa em "Autorizados para hoje" e digita o CPF do documento apresentado.',
+    entradas: 'O morador informa nome, tipo (diarista, prestador, familiar, convidado…), o período (de hoje até no máximo um ano) e, se quiser, o CPF, os dias da semana, um recado para a portaria e se a pessoa pode retirar a chave do apartamento deixada na portaria (só com o CPF). Na chegada, o porteiro escolhe a pessoa em "Autorizados para hoje" e digita o CPF do documento apresentado.',
     saidas: 'A pessoa entra direto, como "dentro", e o morador recebe o aviso de que ela entrou. Com CPF na autorização, a portaria vê só o meio dele e o sistema recusa outro documento. Fora do período ou dos dias escolhidos, revogada pelo morador, ou deixada por quem não mora mais no apartamento, a autorização não vale. Qualquer morador do apartamento revoga; a mesma pessoa não entra duas vezes sem ter saído.' },
 
   { id: 'RF047', nome: 'Cobrar multa e juros do atraso',
@@ -349,6 +349,11 @@ const requisitosFuncionais = [
     descricao: 'O sistema permite ao síndico cadastrar o que vence de tempos em tempos e não pode passar — o AVCB, a recarga dos extintores, a limpeza da caixa d’água, a manutenção dos elevadores, a inspeção do para-raios, o seguro — e avisa no painel o que venceu ou está para vencer.',
     entradas: 'O síndico informa o que precisa ser feito, de quantos em quantos meses (1 a 120), o próximo vencimento, quantos dias antes quer o aviso (0 a 180), o fornecedor e uma observação. Ao registrar uma realização, informa o dia (nunca no futuro), o custo e se quer lançá-lo como despesa.',
     saidas: 'Os planos, do que vence primeiro ao que vence por último, com a situação (vencida, vence em breve, em dia) e quantos dias faltam. A realização mais recente renova o vencimento (31/01 mais um mês é 28/02); lançar depois uma realização antiga não faz o prazo voltar. Com o custo, a despesa de manutenção entra na prestação de contas, com o fornecedor do plano. O histórico guarda cada realização e quem a registrou. Removido, o plano sai das telas e o histórico fica guardado. Dois planos ativos não têm o mesmo nome.' },
+  { id: 'RF058', nome: 'Controlar as chaves guardadas na portaria',
+    atores: 'Porteiro, Síndico, Morador', prioridade: 'Importante',
+    descricao: 'O sistema mantém o quadro de chaves da portaria — as das áreas comuns (salão, piscina, casa de máquinas) e as dos apartamentos que os moradores deixam para a diarista ou o eletricista — e registra cada retirada e devolução.',
+    entradas: 'A portaria ou o síndico cadastram a chave (nome, de que apartamento é ou se é de área comum, posição no quadro, observação). Na retirada, para a chave de área comum, informam o nome de quem leva; para a de apartamento, escolhem um morador de lá ou uma pessoa que ele autorizou a retirá-la (RF046) e digitam o CPF do documento apresentado.',
+    saidas: 'O quadro mostra o que está na portaria e o que está fora, com quem e desde quando. A chave de apartamento só sai para quem mora lá ou para quem o morador autorizou, no dia em que a autorização vale e com o CPF conferido; o dono que não mora não a leva. O apartamento recebe o aviso quando a chave sai e quando volta, e vê com quem ela está; o documento inteiro fica com a portaria e o síndico. A mesma chave não sai duas vezes antes de voltar; a que está fora não é removida do quadro. O histórico guarda quem levou, quem entregou e quem recebeu de volta.' },
 ];
 
 // ── 10 Requisitos não funcionais ────────────────────────────────────

@@ -24,7 +24,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
-from sqlalchemy import exists, func, or_, select, update
+from sqlalchemy import func, or_, select, update
 from sqlalchemy.orm import Session, contains_eager, selectinload
 
 from app.api.deps import (
@@ -46,6 +46,11 @@ from app.schemas.portaria import (
     VisitanteEntrada, VisitanteSaida,
 )
 from app.services import arquivos, notificacao
+# As regras da autorização valem também para o controle de chaves.
+from app.services.visitas import (
+    autorizador_mora_la as _autorizador_mora_la, documento_mascarado as _documento_mascarado,
+    vale_no_dia as _vale_no_dia,
+)
 
 router = APIRouter(prefix="/portaria", tags=["Portaria"])
 
@@ -466,33 +471,6 @@ def foto_visitante(
 LIMITE_AUTORIZACOES = 60
 
 
-def _autorizador_mora_la():
-    """Condição SQL: quem autorizou ainda mora no apartamento — ativo,
-    na mesma unidade e desde antes de autorizar (o que se mudou e voltou
-    não ressuscita as autorizações antigas)."""
-    return exists().where(
-        Usuario.id == AutorizacaoVisita.autorizado_por_id,
-        Usuario.unidade_id == AutorizacaoVisita.unidade_id,
-        Usuario.papel == Papel.MORADOR,
-        Usuario.status == StatusUsuario.ATIVO,
-        Usuario.reside.is_(True),
-        Usuario.unidade_desde <= AutorizacaoVisita.criado_em,
-    )
-
-
-def _vale_no_dia(a: AutorizacaoVisita, dia: date) -> bool:
-    return (not a.inativo and a.valida_de <= dia <= a.valida_ate
-            and (not a.dias_semana or str(dia.isoweekday()) in a.dias_semana))
-
-
-def _documento_mascarado(documento: str | None) -> str | None:
-    """A portaria vê só o meio do CPF: ela digita o do documento que a
-    pessoa apresenta, e o sistema confere — copiar da tela não serve."""
-    if not documento:
-        return None
-    return f"***.{documento[3:6]}.{documento[6:9]}-**"
-
-
 def _autorizacao_saida(a: AutorizacaoVisita, hoje: date, *, para_morador: bool,
                        ja_dentro: bool = False) -> AutorizacaoSaida:
     return AutorizacaoSaida(
@@ -501,7 +479,7 @@ def _autorizacao_saida(a: AutorizacaoVisita, hoje: date, *, para_morador: bool,
         documento=a.documento if para_morador else _documento_mascarado(a.documento),
         tipo=a.tipo, valida_de=a.valida_de, valida_ate=a.valida_ate,
         dias_semana=[int(d) for d in a.dias_semana] if a.dias_semana else None,
-        observacao=a.observacao,
+        observacao=a.observacao, pode_retirar_chave=a.pode_retirar_chave,
         autorizado_por_nome=a.autorizado_por.nome if a.autorizado_por else None,
         vale_hoje=_vale_no_dia(a, hoje), ja_dentro=ja_dentro, criado_em=a.criado_em,
     )

@@ -36,7 +36,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 - **Assembleias** — Votação online, um voto por apartamento
 - **Advertências e Multas** — Notificações do síndico e a defesa no prazo
 - **Mudança** — Agendamento dentro das regras do regimento
-- **Visitantes** — Confirmação de quem chegou e entrada liberada com antecedência
+- **Visitantes** — Confirmação de quem chegou, entrada liberada com antecedência e quem pode retirar a chave deixada na portaria
 - **Veículos** — Placas do apartamento, que a portaria reconhece
 - **Comunicados** — Acompanhamento de avisos do condomínio com filtros por categoria
 - **Documentos** — Acesso a atas, convenção e regimento interno
@@ -50,6 +50,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 - **Veículos** — Entrada e saída do estacionamento, reconhecendo as placas cadastradas
 - **Mudanças** — As aprovadas pelo síndico, de hoje em diante
 - **Livro da Portaria** — Passagem de turno, com a ciência de quem chega
+- **Quadro de Chaves** — Quem levou cada chave; a do apartamento só para quem o morador autorizou
 - **Ocorrências** — Registro de ocorrências durante o turno
 - **Perfil** — Edição de dados pessoais
 
@@ -65,6 +66,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 - **Advertências e Multas** — Notificação, defesa e decisão
 - **Mudanças** — Regras do regimento e aprovação dos pedidos
 - **Livro da Portaria** — A passagem de turno da equipe e as orientações aos porteiros
+- **Quadro de Chaves** — As chaves que a portaria guarda, e com quem estão
 - **Comunicados** — Criação e envio de comunicados
 - **Manutenção** — Abertura e acompanhamento de ordens de serviço
 - **Manutenção Preventiva** — AVCB, extintores, caixa d'água e o que mais vence, com aviso no painel
@@ -186,7 +188,7 @@ backend/
 ├── alembic/                           # Migrações do banco
 ├── app/
 │   ├── core/                          # Configuração, banco e segurança
-│   ├── models/                        # 36 tabelas
+│   ├── models/                        # 38 tabelas
 │   ├── schemas/                       # Entrada e saída da API
 │   ├── services/                      # Regras de negócio
 │   ├── api/routers/                   # Endpoints
@@ -196,7 +198,7 @@ backend/
 ```
 
 **Total:** 43 páginas HTML, 2 arquivos CSS, 9 arquivos JS, 43 ícones SVG e
-uma API com 160 endpoints.
+uma API com 168 endpoints.
 
 ---
 
@@ -216,7 +218,7 @@ uvicorn app.main:app --reload
 
 Documentação interativa da API em <http://localhost:8000/docs>.
 
-**160 endpoints**, cobrindo os casos de uso e as histórias de usuário da
+**168 endpoints**, cobrindo os casos de uso e as histórias de usuário da
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e

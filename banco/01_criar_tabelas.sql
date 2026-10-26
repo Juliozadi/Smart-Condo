@@ -1,4 +1,6 @@
 DROP TABLE IF EXISTS
+    movimentacoes_chave,
+    chaves,
     realizacoes_manutencao,
     planos_manutencao,
     declaracoes_quitacao,
@@ -774,6 +776,7 @@ CREATE TABLE autorizacoes_visita (
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
     inativo_em timestamp with time zone,
     inativado_por_id integer,
+    pode_retirar_chave boolean DEFAULT false NOT NULL,
     CONSTRAINT ck_autorizacao_periodo CHECK ((valida_ate >= valida_de))
 );
 CREATE SEQUENCE autorizacoes_visita_id_seq
@@ -1136,6 +1139,60 @@ ALTER TABLE ONLY realizacoes_manutencao ALTER COLUMN id SET DEFAULT nextval('rea
 ALTER TABLE ONLY realizacoes_manutencao
     ADD CONSTRAINT realizacoes_manutencao_pkey PRIMARY KEY (id);
 
+-- O quadro de chaves da portaria: as das áreas comuns e as dos
+-- apartamentos (unidade_id), que só saem para quem mora lá ou para quem
+-- o morador autorizou. Remover é inativar.
+CREATE TABLE chaves (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    unidade_id integer,
+    nome character varying(80) NOT NULL,
+    posicao character varying(20),
+    observacao character varying(300),
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    inativo_em timestamp with time zone,
+    inativado_por_id integer
+);
+CREATE SEQUENCE chaves_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE chaves_id_seq OWNED BY chaves.id;
+ALTER TABLE ONLY chaves ALTER COLUMN id SET DEFAULT nextval('chaves_id_seq'::regclass);
+ALTER TABLE ONLY chaves
+    ADD CONSTRAINT chaves_pkey PRIMARY KEY (id);
+
+-- Cada retirada de chave e a devolução dela: quem levou, quem entregou e
+-- quem recebeu de volta.
+CREATE TABLE movimentacoes_chave (
+    id integer NOT NULL,
+    chave_id integer NOT NULL,
+    retirada_por_nome character varying(160) NOT NULL,
+    retirada_por_documento character varying(20),
+    morador_id integer,
+    autorizacao_id integer,
+    retirada_em timestamp with time zone DEFAULT now() NOT NULL,
+    retirada_registrada_por_id integer,
+    devolvida_em timestamp with time zone,
+    devolucao_registrada_por_id integer,
+    observacao character varying(300)
+);
+CREATE SEQUENCE movimentacoes_chave_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE movimentacoes_chave_id_seq OWNED BY movimentacoes_chave.id;
+ALTER TABLE ONLY movimentacoes_chave ALTER COLUMN id SET DEFAULT nextval('movimentacoes_chave_id_seq'::regclass);
+ALTER TABLE ONLY movimentacoes_chave
+    ADD CONSTRAINT movimentacoes_chave_pkey PRIMARY KEY (id);
+
 CREATE TABLE ordens_servico (
     id integer NOT NULL,
     condominio_id integer NOT NULL,
@@ -1441,6 +1498,30 @@ ALTER TABLE ONLY realizacoes_manutencao
 ALTER TABLE ONLY realizacoes_manutencao
     ADD CONSTRAINT realizacoes_manutencao_registrada_por_id_fkey FOREIGN KEY (registrada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
 
+ALTER TABLE ONLY chaves
+    ADD CONSTRAINT chaves_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY chaves
+    ADD CONSTRAINT chaves_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY chaves
+    ADD CONSTRAINT chaves_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY movimentacoes_chave
+    ADD CONSTRAINT movimentacoes_chave_autorizacao_id_fkey FOREIGN KEY (autorizacao_id) REFERENCES autorizacoes_visita(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY movimentacoes_chave
+    ADD CONSTRAINT movimentacoes_chave_chave_id_fkey FOREIGN KEY (chave_id) REFERENCES chaves(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY movimentacoes_chave
+    ADD CONSTRAINT movimentacoes_chave_devolucao_registrada_por_id_fkey FOREIGN KEY (devolucao_registrada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY movimentacoes_chave
+    ADD CONSTRAINT movimentacoes_chave_morador_id_fkey FOREIGN KEY (morador_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY movimentacoes_chave
+    ADD CONSTRAINT movimentacoes_chave_retirada_registrada_por_id_fkey FOREIGN KEY (retirada_registrada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
 ALTER TABLE ONLY mudancas
     ADD CONSTRAINT mudancas_avaliada_por_id_fkey FOREIGN KEY (avaliada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
 
@@ -1667,6 +1748,18 @@ CREATE INDEX ix_planos_manutencao_condominio_id ON planos_manutencao USING btree
 CREATE UNIQUE INDEX uq_plano_manutencao_nome ON planos_manutencao USING btree (condominio_id, lower((nome)::text)) WHERE (inativo_em IS NULL);
 
 CREATE INDEX ix_realizacoes_manutencao_plano_id ON realizacoes_manutencao USING btree (plano_id);
+
+CREATE INDEX ix_chaves_condominio_id ON chaves USING btree (condominio_id);
+
+CREATE INDEX ix_chaves_unidade_id ON chaves USING btree (unidade_id);
+
+-- Duas chaves ativas com o mesmo nome confundem a portaria.
+CREATE UNIQUE INDEX uq_chave_nome ON chaves USING btree (condominio_id, lower((nome)::text)) WHERE (inativo_em IS NULL);
+
+CREATE INDEX ix_movimentacoes_chave_chave_id ON movimentacoes_chave USING btree (chave_id);
+
+-- A chave que está fora não sai de novo antes de voltar.
+CREATE UNIQUE INDEX uq_chave_fora ON movimentacoes_chave USING btree (chave_id) WHERE (devolvida_em IS NULL);
 
 CREATE INDEX ix_infracoes_condominio_id ON infracoes USING btree (condominio_id);
 
