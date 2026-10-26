@@ -141,6 +141,8 @@
       </form>
     </div>
 
+    <p class="form-erro" id="avisoPerfil" role="alert"></p>
+
     <div class="p-actions" id="viewActions">
       <button class="action-btn" onclick="entrarEdicao()"><img src="../../assets/img/icons/pen.svg" width="16" height="16" alt=""> Editar Perfil</button>
       <a href="dashboard.html" class="action-btn outline"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Voltar</a>
@@ -255,6 +257,7 @@
   }
 
   function entrarEdicao() {
+    avisar('');
     dadosOriginais = {};
     document.querySelectorAll('.p-edit input, .p-edit select').forEach(function(inp) {
       dadosOriginais[inp.id] = inp.value;
@@ -280,10 +283,18 @@
     sairEdicao();
   }
 
+  // O resultado de salvar, ou o erro de carregar, aparece logo acima dos
+  // botões (antes chamava um aviso flutuante que já não existia).
+  function avisar(texto, sucesso) {
+    var el = campo('avisoPerfil');
+    el.className = 'form-erro' + (sucesso ? ' sucesso' : '');
+    el.textContent = texto;
+  }
+
   function salvarDados() {
     var nome = campo('edit-nome').value.trim();
     if (nome.length < 3) {
-      mostrarToast('Não foi possível salvar', 'O nome precisa ter pelo menos 3 caracteres.');
+      avisar('O nome precisa ter pelo menos 3 caracteres.');
       return;
     }
     var corpo = { nome: nome, telefone: campo('edit-tel').value };
@@ -299,9 +310,9 @@
         // A sessão guarda o nome que aparece no topo das outras telas.
         api.sessao.abrir(api.sessao.token(), p);
         sairEdicao();
-        mostrarToast('Perfil atualizado', 'Suas alterações foram salvas.');
+        avisar('Perfil atualizado: suas alterações foram salvas.', true);
       })
-      .catch(function(e) { mostrarToast('Não foi possível salvar', e.message); })
+      .catch(function(e) { avisar(e.message); })
       .then(function() { if (botao) botao.disabled = false; });
   }
 
@@ -347,7 +358,7 @@
 
   api.get('/auth/eu')
     .then(pintar)
-    .catch(function(e) { mostrarToast('Não foi possível carregar o perfil', e.message); });
+    .catch(function(e) { avisar('Não foi possível carregar o perfil: ' + e.message); });
 })();
 </script>
 

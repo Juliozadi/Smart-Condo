@@ -19,7 +19,7 @@ não tinha.
 | 11 Diagrama de caso de uso | Novos casos: prestar contas, convocar assembleia, votar em assembleia, cadastrar veículo, agendar mudança, trocar de perfil, vincular outro apartamento, notificar infração, apresentar defesa e anotar no livro da portaria — agora 38 casos de uso |
 | 14 a 17 | Novas tabelas despesas, assembleias, itens_pauta, votos, veiculos_unidade, mudancas, horarios_mudanca, infracoes, anotacoes_portaria e ciencias_anotacao; condominios ganha mudanca_antecedencia_dias; cobrancas ganha origem (taxa, multa ou uso de espaço); espacos_comuns ganha taxa_uso, e reservas, cobranca_id; usuarios ganha reside e conta_principal_id, e o e-mail e o CPF passam a ser únicos entre os cadastros com login — agora 33 entidades, 391 atributos e 88 relacionamentos; o DER ganha um quarto recorte, de gestão |
 | 21 API REST | 150 endpoints: despesas (lançar, listar, corrigir, cancelar, comprovante) e balancete do mês; assembleias (convocar, listar, votar, cancelar); veículos do apartamento (cadastrar, listar, remover) e a consulta da placa pela portaria; mudanças (consultar e definir as regras, horários tomados, agendar, listar, avaliar, cancelar); perfis da pessoa e troca de perfil; acrescentar e tirar apartamentos do próprio cadastro; advertências e multas (notificar, listar, defender, decidir); livro da portaria (anotar, ler, pendentes, dar ciência). A tabela de módulos da seção, que tinha parado em treze, passa a ter todos, com as rotas de cada um recontadas |
-| 23 Testes | 643 casos no servidor e 124 testes de interface |
+| 23 Testes | 643 casos no servidor e 127 testes de interface |
 
 **Situações tratadas.**
 - O morador paga a taxa todo mês e não sabe para onde vai o dinheiro; o
