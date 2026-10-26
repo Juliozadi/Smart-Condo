@@ -308,7 +308,7 @@ def corrigir_cobranca(
         )
     if "vencimento" in novos and novos["vencimento"] < cobranca.competencia:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=422,
             detail="O vencimento não pode ser antes do mês de competência.",
         )
     descricao = registro.campos_alterados(cobranca, novos, ROTULOS_COBRANCA)

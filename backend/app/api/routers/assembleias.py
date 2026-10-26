@@ -255,7 +255,7 @@ def votar(
     ids = {i.id for i in a.itens}
     votados = [v.item_id for v in dados.votos]
     if sorted(votados) != sorted(ids):
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        raise HTTPException(status_code=422,
                             detail="Vote uma vez em cada item da pauta.")
 
     # Trava o apartamento: dois moradores votando ao mesmo tempo não passam

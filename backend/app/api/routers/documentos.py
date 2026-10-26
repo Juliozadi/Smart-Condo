@@ -85,7 +85,7 @@ def publicar(
     descricao = (descricao or "").strip() or None
     if len(titulo) < 3:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=422,
             detail="Escreva um título com pelo menos 3 caracteres.",
         )
     if unidade_id is not None:

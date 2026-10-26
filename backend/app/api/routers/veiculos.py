@@ -141,7 +141,7 @@ def cadastrar_veiculo(
         unidade_id = usuario.unidade_id
     else:
         if dados.unidade_id is None:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            raise HTTPException(status_code=422,
                                 detail="Informe o apartamento do veículo.")
         unidade = db.get(Unidade, dados.unidade_id)
         if (unidade is None or unidade.condominio_id != usuario.condominio_id

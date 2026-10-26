@@ -382,7 +382,7 @@ def cancelar(
     motivo = dados.motivo if dados else None
     pelo_sindico = usuario.papel == Papel.SINDICO
     if pelo_sindico and not (motivo and len(motivo) >= 3):
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        raise HTTPException(status_code=422,
                             detail="Informe o motivo do cancelamento; o morador recebe.")
     estava_aprovada = m.status == StatusMudanca.APROVADA
     m.status = StatusMudanca.CANCELADA

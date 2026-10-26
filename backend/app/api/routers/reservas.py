@@ -262,7 +262,7 @@ def editar_espaco(
     uso_livre = novos.get("uso_livre", espaco.uso_livre)
     if not reservavel and not uso_livre:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=422,
             detail="O espaço precisa ser reservável ou de uso livre.",
         )
     erro = conferir_par_de_horarios(novos.get("horario_abertura", espaco.horario_abertura),
@@ -272,7 +272,7 @@ def editar_espaco(
     if not erro and abre is not None and fecha <= abre:
         erro = "O horário de fechamento precisa ser depois do de abertura."
     if erro:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=erro)
+        raise HTTPException(status_code=422, detail=erro)
     mudaram = {c: v for c, v in novos.items() if getattr(espaco, c) != v}
     # Campos que mudam juntos (o tipo; o horário): um rótulo só.
     rotulos = dict(ROTULOS_ESPACO)

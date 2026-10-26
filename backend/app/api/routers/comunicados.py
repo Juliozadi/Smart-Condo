@@ -98,7 +98,7 @@ def publicar(
         ).limit(1)
     ):
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=422,
             detail=f"Não há unidades no bloco {dados.bloco}.",
         )
 
