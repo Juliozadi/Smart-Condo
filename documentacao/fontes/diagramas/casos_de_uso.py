@@ -22,6 +22,7 @@ CASOS = [
     ("Manter usuários",                 ["ADM", "SIN"],               ESQ),
     ("Aprovar cadastro de morador",     ["SIN"],                      ESQ),
     ("Definir permissões do porteiro",  ["SIN"],                      ESQ),
+    ("Anotar no livro da portaria",     ["SIN", "POR"],               ESQ),
     ("Publicar comunicado",             ["SIN"],                      ESQ),
     ("Publicar documento",              ["SIN"],                      ESQ),
     ("Gerar cobrança",                  ["SIN"],                      ESQ),

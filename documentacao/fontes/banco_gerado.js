@@ -4,6 +4,55 @@
  */
 const dicionario = [
   {
+    "nome": "anotacoes_portaria",
+    "resumo": "O livro da portaria: o que o porteiro que sai, ou o síndico, anota para o próximo turno. Não se apaga nem se edita — corrige-se com outra anotação.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio do livro"
+      },
+      {
+        "coluna": "autor_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Porteiro ou síndico que anotou; removido o cadastro, a anotação fica"
+      },
+      {
+        "coluna": "texto",
+        "tipo": "TEXT",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "A anotação, como o autor escreveu (de 3 a 2.000 caracteres)"
+      },
+      {
+        "coluna": "importante",
+        "tipo": "BOOLEAN",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Importante: quem chegar precisa ler e dar ciência"
+      },
+      {
+        "coluna": "criado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que o registro foi criado, preenchido pelo banco"
+      }
+    ],
+    "regras": []
+  },
+  {
     "nome": "assembleias",
     "resumo": "As assembleias virtuais convocadas pelo síndico (Código Civil, art. 1.354-A): o período de votação e, se cancelada, o motivo.",
     "colunas": [
@@ -201,6 +250,43 @@ const dicionario = [
     ],
     "regras": [
       "CHECK ((valida_ate >= valida_de))"
+    ]
+  },
+  {
+    "nome": "ciencias_anotacao",
+    "resumo": "Quem leu cada anotação importante do livro da portaria, e quando — uma vez por pessoa.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "anotacao_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "A anotação lida"
+      },
+      {
+        "coluna": "usuario_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Quem deu ciência"
+      },
+      {
+        "coluna": "ciente_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que a pessoa deu ciência"
+      }
+    ],
+    "regras": [
+      "UNIQUE (anotacao_id, usuario_id)"
     ]
   },
   {
@@ -2939,6 +3025,18 @@ const dicionario = [
 
 const relacoes = [
   {
+    "origem": "anotacoes_portaria",
+    "coluna": "autor_id",
+    "destino": "usuarios",
+    "texto": "Porteiro ou síndico que anotou; removido o cadastro, a anotação fica"
+  },
+  {
+    "origem": "anotacoes_portaria",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio do livro"
+  },
+  {
     "origem": "assembleias",
     "coluna": "condominio_id",
     "destino": "condominios",
@@ -2973,6 +3071,18 @@ const relacoes = [
     "coluna": "unidade_id",
     "destino": "unidades",
     "texto": "Apartamento para o qual a entrada está liberada"
+  },
+  {
+    "origem": "ciencias_anotacao",
+    "coluna": "anotacao_id",
+    "destino": "anotacoes_portaria",
+    "texto": "A anotação lida"
+  },
+  {
+    "origem": "ciencias_anotacao",
+    "coluna": "usuario_id",
+    "destino": "usuarios",
+    "texto": "Quem deu ciência"
   },
   {
     "origem": "cobrancas",

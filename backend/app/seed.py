@@ -34,6 +34,7 @@ from app.models.enums import (
 )
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
 from app.models.infracao import Infracao
+from app.models.livro import AnotacaoPortaria, CienciaAnotacao
 from app.models.mudanca import Mudanca
 from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico, VeiculoUnidade
 from app.models.financeiro import Cobranca, Despesa, Pagamento, PreferenciaCobranca
@@ -398,6 +399,27 @@ def criar(db) -> dict:
         decisao_motivo="Sem defesa no prazo; câmeras confirmam.",
         decidida_em=AGORA - timedelta(days=49),
     ))
+
+    # ── Livro da portaria: a Renata passou o turno da noite com um aviso
+    #    que o Carlos ainda não leu; a orientação do síndico, os dois leram
+    for autor, horas, importante, texto, cientes in [
+        (renata, 72, True, "A moradora do 410 pediu para não interfonar depois das 22h; "
+                           "encomenda que chegar à noite fica para o dia seguinte.", [carlos]),
+        (sindico, 48, True, "Manutenção do portão da garagem na quinta, das 8h às 12h: "
+                            "abrir pelo controle manual e avisar quem chegar de carro.",
+         [carlos, renata]),
+        (carlos, 20, False, "Turno tranquilo. O portão da garagem travou duas vezes; "
+                            "já está anotado para a manutenção.", []),
+        (renata, 9, True, "O entregador do mercado volta às 10h com as compras do 204; "
+                          "o João autorizou deixar na portaria.", []),
+    ]:
+        nota = AnotacaoPortaria(condominio_id=condominio.id, autor_id=autor.id, texto=texto,
+                                importante=importante, criado_em=AGORA - timedelta(hours=horas))
+        db.add(nota)
+        db.flush()
+        for quem in cientes:
+            db.add(CienciaAnotacao(anotacao_id=nota.id, usuario_id=quem.id,
+                                   ciente_em=nota.criado_em + timedelta(hours=3)))
 
     # ── Assembleias: uma encerrada, com resultado, e uma em votação ───
     E = EscolhaVoto

@@ -65,6 +65,10 @@
         <div class="card-icon icon-blue"><img src="../../assets/img/icons/porteiros.svg" width="16" height="16" alt="Porteiros"></div>
         <h3>Porteiros</h3><p>Equipe, turnos e escalas</p>
       </a>
+      <a href="livro.html" class="dash-card-sq">
+        <div class="card-icon icon-blue"><img src="../../assets/img/icons/pen.svg" width="16" height="16" alt="Livro"></div>
+        <h3>Livro da Portaria</h3><p>Passagem de turno da equipe</p>
+      </a>
       <a href="reservas.html" class="dash-card-sq">
         <div class="card-icon icon-purple"><img src="../../assets/img/icons/reservas.svg" width="16" height="16" alt="Reservas"></div>
         <h3>Reservas</h3><p>Espaços e agendamentos</p>
@@ -163,12 +167,12 @@
   function competencia(iso) { var p = partes(iso); return p.m + '/' + p.a; }
   function hora(h) { return (h || '').slice(0, 5).replace(':', 'h'); }
 
-  /* As três cargas correm em paralelo e cada uma anota a sua pendência
+  /* As cargas correm em paralelo e cada uma anota a sua pendência
      quando a resposta chega. Guardar por chave, e não empilhar, mantém
      a frase sempre na mesma ordem — senão o mesmo dado aparecia numa
      ordem diferente a cada carregamento, conforme qual requisição
      respondesse primeiro. */
-  var ORDEM_PENDENCIAS = ['cadastros', 'reservas', 'inadimplencia'];
+  var ORDEM_PENDENCIAS = ['cadastros', 'reservas', 'inadimplencia', 'livro'];
   var pendencias = {};
 
   function anotarPendencia(chave, texto) {
@@ -256,6 +260,16 @@
     }).catch(function(e) { campo('estadoReservas').textContent = e.message; });
   }
 
+  function carregarLivro() {
+    return api.get('/livro-portaria/pendentes').then(function(p) {
+      if (p.total) {
+        anotarPendencia('livro', p.total + (p.total === 1
+          ? ' anotação importante no livro da portaria para ler'
+          : ' anotações importantes no livro da portaria para ler'));
+      }
+    }).catch(function() {});
+  }
+
   function carregarOcorrencias() {
     return api.get('/portaria/ocorrencias').then(function(lista) {
       var abertas = lista.filter(function(o) {
@@ -316,6 +330,7 @@
   carregarFinanceiro();
   carregarReservas();
   carregarOcorrencias();
+  carregarLivro();
 })();
 </script>
 <script src="../../assets/js/sessao.js"></script>

@@ -168,6 +168,14 @@ INSERT INTO infracoes (id, condominio_id, unidade_id, aplicada_por_id, tipo, des
 INSERT INTO infracoes (id, condominio_id, unidade_id, aplicada_por_id, tipo, descricao, artigo, ocorrida_em, valor, prazo_defesa, status, defesa, defesa_em, defesa_por_id, decisao_motivo, decidida_em, decidida_por_id, cobranca_id, criado_em, atualizado_em) VALUES (2, 1, 4, 2, 'ADVERTENCIA', 'Cachorro solto e sem coleira no hall e no elevador social.', 'Regimento interno, art. 18 (animais)', '2026-09-09', NULL, '2026-09-19', 'DEFESA_APRESENTADA', 'O cachorro escapou quando a porta do apartamento abriu; foi a primeira vez e já instalamos um portão.', '2026-09-16 12:00:00+00', 6, NULL, NULL, NULL, NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 INSERT INTO infracoes (id, condominio_id, unidade_id, aplicada_por_id, tipo, descricao, artigo, ocorrida_em, valor, prazo_defesa, status, defesa, defesa_em, defesa_por_id, decisao_motivo, decidida_em, decidida_por_id, cobranca_id, criado_em, atualizado_em) VALUES (3, 1, 6, 2, 'ADVERTENCIA', 'Carro estacionado na vaga de visitantes por três dias seguidos.', 'Regimento interno, art. 9 (garagem)', '2026-07-23', NULL, '2026-08-02', 'CONFIRMADA', NULL, NULL, NULL, 'Sem defesa no prazo; câmeras confirmam.', '2026-08-03 12:00:00+00', 2, NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 
+INSERT INTO anotacoes_portaria (id, condominio_id, autor_id, texto, importante, criado_em) VALUES (1, 1, 4, 'A moradora do 410 pediu para não interfonar depois das 22h; encomenda que chegar à noite fica para o dia seguinte.', true, '2026-09-18 01:45:00.611498+00');
+INSERT INTO anotacoes_portaria (id, condominio_id, autor_id, texto, importante, criado_em) VALUES (2, 1, 2, 'Manutenção do portão da garagem na quinta, das 8h às 12h: abrir pelo controle manual e avisar quem chegar de carro.', true, '2026-09-19 01:45:00.611498+00');
+INSERT INTO anotacoes_portaria (id, condominio_id, autor_id, texto, importante, criado_em) VALUES (3, 1, 3, 'Turno tranquilo. O portão da garagem travou duas vezes; já está anotado para a manutenção.', false, '2026-09-20 05:45:00.611498+00');
+INSERT INTO anotacoes_portaria (id, condominio_id, autor_id, texto, importante, criado_em) VALUES (4, 1, 4, 'O entregador do mercado volta às 10h com as compras do 204; o João autorizou deixar na portaria.', true, '2026-09-20 16:45:00.611498+00');
+INSERT INTO ciencias_anotacao (id, anotacao_id, usuario_id, ciente_em) VALUES (1, 1, 3, '2026-09-18 04:45:00.611498+00');
+INSERT INTO ciencias_anotacao (id, anotacao_id, usuario_id, ciente_em) VALUES (2, 2, 3, '2026-09-19 04:45:00.611498+00');
+INSERT INTO ciencias_anotacao (id, anotacao_id, usuario_id, ciente_em) VALUES (3, 2, 4, '2026-09-19 04:45:00.611498+00');
+
 INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo, tipo_conteudo, tamanho_kb, unidade_id, publicado_por_id, publicado_em, criado_em, atualizado_em) VALUES (1, 1, 'Convenção do Condomínio', 'Documento registrado em cartório.', 'CONVENCAO', NULL, NULL, 820, NULL, 2, '2026-09-11 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo, tipo_conteudo, tamanho_kb, unidade_id, publicado_por_id, publicado_em, criado_em, atualizado_em) VALUES (2, 1, 'Regimento Interno', 'Regras de convivência e uso das áreas comuns.', 'REGIMENTO', NULL, NULL, 410, NULL, 2, '2026-09-11 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo, tipo_conteudo, tamanho_kb, unidade_id, publicado_por_id, publicado_em, criado_em, atualizado_em) VALUES (3, 1, 'Ata da Assembleia de Março', 'Prestação de contas e eleição do conselho.', 'ATA', NULL, NULL, 180, NULL, 2, '2026-09-11 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
@@ -247,6 +255,10 @@ SELECT setval('veiculos_unidade_id_seq', (SELECT COALESCE(MAX(id), 1) FROM veicu
 SELECT setval('mudancas_id_seq', (SELECT COALESCE(MAX(id), 1) FROM mudancas));
 
 SELECT setval('infracoes_id_seq', (SELECT COALESCE(MAX(id), 1) FROM infracoes));
+
+SELECT setval('anotacoes_portaria_id_seq', (SELECT COALESCE(MAX(id), 1) FROM anotacoes_portaria));
+
+SELECT setval('ciencias_anotacao_id_seq', (SELECT COALESCE(MAX(id), 1) FROM ciencias_anotacao));
 
 SELECT setval('ordens_servico_id_seq', (SELECT COALESCE(MAX(id), 1) FROM ordens_servico));
 

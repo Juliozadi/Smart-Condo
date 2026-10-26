@@ -334,6 +334,11 @@ const requisitosFuncionais = [
     descricao: 'O sistema permite ao síndico notificar um apartamento por infração ao regimento ou à convenção — advertência ou multa — e ao morador apresentar a defesa antes da decisão, como pede o Código Civil (art. 1.336, § 2º, e art. 1.337).',
     entradas: 'O síndico informa o apartamento, o tipo, o que aconteceu, quando, o artigo descumprido, o prazo de defesa (5 a 30 dias) e, na multa, o valor — até 5 vezes a taxa mensal do apartamento. O morador escreve a defesa dentro do prazo.',
     saidas: 'Os moradores do apartamento — inclusive o dono que não mora — recebem a notificação por e-mail. O síndico decide depois da defesa ou do fim do prazo, sempre com o motivo, que o apartamento recebe. A multa mantida entra nas cobranças do apartamento, com vencimento em 15 dias, ao lado da taxa do mês. O síndico vê quantas outras o apartamento teve mantidas nos últimos 12 meses. A portaria não vê; quem chega ao apartamento não vê as do morador anterior.' },
+  { id: 'RF055', nome: 'Livro da portaria (passagem de turno)',
+    atores: 'Porteiro, Síndico', prioridade: 'Importante',
+    descricao: 'O sistema mantém o livro da portaria: o porteiro que sai anota o que o próximo turno precisa saber, e o síndico lê tudo e também orienta a equipe por ali. Substitui o caderno do balcão, que some e de que ninguém sabe se foi lido.',
+    entradas: 'O porteiro ou o síndico escreve a anotação (3 a 2.000 caracteres) e diz se é importante. Quem lê uma anotação importante dá ciência.',
+    saidas: 'O livro, das anotações mais recentes, com o autor, o dia e a hora. A anotação importante mostra quem já deu ciência e quando; no painel, o porteiro vê quantas importantes da última semana esperam a ciência dele, e o síndico tem a mesma conta entre as pendências. Ninguém precisa dar ciência da própria anotação. Nada se apaga nem se edita: corrige-se com outra anotação, como no livro de papel. O morador não lê o livro.' },
 ];
 
 // ── 10 Requisitos não funcionais ────────────────────────────────────

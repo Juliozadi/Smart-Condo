@@ -18,6 +18,18 @@ const { requisitosFuncionais, requisitosNaoFuncionais } = require('./requisitos'
 const { modeloEntidadeRelacionamento, relacionamentos, implementacoesBanco } = require('./banco');
 const { dicionario, relacoes, enumerados } = require('./banco_gerado');
 
+// O número de entidades por extenso, contado do banco: escrito à mão, a
+// frase ficava para trás a cada tabela nova. Feminino, como "entidades".
+function entidadesPorExtenso(n) {
+  const unidades = ['', 'uma', 'duas', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
+  const dezenas = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta',
+                   'oitenta', 'noventa'];
+  if (n < 20 || n > 99) return String(n);
+  const d = dezenas[Math.floor(n / 10)], u = unidades[n % 10];
+  const texto = u ? d + ' e ' + u : d;
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
 const TELAS_DIR = path.join(__dirname, 'telas');
 const DIAGRAMAS_DIR = path.join(__dirname, 'diagramas');
 const FONTE = 'Arial';
@@ -325,7 +337,7 @@ filhos.push(legenda('Quadro — Entidades do banco de dados do SmartCondo'));
 filhos.push(new Paragraph({ children: [new PageBreak()] }));
 filhos.push(titulo1('15', 'DIAGRAMA ENTIDADE-RELACIONAMENTO'));
 filhos.push(corpo('O diagrama entidade-relacionamento mostra as tabelas do banco e como elas se ligam. É gerado diretamente do banco em funcionamento — colunas, tipos e chaves são lidos do catálogo do PostgreSQL —, de modo que a figura não fica defasada quando a estrutura muda.'));
-filhos.push(corpo('Trinta e uma entidades com mais de trezentos atributos não cabem legíveis numa página só. Por isso o diagrama vem em cinco partes: uma visão de conjunto, com os nomes e as ligações, e quatro recortes por assunto, com todos os atributos. Nos recortes, PK marca a chave primária e FK as chaves estrangeiras; as setas partem da entidade que guarda a chave estrangeira e apontam para a entidade referenciada.'));
+filhos.push(corpo(`${entidadesPorExtenso(dicionario.length)} entidades com mais de trezentos atributos não cabem legíveis numa página só. Por isso o diagrama vem em cinco partes: uma visão de conjunto, com os nomes e as ligações, e quatro recortes por assunto, com todos os atributos. Nos recortes, PK marca a chave primária e FK as chaves estrangeiras; as setas partem da entidade que guarda a chave estrangeira e apontam para a entidade referenciada.`));
 filhos.push(imagemDiagrama('der_geral.png'));
 filhos.push(legenda('Figura — Diagrama entidade-relacionamento: visão de conjunto'));
 [

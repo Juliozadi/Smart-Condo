@@ -60,6 +60,11 @@
         <div class="card-info"><h3>Mudanças Agendadas</h3><p>Só entram as aprovadas pelo síndico</p></div>
         
       </a>
+      <a href="livro.html" class="dash-card">
+        <div class="card-icon icon-blue"><img src="../../assets/img/icons/pen.svg" width="16" height="16" alt="Livro"></div>
+        <div class="card-info"><h3>Livro da Portaria</h3><p>Passagem de turno e orientações do síndico</p></div>
+        <span class="badge badge-alert" id="livroPendentes" hidden></span>
+      </a>
       <a href="ocorrencias.html" class="dash-card">
         <div class="card-icon icon-red"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt="Ocorrências"></div>
         <div class="card-info"><h3>Registrar Ocorrência</h3><p>Incidentes, irregularidades e emergências</p></div>
@@ -269,6 +274,15 @@
       if (liberado('registrar_veiculos')) carregarVeiculos();
     });
     carregarAvisos();
+
+    // O que o turno anterior (ou o síndico) marcou como importante e este
+    // porteiro ainda não leu.
+    api.get('/livro-portaria/pendentes').then(function(p) {
+      if (!p.total) return;
+      var selo = campo('livroPendentes');
+      selo.textContent = p.total + ' para ler';
+      selo.hidden = false;
+    }).catch(function() {});
   })();
   </script>
 <script src="../../assets/js/sessao.js"></script>

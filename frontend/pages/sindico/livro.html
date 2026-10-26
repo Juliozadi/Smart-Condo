@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Livro da Portaria</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-desktop">
+  <header class="app-bar"><div class="app-bar-inner">
+    <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
+    <div class="app-bar-right"><a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role">Síndico</span></a><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
+  </div></header>
+  <main class="dash-wrapper">
+    <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
+    <div class="dash-greeting">
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/pen.svg" width="26" height="26" alt=""> Livro da Portaria</h1>
+      <p class="greeting-condo">A passagem de turno da equipe — e as suas orientações aos porteiros</p>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/pen.svg" width="16" height="16" alt=""> Nova Anotação</h2>
+    <div class="form-card">
+      <form id="formLivro" novalidate>
+        <div class="form-group">
+          <label for="lTexto">O que o próximo turno precisa saber</label>
+          <textarea id="lTexto" required minlength="3" maxlength="2000" rows="3"
+                    placeholder="Ex: O entregador volta às 10h para o 204; o portão da garagem está travando"></textarea>
+        </div>
+        <label class="permissao-item" for="lImportante">
+          <input type="checkbox" id="lImportante"> Importante — quem chegar precisa ler e dar ciência
+        </label>
+        <p class="captura-dica">O livro não se apaga nem se edita. Para corrigir, faça outra anotação.</p>
+        <p class="form-erro" id="erroLivro" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;">Anotar</button>
+      </form>
+    </div>
+
+    <div id="blocoLer" hidden>
+      <h2 class="section-title"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt=""> Esperando a Sua Ciência</h2>
+      <div id="listaLer" aria-live="polite"></div>
+      <p class="estado-lista" id="estadoLer"></p>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Últimas Anotações</h2>
+    <div id="listaLivro"></div>
+    <p class="estado-lista" id="estadoLivro">Carregando…</p>
+  </main>
+
+<script src="../../assets/js/livro.js"></script>
+<script>
+(function() {
+  'use strict';
+  var usuario = window.SmartCondo.api.protegerPagina('sindico');
+  if (usuario) window.SmartCondo.livro.montar(usuario);
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

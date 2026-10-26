@@ -1,4 +1,6 @@
 DROP TABLE IF EXISTS
+    ciencias_anotacao,
+    anotacoes_portaria,
     infracoes,
     horarios_mudanca,
     mudancas,
@@ -995,6 +997,49 @@ ALTER TABLE ONLY horarios_mudanca
 ALTER TABLE ONLY horarios_mudanca
     ADD CONSTRAINT uq_horario_mudanca_dia UNIQUE (condominio_id, dia_semana);
 
+-- Livro da portaria: o que o próximo turno precisa saber. Não se apaga
+-- nem se edita — corrige-se com outra anotação, como no livro de papel.
+CREATE TABLE anotacoes_portaria (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    autor_id integer,
+    texto text NOT NULL,
+    importante boolean NOT NULL,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL
+);
+CREATE SEQUENCE anotacoes_portaria_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE anotacoes_portaria_id_seq OWNED BY anotacoes_portaria.id;
+ALTER TABLE ONLY anotacoes_portaria ALTER COLUMN id SET DEFAULT nextval('anotacoes_portaria_id_seq'::regclass);
+ALTER TABLE ONLY anotacoes_portaria
+    ADD CONSTRAINT anotacoes_portaria_pkey PRIMARY KEY (id);
+
+-- Quem leu cada anotação do livro, e quando: uma vez por pessoa.
+CREATE TABLE ciencias_anotacao (
+    id integer NOT NULL,
+    anotacao_id integer NOT NULL,
+    usuario_id integer NOT NULL,
+    ciente_em timestamp with time zone DEFAULT now() NOT NULL
+);
+CREATE SEQUENCE ciencias_anotacao_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE ciencias_anotacao_id_seq OWNED BY ciencias_anotacao.id;
+ALTER TABLE ONLY ciencias_anotacao ALTER COLUMN id SET DEFAULT nextval('ciencias_anotacao_id_seq'::regclass);
+ALTER TABLE ONLY ciencias_anotacao
+    ADD CONSTRAINT ciencias_anotacao_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY ciencias_anotacao
+    ADD CONSTRAINT uq_ciencia_anotacao UNIQUE (anotacao_id, usuario_id);
+
 CREATE TABLE ordens_servico (
     id integer NOT NULL,
     condominio_id integer NOT NULL,
@@ -1261,6 +1306,18 @@ ALTER TABLE ONLY infracoes
 ALTER TABLE ONLY horarios_mudanca
     ADD CONSTRAINT horarios_mudanca_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY anotacoes_portaria
+    ADD CONSTRAINT anotacoes_portaria_autor_id_fkey FOREIGN KEY (autor_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY anotacoes_portaria
+    ADD CONSTRAINT anotacoes_portaria_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ciencias_anotacao
+    ADD CONSTRAINT ciencias_anotacao_anotacao_id_fkey FOREIGN KEY (anotacao_id) REFERENCES anotacoes_portaria(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ciencias_anotacao
+    ADD CONSTRAINT ciencias_anotacao_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY mudancas
     ADD CONSTRAINT mudancas_avaliada_por_id_fkey FOREIGN KEY (avaliada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
 
@@ -1472,6 +1529,10 @@ CREATE INDEX ix_veiculos_unidade_unidade_id ON veiculos_unidade USING btree (uni
 CREATE UNIQUE INDEX uq_veiculo_placa_ativa ON veiculos_unidade USING btree (condominio_id, placa) WHERE (inativo_em IS NULL);
 
 CREATE INDEX ix_horarios_mudanca_condominio_id ON horarios_mudanca USING btree (condominio_id);
+
+CREATE INDEX ix_anotacoes_portaria_condominio_criado ON anotacoes_portaria USING btree (condominio_id, criado_em);
+
+CREATE INDEX ix_ciencias_anotacao_anotacao_id ON ciencias_anotacao USING btree (anotacao_id);
 
 CREATE INDEX ix_infracoes_condominio_id ON infracoes USING btree (condominio_id);
 

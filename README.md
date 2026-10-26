@@ -28,32 +28,46 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 ## 🎯 Funcionalidades por Perfil
 
 ### 🏠 Morador
-- **Dashboard** — Visão geral com reservas, financeiro e comunicados
-- **Reservas** — Agendamento de áreas comuns (salão, churrasqueira, piscina, academia, playground)
-- **Financeiro** — Visualização de boletos, saldo devedor e histórico de pagamentos
+- **Dashboard** — Visão geral com reservas, cobranças, comunicados e encomendas
+- **Reservas** — Agendamento das áreas comuns, com as regras e a taxa de uso de cada espaço
+- **Financeiro** — Cobranças (taxa, multa, uso de espaço), forma de pagamento e histórico
+- **Prestação de Contas** — Despesas e balancete do mês
+- **Assembleias** — Votação online, um voto por apartamento
+- **Advertências e Multas** — Notificações do síndico e a defesa no prazo
+- **Mudança** — Agendamento dentro das regras do regimento
+- **Visitantes** — Confirmação de quem chegou e entrada liberada com antecedência
+- **Veículos** — Placas do apartamento, que a portaria reconhece
 - **Comunicados** — Acompanhamento de avisos do condomínio com filtros por categoria
 - **Documentos** — Acesso a atas, convenção e regimento interno
 - **Ocorrências** — Abertura e acompanhamento de solicitações
-- **Perfil** — Edição de dados pessoais e alteração de senha
+- **Perfil** — Dados pessoais, senha, foto e troca de perfil (quem tem mais de um apartamento)
 
 ### 🚪 Porteiro
-- **Dashboard** — Visão geral de visitantes, encomendas e comunicados
-- **Visitantes** — Controle de entrada e saída de visitantes
+- **Dashboard** — Visão geral de visitantes, encomendas, carros no pátio e avisos
+- **Visitantes** — Controle de entrada e saída, com foto e entradas liberadas pelo morador
 - **Encomendas** — Registro e controle de retirada de encomendas
-- **Veículos** — Controle de entrada e saída de veículos
+- **Veículos** — Entrada e saída do estacionamento, reconhecendo as placas cadastradas
+- **Mudanças** — As aprovadas pelo síndico, de hoje em diante
+- **Livro da Portaria** — Passagem de turno, com a ciência de quem chega
 - **Ocorrências** — Registro de ocorrências durante o turno
 - **Perfil** — Edição de dados pessoais
 
 ### 📊 Síndico
-- **Dashboard** — Painel administrativo com indicadores do condomínio
-- **Financeiro** — Gestão financeira completa, geração de boletos e inadimplência
+- **Dashboard** — Painel administrativo com indicadores e pendências do condomínio
+- **Financeiro** — Cobranças, pagamentos, encargos e inadimplência
+- **Prestação de Contas** — Lançamento de despesas e balancete do mês
+- **Assembleias** — Convocação, pauta e resultado da votação
 - **Moradores** — Cadastro e aprovação de novos moradores
-- **Porteiros** — Gestão da equipe de portaria
-- **Reservas** — Aprovação ou recusa de reservas
+- **Porteiros** — Equipe de portaria e as permissões de cada um
+- **Reservas** — Espaços, regras, taxa de uso e aprovação das reservas
+- **Advertências e Multas** — Notificação, defesa e decisão
+- **Mudanças** — Regras do regimento e aprovação dos pedidos
+- **Livro da Portaria** — A passagem de turno da equipe e as orientações aos porteiros
 - **Comunicados** — Criação e envio de comunicados
 - **Manutenção** — Abertura e acompanhamento de ordens de serviço
 - **Ocorrências** — Resposta aos chamados de moradores e porteiros
-- **Perfil** — Edição de dados pessoais e troca de senha
+- **Documentos** — Atas, convenção, regimento e plantas
+- **Perfil** — Dados pessoais, senha e o apartamento em que mora, se morar
 
 ### ⭐ Administrador
 - **Dashboard** — Indicadores da plataforma inteira
@@ -169,7 +183,7 @@ backend/
 ├── alembic/                           # Migrações do banco
 ├── app/
 │   ├── core/                          # Configuração, banco e segurança
-│   ├── models/                        # 31 tabelas
+│   ├── models/                        # 33 tabelas
 │   ├── schemas/                       # Entrada e saída da API
 │   ├── services/                      # Regras de negócio
 │   ├── api/routers/                   # Endpoints
@@ -179,7 +193,7 @@ backend/
 ```
 
 **Total:** 43 páginas HTML, 2 arquivos CSS, 9 arquivos JS, 43 ícones SVG e
-uma API com 146 endpoints.
+uma API com 150 endpoints.
 
 ---
 
@@ -199,7 +213,7 @@ uvicorn app.main:app --reload
 
 Documentação interativa da API em <http://localhost:8000/docs>.
 
-**146 endpoints**, cobrindo os casos de uso e as histórias de usuário da
+**150 endpoints**, cobrindo os casos de uso e as histórias de usuário da
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e
