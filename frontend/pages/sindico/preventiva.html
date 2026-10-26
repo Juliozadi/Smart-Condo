@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Manutenção Preventiva</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script><link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-desktop">
+  <header class="app-bar"><div class="app-bar-inner wide">
+    <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
+    <div class="app-bar-right"><a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role">Síndico</span></a><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
+  </div></header>
+  <main class="dash-wrapper wide">
+    <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
+    <div class="dash-greeting">
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/calendar-check.svg" width="26" height="26" alt=""> Manutenção Preventiva</h1>
+      <p class="greeting-condo">O que vence e não pode passar: AVCB, extintores, caixa d'água, elevadores</p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card red"><span class="stat-value" id="totVencidas">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-exclamation.svg" width="16" height="16" alt="">Vencidas</span></div>
+      <div class="stat-card amber"><span class="stat-value" id="totEmBreve">—</span><span class="stat-label"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt="">Vencem em breve</span></div>
+      <div class="stat-card teal"><span class="stat-value" id="totEmDia">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Em dia</span></div>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Planos</h2>
+    <div id="listaPlanos" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoPlanos">Carregando…</p>
+
+    <h2 class="section-title" id="tituloForm"><img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Novo Plano</h2>
+    <div class="form-card">
+      <form id="formPlano" novalidate>
+        <div class="form-group">
+          <label for="pNome">O que precisa ser feito</label>
+          <input type="text" id="pNome" list="sugestoesPlano" maxlength="120" required
+                 placeholder="Ex: Recarga dos extintores">
+          <datalist id="sugestoesPlano">
+            <option value="AVCB (vistoria do Corpo de Bombeiros)">
+            <option value="Recarga dos extintores">
+            <option value="Limpeza da caixa d'água">
+            <option value="Manutenção dos elevadores">
+            <option value="Inspeção do para-raios (SPDA)">
+            <option value="Dedetização das áreas comuns">
+            <option value="Seguro do condomínio">
+            <option value="Manutenção do gerador">
+          </datalist>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="pPeriodicidade">A cada quantos meses</label>
+            <input type="number" id="pPeriodicidade" min="1" max="120" step="1" inputmode="numeric" required placeholder="Ex: 12">
+          </div>
+          <div class="form-group">
+            <label for="pVencimento">Próximo vencimento</label>
+            <input type="date" id="pVencimento" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="pAviso">Avisar quantos dias antes</label>
+            <input type="number" id="pAviso" min="0" max="180" step="1" inputmode="numeric" value="30">
+          </div>
+          <div class="form-group">
+            <label for="pFornecedor">Fornecedor (opcional)</label>
+            <input type="text" id="pFornecedor" maxlength="120" placeholder="Empresa que faz o serviço">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="pObservacao">Observação (opcional)</label>
+          <textarea id="pObservacao" maxlength="2000" rows="2" placeholder="Ex: teste hidrostático a cada 5 anos"></textarea>
+        </div>
+        <p class="form-erro" id="erroPlano" role="alert"></p>
+        <div class="infracao-acoes">
+          <button class="action-btn" type="submit" id="btnSalvarPlano">Cadastrar</button>
+          <button class="action-btn outline" type="button" id="btnCancelarEdicao" hidden>Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+<script src="../../assets/js/preventiva.js"></script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

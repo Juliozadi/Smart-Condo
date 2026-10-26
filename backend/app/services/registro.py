@@ -35,6 +35,7 @@ DESPESA = "despesa"
 ASSEMBLEIA = "assembleia"
 INFRACAO = "infracao"
 DECLARACAO = "declaracao_quitacao"
+PLANO_MANUTENCAO = "plano_manutencao"
 
 ROTULO_ACAO = {
     CRIOU: "Criado", EDITOU: "Editado", INATIVOU: "Inativado", REATIVOU: "Reativado",

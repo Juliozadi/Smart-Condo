@@ -20,7 +20,7 @@ from sqlalchemy import select, text
 from app.core.config import settings
 from app.core.database import Base, SessionLocal, engine
 from app.core.security import gerar_hash_senha
-from app.core.tempo import hoje_local
+from app.core.tempo import hoje_local, somar_meses
 from app.models.assembleia import Assembleia, ItemPauta, Voto
 from app.models.comunicado import Comunicado
 from app.models.condominio import Condominio, Unidade
@@ -35,6 +35,7 @@ from app.models.enums import (
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
 from app.models.declaracao import DeclaracaoQuitacao
 from app.models.infracao import Infracao
+from app.models.preventiva import PlanoManutencao, RealizacaoManutencao
 from app.models.livro import AnotacaoPortaria, CienciaAnotacao
 from app.models.mudanca import Mudanca
 from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico, VeiculoUnidade
@@ -422,6 +423,35 @@ def criar(db) -> dict:
             d.revogada_por_id = sindico.id
             d.motivo_revogacao = "O pagamento de agosto foi estornado pelo banco."
         db.add(d)
+    db.flush()
+
+    # ── Manutenção preventiva: a recarga dos extintores venceu, a limpeza
+    #    da caixa d'água vence em 20 dias; o resto está em dia
+    #    (o elevador, mensal, avisa só uma semana antes)
+    for nome, meses, aviso, ultima, fornecedor, custos in [
+        ("Recarga dos extintores", 12, 30, HOJE - timedelta(days=375), "Extintores MS", [1280]),
+        ("Limpeza da caixa d'água", 6, 30, somar_meses(HOJE + timedelta(days=20), -6),
+         "Hidro Limpeza Pantanal", [600]),
+        ("Manutenção dos elevadores", 1, 7, HOJE - timedelta(days=5), "Elevadores Pantanal",
+         [450, 450, 450]),
+        ("Inspeção do para-raios (SPDA)", 12, 30, HOJE - timedelta(days=120), "Elétrica Silva",
+         [380]),
+        ("AVCB (vistoria do Corpo de Bombeiros)", 36, 60,
+         somar_meses(HOJE + timedelta(days=300), -36), None, []),
+    ]:
+        plano = PlanoManutencao(
+            condominio_id=condominio.id, nome=nome, periodicidade_meses=meses,
+            proximo_vencimento=somar_meses(ultima, meses), ultima_realizacao=ultima,
+            antecedencia_aviso_dias=aviso, fornecedor=fornecedor,
+        )
+        db.add(plano)
+        db.flush()
+        # Uma realização por período, da mais recente para trás.
+        for i, custo in enumerate(custos):
+            db.add(RealizacaoManutencao(
+                plano_id=plano.id, data=somar_meses(ultima, -meses * i),
+                custo=Decimal(custo), registrada_por_id=sindico.id,
+            ))
     db.flush()
 
     # ── Livro da portaria: a Renata passou o turno da noite com um aviso

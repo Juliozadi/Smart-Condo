@@ -89,6 +89,10 @@
         <div class="card-icon icon-orange"><img src="../../assets/img/icons/comunicados.svg" width="16" height="16" alt="Comunicados"></div>
         <h3>Comunicados</h3><p>Avisos e notificações</p>
       </a>
+      <a href="preventiva.html" class="dash-card-sq">
+        <div class="card-icon icon-yellow"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt="Preventiva"></div>
+        <h3>Manutenção Preventiva</h3><p>AVCB, extintores, caixa d'água</p>
+      </a>
       <a href="manutencao.html" class="dash-card-sq">
         <div class="card-icon icon-red"><img src="../../assets/img/icons/manutencao.svg" width="16" height="16" alt="Manutenção"></div>
         <h3>Manutenção</h3><p>Ordens de serviço e fornecedores</p>
@@ -176,7 +180,7 @@
      a frase sempre na mesma ordem — senão o mesmo dado aparecia numa
      ordem diferente a cada carregamento, conforme qual requisição
      respondesse primeiro. */
-  var ORDEM_PENDENCIAS = ['cadastros', 'reservas', 'inadimplencia', 'livro'];
+  var ORDEM_PENDENCIAS = ['cadastros', 'reservas', 'inadimplencia', 'preventiva', 'livro'];
   var pendencias = {};
 
   function anotarPendencia(chave, texto) {
@@ -264,6 +268,16 @@
     }).catch(function(e) { campo('estadoReservas').textContent = e.message; });
   }
 
+  function carregarPreventiva() {
+    return api.get('/manutencao-preventiva').then(function(planos) {
+      var vencidas = planos.filter(function(p) { return p.situacao === 'vencida'; }).length;
+      if (vencidas) {
+        anotarPendencia('preventiva', vencidas + (vencidas === 1
+          ? ' manutenção preventiva vencida' : ' manutenções preventivas vencidas'));
+      }
+    }).catch(function() {});
+  }
+
   function carregarLivro() {
     return api.get('/livro-portaria/pendentes').then(function(p) {
       if (p.total) {
@@ -334,6 +348,7 @@
   carregarFinanceiro();
   carregarReservas();
   carregarOcorrencias();
+  carregarPreventiva();
   carregarLivro();
 })();
 </script>

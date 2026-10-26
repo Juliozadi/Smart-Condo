@@ -2456,3 +2456,15 @@ label.contato-btn { position: relative; cursor: pointer; }
 .declaracao .assembleia-topo h3 { margin-bottom: 0; }
 .declaracao-codigo { font-size: 13px; color: var(--text-2); margin: 6px 0 0; overflow-wrap: anywhere; }
 .declaracao-codigo strong { color: var(--text); letter-spacing: .5px; font-family: ui-monospace, monospace; }
+
+/* ── Manutenção preventiva ───────────────────────────────────────── */
+.plano.vencida { border-left: 3px solid var(--erro); }
+.plano.vence_em_breve { border-left: 3px solid var(--aviso); }
+.plano .assembleia-topo h3 { margin-bottom: 0; }
+.plano-obs { font-size: 13px; color: var(--text-2); margin: 4px 0; white-space: pre-line; }
+.plano .infracao-acoes { flex-wrap: wrap; }
+.plano-realizacao { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+.plano-historico { margin-top: 12px; font-size: 13px; color: var(--text-2); }
+.plano-historico-lista { list-style: none; margin: 0; padding: 0; }
+.plano-historico-lista li { padding: 6px 0; border-top: 1px solid var(--border); }
+.plano-historico-obs { display: block; font-size: 12px; color: var(--muted); }

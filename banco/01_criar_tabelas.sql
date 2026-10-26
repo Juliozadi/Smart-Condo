@@ -1,4 +1,6 @@
 DROP TABLE IF EXISTS
+    realizacoes_manutencao,
+    planos_manutencao,
     declaracoes_quitacao,
     ciencias_anotacao,
     anotacoes_portaria,
@@ -1077,6 +1079,63 @@ ALTER TABLE ONLY declaracoes_quitacao
 ALTER TABLE ONLY declaracoes_quitacao
     ADD CONSTRAINT declaracoes_quitacao_codigo_key UNIQUE (codigo);
 
+-- Manutenção preventiva: o que vence de tempos em tempos (AVCB,
+-- extintores, caixa d'água, elevadores), com a periodicidade e o próximo
+-- vencimento. Remover é inativar.
+CREATE TABLE planos_manutencao (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    nome character varying(120) NOT NULL,
+    periodicidade_meses integer NOT NULL,
+    proximo_vencimento date NOT NULL,
+    antecedencia_aviso_dias integer DEFAULT 30 NOT NULL,
+    fornecedor character varying(120),
+    observacao text,
+    ultima_realizacao date,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    inativo_em timestamp with time zone,
+    inativado_por_id integer,
+    CONSTRAINT ck_plano_manutencao_antecedencia CHECK (((antecedencia_aviso_dias >= 0) AND (antecedencia_aviso_dias <= 180))),
+    CONSTRAINT ck_plano_manutencao_periodicidade CHECK (((periodicidade_meses >= 1) AND (periodicidade_meses <= 120)))
+);
+CREATE SEQUENCE planos_manutencao_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE planos_manutencao_id_seq OWNED BY planos_manutencao.id;
+ALTER TABLE ONLY planos_manutencao ALTER COLUMN id SET DEFAULT nextval('planos_manutencao_id_seq'::regclass);
+ALTER TABLE ONLY planos_manutencao
+    ADD CONSTRAINT planos_manutencao_pkey PRIMARY KEY (id);
+
+-- Cada vez que a manutenção foi feita: o dia, o custo e a despesa
+-- lançada com ele na prestação de contas.
+CREATE TABLE realizacoes_manutencao (
+    id integer NOT NULL,
+    plano_id integer NOT NULL,
+    data date NOT NULL,
+    custo numeric(10,2),
+    observacao text,
+    registrada_por_id integer,
+    despesa_id integer,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT ck_realizacao_manutencao_custo CHECK (((custo IS NULL) OR (custo > (0)::numeric)))
+);
+CREATE SEQUENCE realizacoes_manutencao_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE realizacoes_manutencao_id_seq OWNED BY realizacoes_manutencao.id;
+ALTER TABLE ONLY realizacoes_manutencao ALTER COLUMN id SET DEFAULT nextval('realizacoes_manutencao_id_seq'::regclass);
+ALTER TABLE ONLY realizacoes_manutencao
+    ADD CONSTRAINT realizacoes_manutencao_pkey PRIMARY KEY (id);
+
 CREATE TABLE ordens_servico (
     id integer NOT NULL,
     condominio_id integer NOT NULL,
@@ -1367,6 +1426,21 @@ ALTER TABLE ONLY declaracoes_quitacao
 ALTER TABLE ONLY declaracoes_quitacao
     ADD CONSTRAINT declaracoes_quitacao_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY planos_manutencao
+    ADD CONSTRAINT planos_manutencao_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY planos_manutencao
+    ADD CONSTRAINT planos_manutencao_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY realizacoes_manutencao
+    ADD CONSTRAINT realizacoes_manutencao_despesa_id_fkey FOREIGN KEY (despesa_id) REFERENCES despesas(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY realizacoes_manutencao
+    ADD CONSTRAINT realizacoes_manutencao_plano_id_fkey FOREIGN KEY (plano_id) REFERENCES planos_manutencao(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY realizacoes_manutencao
+    ADD CONSTRAINT realizacoes_manutencao_registrada_por_id_fkey FOREIGN KEY (registrada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
 ALTER TABLE ONLY mudancas
     ADD CONSTRAINT mudancas_avaliada_por_id_fkey FOREIGN KEY (avaliada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
 
@@ -1586,6 +1660,13 @@ CREATE INDEX ix_ciencias_anotacao_anotacao_id ON ciencias_anotacao USING btree (
 CREATE INDEX ix_declaracoes_quitacao_condominio_id ON declaracoes_quitacao USING btree (condominio_id);
 
 CREATE INDEX ix_declaracoes_quitacao_unidade_id ON declaracoes_quitacao USING btree (unidade_id);
+
+CREATE INDEX ix_planos_manutencao_condominio_id ON planos_manutencao USING btree (condominio_id);
+
+-- Dois planos ativos com o mesmo nome confundem o painel; o removido libera o nome.
+CREATE UNIQUE INDEX uq_plano_manutencao_nome ON planos_manutencao USING btree (condominio_id, lower((nome)::text)) WHERE (inativo_em IS NULL);
+
+CREATE INDEX ix_realizacoes_manutencao_plano_id ON realizacoes_manutencao USING btree (plano_id);
 
 CREATE INDEX ix_infracoes_condominio_id ON infracoes USING btree (condominio_id);
 

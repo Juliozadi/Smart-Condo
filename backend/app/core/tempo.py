@@ -7,6 +7,7 @@ de Campo Grande. Todo "hoje" e "agora" da API passa por aqui.
 """
 from __future__ import annotations
 
+import calendar
 import logging
 from datetime import date, datetime
 from functools import lru_cache
@@ -38,3 +39,10 @@ def agora_local() -> datetime:
 def hoje_local() -> date:
     """A data de hoje no fuso do condomínio."""
     return agora_local().date()
+
+
+def somar_meses(dia: date, meses: int) -> date:
+    """31/01 + 1 mês é 28/02 (ou 29): o dia que não existe vira o último."""
+    total = dia.month - 1 + meses
+    ano, mes = dia.year + total // 12, total % 12 + 1
+    return date(ano, mes, min(dia.day, calendar.monthrange(ano, mes)[1]))

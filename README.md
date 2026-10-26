@@ -67,6 +67,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 - **Livro da Portaria** — A passagem de turno da equipe e as orientações aos porteiros
 - **Comunicados** — Criação e envio de comunicados
 - **Manutenção** — Abertura e acompanhamento de ordens de serviço
+- **Manutenção Preventiva** — AVCB, extintores, caixa d'água e o que mais vence, com aviso no painel
 - **Ocorrências** — Resposta aos chamados de moradores e porteiros
 - **Documentos** — Atas, convenção, regimento e plantas
 - **Perfil** — Dados pessoais, senha e o apartamento em que mora, se morar
@@ -185,7 +186,7 @@ backend/
 ├── alembic/                           # Migrações do banco
 ├── app/
 │   ├── core/                          # Configuração, banco e segurança
-│   ├── models/                        # 34 tabelas
+│   ├── models/                        # 36 tabelas
 │   ├── schemas/                       # Entrada e saída da API
 │   ├── services/                      # Regras de negócio
 │   ├── api/routers/                   # Endpoints
@@ -195,7 +196,7 @@ backend/
 ```
 
 **Total:** 43 páginas HTML, 2 arquivos CSS, 9 arquivos JS, 43 ícones SVG e
-uma API com 154 endpoints.
+uma API com 160 endpoints.
 
 ---
 
@@ -215,7 +216,7 @@ uvicorn app.main:app --reload
 
 Documentação interativa da API em <http://localhost:8000/docs>.
 
-**154 endpoints**, cobrindo os casos de uso e as histórias de usuário da
+**160 endpoints**, cobrindo os casos de uso e as histórias de usuário da
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e

@@ -2337,6 +2337,107 @@ const dicionario = [
     "regras": []
   },
   {
+    "nome": "planos_manutencao",
+    "resumo": "O que vence de tempos em tempos e não pode passar (AVCB, extintores, caixa d'água, elevadores, para-raios), com a periodicidade e o próximo vencimento. Remover é inativar.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio do plano"
+      },
+      {
+        "coluna": "nome",
+        "tipo": "VARCHAR(120)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "O que precisa ser feito; único entre os planos ativos do condomínio"
+      },
+      {
+        "coluna": "periodicidade_meses",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "De quantos em quantos meses (1 a 120)"
+      },
+      {
+        "coluna": "proximo_vencimento",
+        "tipo": "DATE",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Até quando precisa ser feito de novo; a realização mais recente o renova"
+      },
+      {
+        "coluna": "antecedencia_aviso_dias",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Quantos dias antes do vencimento o painel começa a avisar (0 a 180)"
+      },
+      {
+        "coluna": "fornecedor",
+        "tipo": "VARCHAR(120)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Empresa que costuma fazer o serviço"
+      },
+      {
+        "coluna": "observacao",
+        "tipo": "TEXT",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Anotação do síndico sobre o plano"
+      },
+      {
+        "coluna": "ultima_realizacao",
+        "tipo": "DATE",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Dia da realização mais recente; vazia, ainda sem registro"
+      },
+      {
+        "coluna": "criado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que o registro foi criado, preenchido pelo banco"
+      },
+      {
+        "coluna": "atualizado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "inativo_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o plano foi removido; vazio enquanto ativo. O histórico de realizações fica guardado"
+      },
+      {
+        "coluna": "inativado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Quem removeu o plano"
+      }
+    ],
+    "regras": [
+      "CHECK (((antecedencia_aviso_dias >= 0) AND (antecedencia_aviso_dias <= 180)))",
+      "CHECK (((periodicidade_meses >= 1) AND (periodicidade_meses <= 120)))"
+    ]
+  },
+  {
     "nome": "preferencias_cobranca",
     "resumo": "O dia do mês e a forma de pagamento que cada morador prefere.",
     "colunas": [
@@ -2385,6 +2486,71 @@ const dicionario = [
     ],
     "regras": [
       "CHECK (((dia_vencimento >= 1) AND (dia_vencimento <= 28)))"
+    ]
+  },
+  {
+    "nome": "realizacoes_manutencao",
+    "resumo": "Cada vez que uma manutenção preventiva foi feita: o dia, o custo e a despesa lançada com ele.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "plano_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "O plano que foi cumprido"
+      },
+      {
+        "coluna": "data",
+        "tipo": "DATE",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Dia em que foi feita (nunca no futuro)"
+      },
+      {
+        "coluna": "custo",
+        "tipo": "NUMERIC(10,2)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quanto custou; vazio, sem custo informado"
+      },
+      {
+        "coluna": "observacao",
+        "tipo": "TEXT",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "O que foi feito, como o síndico anotou"
+      },
+      {
+        "coluna": "registrada_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Quem registrou a realização"
+      },
+      {
+        "coluna": "despesa_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "A despesa de manutenção lançada com o custo, na prestação de contas"
+      },
+      {
+        "coluna": "criado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que o registro foi criado, preenchido pelo banco"
+      }
+    ],
+    "regras": [
+      "CHECK (((custo IS NULL) OR (custo > (0)::numeric)))"
     ]
   },
   {
@@ -3543,10 +3709,40 @@ const relacoes = [
     "texto": "Porteiro a quem as permissões pertencem"
   },
   {
+    "origem": "planos_manutencao",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio do plano"
+  },
+  {
+    "origem": "planos_manutencao",
+    "coluna": "inativado_por_id",
+    "destino": "usuarios",
+    "texto": "Quem removeu o plano"
+  },
+  {
     "origem": "preferencias_cobranca",
     "coluna": "morador_id",
     "destino": "usuarios",
     "texto": "Morador dono da preferência"
+  },
+  {
+    "origem": "realizacoes_manutencao",
+    "coluna": "despesa_id",
+    "destino": "despesas",
+    "texto": "A despesa de manutenção lançada com o custo, na prestação de contas"
+  },
+  {
+    "origem": "realizacoes_manutencao",
+    "coluna": "plano_id",
+    "destino": "planos_manutencao",
+    "texto": "O plano que foi cumprido"
+  },
+  {
+    "origem": "realizacoes_manutencao",
+    "coluna": "registrada_por_id",
+    "destino": "usuarios",
+    "texto": "Quem registrou a realização"
   },
   {
     "origem": "registros_alteracao",
