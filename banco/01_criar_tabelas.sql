@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS
+    declaracoes_quitacao,
     ciencias_anotacao,
     anotacoes_portaria,
     infracoes,
@@ -1040,6 +1041,42 @@ ALTER TABLE ONLY ciencias_anotacao
 ALTER TABLE ONLY ciencias_anotacao
     ADD CONSTRAINT uq_ciencia_anotacao UNIQUE (anotacao_id, usuario_id);
 
+-- Declaração de quitação: o apartamento não tinha débito vencido até o
+-- dia; o código é o que qualquer um confere. Guarda o que dizia no dia
+-- (condomínio, apartamento, síndico). Não se apaga; o síndico revoga.
+CREATE TABLE declaracoes_quitacao (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    emitida_por_id integer,
+    codigo character varying(16) NOT NULL,
+    referencia_ate date NOT NULL,
+    valida_ate date NOT NULL,
+    condominio_nome character varying(160) NOT NULL,
+    condominio_cnpj character varying(18) NOT NULL,
+    identificacao_unidade character varying(45) NOT NULL,
+    sindico_nome character varying(160),
+    emitida_em timestamp with time zone DEFAULT now() NOT NULL,
+    revogada_em timestamp with time zone,
+    revogada_por_id integer,
+    motivo_revogacao text,
+    CONSTRAINT ck_declaracao_revogacao CHECK (((revogada_em IS NULL) = (motivo_revogacao IS NULL))),
+    CONSTRAINT ck_declaracao_validade CHECK ((valida_ate >= referencia_ate))
+);
+CREATE SEQUENCE declaracoes_quitacao_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE declaracoes_quitacao_id_seq OWNED BY declaracoes_quitacao.id;
+ALTER TABLE ONLY declaracoes_quitacao ALTER COLUMN id SET DEFAULT nextval('declaracoes_quitacao_id_seq'::regclass);
+ALTER TABLE ONLY declaracoes_quitacao
+    ADD CONSTRAINT declaracoes_quitacao_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY declaracoes_quitacao
+    ADD CONSTRAINT declaracoes_quitacao_codigo_key UNIQUE (codigo);
+
 CREATE TABLE ordens_servico (
     id integer NOT NULL,
     condominio_id integer NOT NULL,
@@ -1318,6 +1355,18 @@ ALTER TABLE ONLY ciencias_anotacao
 ALTER TABLE ONLY ciencias_anotacao
     ADD CONSTRAINT ciencias_anotacao_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY declaracoes_quitacao
+    ADD CONSTRAINT declaracoes_quitacao_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY declaracoes_quitacao
+    ADD CONSTRAINT declaracoes_quitacao_emitida_por_id_fkey FOREIGN KEY (emitida_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY declaracoes_quitacao
+    ADD CONSTRAINT declaracoes_quitacao_revogada_por_id_fkey FOREIGN KEY (revogada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY declaracoes_quitacao
+    ADD CONSTRAINT declaracoes_quitacao_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY mudancas
     ADD CONSTRAINT mudancas_avaliada_por_id_fkey FOREIGN KEY (avaliada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
 
@@ -1533,6 +1582,10 @@ CREATE INDEX ix_horarios_mudanca_condominio_id ON horarios_mudanca USING btree (
 CREATE INDEX ix_anotacoes_portaria_condominio_criado ON anotacoes_portaria USING btree (condominio_id, criado_em);
 
 CREATE INDEX ix_ciencias_anotacao_anotacao_id ON ciencias_anotacao USING btree (anotacao_id);
+
+CREATE INDEX ix_declaracoes_quitacao_condominio_id ON declaracoes_quitacao USING btree (condominio_id);
+
+CREATE INDEX ix_declaracoes_quitacao_unidade_id ON declaracoes_quitacao USING btree (unidade_id);
 
 CREATE INDEX ix_infracoes_condominio_id ON infracoes USING btree (condominio_id);
 

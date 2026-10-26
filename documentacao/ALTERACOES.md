@@ -15,11 +15,11 @@ não tinha.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | Novo RF048: prestação de contas — despesas e balancete do mês. Novo RF049: assembleia virtual com votação. Novo RF050: os veículos do apartamento, que a portaria reconhece pela placa. Novo RF051: agendamento de mudança, com as regras do regimento que o síndico define. Novo RF052: mais de um perfil com o mesmo login (o síndico que também mora, o morador eleito síndico). Novo RF053: o proprietário de mais de um apartamento, morando ou não neles. RF049: o proprietário vota mesmo sem morar no apartamento. Novo RF054: advertências e multas com direito de defesa. RF015 e RF017: taxa de uso dos espaços. Novo RF055: livro da portaria, a passagem de turno |
-| 11 Diagrama de caso de uso | Novos casos: prestar contas, convocar assembleia, votar em assembleia, cadastrar veículo, agendar mudança, trocar de perfil, vincular outro apartamento, notificar infração, apresentar defesa e anotar no livro da portaria — agora 38 casos de uso |
-| 14 a 17 | Novas tabelas despesas, assembleias, itens_pauta, votos, veiculos_unidade, mudancas, horarios_mudanca, infracoes, anotacoes_portaria e ciencias_anotacao; condominios ganha mudanca_antecedencia_dias; cobrancas ganha origem (taxa, multa ou uso de espaço); espacos_comuns ganha taxa_uso, e reservas, cobranca_id; usuarios ganha reside e conta_principal_id, e o e-mail e o CPF passam a ser únicos entre os cadastros com login — agora 33 entidades, 391 atributos e 88 relacionamentos; o DER ganha um quarto recorte, de gestão |
-| 21 API REST | 150 endpoints: despesas (lançar, listar, corrigir, cancelar, comprovante) e balancete do mês; assembleias (convocar, listar, votar, cancelar); veículos do apartamento (cadastrar, listar, remover) e a consulta da placa pela portaria; mudanças (consultar e definir as regras, horários tomados, agendar, listar, avaliar, cancelar); perfis da pessoa e troca de perfil; acrescentar e tirar apartamentos do próprio cadastro; advertências e multas (notificar, listar, defender, decidir); livro da portaria (anotar, ler, pendentes, dar ciência). A tabela de módulos da seção, que tinha parado em treze, passa a ter todos, com as rotas de cada um recontadas |
-| 23 Testes | 643 casos no servidor e 127 testes de interface |
+| 9 Requisitos funcionais | Novo RF048: prestação de contas — despesas e balancete do mês. Novo RF049: assembleia virtual com votação. Novo RF050: os veículos do apartamento, que a portaria reconhece pela placa. Novo RF051: agendamento de mudança, com as regras do regimento que o síndico define. Novo RF052: mais de um perfil com o mesmo login (o síndico que também mora, o morador eleito síndico). Novo RF053: o proprietário de mais de um apartamento, morando ou não neles. RF049: o proprietário vota mesmo sem morar no apartamento. Novo RF054: advertências e multas com direito de defesa. RF015 e RF017: taxa de uso dos espaços. Novo RF055: livro da portaria, a passagem de turno. Novo RF056: declaração de quitação que qualquer um confere pelo código |
+| 11 Diagrama de caso de uso | Novos casos: prestar contas, convocar assembleia, votar em assembleia, cadastrar veículo, agendar mudança, trocar de perfil, vincular outro apartamento, notificar infração, apresentar defesa e anotar no livro da portaria e emitir declaração de quitação — agora 39 casos de uso |
+| 14 a 17 | Novas tabelas despesas, assembleias, itens_pauta, votos, veiculos_unidade, mudancas, horarios_mudanca, infracoes, anotacoes_portaria, ciencias_anotacao e declaracoes_quitacao; condominios ganha mudanca_antecedencia_dias; cobrancas ganha origem (taxa, multa ou uso de espaço); espacos_comuns ganha taxa_uso, e reservas, cobranca_id; usuarios ganha reside e conta_principal_id, e o e-mail e o CPF passam a ser únicos entre os cadastros com login — agora 34 entidades, 406 atributos e 92 relacionamentos; o DER ganha um quarto recorte, de gestão |
+| 21 API REST | 154 endpoints: despesas (lançar, listar, corrigir, cancelar, comprovante) e balancete do mês; assembleias (convocar, listar, votar, cancelar); veículos do apartamento (cadastrar, listar, remover) e a consulta da placa pela portaria; mudanças (consultar e definir as regras, horários tomados, agendar, listar, avaliar, cancelar); perfis da pessoa e troca de perfil; acrescentar e tirar apartamentos do próprio cadastro; advertências e multas (notificar, listar, defender, decidir); livro da portaria (anotar, ler, pendentes, dar ciência); declarações de quitação (emitir, listar, revogar e conferir pelo código, sem login). A tabela de módulos da seção, que tinha parado em treze, passa a ter todos, com as rotas de cada um recontadas |
+| 23 Testes | 662 casos no servidor e 128 testes de interface |
 
 **Situações tratadas.**
 - O morador paga a taxa todo mês e não sabe para onde vai o dinheiro; o
@@ -90,6 +90,14 @@ não tinha.
   1.336, § 2º) e, mantida, entra nas cobranças do apartamento ao lado da
   taxa do mês; o síndico vê as reincidências dos últimos 12 meses (art.
   1.337).
+- Na venda do apartamento, o comprador e o cartório pedem a prova de que
+  não há taxa atrasada — a dívida de condomínio acompanha o imóvel
+  (Código Civil, art. 1.345) —, e o papel assinado pelo síndico ninguém
+  conseguia conferir. Agora o apartamento sem cobrança vencida em aberto
+  emite a declaração na hora, válida por 30 dias, com um código que
+  qualquer pessoa confere numa página aberta: o texto da declaração e se
+  ela vale, venceu ou foi revogada, sem o nome de quem pediu. O síndico
+  revoga, com motivo, a que deixou de valer (um pagamento estornado).
 - A passagem de turno da portaria era um caderno no balcão: o porteiro
   da noite escrevia que o entregador volta às 10h para o 204, que o
   portão da garagem está travando — e o da manhã podia nem abrir. Agora

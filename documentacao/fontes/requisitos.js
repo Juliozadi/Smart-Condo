@@ -339,6 +339,11 @@ const requisitosFuncionais = [
     descricao: 'O sistema mantém o livro da portaria: o porteiro que sai anota o que o próximo turno precisa saber, e o síndico lê tudo e também orienta a equipe por ali. Substitui o caderno do balcão, que some e de que ninguém sabe se foi lido.',
     entradas: 'O porteiro ou o síndico escreve a anotação (3 a 2.000 caracteres) e diz se é importante. Quem lê uma anotação importante dá ciência.',
     saidas: 'O livro, das anotações mais recentes, com o autor, o dia e a hora. A anotação importante mostra quem já deu ciência e quando; no painel, o porteiro vê quantas importantes da última semana esperam a ciência dele, e o síndico tem a mesma conta entre as pendências. Ninguém precisa dar ciência da própria anotação. Nada se apaga nem se edita: corrige-se com outra anotação, como no livro de papel. O morador não lê o livro.' },
+  { id: 'RF056', nome: 'Emitir declaração de quitação',
+    atores: 'Morador, Síndico', prioridade: 'Importante',
+    descricao: 'O sistema emite a declaração de que o apartamento não tem débito condominial vencido — pedida pelo comprador e pelo cartório na venda do imóvel, porque a dívida de condomínio acompanha o imóvel (Código Civil, art. 1.345) — com um código que qualquer pessoa confere numa página aberta, sem login.',
+    entradas: 'O morador pede a do próprio apartamento (inclusive o dono que não mora); o síndico escolhe o apartamento. Para revogar, o síndico informa o motivo (5 a 500 caracteres). Quem confere digita o código de 16 letras e números.',
+    saidas: 'Sem cobrança vencida em aberto, a declaração sai na hora, vale por 30 dias e guarda o que dizia no dia: o condomínio, o CNPJ, o apartamento e o síndico. Com débito, o sistema recusa e diz quantas cobranças vencidas e quanto falta; pagamento parcial não quita, cobrança cancelada não conta. Pedida de novo no mesmo dia, é a mesma declaração. Quem confere vê o texto da declaração e se ela vale, venceu ou foi revogada — sem o nome de quem pediu e sem o motivo da revogação. O síndico revoga, com motivo, a que ainda vale; o apartamento recebe o aviso. Quem chega ao apartamento não vê as declarações de antes dele.' },
 ];
 
 // ── 10 Requisitos não funcionais ────────────────────────────────────

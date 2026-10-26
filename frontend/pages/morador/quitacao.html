@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Declaração de Quitação</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-mobile">
+
+  <header class="app-bar">
+    <div class="app-bar-inner">
+      <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
+        <span class="brand-name">Smart<strong>Condo</strong></span>
+      </a>
+      <div class="app-bar-right">
+        <a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/user.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">João Silva</span><span class="profile-role">Morador</span></a>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-wrapper">
+
+    <a href="financeiro.html" class="dash-back">
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Financeiro
+    </a>
+
+    <div class="dash-greeting">
+      <p class="greeting-sub">Financeiro</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/file-contract.svg" width="26" height="26" alt=""> Declaração de Quitação</h1>
+      <p class="greeting-condo">A prova de que o apartamento está em dia com o condomínio</p>
+    </div>
+
+    <p class="aviso-notificacao">
+      <img src="../../assets/img/icons/stamp.svg" alt="">
+      <span>Na venda do apartamento, o comprador e o cartório pedem esta declaração: a dívida de
+      condomínio acompanha o imóvel (Código Civil, art. 1.345). Ela sai na hora se não houver
+      cobrança vencida em aberto, vale por 30 dias, e qualquer pessoa confere pelo código — sem
+      ver o seu nome nem o seu CPF.</span>
+    </p>
+
+    <div class="form-card">
+      <p class="form-erro" id="erroEmitir" role="alert"></p>
+      <button class="action-btn" type="button" id="btnEmitir" style="margin-top:4px;">
+        <img src="../../assets/img/icons/file-contract.svg" width="16" height="16" alt=""> Emitir a declaração
+      </button>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Declarações do Apartamento</h2>
+    <div id="listaDeclaracoes" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoDeclaracoes">Carregando…</p>
+
+  </main>
+
+<script src="../../assets/js/declaracoes.js"></script>
+<script>
+/* O morador emite a declaração do próprio apartamento. Com cobrança
+   vencida em aberto, a API recusa e diz quanto falta. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api, declaracoes = window.SmartCondo.declaracoes;
+  var usuario = api.protegerPagina('morador');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+
+  function carregar() {
+    return api.get('/declaracoes-quitacao').then(function(lista) {
+      var caixa = campo('listaDeclaracoes');
+      caixa.innerHTML = '';
+      campo('estadoDeclaracoes').textContent =
+        lista.length ? '' : 'Nenhuma declaração emitida ainda.';
+      lista.forEach(function(d) { caixa.appendChild(declaracoes.cartao(d, false)); });
+    }).catch(function(e) { campo('estadoDeclaracoes').textContent = e.message; });
+  }
+
+  campo('btnEmitir').addEventListener('click', function() {
+    var botao = this, erro = campo('erroEmitir');
+    erro.className = 'form-erro';
+    erro.textContent = '';
+    botao.disabled = true;
+    api.post('/declaracoes-quitacao', {})
+      .then(function(d) {
+        erro.className = 'form-erro sucesso';
+        erro.textContent = 'Declaração emitida. Código de verificação: ' + d.codigo + '.';
+        return carregar();
+      })
+      .catch(function(e) { erro.textContent = e.message; })
+      .then(function() { botao.disabled = false; });
+  });
+
+  campo('hdrName').textContent = usuario.nome;
+  carregar();
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

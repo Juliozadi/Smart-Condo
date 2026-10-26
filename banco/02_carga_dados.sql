@@ -176,6 +176,10 @@ INSERT INTO ciencias_anotacao (id, anotacao_id, usuario_id, ciente_em) VALUES (1
 INSERT INTO ciencias_anotacao (id, anotacao_id, usuario_id, ciente_em) VALUES (2, 2, 3, '2026-09-19 04:45:00.611498+00');
 INSERT INTO ciencias_anotacao (id, anotacao_id, usuario_id, ciente_em) VALUES (3, 2, 4, '2026-09-19 04:45:00.611498+00');
 
+INSERT INTO declaracoes_quitacao (id, condominio_id, unidade_id, emitida_por_id, codigo, referencia_ate, valida_ate, condominio_nome, condominio_cnpj, identificacao_unidade, sindico_nome, emitida_em, revogada_em, revogada_por_id, motivo_revogacao) VALUES (1, 1, 3, 5, 'CRDSBGYHAD9XPM6J', '2026-09-20', '2026-10-20', 'Residencial das Palmeiras', '11222333000181', '204', 'Roberto Nascimento', '2026-09-21 01:45:00.611498+00', NULL, NULL, NULL);
+INSERT INTO declaracoes_quitacao (id, condominio_id, unidade_id, emitida_por_id, codigo, referencia_ate, valida_ate, condominio_nome, condominio_cnpj, identificacao_unidade, sindico_nome, emitida_em, revogada_em, revogada_por_id, motivo_revogacao) VALUES (2, 1, 4, 6, 'RRS5UCN89C3UYT2V', '2026-08-11', '2026-09-10', 'Residencial das Palmeiras', '11222333000181', '301', 'Roberto Nascimento', '2026-08-12 01:45:00.611498+00', NULL, NULL, NULL);
+INSERT INTO declaracoes_quitacao (id, condominio_id, unidade_id, emitida_por_id, codigo, referencia_ate, valida_ate, condominio_nome, condominio_cnpj, identificacao_unidade, sindico_nome, emitida_em, revogada_em, revogada_por_id, motivo_revogacao) VALUES (3, 1, 6, 8, 'SWCWACPRFRDSTQJY', '2026-09-05', '2026-10-05', 'Residencial das Palmeiras', '11222333000181', '410', 'Roberto Nascimento', '2026-09-06 01:45:00.611498+00', '2026-09-09 01:45:00.611498+00', 2, 'O pagamento de agosto foi estornado pelo banco.');
+
 INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo, tipo_conteudo, tamanho_kb, unidade_id, publicado_por_id, publicado_em, criado_em, atualizado_em) VALUES (1, 1, 'Convenção do Condomínio', 'Documento registrado em cartório.', 'CONVENCAO', NULL, NULL, 820, NULL, 2, '2026-09-11 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo, tipo_conteudo, tamanho_kb, unidade_id, publicado_por_id, publicado_em, criado_em, atualizado_em) VALUES (2, 1, 'Regimento Interno', 'Regras de convivência e uso das áreas comuns.', 'REGIMENTO', NULL, NULL, 410, NULL, 2, '2026-09-11 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo, tipo_conteudo, tamanho_kb, unidade_id, publicado_por_id, publicado_em, criado_em, atualizado_em) VALUES (3, 1, 'Ata da Assembleia de Março', 'Prestação de contas e eleição do conselho.', 'ATA', NULL, NULL, 180, NULL, 2, '2026-09-11 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
@@ -259,6 +263,8 @@ SELECT setval('infracoes_id_seq', (SELECT COALESCE(MAX(id), 1) FROM infracoes));
 SELECT setval('anotacoes_portaria_id_seq', (SELECT COALESCE(MAX(id), 1) FROM anotacoes_portaria));
 
 SELECT setval('ciencias_anotacao_id_seq', (SELECT COALESCE(MAX(id), 1) FROM ciencias_anotacao));
+
+SELECT setval('declaracoes_quitacao_id_seq', (SELECT COALESCE(MAX(id), 1) FROM declaracoes_quitacao));
 
 SELECT setval('ordens_servico_id_seq', (SELECT COALESCE(MAX(id), 1) FROM ordens_servico));
 

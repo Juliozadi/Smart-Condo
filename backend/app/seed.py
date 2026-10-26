@@ -33,6 +33,7 @@ from app.models.enums import (
     TipoInfracao, TipoMovimentacao, TipoMudanca, TipoOcupacao,
 )
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
+from app.models.declaracao import DeclaracaoQuitacao
 from app.models.infracao import Infracao
 from app.models.livro import AnotacaoPortaria, CienciaAnotacao
 from app.models.mudanca import Mudanca
@@ -41,6 +42,7 @@ from app.models.financeiro import Cobranca, Despesa, Pagamento, PreferenciaCobra
 from app.models.portaria import Encomenda, Ocorrencia, Visitante
 from app.models.usuario import PermissaoPorteiro, Usuario
 from app.services import arquivos, cobrancas, perfis, registro
+from app.services.quitacao import VALIDADE_DIAS, novo_codigo
 
 SENHA = "smartcondo123"
 HOJE = hoje_local()
@@ -399,6 +401,28 @@ def criar(db) -> dict:
         decisao_motivo="Sem defesa no prazo; câmeras confirmam.",
         decidida_em=AGORA - timedelta(days=49),
     ))
+
+    # ── Declarações de quitação: a do João (204) é de hoje; a da Ana
+    #    (301) já venceu; a da Marina (410) o síndico revogou. O 302, do
+    #    João sem morar, está em atraso e não emite. As antigas são de
+    #    antes do cadastro de demonstração, e só o síndico as vê; a de hoje
+    #    leva a hora do banco, a mesma do cadastro, e o João a vê.
+    for unidade, dias, revogada in [("204", 0, False), ("301", 40, False), ("410", 15, True)]:
+        emitida, dia = AGORA - timedelta(days=dias), HOJE - timedelta(days=dias)
+        d = DeclaracaoQuitacao(
+            condominio_id=condominio.id, unidade_id=unidades[unidade].id,
+            emitida_por_id=moradores[unidade].id, codigo=novo_codigo(db),
+            referencia_ate=dia, valida_ate=dia + timedelta(days=VALIDADE_DIAS),
+            condominio_nome=condominio.nome, condominio_cnpj=condominio.cnpj,
+            identificacao_unidade=unidades[unidade].identificacao, sindico_nome=sindico.nome,
+            emitida_em=emitida if dias else None,
+        )
+        if revogada:
+            d.revogada_em = emitida + timedelta(days=3)
+            d.revogada_por_id = sindico.id
+            d.motivo_revogacao = "O pagamento de agosto foi estornado pelo banco."
+        db.add(d)
+    db.flush()
 
     # ── Livro da portaria: a Renata passou o turno da noite com um aviso
     #    que o Carlos ainda não leu; a orientação do síndico, os dois leram

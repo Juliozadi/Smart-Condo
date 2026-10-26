@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Declarações de Quitação</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script><link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-desktop">
+  <header class="app-bar"><div class="app-bar-inner wide">
+    <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
+    <div class="app-bar-right"><a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role">Síndico</span></a><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
+  </div></header>
+  <main class="dash-wrapper wide">
+    <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
+    <div class="dash-greeting">
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/file-contract.svg" width="26" height="26" alt=""> Declarações de Quitação</h1>
+      <p class="greeting-condo">O apartamento em dia, com um código que qualquer um confere</p>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Emitir para um Apartamento</h2>
+    <div class="form-card">
+      <form id="formDeclaracao" novalidate>
+        <div class="form-group">
+          <label for="dUnidade">Apartamento</label>
+          <select id="dUnidade" required><option value="">Carregando…</option></select>
+        </div>
+        <p class="captura-dica">Sai só se o apartamento não tiver cobrança vencida em aberto. Vale por
+        30 dias; o morador também emite a do apartamento dele.</p>
+        <p class="form-erro" id="erroDeclaracao" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;">Emitir</button>
+      </form>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Declarações Emitidas</h2>
+    <div id="listaDeclaracoes" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoDeclaracoes">Carregando…</p>
+  </main>
+
+<script src="../../assets/js/declaracoes.js"></script>
+<script>
+/* O síndico emite para qualquer apartamento e revoga, com o motivo, a
+   declaração que deixou de valer (um pagamento estornado, por exemplo). */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api, declaracoes = window.SmartCondo.declaracoes;
+  var usuario = api.protegerPagina('sindico');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+
+  function revogar(d, botao) {
+    var motivo = prompt('Por que revogar a declaração ' + d.codigo + '? O apartamento recebe o motivo.');
+    if (motivo === null) return;
+    botao.disabled = true;
+    api.post('/declaracoes-quitacao/' + d.id + '/revogacao', { motivo: motivo.trim() })
+      .then(carregar)
+      .catch(function(e) { botao.disabled = false; alert(e.message); });
+  }
+
+  function carregar() {
+    return api.get('/declaracoes-quitacao').then(function(lista) {
+      var caixa = campo('listaDeclaracoes');
+      caixa.innerHTML = '';
+      campo('estadoDeclaracoes').textContent =
+        lista.length ? '' : 'Nenhuma declaração emitida ainda.';
+      lista.forEach(function(d) {
+        var card = declaracoes.cartao(d, true);
+        if (d.pode_revogar) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'contato-btn perigo-texto';
+          b.textContent = 'Revogar';
+          b.setAttribute('aria-label', 'Revogar a declaração ' + d.codigo + ' do apto ' + d.unidade);
+          b.addEventListener('click', function() { revogar(d, b); });
+          card.acoes.appendChild(b);
+        }
+        caixa.appendChild(card);
+      });
+    }).catch(function(e) { campo('estadoDeclaracoes').textContent = e.message; });
+  }
+
+  api.get('/condominios/meu/unidades').then(function(unidades) {
+    var sel = campo('dUnidade');
+    sel.innerHTML = '<option value="">Escolha o apartamento</option>';
+    unidades.forEach(function(u) {
+      var op = document.createElement('option');
+      op.value = u.id;
+      op.textContent = 'Apto ' + u.numero + (u.bloco && u.bloco !== 'unico' ? ' — ' + u.bloco : '');
+      sel.appendChild(op);
+    });
+  }).catch(function(e) { campo('erroDeclaracao').textContent = e.message; });
+
+  campo('formDeclaracao').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('erroDeclaracao');
+    erro.className = 'form-erro';
+    erro.textContent = '';
+    var unidade = +campo('dUnidade').value;
+    if (!unidade) { erro.textContent = 'Escolha o apartamento.'; return; }
+    var enviar = this.querySelector('button[type=submit]');
+    enviar.disabled = true;
+    api.post('/declaracoes-quitacao', { unidade_id: unidade })
+      .then(function(d) {
+        erro.className = 'form-erro sucesso';
+        erro.textContent = 'Declaração do apto ' + d.unidade + ' emitida. Código: ' + d.codigo + '.';
+        return carregar();
+      })
+      .catch(function(e) { erro.textContent = e.message; })
+      .then(function() { enviar.disabled = false; });
+  });
+
+  campo('hdrName').textContent = usuario.nome;
+  carregar();
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

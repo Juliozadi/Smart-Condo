@@ -2451,3 +2451,8 @@ label.contato-btn { position: relative; cursor: pointer; }
 .anotacao-ciente { margin-top: 12px; }
 .anotacao > :last-child { margin-bottom: 0; }
 .dash-card .badge { flex-shrink: 0; }
+
+/* ── Declaração de quitação ──────────────────────────────────────── */
+.declaracao .assembleia-topo h3 { margin-bottom: 0; }
+.declaracao-codigo { font-size: 13px; color: var(--text-2); margin: 6px 0 0; overflow-wrap: anywhere; }
+.declaracao-codigo strong { color: var(--text); letter-spacing: .5px; font-family: ui-monospace, monospace; }

@@ -32,6 +32,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 - **Reservas** — Agendamento das áreas comuns, com as regras e a taxa de uso de cada espaço
 - **Financeiro** — Cobranças (taxa, multa, uso de espaço), forma de pagamento e histórico
 - **Prestação de Contas** — Despesas e balancete do mês
+- **Declaração de Quitação** — O apartamento em dia, com um código que o comprador confere
 - **Assembleias** — Votação online, um voto por apartamento
 - **Advertências e Multas** — Notificações do síndico e a defesa no prazo
 - **Mudança** — Agendamento dentro das regras do regimento
@@ -56,6 +57,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 - **Dashboard** — Painel administrativo com indicadores e pendências do condomínio
 - **Financeiro** — Cobranças, pagamentos, encargos e inadimplência
 - **Prestação de Contas** — Lançamento de despesas e balancete do mês
+- **Declarações de Quitação** — Emissão para qualquer apartamento em dia e revogação com motivo
 - **Assembleias** — Convocação, pauta e resultado da votação
 - **Moradores** — Cadastro e aprovação de novos moradores
 - **Porteiros** — Equipe de portaria e as permissões de cada um
@@ -183,7 +185,7 @@ backend/
 ├── alembic/                           # Migrações do banco
 ├── app/
 │   ├── core/                          # Configuração, banco e segurança
-│   ├── models/                        # 33 tabelas
+│   ├── models/                        # 34 tabelas
 │   ├── schemas/                       # Entrada e saída da API
 │   ├── services/                      # Regras de negócio
 │   ├── api/routers/                   # Endpoints
@@ -193,7 +195,7 @@ backend/
 ```
 
 **Total:** 43 páginas HTML, 2 arquivos CSS, 9 arquivos JS, 43 ícones SVG e
-uma API com 150 endpoints.
+uma API com 154 endpoints.
 
 ---
 
@@ -213,7 +215,7 @@ uvicorn app.main:app --reload
 
 Documentação interativa da API em <http://localhost:8000/docs>.
 
-**150 endpoints**, cobrindo os casos de uso e as histórias de usuário da
+**154 endpoints**, cobrindo os casos de uso e as histórias de usuário da
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e

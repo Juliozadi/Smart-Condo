@@ -711,6 +711,122 @@ const dicionario = [
     ]
   },
   {
+    "nome": "declaracoes_quitacao",
+    "resumo": "As declarações de que o apartamento não tinha débito vencido, com o código que qualquer um confere e o que diziam no dia em que foram emitidas. Não se apagam; o síndico revoga com motivo.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio que declara"
+      },
+      {
+        "coluna": "unidade_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Apartamento declarado em dia"
+      },
+      {
+        "coluna": "emitida_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Morador ou síndico que pediu"
+      },
+      {
+        "coluna": "codigo",
+        "tipo": "VARCHAR(16)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Código de verificação, 16 letras e números sorteados (sem 0, O, 1 e I); único"
+      },
+      {
+        "coluna": "referencia_ate",
+        "tipo": "DATE",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Dia até o qual o apartamento não tinha cobrança vencida em aberto (o da emissão)"
+      },
+      {
+        "coluna": "valida_ate",
+        "tipo": "DATE",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Até quando quem recebe pode confiar na declaração (30 dias)"
+      },
+      {
+        "coluna": "condominio_nome",
+        "tipo": "VARCHAR(160)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Nome do condomínio no dia da emissão, como está na declaração"
+      },
+      {
+        "coluna": "condominio_cnpj",
+        "tipo": "VARCHAR(18)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "CNPJ do condomínio no dia da emissão"
+      },
+      {
+        "coluna": "identificacao_unidade",
+        "tipo": "VARCHAR(45)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "O apartamento (e o bloco), como está na declaração"
+      },
+      {
+        "coluna": "sindico_nome",
+        "tipo": "VARCHAR(160)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "O síndico no dia da emissão"
+      },
+      {
+        "coluna": "emitida_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da emissão"
+      },
+      {
+        "coluna": "revogada_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o síndico revogou; vazia, a declaração não foi revogada"
+      },
+      {
+        "coluna": "revogada_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que revogou"
+      },
+      {
+        "coluna": "motivo_revogacao",
+        "tipo": "TEXT",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Por que foi revogada; o apartamento recebe, quem confere o código não vê"
+      }
+    ],
+    "regras": [
+      "CHECK (((revogada_em IS NULL) = (motivo_revogacao IS NULL)))",
+      "CHECK ((valida_ate >= referencia_ate))",
+      "UNIQUE (codigo)"
+    ]
+  },
+  {
     "nome": "despesas",
     "resumo": "O que o condomínio gastou, com o comprovante: a outra metade da prestação de contas, que os moradores veem no balancete do mês.",
     "colunas": [
@@ -3131,6 +3247,30 @@ const relacoes = [
     "coluna": "sindico_id",
     "destino": "usuarios",
     "texto": "Síndico responsável pelo condomínio"
+  },
+  {
+    "origem": "declaracoes_quitacao",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio que declara"
+  },
+  {
+    "origem": "declaracoes_quitacao",
+    "coluna": "emitida_por_id",
+    "destino": "usuarios",
+    "texto": "Morador ou síndico que pediu"
+  },
+  {
+    "origem": "declaracoes_quitacao",
+    "coluna": "revogada_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que revogou"
+  },
+  {
+    "origem": "declaracoes_quitacao",
+    "coluna": "unidade_id",
+    "destino": "unidades",
+    "texto": "Apartamento declarado em dia"
   },
   {
     "origem": "despesas",

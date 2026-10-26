@@ -26,7 +26,7 @@ PAPEIS = ("admin", "sindico", "porteiro", "morador")
 # Telas abertas sem login.
 PUBLICAS = ["index.html", "404.html", "diagnostico.html"] + sorted(
     str(p.relative_to(RAIZ)).replace(os.sep, "/")
-    for pasta in ("cadastro", "login", "legal")
+    for pasta in ("cadastro", "login", "legal", "verificar")
     for p in (RAIZ / "pages" / pasta).glob("*.html")
 ) + sorted(
     str(p.relative_to(RAIZ)).replace(os.sep, "/")

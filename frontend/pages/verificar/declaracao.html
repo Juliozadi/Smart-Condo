@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Conferir Declaração de Quitação</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    .doc-area{max-width:640px;margin:0 auto;text-align:left;}
+    .doc-area h2{margin-bottom:6px;}
+    .doc-meta{font-size:13px;color:var(--text-2);line-height:1.55;margin-bottom:18px;}
+    .situacao{border-radius:var(--radius-sm);padding:12px 16px;font-size:14px;font-weight:700;margin:18px 0 14px;border:1px solid var(--border);}
+    .situacao.valida{background:rgba(16,182,168,.1);color:var(--primary-texto);border-color:rgba(16,182,168,.25);}
+    .situacao.vencida{background:var(--surface-2);color:var(--text-2);}
+    .situacao.revogada{background:rgba(245,108,108,.1);color:var(--erro);border-color:rgba(245,108,108,.25);}
+    .declaracao-doc{border:1px solid var(--border);border-radius:var(--radius-md);padding:24px;background:var(--surface);}
+    .declaracao-doc h3{font-size:17px;font-weight:800;color:var(--text);text-align:center;margin-bottom:16px;letter-spacing:.3px;}
+    .declaracao-doc p{font-size:14px;line-height:1.7;color:var(--text);margin-bottom:12px;}
+    .declaracao-doc dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px;margin:16px 0 0;}
+    .declaracao-doc dt{color:var(--text-2);font-weight:600;}
+    .declaracao-doc dd{color:var(--text);margin:0;overflow-wrap:anywhere;}
+    .doc-acoes{display:flex;gap:10px;margin-top:16px;}
+    .doc-acoes .login-btn{margin:0;}
+    @media print{
+      .login-form,.doc-acoes,.back-link,#erroVerificar,.situacao.valida{display:none!important;}
+      body{background:#fff;}
+      .declaracao-doc{border:none;padding:0;}
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header class="logo-area">
+      <img src="../../assets/img/logo.png" alt="Logo SmartCondo" class="logo">
+      <div class="logo-text">
+        <h1>Smart Condo</h1>
+        <p>Gestão de Condomínios</p>
+      </div>
+    </header>
+
+    <section class="doc-area">
+      <h2>Conferir uma declaração de quitação</h2>
+      <p class="doc-meta">Digite o código que está na declaração. Aqui aparece o que o condomínio
+      declarou e se ela ainda vale — sem nenhum dado pessoal de quem a pediu.</p>
+
+      <form class="login-form" id="formVerificar" novalidate>
+        <div class="input-box">
+          <img src="../../assets/img/icons/stamp.svg" width="16" height="16" alt="">
+          <input type="text" id="vCodigo" placeholder="Código: XXXX-XXXX-XXXX-XXXX" maxlength="40"
+                 autocomplete="off" autocapitalize="characters" spellcheck="false"
+                 aria-label="Código da declaração" required>
+        </div>
+        <button type="submit" class="login-btn" id="btnVerificar">Conferir</button>
+      </form>
+      <p class="form-erro" id="erroVerificar" role="alert"></p>
+
+      <div id="resultado" hidden>
+        <p class="situacao" id="docSituacao" role="status"></p>
+        <article class="declaracao-doc" aria-label="Declaração de quitação">
+          <h3>DECLARAÇÃO DE QUITAÇÃO CONDOMINIAL</h3>
+          <p id="docTexto"></p>
+          <p id="docAlcance">Esta declaração não abrange cobranças com vencimento posterior a essa
+          data.</p>
+          <dl>
+            <dt>Código</dt><dd id="docCodigo"></dd>
+            <dt>Emitida em</dt><dd id="docEmitida"></dd>
+            <dt>Válida até</dt><dd id="docValidade"></dd>
+            <dt>Síndico</dt><dd id="docSindico"></dd>
+            <dt>Conferir em</dt><dd id="docEndereco"></dd>
+          </dl>
+        </article>
+        <div class="doc-acoes">
+          <button type="button" class="login-btn" id="btnImprimir">Imprimir</button>
+        </div>
+      </div>
+
+      <a href="../../index.html" class="back-link">
+        <img src="../../assets/img/icons/arrow-left.svg" width="14" height="14" alt=""> Ir para o SmartCondo
+      </a>
+    </section>
+  </main>
+<script src="../../assets/js/declaracoes.js"></script>
+<script>
+/* Página aberta: quem recebeu a declaração (o comprador, o cartório)
+   confere o código. Tudo vem da API como texto — nada é montado como HTML. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api, declaracoes = window.SmartCondo.declaracoes;
+  function campo(id) { return document.getElementById(id); }
+  var data = declaracoes.data;
+
+  function mostrar(d) {
+    var situacao = campo('docSituacao');
+    situacao.className = 'situacao ' + d.situacao;
+    situacao.textContent = d.situacao === 'valida'
+      ? 'Declaração válida até ' + data(d.valida_ate) + '.'
+      : d.situacao === 'vencida'
+        ? 'Declaração vencida em ' + data(d.valida_ate) + ': peça uma nova ao condomínio.'
+        : 'Declaração revogada pelo síndico em ' + data(d.revogada_em) + '. Ela não vale mais.';
+    campo('docTexto').textContent = 'O ' + d.condominio_nome + ', inscrito no CNPJ ' +
+      declaracoes.cnpj(d.condominio_cnpj) + ', declara, para os devidos fins, que o apartamento ' +
+      d.unidade + ' não possui débitos condominiais vencidos até ' + data(d.referencia_ate) + '.';
+    campo('docCodigo').textContent = d.codigo;
+    campo('docEmitida').textContent = new Date(d.emitida_em).toLocaleString('pt-BR');
+    campo('docValidade').textContent = data(d.valida_ate);
+    campo('docSindico').textContent = d.sindico_nome || '—';
+    campo('docEndereco').textContent = new URL(declaracoes.enderecoPublico(d.codigo), location.href).href;
+    campo('resultado').hidden = false;
+  }
+
+  function conferir(codigo) {
+    var erro = campo('erroVerificar');
+    erro.textContent = '';
+    campo('resultado').hidden = true;
+    var limpo = codigo.replace(/[\s-]/g, '').toUpperCase();
+    if (limpo.length !== 16) { erro.textContent = 'O código tem 16 letras e números.'; return; }
+    var botao = campo('btnVerificar');
+    botao.disabled = true;
+    api.get('/declaracoes-quitacao/verificar/' + encodeURIComponent(limpo))
+      .then(mostrar)
+      .catch(function(e) { erro.textContent = e.message; })
+      .then(function() { botao.disabled = false; });
+  }
+
+  campo('formVerificar').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    conferir(campo('vCodigo').value);
+  });
+  campo('btnImprimir').addEventListener('click', function() { window.print(); });
+
+  var doEndereco = new URLSearchParams(location.search).get('codigo');
+  if (doEndereco) {
+    campo('vCodigo').value = doEndereco;
+    conferir(doEndereco);
+  }
+})();
+</script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>
