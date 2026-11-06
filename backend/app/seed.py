@@ -298,15 +298,16 @@ def criar(db) -> dict:
 
         for unidade in ("101", "102", "204", "301", "302", "410"):
             valor = Decimal("320.00") if unidade != "410" else Decimal("410.00")
-            # A competência vence no dia 10 do mês seguinte. A mais antiga já
-            # está quitada; a do meio tem um inadimplente (o 302); a atual
-            # está toda em aberto, sem ninguém atrasado nela — senão, na
-            # demonstração, nenhum apartamento estaria quite para votar.
+            # A competência vence no dia 10 do mês seguinte. O 302 é o
+            # inadimplente: deve a mais antiga, que venceu no dia 10 do mês
+            # passado — em atraso em qualquer dia em que o seed rode — e a do
+            # meio, que vence no dia 10 deste mês (antes disso, só em
+            # aberto). Os outros pagaram as duas. A atual está toda em
+            # aberto, sem ninguém atrasado nela — senão, na demonstração,
+            # nenhum apartamento estaria quite para votar.
             vencimento = (mes.replace(day=28) + timedelta(days=4)).replace(day=10)
-            if atras == 2:
+            if atras and unidade != "302":
                 situacao = StatusCobranca.PAGA
-            elif atras == 1:
-                situacao = StatusCobranca.VENCIDA if unidade == "302" else StatusCobranca.PAGA
             else:
                 situacao = StatusCobranca.VENCIDA if vencimento < HOJE else StatusCobranca.ABERTA
 
