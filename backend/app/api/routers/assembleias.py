@@ -16,7 +16,7 @@ apartamentos já votaram. A portaria não participa.
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
@@ -25,11 +25,11 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import exigir_papel
 from app.core.database import get_db
-from app.core.tempo import agora_local, hoje_local
+from app.core.tempo import agora_utc, dia_e_hora, hoje_local
 from app.models.assembleia import Assembleia, ItemPauta, Voto
 from app.models.condominio import Unidade
 from app.models.enums import (
-    CanalVerificacao, EscolhaVoto, MaioriaExigida, Papel, StatusCobranca, StatusUsuario,
+    EscolhaVoto, MaioriaExigida, Papel, StatusCobranca, StatusUsuario,
     TipoOcupacao,
 )
 from app.models.financeiro import Cobranca
@@ -38,15 +38,15 @@ from app.schemas.assembleia import (
     AssembleiaEntrada, AssembleiaSaida, CancelamentoAssembleia, CedulaEntrada,
     ItemPautaSaida, ResultadoItem,
 )
-from app.services import notificacao, registro
+from app.services import destinatarios, registro
 
 router = APIRouter(prefix="/assembleias", tags=["Assembleias"])
 
 AGENDADA, ABERTA, ENCERRADA, CANCELADA = "agendada", "aberta", "encerrada", "cancelada"
 
 
-def _agora() -> datetime:
-    return datetime.now(timezone.utc)
+# Os testes adiantam o relógio da assembleia trocando este nome.
+_agora = agora_utc
 
 
 def _situacao(a: Assembleia, agora: datetime) -> str:
@@ -57,11 +57,6 @@ def _situacao(a: Assembleia, agora: datetime) -> str:
     if agora < a.encerra_em:
         return ABERTA
     return ENCERRADA
-
-
-def _quando(momento: datetime) -> str:
-    """"20/10 às 19h00", no fuso do condomínio."""
-    return momento.astimezone(agora_local().tzinfo).strftime("%d/%m às %Hh%M")
 
 
 def _total_unidades(db: Session, condominio_id: int) -> int:
@@ -168,11 +163,8 @@ def _da_assembleia(db: Session, usuario: Usuario, assembleia_id: int,
 
 
 def _avisar_moradores(db: Session, condominio_id: int, titulo: str, mensagem: str) -> None:
-    for morador in db.scalars(select(Usuario).where(
-        Usuario.condominio_id == condominio_id, Usuario.papel == Papel.MORADOR,
-        Usuario.status == StatusUsuario.ATIVO,
-    )).all():
-        notificacao.notificar(morador.email, CanalVerificacao.EMAIL, titulo, mensagem)
+    destinatarios.avisar(destinatarios.moradores_do_condominio(db, condominio_id),
+                         titulo, mensagem)
 
 
 @router.post("", response_model=AssembleiaSaida, status_code=status.HTTP_201_CREATED,
@@ -199,7 +191,7 @@ def convocar(
     _avisar_moradores(
         db, a.condominio_id, "Assembleia convocada",
         f"{a.titulo}: votação pelo SmartCondo, de "
-        f"{_quando(a.abre_em)} a {_quando(a.encerra_em)}. Pauta com "
+        f"{dia_e_hora(a.abre_em)} a {dia_e_hora(a.encerra_em)}. Pauta com "
         f"{len(a.itens)} {'item' if len(a.itens) == 1 else 'itens'}.",
     )
     return _saida(db, a, sindico, _agora())

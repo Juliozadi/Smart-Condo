@@ -7,7 +7,7 @@ não lê: o livro é da equipe.
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import exists, func, select
@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import exigir_papel
 from app.core.database import get_db
+from app.core.tempo import agora_utc
 from app.models.enums import Papel
 from app.models.livro import AnotacaoPortaria, CienciaAnotacao
 from app.models.usuario import Usuario
@@ -28,9 +29,8 @@ equipe = exigir_papel(Papel.PORTEIRO, Papel.SINDICO)
 # Passou disso, já não é passagem de turno: não aparece como pendente.
 JANELA_PENDENTES = timedelta(days=7)
 
-
-def _agora() -> datetime:
-    return datetime.now(timezone.utc)
+# Os testes adiantam o relógio do livro trocando este nome.
+_agora = agora_utc
 
 
 def _pendente_para(usuario: Usuario):

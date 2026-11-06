@@ -5,6 +5,7 @@ from collections.abc import Callable
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -166,3 +167,17 @@ def exigir_condominio(usuario: Usuario = Depends(get_usuario_atual)) -> Usuario:
             detail="Seu usuário ainda não está vinculado a um condomínio.",
         )
     return usuario
+
+
+def conferir_nome_livre(db: Session, modelo, condominio_id: int, nome: str, mensagem: str,
+                        exceto: int | None = None) -> None:
+    """O nome não se repete entre os ativos do condomínio — a chave do
+    salão, o plano do elevador —, sem diferença de maiúsculas. O índice
+    único do banco garante; aqui a resposta é a mensagem, não o 409 genérico."""
+    consulta = select(modelo.id).where(modelo.condominio_id == condominio_id,
+                                       modelo.inativo_em.is_(None),
+                                       func.lower(modelo.nome) == nome.lower())
+    if exceto is not None:
+        consulta = consulta.where(modelo.id != exceto)
+    if db.scalar(consulta) is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=mensagem)

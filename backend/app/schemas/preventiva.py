@@ -8,17 +8,11 @@ from typing import Literal
 from pydantic import Field, field_validator, model_validator
 
 from app.core.tempo import hoje_local
-from app.schemas.comuns import SchemaBase
+from app.schemas.comuns import SchemaBase, vazio_e_nada
 
 Situacao = Literal["vencida", "vence_em_breve", "em_dia"]
 # Um vencimento ou uma realização a mais de 10 anos de hoje é erro de digitação.
 LIMITE_ANOS = 10
-
-
-def _vazio_e_nada(valor):
-    if isinstance(valor, str) and not valor.strip():
-        return None
-    return valor
 
 
 def _vencimento_razoavel(dia: date | None) -> date | None:
@@ -35,7 +29,7 @@ class PlanoEntrada(SchemaBase):
     fornecedor: str | None = Field(default=None, max_length=120)
     observacao: str | None = Field(default=None, max_length=2000)
 
-    _vazios = field_validator("fornecedor", "observacao", mode="before")(_vazio_e_nada)
+    _vazios = field_validator("fornecedor", "observacao", mode="before")(vazio_e_nada)
     _vencimento = field_validator("proximo_vencimento")(_vencimento_razoavel)
 
 
@@ -48,7 +42,7 @@ class PlanoAtualizacao(SchemaBase):
     fornecedor: str | None = Field(default=None, max_length=120)
     observacao: str | None = Field(default=None, max_length=2000)
 
-    _vazios = field_validator("fornecedor", "observacao", mode="before")(_vazio_e_nada)
+    _vazios = field_validator("fornecedor", "observacao", mode="before")(vazio_e_nada)
     _vencimento = field_validator("proximo_vencimento")(_vencimento_razoavel)
 
 
@@ -73,7 +67,7 @@ class RealizacaoEntrada(SchemaBase):
     # Lança o custo como despesa de manutenção na prestação de contas.
     lancar_despesa: bool = False
 
-    _observacao = field_validator("observacao", mode="before")(_vazio_e_nada)
+    _observacao = field_validator("observacao", mode="before")(vazio_e_nada)
 
     @field_validator("data")
     @classmethod

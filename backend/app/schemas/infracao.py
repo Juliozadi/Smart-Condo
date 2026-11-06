@@ -8,7 +8,7 @@ from pydantic import Field, field_validator, model_validator
 
 from app.core.tempo import hoje_local
 from app.models.enums import StatusInfracao, TipoInfracao
-from app.schemas.comuns import SchemaBase
+from app.schemas.comuns import SchemaBase, vazio_e_nada
 
 
 class InfracaoEntrada(SchemaBase):
@@ -31,10 +31,7 @@ class InfracaoEntrada(SchemaBase):
             raise ValueError("A infração precisa ter acontecido no último ano.")
         return valor
 
-    @field_validator("artigo")
-    @classmethod
-    def vazio_vira_nulo(cls, valor: str | None) -> str | None:
-        return valor or None
+    _artigo_vazio = field_validator("artigo", mode="before")(vazio_e_nada)
 
     @model_validator(mode="after")
     def valor_conforme_o_tipo(self) -> "InfracaoEntrada":

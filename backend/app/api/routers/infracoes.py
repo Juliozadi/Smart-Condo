@@ -9,7 +9,7 @@ reincidente).
 """
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, timedelta
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -18,17 +18,16 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import exigir_papel
 from app.core.database import get_db
-from app.core.tempo import hoje_local
+from app.core.formato import reais
+from app.core.tempo import agora_utc, hoje_local
 from app.models.condominio import Unidade
-from app.models.enums import (
-    CanalVerificacao, OrigemCobranca, Papel, StatusCobranca, StatusInfracao, StatusUsuario,
-    TipoInfracao,
-)
+from app.models.enums import OrigemCobranca, Papel, StatusCobranca, StatusInfracao, TipoInfracao
 from app.models.financeiro import Cobranca
 from app.models.infracao import Infracao
 from app.models.usuario import Usuario
 from app.schemas.infracao import DecisaoEntrada, DefesaEntrada, InfracaoEntrada, InfracaoSaida
-from app.services import notificacao, registro
+from app.services import registro
+from app.services.destinatarios import avisar, moradores_da_unidade, sindicos
 
 router = APIRouter(prefix="/infracoes", tags=["Advertências e multas"])
 
@@ -44,29 +43,10 @@ def _hoje() -> date:
     return hoje_local()
 
 
-def _reais(valor: Decimal) -> str:
-    return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-
-
-def _moradores(db: Session, unidade_id: int) -> list[Usuario]:
+def _responsaveis(db: Session, unidade_id: int) -> list[Usuario]:
     """Quem responde pelo apartamento — quem mora e o dono que não mora:
     a multa é dívida do condômino."""
-    return list(db.scalars(select(Usuario).where(
-        Usuario.unidade_id == unidade_id, Usuario.papel == Papel.MORADOR,
-        Usuario.status == StatusUsuario.ATIVO,
-    )).all())
-
-
-def _sindicos(db: Session, condominio_id: int) -> list[Usuario]:
-    return list(db.scalars(select(Usuario).where(
-        Usuario.condominio_id == condominio_id, Usuario.papel == Papel.SINDICO,
-        Usuario.status == StatusUsuario.ATIVO,
-    )).all())
-
-
-def _avisar(destinos: list[Usuario], titulo: str, mensagem: str) -> None:
-    for u in destinos:
-        notificacao.notificar(u.email, CanalVerificacao.EMAIL, titulo, mensagem)
+    return moradores_da_unidade(db, unidade_id, so_quem_mora=False)
 
 
 def _taxa_mensal(db: Session, unidade_id: int) -> Decimal | None:
@@ -151,7 +131,7 @@ def notificar(
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"A multa vai até 5 vezes a contribuição mensal do apartamento "
-                       f"({_reais(limite)}), pelo Código Civil, art. 1.336, § 2º.")
+                       f"({reais(limite)}), pelo Código Civil, art. 1.336, § 2º.")
 
     inf = Infracao(
         condominio_id=sindico.condominio_id, unidade_id=unidade.id, aplicada_por_id=sindico.id,
@@ -168,12 +148,12 @@ def notificar(
     db.refresh(inf)
 
     detalhe = f" ({inf.artigo})" if inf.artigo else ""
-    valor = f" Valor da multa: {_reais(inf.valor)}." if inf.valor else ""
-    _avisar(_moradores(db, unidade.id),
-            "Notificação de multa" if inf.tipo == TipoInfracao.MULTA else "Advertência do condomínio",
-            f"O apartamento {unidade.identificacao} recebeu uma {ROTULO[inf.tipo]} do síndico"
-            f"{detalhe}: {inf.descricao}{valor} Você pode apresentar a sua defesa pelo SmartCondo "
-            f"até {inf.prazo_defesa:%d/%m/%Y}.")
+    valor = f" Valor da multa: {reais(inf.valor)}." if inf.valor else ""
+    avisar(_responsaveis(db, unidade.id),
+           "Notificação de multa" if inf.tipo == TipoInfracao.MULTA else "Advertência do condomínio",
+           f"O apartamento {unidade.identificacao} recebeu uma {ROTULO[inf.tipo]} do síndico"
+           f"{detalhe}: {inf.descricao}{valor} Você pode apresentar a sua defesa pelo SmartCondo "
+           f"até {inf.prazo_defesa:%d/%m/%Y}.")
     return _saida(db, inf, sindico)
 
 
@@ -219,16 +199,16 @@ def defender(
             detail=f"O prazo de defesa terminou em {inf.prazo_defesa:%d/%m/%Y}. Fale com o "
                    "síndico.")
     inf.defesa = dados.texto
-    inf.defesa_em = datetime.now(timezone.utc)
+    inf.defesa_em = agora_utc()
     inf.defesa_por_id = morador.id
     inf.status = StatusInfracao.DEFESA_APRESENTADA
     registro.registrar(db, morador, registro.EDITOU, registro.INFRACAO, inf.id,
                        "Defesa apresentada")
     db.commit()
     db.refresh(inf)
-    _avisar(_sindicos(db, inf.condominio_id), "Defesa apresentada",
-            f"O apartamento {inf.unidade.identificacao} apresentou defesa à {ROTULO[inf.tipo]} "
-            f"de {inf.ocorrida_em:%d/%m/%Y}. Decida pelo SmartCondo.")
+    avisar(sindicos(db, inf.condominio_id), "Defesa apresentada",
+           f"O apartamento {inf.unidade.identificacao} apresentou defesa à {ROTULO[inf.tipo]} "
+           f"de {inf.ocorrida_em:%d/%m/%Y}. Decida pelo SmartCondo.")
     return _saida(db, inf, morador)
 
 
@@ -252,7 +232,7 @@ def decidir(
                    "depois da defesa ou do fim do prazo.")
 
     inf.decisao_motivo = dados.motivo
-    inf.decidida_em = datetime.now(timezone.utc)
+    inf.decidida_em = agora_utc()
     inf.decidida_por_id = sindico.id
     if dados.manter:
         inf.status = StatusInfracao.CONFIRMADA
@@ -276,14 +256,14 @@ def decidir(
     db.refresh(inf)
 
     if dados.manter:
-        cobrar = (f" A multa de {_reais(inf.valor)} entrou nas cobranças do apartamento, com "
+        cobrar = (f" A multa de {reais(inf.valor)} entrou nas cobranças do apartamento, com "
                   f"vencimento em {(hoje + timedelta(days=VENCIMENTO_MULTA_DIAS)):%d/%m/%Y}."
                   if inf.tipo == TipoInfracao.MULTA else "")
-        _avisar(_moradores(db, inf.unidade_id), f"{ROTULO[inf.tipo].capitalize()} mantida",
-                f"O síndico manteve a {ROTULO[inf.tipo]} de {inf.ocorrida_em:%d/%m/%Y}. "
-                f"Motivo: {dados.motivo}{cobrar}")
+        avisar(_responsaveis(db, inf.unidade_id), f"{ROTULO[inf.tipo].capitalize()} mantida",
+               f"O síndico manteve a {ROTULO[inf.tipo]} de {inf.ocorrida_em:%d/%m/%Y}. "
+               f"Motivo: {dados.motivo}{cobrar}")
     else:
-        _avisar(_moradores(db, inf.unidade_id), f"{ROTULO[inf.tipo].capitalize()} anulada",
-                f"O síndico anulou a {ROTULO[inf.tipo]} de {inf.ocorrida_em:%d/%m/%Y}. "
-                f"Motivo: {dados.motivo}")
+        avisar(_responsaveis(db, inf.unidade_id), f"{ROTULO[inf.tipo].capitalize()} anulada",
+               f"O síndico anulou a {ROTULO[inf.tipo]} de {inf.ocorrida_em:%d/%m/%Y}. "
+               f"Motivo: {dados.motivo}")
     return _saida(db, inf, sindico)

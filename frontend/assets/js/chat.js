@@ -16,6 +16,8 @@
    ═══════════════════════════════════════════════════════════════ */
 (function(global) {
   'use strict';
+  var formato = global.SmartCondo.formato;
+  var criar = formato.el;
 
   var api = global.SmartCondo.api;
   var INTERVALO_CONVERSA = 4000, INTERVALO_CONTATOS = 15000, INTERVALO_CONTADOR = 30000;
@@ -24,12 +26,6 @@
   var painel, fundoEl, lista, conversaEl, mensagensEl, campoTexto, contadorEl, tituloEl, ligarEl, avisoEl, buscaEl;
   var contatos = [], atual = null, ultimoId = 0, timerConversa = null, timerContatos = null;
 
-  function criar(tag, classe, texto) {
-    var e = document.createElement(tag);
-    if (classe) e.className = classe;
-    if (texto !== undefined) e.textContent = texto;
-    return e;
-  }
   function icone(nome) {
     var i = criar('img'); i.src = api.base + 'assets/img/icons/' + nome + '.svg';
     i.alt = ''; i.width = 16; i.height = 16; return i;

@@ -17,7 +17,7 @@ from pydantic import Field, field_validator, model_validator
 
 from app.models.enums import CategoriaDespesa, FormaPagamento, OrigemCobranca, StatusCobranca
 from app.schemas.admin import RegistroSaida
-from app.schemas.comuns import EnderecoWeb, SchemaBase
+from app.schemas.comuns import EnderecoWeb, SchemaBase, vazio_e_nada
 
 
 class PreferenciaCobrancaEntrada(SchemaBase):
@@ -147,12 +147,6 @@ def _data_da_despesa(dia: date) -> date:
     return dia
 
 
-def _vazio_e_nada(valor):
-    if isinstance(valor, str) and not valor.strip():
-        return None
-    return valor
-
-
 class DespesaEntrada(SchemaBase):
     categoria: CategoriaDespesa
     descricao: str = Field(min_length=3, max_length=180)
@@ -160,7 +154,7 @@ class DespesaEntrada(SchemaBase):
     data: date
     fornecedor: str | None = Field(default=None, max_length=120)
 
-    _fornecedor_vazio = field_validator("fornecedor", mode="before")(_vazio_e_nada)
+    _fornecedor_vazio = field_validator("fornecedor", mode="before")(vazio_e_nada)
 
     @field_validator("data")
     @classmethod
@@ -177,7 +171,7 @@ class DespesaAtualizacao(SchemaBase):
     data: date | None = None
     fornecedor: str | None = Field(default=None, max_length=120)
 
-    _fornecedor_vazio = field_validator("fornecedor", mode="before")(_vazio_e_nada)
+    _fornecedor_vazio = field_validator("fornecedor", mode="before")(vazio_e_nada)
 
     @field_validator("data")
     @classmethod

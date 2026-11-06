@@ -6,7 +6,7 @@ from datetime import datetime
 from pydantic import Field, field_validator, model_validator
 
 from app.models.enums import CategoriaComunicado
-from app.schemas.comuns import IdUnidade, SchemaBase
+from app.schemas.comuns import IdUnidade, SchemaBase, vazio_e_nada
 
 
 class ComunicadoEntrada(SchemaBase):
@@ -18,12 +18,7 @@ class ComunicadoEntrada(SchemaBase):
     bloco: IdUnidade | None = Field(default=None, max_length=20)
     unidade_id: int | None = None
 
-    @field_validator("bloco", mode="before")
-    @classmethod
-    def _bloco_vazio(cls, valor):
-        if isinstance(valor, str) and not valor.strip():
-            return None
-        return valor
+    _bloco_vazio = field_validator("bloco", mode="before")(vazio_e_nada)
 
     @model_validator(mode="after")
     def _um_destino(self):

@@ -13,13 +13,7 @@ from app.models.enums import (
     PrioridadeOcorrencia, StatusEncomenda, StatusOcorrencia, StatusVisitante,
 )
 from app.core.tempo import hoje_local
-from app.schemas.comuns import CPF, Placa, SchemaBase
-
-
-def _vazio_e_nada(valor):
-    if isinstance(valor, str) and not valor.strip():
-        return None
-    return valor
+from app.schemas.comuns import CPF, Placa, SchemaBase, vazio_e_nada
 
 
 # ── Autorização prévia de visita ─────────────────────────────────────
@@ -40,7 +34,7 @@ class AutorizacaoEntrada(SchemaBase):
     # Pode levar a chave do apartamento deixada na portaria.
     pode_retirar_chave: bool = False
 
-    _vazios = field_validator("documento", "observacao", mode="before")(_vazio_e_nada)
+    _vazios = field_validator("documento", "observacao", mode="before")(vazio_e_nada)
 
     @field_validator("dias_semana")
     @classmethod
@@ -97,7 +91,7 @@ class VisitanteEntrada(SchemaBase):
     # esperar resposta (o nome é o que o morador autorizou).
     autorizacao_id: int | None = None
 
-    _placa_vazia = field_validator("placa_veiculo", mode="before")(_vazio_e_nada)
+    _placa_vazia = field_validator("placa_veiculo", mode="before")(vazio_e_nada)
 
     # A foto do vídeo porteiro (seção 6) não vem aqui: ela é enviada como
     # arquivo em PUT /portaria/visitantes/{id}/foto logo depois do registro.

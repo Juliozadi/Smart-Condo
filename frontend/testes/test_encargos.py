@@ -77,7 +77,7 @@ def test_sindico_dispensa_os_encargos_pela_tela(navegador):
     assert "Editado por" in linha.inner_text()
     registrada = next(c for c in pg.request.get(f"{API}/financeiro/cobrancas", headers=sindico).json()
                       if c["id"] == cobranca["id"])
-    assert registrada["ultima_alteracao"]["descricao"] == "Dispensou R$ 7.00 de multa e juros"
+    assert registrada["ultima_alteracao"]["descricao"] == "Dispensou R$ 7,00 de multa e juros"
     assert pg.erros == []
     ctx.close()
 

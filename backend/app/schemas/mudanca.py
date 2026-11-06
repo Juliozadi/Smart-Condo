@@ -7,7 +7,7 @@ from pydantic import Field, field_validator, model_validator
 
 from app.core.tempo import hoje_local
 from app.models.enums import StatusMudanca, TipoMudanca
-from app.schemas.comuns import SchemaBase
+from app.schemas.comuns import Horario, SchemaBase, conferir_intervalo, vazio_e_nada
 
 # Até quando se agenda: mais que isso é engano na data.
 ANTECEDENCIA_MAXIMA_DIAS = 365
@@ -16,17 +16,10 @@ ANTECEDENCIA_MAXIMA_DIAS = 365
 class MudancaEntrada(SchemaBase):
     tipo: TipoMudanca
     data: date
-    hora_inicio: time
-    hora_fim: time
+    hora_inicio: Horario
+    hora_fim: Horario
     empresa: str | None = Field(default=None, max_length=120)
     observacao: str | None = Field(default=None, max_length=300)
-
-    @field_validator("hora_inicio", "hora_fim")
-    @classmethod
-    def sem_fuso(cls, valor: time) -> time:
-        if valor.tzinfo is not None:
-            raise ValueError("Informe o horário sem fuso, no horário do condomínio.")
-        return valor
 
     @field_validator("data")
     @classmethod
@@ -35,15 +28,11 @@ class MudancaEntrada(SchemaBase):
             raise ValueError("A mudança pode ser agendada com até um ano de antecedência.")
         return valor
 
-    @field_validator("empresa", "observacao")
-    @classmethod
-    def vazio_vira_nulo(cls, valor: str | None) -> str | None:
-        return valor or None
+    _vazios = field_validator("empresa", "observacao", mode="before")(vazio_e_nada)
 
     @model_validator(mode="after")
-    def conferir_intervalo(self) -> "MudancaEntrada":
-        if self.hora_fim <= self.hora_inicio:
-            raise ValueError("O horário de término precisa ser depois do início.")
+    def _intervalo(self) -> "MudancaEntrada":
+        conferir_intervalo(self.hora_inicio, self.hora_fim)
         return self
 
 
@@ -82,15 +71,8 @@ class MudancaSaida(SchemaBase):
 
 
 class HorarioDoDia(SchemaBase):
-    inicio: time
-    fim: time
-
-    @field_validator("inicio", "fim")
-    @classmethod
-    def sem_fuso(cls, valor: time) -> time:
-        if valor.tzinfo is not None:
-            raise ValueError("Informe o horário sem fuso, no horário do condomínio.")
-        return valor
+    inicio: Horario
+    fim: Horario
 
 
 class RegrasMudancaEntrada(SchemaBase):

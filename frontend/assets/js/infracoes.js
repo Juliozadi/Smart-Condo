@@ -4,6 +4,8 @@
    de decidir; o morador, o formulário da defesa. */
 (function(global) {
   'use strict';
+  var formato = global.SmartCondo.formato;
+  var el = formato.el, data = formato.data, dinheiro = formato.dinheiro;
 
   var STATUS = {
     notificada: ['Aguardando defesa', 'badge-pending'],
@@ -12,16 +14,6 @@
     anulada: ['Anulada', 'badge-neutral']
   };
 
-  function el(tag, classe, texto) {
-    var e = document.createElement(tag);
-    if (classe) e.className = classe;
-    if (texto !== undefined) e.textContent = texto;
-    return e;
-  }
-  function data(iso) { return iso ? iso.slice(0, 10).split('-').reverse().join('/') : ''; }
-  function dinheiro(v) {
-    return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  }
   function titulo(i, comUnidade) {
     var t = i.tipo === 'multa' ? 'Multa de ' + dinheiro(i.valor) : 'Advertência';
     return (comUnidade ? 'Apto ' + i.unidade + ' — ' : '') + t;

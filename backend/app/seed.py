@@ -25,7 +25,7 @@ from app.models.assembleia import Assembleia, ItemPauta, Voto
 from app.models.comunicado import Comunicado
 from app.models.condominio import Condominio, Unidade
 from app.models.enums import (
-    CanalVerificacao, CategoriaComunicado, CategoriaDespesa, CategoriaDocumento, CategoriaVeiculo,
+    CategoriaComunicado, CategoriaDespesa, CategoriaDocumento, CategoriaVeiculo,
     EscolhaVoto, MaioriaExigida,
     FormaPagamento, Papel, PrioridadeOcorrencia, PrioridadeOrdemServico, StatusCobranca,
     StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,

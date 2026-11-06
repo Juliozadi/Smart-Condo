@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import calendar
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from functools import lru_cache
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -30,6 +30,11 @@ def _fuso(nome: str) -> ZoneInfo | None:
         return None
 
 
+def agora_utc() -> datetime:
+    """O instante de agora, para gravar e comparar com as colunas com fuso."""
+    return datetime.now(timezone.utc)
+
+
 def agora_local() -> datetime:
     """Data e hora de agora no fuso do condomínio."""
     fuso = _fuso(settings.FUSO_HORARIO)
@@ -39,6 +44,11 @@ def agora_local() -> datetime:
 def hoje_local() -> date:
     """A data de hoje no fuso do condomínio."""
     return agora_local().date()
+
+
+def dia_e_hora(momento: datetime) -> str:
+    """"20/10 às 19h00", no fuso do condomínio — para os avisos."""
+    return momento.astimezone(agora_local().tzinfo).strftime("%d/%m às %Hh%M")
 
 
 def somar_meses(dia: date, meses: int) -> date:

@@ -5,6 +5,8 @@
    /financeiro/balancete e /financeiro/despesas; aqui só se desenha. */
 (function(global) {
   'use strict';
+  var formato = global.SmartCondo.formato;
+  var dinheiro = formato.dinheiro, hojeIso = formato.hojeIso;
   var api = global.SmartCondo.api;
 
   var CATEGORIAS = {
@@ -15,19 +17,10 @@
   var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho',
                'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
-  function dinheiro(valor) {
-    return 'R$ ' + Number(valor).toLocaleString('pt-BR', {
-      minimumFractionDigits: 2, maximumFractionDigits: 2
-    });
-  }
   function doisDigitos(n) { return ('0' + n).slice(-2); }
   function mesAtual() {
     var d = new Date();
     return d.getFullYear() + '-' + doisDigitos(d.getMonth() + 1);
-  }
-  function hojeIso() {
-    var d = new Date();
-    return d.getFullYear() + '-' + doisDigitos(d.getMonth() + 1) + '-' + doisDigitos(d.getDate());
   }
   function rotuloMes(mes) {
     var p = mes.split('-');

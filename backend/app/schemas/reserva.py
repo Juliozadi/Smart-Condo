@@ -9,33 +9,23 @@ from __future__ import annotations
 from datetime import date, datetime, time
 from decimal import Decimal
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, model_validator
 
 from app.models.enums import StatusReserva
-from app.schemas.comuns import SchemaBase
+from app.schemas.comuns import Horario, SchemaBase, conferir_intervalo
 
 
 class ReservaEntrada(SchemaBase):
     espaco_id: int
     data: date
-    hora_inicio: time
-    hora_fim: time
+    hora_inicio: Horario
+    hora_fim: Horario
     pessoas_estimadas: int | None = Field(default=None, ge=1, le=10000)
     observacoes: str | None = Field(default=None, max_length=500)
 
-    @field_validator("hora_inicio", "hora_fim")
-    @classmethod
-    def sem_fuso(cls, valor: time) -> time:
-        # O horário é o do condomínio. Com fuso ("14:00Z"), a comparação
-        # com a hora local estourava e o pedido virava erro 500.
-        if valor.tzinfo is not None:
-            raise ValueError("Informe o horário sem fuso, no horário do condomínio.")
-        return valor
-
     @model_validator(mode="after")
-    def conferir_intervalo(self) -> "ReservaEntrada":
-        if self.hora_fim <= self.hora_inicio:
-            raise ValueError("O horário de término precisa ser depois do início.")
+    def _intervalo(self) -> "ReservaEntrada":
+        conferir_intervalo(self.hora_inicio, self.hora_fim)
         return self
 
 

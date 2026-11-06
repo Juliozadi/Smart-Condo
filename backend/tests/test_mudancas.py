@@ -16,6 +16,7 @@ from sqlalchemy import text
 from app.api.routers import mudancas as rota
 from app.core.tempo import agora_local, hoje_local
 from app.services import notificacao
+from app.services.agenda import MOTIVO_SEM_AVALIACAO
 from tests.fixtures import CPFS, cab, cadastrar_morador
 from tests.test_portaria import cenario  # noqa: F401
 
@@ -196,7 +197,7 @@ def test_o_horario_passa_sem_avaliacao(cliente, cenario, monkeypatch):
     monkeypatch.setattr(rota, "_agora", lambda: datetime.combine(dia, time(13), fuso))
     todas = {m["id"]: m for m in cliente.get(URL, headers=cab(cenario["sindico"])).json()}
     assert todas[pendente["id"]]["status"] == "recusada"
-    assert todas[pendente["id"]]["motivo_recusa"] == rota.MOTIVO_SEM_AVALIACAO
+    assert todas[pendente["id"]]["motivo_recusa"] == MOTIVO_SEM_AVALIACAO
     assert todas[aprovada["id"]]["status"] == "concluida"
     # Passada, não se aprova nem se cancela.
     assert avaliar(cliente, cenario["sindico"], pendente["id"]).status_code == 409

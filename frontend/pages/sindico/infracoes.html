@@ -5,7 +5,7 @@
   <link rel="icon" href="../../assets/img/logo.png" type="image/png">
   <title>SmartCondo — Advertências e Multas</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
-  <script src="../../assets/js/api.js"></script><link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <script src="../../assets/js/api.js"></script><script src="../../assets/js/formato.js"></script><link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
 <body class="dashboard-body layout-desktop">
@@ -96,21 +96,18 @@
    prazo de defesa e decide — mantém ou anula, com o motivo. */
 (function() {
   'use strict';
+  var formato = window.SmartCondo.formato;
   var api = window.SmartCondo.api, infracoes = window.SmartCondo.infracoes;
   var usuario = api.protegerPagina('sindico');
   if (!usuario) return;
 
   function campo(id) { return document.getElementById(id); }
-  function hojeIso() {
-    var d = new Date();
-    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
-  }
 
   campo('iTipo').addEventListener('change', function() {
     campo('grupoValor').hidden = this.value !== 'multa';
   });
-  campo('iData').max = hojeIso();
-  campo('iData').value = hojeIso();
+  campo('iData').max = formato.hojeIso();
+  campo('iData').value = formato.hojeIso();
 
   api.get('/condominios/meu/unidades').then(function(lista) {
     var select = campo('iUnidade');
@@ -198,7 +195,7 @@
       .then(function(i) {
         campo('formInfracao').reset();
         campo('grupoValor').hidden = true;
-        campo('iData').value = hojeIso();
+        campo('iData').value = formato.hojeIso();
         erro.className = 'form-erro sucesso';
         erro.textContent = 'Apartamento ' + i.unidade + ' notificado. A defesa vai até ' +
           infracoes.data(i.prazo_defesa) + '.';

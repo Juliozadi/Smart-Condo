@@ -5,7 +5,7 @@
   <link rel="icon" href="../../assets/img/logo.png" type="image/png">
   <title>SmartCondo — Financeiro do Condomínio</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
-  <script src="../../assets/js/api.js"></script><link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <script src="../../assets/js/api.js"></script><script src="../../assets/js/formato.js"></script><link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
 <body class="dashboard-body layout-desktop">
@@ -169,6 +169,7 @@
    de cobranças e a lista do que está aberto, vencido ou pago. */
 (function() {
   'use strict';
+  var formato = window.SmartCondo.formato;
   var api = window.SmartCondo.api, ui = window.SmartCondo.ui;
   var usuario = api.protegerPagina('sindico');
   if (!usuario) return;
@@ -185,11 +186,6 @@
     paga: 'badge-ok', cancelada: 'badge-neutral'
   };
 
-  function dinheiro(valor) {
-    return 'R$ ' + Number(valor).toLocaleString('pt-BR', {
-      minimumFractionDigits: 2, maximumFractionDigits: 2
-    });
-  }
   function partes(iso) { var p = (iso || '').split('-'); return { a: +p[0], m: +p[1], d: +p[2] }; }
   function dataCurta(iso) {
     var p = partes(iso);
@@ -226,17 +222,17 @@
     linha.children[1].textContent = competenciaCurta(c.competencia);
     linha.children[2].textContent = c.descricao;
     linha.children[3].textContent = dataCurta(c.vencimento);
-    linha.children[4].textContent = dinheiro(c.valor);
+    linha.children[4].textContent = formato.dinheiro(c.valor);
     var selo = linha.children[5].firstChild;
     selo.className = 'badge ' + (CLASSE_STATUS[c.status] || 'badge-neutral');
     selo.textContent = ROTULO_STATUS[c.status] || c.status;
     var dicas = [];
     if (Number(c.total_pago) > 0 && c.status !== 'paga') {
-      dicas.push('Já pago: ' + dinheiro(c.total_pago) +
-        ' · Falta: ' + dinheiro(Number(c.valor) - Number(c.total_pago)));
+      dicas.push('Já pago: ' + formato.dinheiro(c.total_pago) +
+        ' · Falta: ' + formato.dinheiro(Number(c.valor) - Number(c.total_pago)));
     }
     if (Number(c.multa) + Number(c.juros) > 0) {
-      dicas.push('Hoje, com multa e juros: ' + dinheiro(c.total_atualizado));
+      dicas.push('Hoje, com multa e juros: ' + formato.dinheiro(c.total_atualizado));
     }
     if (dicas.length) linha.title = dicas.join(' · ');
     return linha;
@@ -268,13 +264,13 @@
 
   function carregarResumo() {
     return api.get('/financeiro/resumo').then(function(r) {
-      campo('totalRecebido').textContent = dinheiro(r.total_recebido);
-      campo('statRecebido').textContent = dinheiro(r.total_recebido);
-      campo('statAberto').textContent = dinheiro(r.total_aberto);
-      campo('statVencido').textContent = dinheiro(r.total_vencido);
+      campo('totalRecebido').textContent = formato.dinheiro(r.total_recebido);
+      campo('statRecebido').textContent = formato.dinheiro(r.total_recebido);
+      campo('statAberto').textContent = formato.dinheiro(r.total_aberto);
+      campo('statVencido').textContent = formato.dinheiro(r.total_vencido);
       campo('statInadimplentes').textContent = r.unidades_inadimplentes;
-      campo('pillAberto').textContent = 'Em aberto: ' + dinheiro(r.total_aberto);
-      campo('pillVencido').textContent = 'Vencido: ' + dinheiro(r.total_vencido);
+      campo('pillAberto').textContent = 'Em aberto: ' + formato.dinheiro(r.total_aberto);
+      campo('pillVencido').textContent = 'Vencido: ' + formato.dinheiro(r.total_vencido);
       campo('balanceSub').textContent =
         r.cobrancas_abertas + (r.cobrancas_abertas === 1 ? ' cobrança em aberto' : ' cobranças em aberto');
     });
@@ -366,7 +362,7 @@
     modal.limpar();
     campo('cobrancaSub').textContent = (c.unidade || '') + ' · competência ' +
       competenciaCurta(c.competencia) +
-      (Number(c.total_pago) > 0 ? ' · já pago ' + dinheiro(c.total_pago) : '');
+      (Number(c.total_pago) > 0 ? ' · já pago ' + formato.dinheiro(c.total_pago) : '');
     campo('cDescricao').value = c.descricao;
     campo('cValor').value = Number(c.valor).toFixed(2);
     campo('cVencimento').value = c.vencimento;
@@ -381,7 +377,7 @@
     campo('pEncargos').hidden = !temEncargos;
     campo('pEncargos').textContent = temEncargos
       ? c.dias_atraso + (c.dias_atraso === 1 ? ' dia' : ' dias') + ' de atraso: multa de ' +
-        dinheiro(c.multa) + ' e juros de ' + dinheiro(c.juros) + ', já somados ao valor.'
+        formato.dinheiro(c.multa) + ' e juros de ' + formato.dinheiro(c.juros) + ', já somados ao valor.'
       : '';
     modal.abrir();
   }

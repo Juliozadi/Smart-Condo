@@ -8,11 +8,11 @@ from __future__ import annotations
 from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import and_, func, or_, select, update
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import (
-    exigir_condominio, exigir_morador_residente, exigir_papel, get_usuario_atual,
+    exigir_condominio, exigir_morador_residente, exigir_papel,
 )
 from app.core.config import settings
 from app.core.database import get_db
@@ -32,6 +32,7 @@ from app.schemas.reserva import (
 )
 from app.services import cobrancas as servico_cobrancas
 from app.services import notificacao, registro
+from app.services.agenda import encerrar_passadas, ja_comecou
 
 router = APIRouter(prefix="/espacos", tags=["Espaços e Reservas"])
 
@@ -59,14 +60,9 @@ def _espacos_saida(db: Session, espacos, com_autoria: bool) -> list[EspacoSaida]
 
 
 def _ja_comecou(reserva: Reserva) -> bool:
-    """A reserva de ontem, ou a de hoje cujo horário já chegou."""
-    agora = agora_local()
-    return reserva.data < agora.date() or (
-        reserva.data == agora.date() and reserva.hora_inicio <= agora.time()
-    )
+    return ja_comecou(reserva, agora_local())
 
 
-MOTIVO_SEM_AVALIACAO = "O horário chegou sem a avaliação do síndico."
 MOTIVO_ESPACO_INATIVADO = "O espaço foi inativado pelo síndico."
 
 
@@ -86,30 +82,9 @@ def _encerrar_passadas(db: Session, condominio_id: int) -> None:
     pendente para sempre. Como a cobrança vencida, isso se acerta na
     consulta: a aprovada cujo horário terminou vira concluída, e a
     pendente cujo horário chegou sem avaliação vira recusada."""
-    agora = agora_local()
-    hoje, hora = agora.date(), agora.time()
     do_condominio = select(EspacoComum.id).where(EspacoComum.condominio_id == condominio_id)
-    db.execute(
-        update(Reserva)
-        .where(
-            Reserva.espaco_id.in_(do_condominio),
-            Reserva.status == StatusReserva.APROVADA,
-            or_(Reserva.data < hoje, and_(Reserva.data == hoje, Reserva.hora_fim <= hora)),
-        )
-        .values(status=StatusReserva.CONCLUIDA)
-        .execution_options(synchronize_session=False)
-    )
-    db.execute(
-        update(Reserva)
-        .where(
-            Reserva.espaco_id.in_(do_condominio),
-            Reserva.status == StatusReserva.PENDENTE,
-            or_(Reserva.data < hoje, and_(Reserva.data == hoje, Reserva.hora_inicio <= hora)),
-        )
-        .values(status=StatusReserva.RECUSADA, motivo_recusa=MOTIVO_SEM_AVALIACAO)
-        .execution_options(synchronize_session=False)
-    )
-    db.commit()
+    encerrar_passadas(db, Reserva, StatusReserva, Reserva.espaco_id.in_(do_condominio),
+                      agora_local())
 
 
 def _plural(n: int, singular: str, plural: str) -> str:

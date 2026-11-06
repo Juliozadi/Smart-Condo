@@ -20,7 +20,7 @@ FOTO_PORTARIA_DIAS, o arquivo é apagado.
 """
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
@@ -33,10 +33,10 @@ from app.api.deps import (
 )
 from app.core.config import settings
 from app.core.database import get_db
-from app.core.tempo import hoje_local
+from app.core.tempo import agora_utc, hoje_local
 from app.models.condominio import Unidade
 from app.models.enums import (
-    CanalVerificacao, Papel, StatusEncomenda, StatusOcorrencia, StatusUsuario, StatusVisitante,
+    CanalVerificacao, Papel, StatusEncomenda, StatusOcorrencia, StatusVisitante,
 )
 from app.models.portaria import AutorizacaoVisita, Encomenda, Ocorrencia, Visitante
 from app.models.usuario import Usuario
@@ -45,7 +45,7 @@ from app.schemas.portaria import (
     EntregaEncomenda, OcorrenciaEntrada, OcorrenciaSaida, RespostaOcorrencia, RetiradaEncomenda,
     VisitanteEntrada, VisitanteSaida,
 )
-from app.services import arquivos, notificacao
+from app.services import arquivos, destinatarios, notificacao
 # As regras da autorização valem também para o controle de chaves.
 from app.services.visitas import (
     autorizador_mora_la as _autorizador_mora_la, documento_mascarado as _documento_mascarado,
@@ -53,10 +53,6 @@ from app.services.visitas import (
 )
 
 router = APIRouter(prefix="/portaria", tags=["Portaria"])
-
-
-def _agora() -> datetime:
-    return datetime.now(timezone.utc)
 
 
 # Quanto o visitante espera a resposta do morador. Depois disso ele vira
@@ -70,7 +66,7 @@ def _expirar_sem_resposta(db: Session, condominio_id: int) -> None:
         update(Visitante)
         .where(
             Visitante.status == StatusVisitante.AGUARDANDO_CONFIRMACAO,
-            Visitante.criado_em < _agora() - PRAZO_RESPOSTA,
+            Visitante.criado_em < agora_utc() - PRAZO_RESPOSTA,
             Visitante.unidade_id.in_(
                 select(Unidade.id).where(Unidade.condominio_id == condominio_id)
             ),
@@ -92,32 +88,16 @@ def _unidade_do_condominio(db: Session, usuario: Usuario, unidade_id: int) -> Un
     return unidade
 
 
-def _moradores(db: Session, unidade: Unidade) -> list[Usuario]:
-    """Quem mora na unidade agora: o morador que se mudou (inativado) ou
-    teve o cadastro recusado não recebe mais os visitantes e as encomendas
-    do apartamento."""
-    return list(db.scalars(
-        select(Usuario).where(
-            Usuario.unidade_id == unidade.id, Usuario.papel == Papel.MORADOR,
-            Usuario.status == StatusUsuario.ATIVO, Usuario.reside.is_(True),
-        )
-    ).all())
-
-
-def _avisar_moradores(db: Session, unidade: Unidade, titulo: str, mensagem: str) -> None:
-    for morador in _moradores(db, unidade):
-        notificacao.notificar(morador.email, CanalVerificacao.EMAIL, titulo, mensagem)
+def _avisar_moradores(db: Session, unidade_id: int, titulo: str, mensagem: str) -> None:
+    """Quem mora no apartamento agora: o morador que se mudou (inativado) ou
+    teve o cadastro recusado não recebe mais os visitantes e as encomendas."""
+    destinatarios.avisar(destinatarios.moradores_da_unidade(db, unidade_id), titulo, mensagem)
 
 
 def _avisar_sindico(db: Session, unidade: Unidade, titulo: str, mensagem: str) -> None:
     """O apartamento está vazio no sistema (à venda, ou o novo morador ainda
     não se cadastrou): quem fica sabendo é o síndico atual."""
-    sindico = db.scalar(select(Usuario).where(
-        Usuario.condominio_id == unidade.condominio_id, Usuario.papel == Papel.SINDICO,
-        Usuario.status == StatusUsuario.ATIVO,
-    ))
-    if sindico is not None:
-        notificacao.notificar(sindico.email, CanalVerificacao.EMAIL, titulo, mensagem)
+    destinatarios.avisar(destinatarios.sindicos(db, unidade.condominio_id), titulo, mensagem)
 
 
 def _visitante_saida(v: Visitante, unidade: Unidade | None = None,
@@ -213,7 +193,7 @@ def _expurgar_fotos_antigas(db: Session) -> None:
     Roda a cada novo registro, sem depender de tarefa agendada: o custo é
     uma consulta pelos poucos registros vencidos que ainda têm foto.
     """
-    limite = _agora() - timedelta(days=settings.FOTO_PORTARIA_DIAS)
+    limite = agora_utc() - timedelta(days=settings.FOTO_PORTARIA_DIAS)
     vencidos = [
         *db.scalars(select(Visitante).where(
             Visitante.foto_arquivo.is_not(None), Visitante.criado_em < limite)),
@@ -246,7 +226,7 @@ def registrar_visitante(
     _expurgar_fotos_antigas(db)
     # Ninguém mora lá pelo sistema: não há quem confirme, e o visitante
     # não fica duas horas esperando. O registro fica, como "sem resposta".
-    sem_morador = not _moradores(db, unidade)
+    sem_morador = not destinatarios.moradores_da_unidade(db, unidade.id)
 
     visitante = Visitante(
         **dados.model_dump(exclude={"autorizacao_id"}),
@@ -259,7 +239,7 @@ def registrar_visitante(
         # Depois do expurgo das fotos, que faz commit e soltaria a trava.
         autorizacao = _autorizacao_para_entrada(db, unidade, dados.autorizacao_id,
                                                 dados.documento)
-        agora = _agora()
+        agora = agora_utc()
         # Entra quem o morador autorizou, com o nome que ele deu; a
         # autorização é a resposta dele, dada antes.
         visitante.nome = autorizacao.nome
@@ -274,7 +254,7 @@ def registrar_visitante(
 
     if autorizacao is not None:
         _avisar_moradores(
-            db, unidade,
+            db, unidade.id,
             "Visitante autorizado entrou",
             f"{visitante.nome} ({autorizacao.tipo}) entrou pela autorização deixada na portaria.",
         )
@@ -289,7 +269,7 @@ def registrar_visitante(
     else:
         # A notificação com a foto é o que permite o morador confirmar (seção 6).
         _avisar_moradores(
-            db, unidade,
+            db, unidade.id,
             "Visitante na portaria",
             f"{visitante.nome} diz ser seu convidado. Confirme ou recuse a entrada.",
         )
@@ -345,7 +325,7 @@ def confirmar_visitante(
             status_code=status.HTTP_404_NOT_FOUND, detail="Visitante não encontrado."
         )
     if (visitante.status == StatusVisitante.AGUARDANDO_CONFIRMACAO
-            and visitante.criado_em < _agora() - PRAZO_RESPOSTA):
+            and visitante.criado_em < agora_utc() - PRAZO_RESPOSTA):
         visitante.status = StatusVisitante.SEM_RESPOSTA
         db.commit()
         raise HTTPException(
@@ -358,7 +338,7 @@ def confirmar_visitante(
             detail="Este visitante já foi respondido.",
         )
 
-    agora = _agora()
+    agora = agora_utc()
     visitante.confirmado_por_id = morador.id
     visitante.confirmado_em = agora
     if dados.confirmado:
@@ -404,7 +384,7 @@ def registrar_saida(
         )
 
     visitante.status = StatusVisitante.SAIU
-    visitante.saida_em = _agora()
+    visitante.saida_em = agora_utc()
     db.commit()
     db.refresh(visitante)
     return _visitante_saida(visitante)
@@ -634,7 +614,7 @@ def revogar_autorizacao(
     if autorizacao.inativo:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Esta autorização já foi revogada.")
-    autorizacao.inativo_em = _agora()
+    autorizacao.inativo_em = agora_utc()
     autorizacao.inativado_por_id = morador.id
     db.commit()
     db.refresh(autorizacao)
@@ -659,7 +639,7 @@ def registrar_encomenda(
     encomenda = Encomenda(
         **dados.model_dump(),
         registrada_por_id=usuario.id,
-        recebida_em=_agora(),
+        recebida_em=agora_utc(),
         status=StatusEncomenda.AGUARDANDO_RETIRADA,
     )
     db.add(encomenda)
@@ -668,7 +648,7 @@ def registrar_encomenda(
 
     # "notificação de entrega para o cliente que realizou o pedido" (seção 6)
     rastreio = f" (rastreio {encomenda.codigo_rastreio})" if encomenda.codigo_rastreio else ""
-    if not _moradores(db, unidade):
+    if not destinatarios.moradores_da_unidade(db, unidade.id):
         # A encomenda do morador que se mudou fica na portaria: sem ninguém
         # para retirá-la, o síndico precisa saber.
         _avisar_sindico(
@@ -679,7 +659,7 @@ def registrar_encomenda(
         )
         return _encomenda_saida(encomenda).model_copy(update={"sem_morador": True})
     _avisar_moradores(
-        db, unidade,
+        db, unidade.id,
         "Encomenda na portaria",
         f"{encomenda.tipo_volume} de {encomenda.remetente}{rastreio} chegou para você.",
     )
@@ -737,7 +717,7 @@ def confirmar_retirada(
 
     if dados.confirmada:
         encomenda.status = StatusEncomenda.RETIRADA
-        encomenda.retirada_em = _agora()
+        encomenda.retirada_em = agora_utc()
         encomenda.retirada_por_id = morador.id
     else:
         encomenda.status = StatusEncomenda.RECUSADA
@@ -771,13 +751,13 @@ def entregar_encomenda(
             status_code=status.HTTP_409_CONFLICT, detail="Esta encomenda já foi respondida."
         )
     encomenda.status = StatusEncomenda.RETIRADA
-    encomenda.retirada_em = _agora()
+    encomenda.retirada_em = agora_utc()
     encomenda.entregue_por_id = usuario.id
     encomenda.retirado_por_nome = dados.retirado_por_nome
     db.commit()
     db.refresh(encomenda)
     _avisar_moradores(
-        db, encomenda.unidade, "Encomenda retirada na portaria",
+        db, encomenda.unidade_id, "Encomenda retirada na portaria",
         f"{encomenda.tipo_volume} de {encomenda.remetente}: entregue a "
         f"{dados.retirado_por_nome} por {usuario.nome}.",
     )
@@ -972,7 +952,7 @@ def responder_ocorrencia(
     ocorrencia.status = dados.status
     ocorrencia.resposta = dados.resposta
     ocorrencia.respondida_por_id = sindico.id
-    ocorrencia.respondida_em = _agora()
+    ocorrencia.respondida_em = agora_utc()
 
     db.commit()
     db.refresh(ocorrencia)

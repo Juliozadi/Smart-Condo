@@ -5,20 +5,10 @@
    papel. */
 (function(global) {
   'use strict';
+  var formato = global.SmartCondo.formato;
+  var el = formato.el, quando = formato.quando;
 
   var PAPEL = { porteiro: 'Porteiro', sindico: 'Síndico' };
-
-  function el(tag, classe, texto) {
-    var e = document.createElement(tag);
-    if (classe) e.className = classe;
-    if (texto !== undefined) e.textContent = texto;
-    return e;
-  }
-  function quando(iso) {
-    var d = new Date(iso);
-    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' às ' +
-      d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
-  }
 
   function cartao(a, darCiencia) {
     var caixa = el('article', 'form-card anotacao' + (a.importante ? ' importante' : ''));

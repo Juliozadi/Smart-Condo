@@ -7,6 +7,7 @@
   <title>SmartCondo — Painel do Síndico</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
   <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/formato.js"></script>
   <link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
@@ -146,6 +147,7 @@
    financeiro, as reservas a aprovar e as ocorrências ainda abertas. */
 (function() {
   'use strict';
+  var formato = window.SmartCondo.formato;
   var api = window.SmartCondo.api;
   var usuario = api.protegerPagina('sindico');
   if (!usuario) return;
@@ -169,11 +171,6 @@
     baixa:   ['icon-blue', 'circle-exclamation.svg']
   };
 
-  function dinheiro(valor) {
-    return 'R$ ' + Number(valor).toLocaleString('pt-BR', {
-      minimumFractionDigits: 2, maximumFractionDigits: 2
-    });
-  }
   function partes(iso) { var p = String(iso || '').slice(0, 10).split('-'); return { a: p[0], m: p[1], d: p[2] }; }
   function dataCurta(iso) { var p = partes(iso); return p.d + '/' + p.m; }
   function competencia(iso) { var p = partes(iso); return p.m + '/' + p.a; }
@@ -214,9 +211,9 @@
       api.get('/financeiro/cobrancas?status=vencida')
     ]).then(function(r) {
       var resumo = r[0], vencidas = r[1];
-      campo('finRecebido').textContent = dinheiro(resumo.total_recebido);
-      campo('finAberto').textContent = dinheiro(resumo.total_aberto);
-      campo('finVencido').textContent = dinheiro(resumo.total_vencido);
+      campo('finRecebido').textContent = formato.dinheiro(resumo.total_recebido);
+      campo('finAberto').textContent = formato.dinheiro(resumo.total_aberto);
+      campo('finVencido').textContent = formato.dinheiro(resumo.total_vencido);
       campo('totInadimplentes').textContent = resumo.unidades_inadimplentes;
       if (resumo.unidades_inadimplentes) {
         anotarPendencia('inadimplencia', resumo.unidades_inadimplentes +
@@ -235,7 +232,7 @@
         linha.innerHTML = '<span><strong></strong></span><span></span><span></span><span><span class="badge badge-alert"></span></span>';
         linha.children[0].firstChild.textContent = c.unidade || '—';
         linha.children[1].textContent = competencia(c.competencia);
-        linha.children[2].textContent = dinheiro(Number(c.valor) - Number(c.total_pago || 0));
+        linha.children[2].textContent = formato.dinheiro(Number(c.valor) - Number(c.total_pago || 0));
         linha.children[3].firstChild.textContent = ROTULO_COBRANCA[c.status] || c.status;
         tabela.appendChild(linha);
       });

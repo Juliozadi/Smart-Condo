@@ -17,11 +17,11 @@ from app.api.deps import exigir_condominio, exigir_papel
 from app.core.database import get_db
 from app.models.comunicado import Comunicado, LeituraComunicado
 from app.models.condominio import Unidade
-from app.models.enums import CategoriaComunicado, CanalVerificacao, Papel, StatusUsuario
+from app.models.enums import CategoriaComunicado, Papel, StatusUsuario
 from app.models.usuario import Usuario
 from app.schemas.comuns import Mensagem
 from app.schemas.comunicado import ComunicadoEntrada, ComunicadoSaida
-from app.services import notificacao, registro
+from app.services import destinatarios, registro
 
 router = APIRouter(prefix="/comunicados", tags=["Comunicados"])
 
@@ -126,10 +126,7 @@ def publicar(
     elif comunicado.bloco is not None:
         consulta = consulta.join(Unidade, Unidade.id == Usuario.unidade_id).where(
             Unidade.bloco == comunicado.bloco)
-    for morador in db.scalars(consulta).all():
-        notificacao.notificar(
-            morador.email, CanalVerificacao.EMAIL, "Novo comunicado", comunicado.titulo
-        )
+    destinatarios.avisar(db.scalars(consulta).all(), "Novo comunicado", comunicado.titulo)
 
     return _saida(comunicado, sindico.nome, lido=False)
 

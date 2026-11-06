@@ -7,6 +7,7 @@
   <title>SmartCondo — Documentos</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
   <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/formato.js"></script>
   <link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
@@ -71,6 +72,7 @@
    entrega só o que é público mais o que é da unidade do morador. */
 (function() {
   'use strict';
+  var formato = window.SmartCondo.formato;
   var api = window.SmartCondo.api;
   var usuario = api.protegerPagina('morador');
   if (!usuario) return;
@@ -157,17 +159,13 @@
 
   /* Quem digita "convencao" espera achar "Convenção": a busca compara
      sem acento dos dois lados. */
-  function semAcento(texto) {
-    return (texto || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  }
-
   function desenhar() {
-    var busca = semAcento(campo('buscaDocumento').value.trim());
+    var busca = formato.semAcento(campo('buscaDocumento').value.trim());
     var categoria = campo('filtroCategoria').value;
     var lista = documentos.filter(function(d) {
       if (categoria && d.categoria !== categoria) return false;
       if (!busca) return true;
-      return semAcento(d.titulo + ' ' + (d.descricao || '')).indexOf(busca) >= 0;
+      return formato.semAcento(d.titulo + ' ' + (d.descricao || '')).indexOf(busca) >= 0;
     });
 
     var caixa = campo('listaDocumentos');

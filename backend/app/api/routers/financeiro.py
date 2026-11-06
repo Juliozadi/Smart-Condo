@@ -12,8 +12,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session, contains_eager
 
-from app.api.deps import exigir_condominio, exigir_papel, exigir_permissao_porteiro
+from app.api.deps import exigir_condominio, exigir_papel
 from app.core.database import get_db
+from app.core.formato import reais
 from app.core.tempo import hoje_local
 from app.models.condominio import Condominio, Unidade
 from app.models.enums import OrigemCobranca, Papel, StatusCobranca, StatusUsuario
@@ -25,9 +26,7 @@ from app.schemas.financeiro import (
     PreferenciaCobrancaEntrada, PreferenciaCobrancaSaida, ResumoFinanceiro,
 )
 from app.services import encargos as calculo_encargos
-from app.services import registro
-from app.services import notificacao
-from app.models.enums import CanalVerificacao
+from app.services import destinatarios, registro
 
 router = APIRouter(prefix="/financeiro", tags=["Financeiro"])
 
@@ -304,7 +303,7 @@ def corrigir_cobranca(
     if "valor" in novos and novos["valor"] < pago:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"Já foram pagos R$ {pago}; o valor não pode ficar abaixo disso.",
+            detail=f"Já foram pagos {reais(pago)}; o valor não pode ficar abaixo disso.",
         )
     if "vencimento" in novos and novos["vencimento"] < cobranca.competencia:
         raise HTTPException(
@@ -441,7 +440,7 @@ def registrar_pagamento(
     if dados.valor > devido:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"O valor passa do que falta pagar (R$ {devido}).",
+            detail=f"O valor passa do que falta pagar ({reais(devido)}).",
         )
     # O pagamento abate primeiro a multa e os juros (Código Civil, art.
     # 354). Um pagamento que nem os cobre seria todo encargo, e a próxima
@@ -450,7 +449,7 @@ def registrar_pagamento(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="O pagamento em atraso precisa cobrir ao menos a multa e os juros "
-                   f"(R$ {encargos.total}).",
+                   f"({reais(encargos.total)}).",
         )
 
     agora = datetime.now(timezone.utc)
@@ -478,39 +477,27 @@ def registrar_pagamento(
             dados.valor, cobranca.vencimento, _hoje(),
             condominio.multa_atraso, condominio.juros_mensais).total
         registro.registrar(db, usuario, registro.EDITOU, registro.COBRANCA, cobranca.id,
-                           f"Dispensou R$ {dispensado} de multa e juros")
+                           f"Dispensou {reais(dispensado)} de multa e juros")
 
     db.commit()
     db.refresh(pagamento)
 
     # "o próprio sistema me notificar com qual meio o pagamento foi realizado,
     # por quem e a data do pagamento" (seção 6).
-    # O síndico atual: o antigo continua no banco, inativado.
-    sindico = db.scalar(
-        select(Usuario).where(
-            Usuario.condominio_id == usuario.condominio_id, Usuario.papel == Papel.SINDICO,
-            Usuario.status == StatusUsuario.ATIVO,
-        )
-    )
-    texto = (f"Unidade {cobranca.unidade.identificacao}: R$ {pagamento.valor} "
+    texto = (f"Unidade {cobranca.unidade.identificacao}: {reais(pagamento.valor)} "
              f"por {pagamento.forma.value}, registrado por {usuario.nome} "
              f"em {pagamento.pago_em:%d/%m/%Y}.")
     if pagamento.encargos:
-        texto += f" Inclui R$ {pagamento.encargos} de multa e juros pelo atraso."
+        texto += f" Inclui {reais(pagamento.encargos)} de multa e juros pelo atraso."
     if usuario.papel == Papel.SINDICO:
         # O síndico registrou o que recebeu fora do app (boleto, depósito):
         # quem fica sabendo são os moradores da unidade, não ele mesmo.
-        moradores = db.scalars(
-            select(Usuario).where(
-                Usuario.unidade_id == cobranca.unidade_id, Usuario.papel == Papel.MORADOR,
-                Usuario.status == StatusUsuario.ATIVO,
-            )
-        ).all()
-        for morador in moradores:
-            notificacao.notificar(morador.email, CanalVerificacao.EMAIL,
-                                  "Pagamento registrado", texto)
-    elif sindico is not None:
-        notificacao.notificar(sindico.email, CanalVerificacao.EMAIL, "Pagamento recebido", texto)
+        destinatarios.avisar(
+            destinatarios.moradores_da_unidade(db, cobranca.unidade_id, so_quem_mora=False),
+            "Pagamento registrado", texto)
+    else:
+        destinatarios.avisar(destinatarios.sindicos(db, usuario.condominio_id),
+                             "Pagamento recebido", texto)
 
     return PagamentoSaida(
         id=pagamento.id, cobranca_id=pagamento.cobranca_id, valor=pagamento.valor,

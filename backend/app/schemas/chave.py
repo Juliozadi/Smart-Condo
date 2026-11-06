@@ -6,13 +6,7 @@ from typing import Literal
 
 from pydantic import Field, field_validator
 
-from app.schemas.comuns import SchemaBase
-
-
-def _vazio_e_nada(valor):
-    if isinstance(valor, str) and not valor.strip():
-        return None
-    return valor
+from app.schemas.comuns import SchemaBase, vazio_e_nada
 
 
 class ChaveEntrada(SchemaBase):
@@ -22,7 +16,7 @@ class ChaveEntrada(SchemaBase):
     posicao: str | None = Field(default=None, max_length=20)
     observacao: str | None = Field(default=None, max_length=300)
 
-    _vazios = field_validator("posicao", "observacao", mode="before")(_vazio_e_nada)
+    _vazios = field_validator("posicao", "observacao", mode="before")(vazio_e_nada)
 
 
 class ChaveAtualizacao(SchemaBase):
@@ -31,7 +25,7 @@ class ChaveAtualizacao(SchemaBase):
     posicao: str | None = Field(default=None, max_length=20)
     observacao: str | None = Field(default=None, max_length=300)
 
-    _vazios = field_validator("posicao", "observacao", mode="before")(_vazio_e_nada)
+    _vazios = field_validator("posicao", "observacao", mode="before")(vazio_e_nada)
 
 
 class ChaveSaida(SchemaBase):
@@ -57,7 +51,7 @@ class RetiradaEntrada(SchemaBase):
     autorizacao_id: int | None = Field(default=None, ge=1)
     observacao: str | None = Field(default=None, max_length=300)
 
-    _vazios = field_validator("nome", "documento", "observacao", mode="before")(_vazio_e_nada)
+    _vazios = field_validator("nome", "documento", "observacao", mode="before")(vazio_e_nada)
 
 
 class MovimentacaoSaida(SchemaBase):

@@ -7,6 +7,7 @@
   <title>SmartCondo — Gestão de Moradores</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
   <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/formato.js"></script>
   <link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
@@ -144,6 +145,7 @@
    lista completa, tudo vindo da API. */
 (function() {
   'use strict';
+  var formato = window.SmartCondo.formato;
   var api = window.SmartCondo.api, ui = window.SmartCondo.ui;
   if (!api.protegerPagina('sindico')) return;
 
@@ -151,10 +153,6 @@
   var moradores = [];
 
   var INICIAIS_COR = ['teal', 'blue', 'amber', 'purple'];
-  function iniciais(nome) {
-    var p = (nome || '').trim().split(/\s+/);
-    return ((p[0] || '')[0] || '') + ((p[p.length - 1] || '')[0] || '');
-  }
   function corDoNome(nome) {
     var soma = 0;
     for (var i = 0; i < (nome || '').length; i++) soma += nome.charCodeAt(i);
@@ -278,7 +276,7 @@
 
     var avatar = document.createElement('div');
     avatar.className = 'list-avatar ' + corDoNome(u.nome);
-    avatar.textContent = iniciais(u.nome).toUpperCase();
+    avatar.textContent = formato.iniciais(u.nome).toUpperCase();
 
     var info = document.createElement('div');
     info.className = 'list-info';

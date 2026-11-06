@@ -3,6 +3,8 @@
    e pode lançar a despesa na prestação de contas. */
 (function() {
   'use strict';
+  var formato = window.SmartCondo.formato;
+  var el = formato.el, data = formato.data, dinheiro = formato.dinheiro, hojeIso = formato.hojeIso, botao = formato.botao;
   var api = window.SmartCondo.api;
   var usuario = api.protegerPagina('sindico');
   if (!usuario) return;
@@ -10,21 +12,6 @@
   var editando = null;
 
   function campo(id) { return document.getElementById(id); }
-  function el(tag, classe, texto) {
-    var e = document.createElement(tag);
-    if (classe) e.className = classe;
-    if (texto !== undefined) e.textContent = texto;
-    return e;
-  }
-  function data(iso) { return iso ? String(iso).slice(0, 10).split('-').reverse().join('/') : ''; }
-  function dinheiro(v) {
-    return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  }
-  function hojeIso() {
-    var d = new Date();
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' +
-      String(d.getDate()).padStart(2, '0');
-  }
   function selo(p) {
     if (p.situacao === 'vencida') {
       var ha = -p.dias_para_vencer;
@@ -35,12 +22,6 @@
         : 'Vence em ' + p.dias_para_vencer + (p.dias_para_vencer === 1 ? ' dia' : ' dias'), 'badge-pending'];
     }
     return ['Em dia', 'badge-ok'];
-  }
-  function botao(texto, rotulo, classe) {
-    var b = el('button', 'contato-btn' + (classe ? ' ' + classe : ''), texto);
-    b.type = 'button';
-    b.setAttribute('aria-label', rotulo);
-    return b;
   }
 
   function formRealizacao(p, caixa) {

@@ -9,15 +9,15 @@ lançar a despesa na prestação de contas).
 """
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from app.api.deps import exigir_papel
+from app.api.deps import conferir_nome_livre, exigir_papel
 from app.core.database import get_db
-from app.core.tempo import hoje_local, somar_meses
+from app.core.tempo import agora_utc, hoje_local, somar_meses
 from app.models.enums import CategoriaDespesa, Papel
 from app.models.financeiro import Despesa
 from app.models.preventiva import PlanoManutencao, RealizacaoManutencao
@@ -75,15 +75,8 @@ def _plano(db: Session, plano_id: int, usuario: Usuario, travar: bool = False) -
 
 
 def _conferir_nome(db: Session, condominio_id: int, nome: str, exceto: int | None = None) -> None:
-    consulta = select(PlanoManutencao.id).where(
-        PlanoManutencao.condominio_id == condominio_id, PlanoManutencao.inativo_em.is_(None),
-        func.lower(PlanoManutencao.nome) == nome.lower(),
-    )
-    if exceto is not None:
-        consulta = consulta.where(PlanoManutencao.id != exceto)
-    if db.scalar(consulta) is not None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-                            detail=f"Já existe um plano chamado \"{nome}\".")
+    conferir_nome_livre(db, PlanoManutencao, condominio_id, nome,
+                        f"Já existe um plano chamado \"{nome}\".", exceto)
 
 
 @router.get("", response_model=list[PlanoSaida],
@@ -137,7 +130,7 @@ def editar(plano_id: int, dados: PlanoAtualizacao, usuario: Usuario = Depends(si
 def remover(plano_id: int, usuario: Usuario = Depends(sindico),
             db: Session = Depends(get_db)) -> Mensagem:
     p = _plano(db, plano_id, usuario, travar=True)
-    p.inativo_em = datetime.now(timezone.utc)
+    p.inativo_em = agora_utc()
     p.inativado_por_id = usuario.id
     registro.registrar(db, usuario, registro.INATIVOU, registro.PLANO_MANUTENCAO, p.id, p.nome)
     db.commit()

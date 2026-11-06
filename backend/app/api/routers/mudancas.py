@@ -9,26 +9,28 @@ aprovadas. Uma mudança de cada vez em cada bloco: o elevador de serviço
 """
 from __future__ import annotations
 
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import date, datetime, time, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import and_, delete, func, or_, select, update
+from sqlalchemy import and_, delete, func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import (
     conferir_que_mora, exigir_condominio, exigir_morador_residente, exigir_papel,
 )
 from app.core.database import get_db
-from app.core.tempo import agora_local
+from app.core.tempo import agora_local, agora_utc
 from app.models.condominio import Condominio, Unidade
-from app.models.enums import CanalVerificacao, Papel, StatusMudanca, StatusUsuario
+from app.models.enums import Papel, StatusMudanca
 from app.models.mudanca import HorarioMudanca, Mudanca
 from app.models.usuario import Usuario
 from app.schemas.mudanca import (
     ANTECEDENCIA_MAXIMA_DIAS, AvaliacaoMudanca, CancelamentoMudanca, HorarioDoDia,
     MudancaEntrada, MudancaSaida, RegrasMudanca, RegrasMudancaEntrada,
 )
-from app.services import notificacao, registro
+from app.services import registro
+from app.services.agenda import encerrar_passadas, ja_comecou
+from app.services.destinatarios import avisar, moradores_da_unidade, sindicos
 
 router = APIRouter(prefix="/mudancas", tags=["Mudanças"])
 
@@ -46,7 +48,6 @@ HORARIOS = {
 LIMITE_ATIVAS = 3
 
 STATUS_QUE_OCUPAM = (StatusMudanca.PENDENTE, StatusMudanca.APROVADA)
-MOTIVO_SEM_AVALIACAO = "O horário chegou sem a avaliação do síndico."
 
 
 def _agora() -> datetime:
@@ -89,50 +90,8 @@ def _do_morador(morador: Usuario):
                 Mudanca.criado_em >= morador.unidade_desde)
 
 
-def _ja_comecou(m: Mudanca, agora: datetime) -> bool:
-    return m.data < agora.date() or (m.data == agora.date() and m.hora_inicio <= agora.time())
-
-
 def _encerrar_passadas(db: Session, condominio_id: int) -> None:
-    """Como nas reservas: a aprovada cujo horário terminou vira concluída,
-    e a pendente cujo horário chegou sem avaliação vira recusada."""
-    agora = _agora()
-    hoje, hora = agora.date(), agora.time()
-    db.execute(
-        update(Mudanca)
-        .where(Mudanca.condominio_id == condominio_id, Mudanca.status == StatusMudanca.APROVADA,
-               or_(Mudanca.data < hoje, and_(Mudanca.data == hoje, Mudanca.hora_fim <= hora)))
-        .values(status=StatusMudanca.CONCLUIDA)
-        .execution_options(synchronize_session=False)
-    )
-    db.execute(
-        update(Mudanca)
-        .where(Mudanca.condominio_id == condominio_id, Mudanca.status == StatusMudanca.PENDENTE,
-               or_(Mudanca.data < hoje,
-                   and_(Mudanca.data == hoje, Mudanca.hora_inicio <= hora)))
-        .values(status=StatusMudanca.RECUSADA, motivo_recusa=MOTIVO_SEM_AVALIACAO)
-        .execution_options(synchronize_session=False)
-    )
-    db.commit()
-
-
-def _sindicos(db: Session, condominio_id: int) -> list[Usuario]:
-    return list(db.scalars(select(Usuario).where(
-        Usuario.condominio_id == condominio_id, Usuario.papel == Papel.SINDICO,
-        Usuario.status == StatusUsuario.ATIVO,
-    )).all())
-
-
-def _moradores(db: Session, unidade_id: int) -> list[Usuario]:
-    return list(db.scalars(select(Usuario).where(
-        Usuario.unidade_id == unidade_id, Usuario.papel == Papel.MORADOR,
-        Usuario.status == StatusUsuario.ATIVO, Usuario.reside.is_(True),
-    )).all())
-
-
-def _avisar(destinos: list[Usuario], titulo: str, mensagem: str) -> None:
-    for u in destinos:
-        notificacao.notificar(u.email, CanalVerificacao.EMAIL, titulo, mensagem)
+    encerrar_passadas(db, Mudanca, StatusMudanca, Mudanca.condominio_id == condominio_id, _agora())
 
 
 NOS_DIAS = {1: "às segundas-feiras", 2: "às terças-feiras", 3: "às quartas-feiras",
@@ -327,9 +286,9 @@ def agendar(
     db.add(m)
     db.commit()
     db.refresh(m)
-    _avisar(_sindicos(db, m.condominio_id), "Mudança para avaliar",
-            f"O apartamento {unidade.identificacao} pediu uma mudança "
-            f"({m.tipo.value}) em {_quando(m)}. Aprove ou recuse pelo SmartCondo.")
+    avisar(sindicos(db, m.condominio_id), "Mudança para avaliar",
+           f"O apartamento {unidade.identificacao} pediu uma mudança "
+           f"({m.tipo.value}) em {_quando(m)}. Aprove ou recuse pelo SmartCondo.")
     return _saida(m)
 
 
@@ -345,21 +304,21 @@ def avaliar(
     if m.status != StatusMudanca.PENDENTE:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Esta mudança já foi avaliada ou cancelada.")
-    if dados.aprovada and _ja_comecou(m, _agora()):
+    if dados.aprovada and ja_comecou(m, _agora()):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="O horário desta mudança já passou. Ela só pode ser recusada.")
     m.status = StatusMudanca.APROVADA if dados.aprovada else StatusMudanca.RECUSADA
     m.motivo_recusa = None if dados.aprovada else dados.motivo
     m.avaliada_por_id = sindico.id
-    m.avaliada_em = datetime.now(timezone.utc)
+    m.avaliada_em = agora_utc()
     db.commit()
     db.refresh(m)
     if dados.aprovada:
-        _avisar(_moradores(db, m.unidade_id), "Mudança aprovada",
-                f"Sua mudança em {_quando(m)} foi aprovada. A portaria já está avisada.")
+        avisar(moradores_da_unidade(db, m.unidade_id), "Mudança aprovada",
+               f"Sua mudança em {_quando(m)} foi aprovada. A portaria já está avisada.")
     else:
-        _avisar(_moradores(db, m.unidade_id), "Mudança recusada",
-                f"Sua mudança em {_quando(m)} foi recusada pelo síndico. Motivo: {m.motivo_recusa}")
+        avisar(moradores_da_unidade(db, m.unidade_id), "Mudança recusada",
+               f"Sua mudança em {_quando(m)} foi recusada pelo síndico. Motivo: {m.motivo_recusa}")
     return _saida(m)
 
 
@@ -376,7 +335,7 @@ def cancelar(
     if m.status not in STATUS_QUE_OCUPAM:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Esta mudança não está mais agendada.")
-    if _ja_comecou(m, _agora()):
+    if ja_comecou(m, _agora()):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="O horário desta mudança já chegou.")
     motivo = dados.motivo if dados else None
@@ -387,15 +346,15 @@ def cancelar(
     estava_aprovada = m.status == StatusMudanca.APROVADA
     m.status = StatusMudanca.CANCELADA
     m.cancelada_por_id = usuario.id
-    m.cancelada_em = datetime.now(timezone.utc)
+    m.cancelada_em = agora_utc()
     m.motivo_cancelamento = motivo
     db.commit()
     db.refresh(m)
     if pelo_sindico:
-        _avisar(_moradores(db, m.unidade_id), "Mudança cancelada",
-                f"Sua mudança em {_quando(m)} foi cancelada pelo síndico. Motivo: {motivo}")
+        avisar(moradores_da_unidade(db, m.unidade_id), "Mudança cancelada",
+               f"Sua mudança em {_quando(m)} foi cancelada pelo síndico. Motivo: {motivo}")
     elif estava_aprovada:
-        _avisar(_sindicos(db, m.condominio_id), "Mudança cancelada",
-                f"O apartamento {m.unidade.identificacao} cancelou a mudança aprovada "
-                f"para {_quando(m)}.")
+        avisar(sindicos(db, m.condominio_id), "Mudança cancelada",
+               f"O apartamento {m.unidade.identificacao} cancelou a mudança aprovada "
+               f"para {_quando(m)}.")
     return _saida(m)

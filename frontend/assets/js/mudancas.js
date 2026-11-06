@@ -3,6 +3,8 @@
    acrescenta os botões que são dele (cancelar, aprovar, recusar). */
 (function(global) {
   'use strict';
+  var formato = global.SmartCondo.formato;
+  var el = formato.el;
 
   var STATUS = {
     pendente: ['Aguardando o síndico', 'badge-pending'],
@@ -15,12 +17,6 @@
   var MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
   var DIAS = ['', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
-  function el(tag, classe, texto) {
-    var e = document.createElement(tag);
-    if (classe) e.className = classe;
-    if (texto !== undefined) e.textContent = texto;
-    return e;
-  }
   function hora(t) { return (t || '').slice(0, 5); }
   function horaCurta(t) {
     var h = +t.slice(0, 2), m = t.slice(3, 5);

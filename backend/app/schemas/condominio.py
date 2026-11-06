@@ -8,10 +8,10 @@ from decimal import Decimal
 
 from datetime import datetime, time
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, model_validator
 
 from app.schemas.admin import RegistroSaida
-from app.schemas.comuns import CEP, CNPJ, IdUnidade, SchemaBase, Telefone, UF
+from app.schemas.comuns import CEP, CNPJ, UF, Horario, IdUnidade, SchemaBase, Telefone
 
 
 class CondominioEntrada(SchemaBase):
@@ -88,20 +88,13 @@ class RegrasDoEspaco(SchemaBase):
     O salão que funciona até as 22h (lei do silêncio), a reserva com dois
     dias de antecedência, a churrasqueira por no máximo seis horas, uma
     reserva futura por apartamento."""
-    horario_abertura: time | None = None
-    horario_fechamento: time | None = None
+    horario_abertura: Horario | None = None
+    horario_fechamento: Horario | None = None
     antecedencia_minima_dias: int | None = Field(default=None, ge=0, le=180)
     duracao_maxima_horas: int | None = Field(default=None, ge=1, le=24)
     limite_por_unidade: int | None = Field(default=None, ge=1, le=50)
     # Cobrada do apartamento quando o síndico aprova a reserva.
     taxa_uso: Decimal | None = Field(default=None, gt=0, max_digits=10, decimal_places=2)
-
-    @field_validator("horario_abertura", "horario_fechamento")
-    @classmethod
-    def _sem_fuso(cls, valor: time | None) -> time | None:
-        if valor is not None and valor.tzinfo is not None:
-            raise ValueError("Informe o horário sem fuso, no horário do condomínio.")
-        return valor
 
     @model_validator(mode="after")
     def _horario_coerente(self):

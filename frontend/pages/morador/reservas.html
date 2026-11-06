@@ -7,6 +7,7 @@
   <title>SmartCondo — Reservas de Espaços</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
   <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/formato.js"></script>
   <link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
@@ -108,6 +109,7 @@
    ocupados, que é o sigilo exigido pela seção 6. */
 (function() {
   'use strict';
+  var formato = window.SmartCondo.formato;
   var api = window.SmartCondo.api;
   if (!api.protegerPagina('morador')) return;
 
@@ -129,16 +131,11 @@
   function diaMes(iso) { var p = partes(iso); return { dia: ('0' + p.d).slice(-2), mes: MESES[p.m - 1] || '' }; }
   function dataCurta(iso) { var p = partes(iso); return ('0' + p.d).slice(-2) + '/' + ('0' + p.m).slice(-2); }
   function hora(h) { return (h || '').slice(0, 5).replace(':', 'h'); }
-  function dinheiro(v) { return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
   function periodo(r) { return hora(r.hora_inicio) + '–' + hora(r.hora_fim); }
-  function hoje() {
-    var d = new Date();
-    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
-  }
   function jaComecou(r) {
     var d = new Date();
     var agora = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
-    return r.data < hoje() || (r.data === hoje() && (r.hora_inicio || '').slice(0, 5) <= agora);
+    return r.data < formato.hojeIso() || (r.data === formato.hojeIso() && (r.hora_inicio || '').slice(0, 5) <= agora);
   }
 
   // ── Ocupação em tempo real ──────────────────────────────────────
@@ -254,7 +251,7 @@
                   ' por apartamento');
     }
     if (e && e.taxa_uso) {
-      partes.push('taxa de uso de ' + dinheiro(e.taxa_uso) + ', nas cobranças do apartamento quando o síndico aprovar');
+      partes.push('taxa de uso de ' + formato.dinheiro(e.taxa_uso) + ', nas cobranças do apartamento quando o síndico aprovar');
     }
     campo('regrasEspaco').textContent = partes.length ? 'Regras deste espaço: ' + partes.join(' · ') + '.' : '';
   }
@@ -305,7 +302,7 @@
     h.textContent = r.espaco_nome;
     var p = document.createElement('p');
     p.textContent = periodo(r) + (r.pessoas_estimadas ? ' · ' + r.pessoas_estimadas + ' pessoas' : '') +
-      (r.taxa_uso ? ' · taxa de uso ' + dinheiro(r.taxa_uso) : '');
+      (r.taxa_uso ? ' · taxa de uso ' + formato.dinheiro(r.taxa_uso) : '');
     info.appendChild(h); info.appendChild(p);
     var explicacao = motivoDe(r);
     if (explicacao) {
@@ -457,7 +454,7 @@
       .then(function() { botao.disabled = false; botao.textContent = texto; });
   });
 
-  campo('reserv_data').min = hoje();
+  campo('reserv_data').min = formato.hojeIso();
   ['reserv_espacoDesejado', 'reserv_data'].forEach(function(id) {
     campo(id).addEventListener('change', conferirAgenda);
   });

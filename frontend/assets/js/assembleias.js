@@ -4,6 +4,8 @@
    o cancelamento; o morador, a cédula. */
 (function(global) {
   'use strict';
+  var formato = global.SmartCondo.formato;
+  var el = formato.el, quando = formato.quando;
 
   var SITUACAO = {
     agendada: ['Agendada', 'badge-blue'], aberta: ['Votação aberta', 'badge-ok'],
@@ -13,18 +15,6 @@
     simples: 'maioria simples', dois_tercos: '2/3 dos apartamentos', unanimidade: 'unanimidade'
   };
   var ESCOLHA = { a_favor: 'A favor', contra: 'Contra', abstencao: 'Abstenção' };
-
-  function quando(iso) {
-    var d = new Date(iso);
-    return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) +
-      ' às ' + ('0' + d.getHours()).slice(-2) + 'h' + ('0' + d.getMinutes()).slice(-2);
-  }
-  function el(tag, classe, texto) {
-    var e = document.createElement(tag);
-    if (classe) e.className = classe;
-    if (texto !== undefined) e.textContent = texto;
-    return e;
-  }
 
   function cartao(a) {
     var caixa = el('article', 'form-card assembleia');

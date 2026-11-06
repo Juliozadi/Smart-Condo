@@ -7,6 +7,7 @@
   <title>SmartCondo — Visitantes Autorizados</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
   <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/formato.js"></script>
   <link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
@@ -116,7 +117,6 @@
 
   </main>
 
-
 <script src="../../assets/js/validation.js"></script>
 <script>
 /* Visitantes autorizados com antecedência: o morador libera a entrada e a
@@ -124,6 +124,7 @@
    de quem mora no apartamento agora, inclusive as que ainda vão começar. */
 (function() {
   'use strict';
+  var formato = window.SmartCondo.formato;
   var api = window.SmartCondo.api;
   var usuario = api.protegerPagina('morador');
   if (!usuario) return;
@@ -131,13 +132,6 @@
   function campo(id) { return document.getElementById(id); }
   var DIAS = ['', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'];
 
-  function doisDigitos(n) { return ('0' + n).slice(-2); }
-  // A data de hoje no relógio de quem usa a tela (não em UTC).
-  function hojeIso(somaDias) {
-    var d = new Date();
-    d.setDate(d.getDate() + (somaDias || 0));
-    return d.getFullYear() + '-' + doisDigitos(d.getMonth() + 1) + '-' + doisDigitos(d.getDate());
-  }
   function dataCurta(iso) {
     var p = (iso || '').split('-');
     return p.length === 3 ? p[2] + '/' + p[1] : '';
@@ -150,7 +144,7 @@
   function situacao(a) {
     if (a.ja_dentro) return ['No condomínio', 'badge-ok'];
     if (a.vale_hoje) return ['Vale hoje', 'badge-blue'];
-    if (a.valida_de > hojeIso()) return ['A partir de ' + dataCurta(a.valida_de), 'badge-pending'];
+    if (a.valida_de > formato.hojeIso()) return ['A partir de ' + dataCurta(a.valida_de), 'badge-pending'];
     return ['Não vale hoje', 'badge-neutral'];
   }
 
@@ -235,13 +229,13 @@
   }
 
   function prepararDatas() {
-    campo('aut_de').min = hojeIso();
-    campo('aut_de').value = hojeIso();
-    campo('aut_ate').min = hojeIso();
-    campo('aut_ate').value = hojeIso();
+    campo('aut_de').min = formato.hojeIso();
+    campo('aut_de').value = formato.hojeIso();
+    campo('aut_ate').min = formato.hojeIso();
+    campo('aut_ate').value = formato.hojeIso();
   }
   campo('aut_de').addEventListener('change', function() {
-    campo('aut_ate').min = this.value || hojeIso();
+    campo('aut_ate').min = this.value || formato.hojeIso();
     if (campo('aut_ate').value < this.value) campo('aut_ate').value = this.value;
   });
 
@@ -264,7 +258,7 @@
       return;
     }
     if (!de || !ate) { erro.textContent = 'Informe o período da autorização.'; return; }
-    if (de < hojeIso()) { erro.textContent = 'A autorização não pode começar numa data passada.'; return; }
+    if (de < formato.hojeIso()) { erro.textContent = 'A autorização não pode começar numa data passada.'; return; }
     if (ate < de) { erro.textContent = 'A data final não pode ser antes da data inicial.'; return; }
 
     var corpo = {

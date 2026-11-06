@@ -5,7 +5,7 @@ Documentação, seção 12 — casos de uso "Cadastro", "Login do usuário",
 """
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import datetime
 
 from pydantic import EmailStr, Field, model_validator
 

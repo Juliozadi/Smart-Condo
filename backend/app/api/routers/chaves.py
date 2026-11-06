@@ -11,18 +11,17 @@ apartamento fica sabendo quando ela sai e quando volta.
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from app.api.deps import conferir_que_mora, exigir_papel
+from app.api.deps import conferir_nome_livre, conferir_que_mora, exigir_papel
 from app.core.database import get_db
-from app.core.tempo import agora_local, hoje_local
+from app.core.tempo import agora_utc, dia_e_hora, hoje_local
 from app.models.chave import Chave, MovimentacaoChave
 from app.models.condominio import Unidade
-from app.models.enums import CanalVerificacao, Papel, StatusUsuario
+from app.models.enums import Papel
 from app.models.portaria import AutorizacaoVisita
 from app.models.usuario import Usuario
 from app.schemas.chave import (
@@ -30,7 +29,7 @@ from app.schemas.chave import (
     RetiradaEntrada,
 )
 from app.schemas.comuns import Mensagem
-from app.services import notificacao
+from app.services import destinatarios
 from app.services.visitas import autorizador_mora_la, documento_mascarado, vale_no_dia
 
 router = APIRouter(prefix="/chaves", tags=["Chaves"])
@@ -40,10 +39,6 @@ quem_ve = exigir_papel(Papel.PORTEIRO, Papel.SINDICO, Papel.MORADOR)
 
 SO_QUEM_PODE = ("A chave do apartamento só sai para quem mora lá ou para quem o morador "
                 "autorizou a retirá-la.")
-
-
-def _hora(momento: datetime) -> str:
-    return momento.astimezone(agora_local().tzinfo).strftime("%d/%m às %Hh%M")
 
 
 def _fora(db: Session, chave_ids: list[int]) -> dict[int, MovimentacaoChave]:
@@ -79,29 +74,18 @@ def _chave(db: Session, chave_id: int, usuario: Usuario, travar: bool = False) -
 
 
 def _conferir_nome(db: Session, condominio_id: int, nome: str, exceto: int | None = None) -> None:
-    consulta = select(Chave.id).where(Chave.condominio_id == condominio_id,
-                                      Chave.inativo_em.is_(None),
-                                      func.lower(Chave.nome) == nome.lower())
-    if exceto is not None:
-        consulta = consulta.where(Chave.id != exceto)
-    if db.scalar(consulta) is not None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-                            detail=f"Já existe uma chave chamada \"{nome}\" no quadro.")
+    conferir_nome_livre(db, Chave, condominio_id, nome,
+                        f"Já existe uma chave chamada \"{nome}\" no quadro.", exceto)
 
 
 def _moradores(db: Session, unidade_id: int) -> list[Usuario]:
     """Quem mora no apartamento — o dono que não mora não leva a chave."""
-    return list(db.scalars(select(Usuario).where(
-        Usuario.unidade_id == unidade_id, Usuario.papel == Papel.MORADOR,
-        Usuario.status == StatusUsuario.ATIVO, Usuario.reside.is_(True),
-    ).order_by(Usuario.nome)).all())
+    return destinatarios.moradores_da_unidade(db, unidade_id)
 
 
 def _avisar(db: Session, chave: Chave, titulo: str, mensagem: str) -> None:
-    if chave.unidade_id is None:
-        return
-    for m in _moradores(db, chave.unidade_id):
-        notificacao.notificar(m.email, CanalVerificacao.EMAIL, titulo, mensagem)
+    if chave.unidade_id is not None:
+        destinatarios.avisar(_moradores(db, chave.unidade_id), titulo, mensagem)
 
 
 @router.get("", response_model=list[ChaveSaida], summary="O quadro de chaves")
@@ -156,7 +140,7 @@ def remover(chave_id: int, usuario: Usuario = Depends(equipe),
     if _fora(db, [c.id]):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="A chave está fora: registre a devolução antes de removê-la.")
-    c.inativo_em = datetime.now(timezone.utc)
+    c.inativo_em = agora_utc()
     c.inativado_por_id = usuario.id
     db.commit()
     return Mensagem(detalhe=f"\"{c.nome}\" saiu do quadro; o histórico fica guardado.")
@@ -221,7 +205,7 @@ def retirar(chave_id: int, dados: RetiradaEntrada, usuario: Usuario = Depends(eq
     db.refresh(m)
     _avisar(db, c, "Chave do apartamento retirada",
             f"A chave \"{c.nome}\" foi retirada na portaria por {m.retirada_por_nome}, "
-            f"em {_hora(m.retirada_em)}.")
+            f"em {dia_e_hora(m.retirada_em)}.")
     return _movimentacao_saida(db, m, usuario)
 
 
@@ -234,12 +218,12 @@ def devolver(chave_id: int, usuario: Usuario = Depends(equipe),
     if m is None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail=f"A chave \"{c.nome}\" já está na portaria.")
-    m.devolvida_em = datetime.now(timezone.utc)
+    m.devolvida_em = agora_utc()
     m.devolucao_registrada_por_id = usuario.id
     db.commit()
     db.refresh(m)
     _avisar(db, c, "Chave do apartamento devolvida",
-            f"A chave \"{c.nome}\" voltou para a portaria em {_hora(m.devolvida_em)}.")
+            f"A chave \"{c.nome}\" voltou para a portaria em {dia_e_hora(m.devolvida_em)}.")
     return _movimentacao_saida(db, m, usuario)
 
 

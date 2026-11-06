@@ -5,15 +5,11 @@
    A página põe <div id="meusApartamentos"></div> onde quer a seção. */
 (function(global) {
   'use strict';
+  var formato = global.SmartCondo.formato;
+  var criar = formato.el;
   var api = global.SmartCondo.api;
   var OCUPACAO = { proprietario: 'Proprietário', inquilino: 'Inquilino', coabitante: 'Mora junto' };
 
-  function criar(tag, classe, texto) {
-    var e = document.createElement(tag);
-    if (classe) e.className = classe;
-    if (texto !== undefined) e.textContent = texto;
-    return e;
-  }
   function rotuloUnidade(u) {
     return (u.bloco && u.bloco !== 'unico' ? 'Bloco ' + u.bloco + ' — ' : '') + 'Apto ' + u.numero;
   }

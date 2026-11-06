@@ -7,6 +7,8 @@
    ═══════════════════════════════════════════════════════════════ */
 (function(global) {
   'use strict';
+  var formato = global.SmartCondo.formato;
+  var semAcento = formato.semAcento, formatarCpf = formato.cpf, formatarTelefone = formato.telefone;
 
   /* Remove as linhas da tabela, preservando o cabeçalho. */
   function limparTabela(tabela) {
@@ -25,30 +27,11 @@
     };
   }
 
-  /* Compara texto ignorando acentos: quem digita "convencao" espera
-     encontrar "Convenção". */
-  function semAcento(texto) {
-    return (texto || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  }
-
   function formatarCnpj(valor) {
     var d = (valor || '').replace(/\D/g, '');
     if (d.length !== 14) return valor || '';
     return d.slice(0, 2) + '.' + d.slice(2, 5) + '.' + d.slice(5, 8) +
            '/' + d.slice(8, 12) + '-' + d.slice(12);
-  }
-
-  function formatarCpf(valor) {
-    var d = (valor || '').replace(/\D/g, '');
-    if (d.length !== 11) return valor || '';
-    return d.slice(0, 3) + '.' + d.slice(3, 6) + '.' + d.slice(6, 9) + '-' + d.slice(9);
-  }
-
-  function formatarTelefone(valor) {
-    var d = (valor || '').replace(/\D/g, '');
-    if (d.length === 11) return '(' + d.slice(0, 2) + ') ' + d.slice(2, 7) + '-' + d.slice(7);
-    if (d.length === 10) return '(' + d.slice(0, 2) + ') ' + d.slice(2, 6) + '-' + d.slice(6);
-    return valor || '';
   }
 
   var ROTULO_PAPEL = {

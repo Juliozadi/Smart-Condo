@@ -4,24 +4,9 @@
    essas pessoas, e para a autorizada pede o CPF do documento apresentado. */
 (function(global) {
   'use strict';
+  var formato = global.SmartCondo.formato;
+  var el = formato.el, quando = formato.quando, botao = formato.botao;
 
-  function el(tag, classe, texto) {
-    var e = document.createElement(tag);
-    if (classe) e.className = classe;
-    if (texto !== undefined) e.textContent = texto;
-    return e;
-  }
-  function quando(iso) {
-    var d = new Date(iso);
-    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' às ' +
-      d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
-  }
-  function botao(texto, rotulo, classe) {
-    var b = el('button', 'contato-btn' + (classe ? ' ' + classe : ''), texto);
-    b.type = 'button';
-    b.setAttribute('aria-label', rotulo);
-    return b;
-  }
   function grupo(rotulo, id, tipo) {
     var g = el('div', 'form-group');
     var l = el('label', null, rotulo);

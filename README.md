@@ -159,25 +159,38 @@ frontend/
 │   │   └── dashboard.css              # Estilos dos dashboards
 │   ├── js/
 │   │   ├── api.js                     # Cliente da API: token, erros e rotas
+│   │   ├── formato.js                 # Dinheiro, datas, CPF, telefone e elementos
 │   │   ├── sessao.js                  # Guarda de rota e dados do cabeçalho
 │   │   ├── admin-ui.js                # Modal, tabelas e formatações
 │   │   ├── validation.js              # Validações e máscaras de input
+│   │   ├── perfil.js                  # Tela de perfil (morador, porteiro e síndico)
 │   │   ├── foto.js                    # Captura de foto (vídeo porteiro)
 │   │   ├── foto-perfil.js             # Envio e troca da foto de perfil
+│   │   ├── apartamentos.js            # "Meus apartamentos" no perfil
+│   │   ├── perfis.js                  # Troca de perfil na barra superior
 │   │   ├── chat.js                    # Mensagens entre os perfis
 │   │   ├── permissoes.js              # O que o porteiro pode registrar
+│   │   ├── assembleias.js             # Cartão da assembleia virtual
+│   │   ├── contas.js                  # Prestação de contas: balancete e despesas
+│   │   ├── declaracoes.js             # Declaração de quitação
+│   │   ├── infracoes.js               # Advertências e multas
+│   │   ├── mudancas.js                # Agendamento de mudança
+│   │   ├── livro.js                   # Livro da portaria
+│   │   ├── chaves.js                  # Quadro de chaves da portaria
+│   │   ├── preventiva.js              # Manutenção preventiva
 │   │   └── acessibilidade.js          # Acessibilidade, VLibras e tema
 │   └── img/
 │       ├── logo.png
 │       ├── acessibilidade.png
-│       └── icons/                     # 43 ícones SVG
+│       └── icons/                     # 44 ícones SVG
 └── pages/
     ├── legal/                         # Termos de uso e privacidade
     ├── cadastro/                      # Cadastro de usuários (3 páginas)
     ├── login/                         # Recuperação de senha (3 páginas)
-    ├── morador/                       # Módulo do morador (8 páginas)
-    ├── porteiro/                      # Módulo do porteiro (7 páginas)
-    ├── sindico/                       # Módulo do síndico (14 páginas)
+    ├── verificar/                     # Conferência pública da declaração
+    ├── morador/                       # Módulo do morador (15 páginas)
+    ├── porteiro/                      # Módulo do porteiro (10 páginas)
+    ├── sindico/                       # Módulo do síndico (22 páginas)
     └── admin/                         # Módulo do administrador (3 páginas)
 ```
 
@@ -197,7 +210,7 @@ backend/
 └── tests/                             # 409 casos de teste
 ```
 
-**Total:** 43 páginas HTML, 2 arquivos CSS, 9 arquivos JS, 43 ícones SVG e
+**Total:** 62 páginas HTML, 2 arquivos CSS, 21 arquivos JS, 44 ícones SVG e
 uma API com 168 endpoints.
 
 ---

@@ -4,6 +4,8 @@
    síndico, o botão de revogar. */
 (function(global) {
   'use strict';
+  var formato = global.SmartCondo.formato;
+  var el = formato.el, data = formato.data;
 
   var SITUACAO = {
     valida: ['Válida', 'badge-ok'],
@@ -11,13 +13,6 @@
     revogada: ['Revogada', 'badge-alert']
   };
 
-  function el(tag, classe, texto) {
-    var e = document.createElement(tag);
-    if (classe) e.className = classe;
-    if (texto !== undefined) e.textContent = texto;
-    return e;
-  }
-  function data(iso) { return iso ? String(iso).slice(0, 10).split('-').reverse().join('/') : ''; }
   function cnpj(valor) {
     var d = String(valor || '').replace(/\D/g, '');
     if (d.length !== 14) return valor || '';

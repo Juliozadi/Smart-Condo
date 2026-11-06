@@ -40,6 +40,7 @@ from app.services import documentos_cadastro
 from app.services import perfis, registro
 from app.services import usuarios as servico_usuarios
 from app.services import auth as servico_auth
+from app.services import destinatarios
 from app.services import notificacao
 from app.services.notificacao import mascarar_destino
 
@@ -537,16 +538,12 @@ def vincular_apartamento(
     db.commit()
     db.refresh(perfil)
     if perfil.status == StatusUsuario.AGUARDANDO_APROVACAO:
-        sindicos = db.scalars(select(Usuario).where(
-            Usuario.condominio_id == perfil.condominio_id, Usuario.papel == Papel.SINDICO,
-            Usuario.status == StatusUsuario.ATIVO)).all()
-        for s in sindicos:
-            notificacao.notificar(
-                s.email, CanalVerificacao.EMAIL, "Apartamento para aprovar",
-                f"{perfil.nome}, que já tem cadastro no SmartCondo, informou ser "
-                f"{perfil.tipo_ocupacao.value} do apartamento {unidade}"
-                f"{'' if perfil.reside else ' (sem morar nele)'}. Aprove ou recuse na tela "
-                "de moradores.")
+        destinatarios.avisar(
+            destinatarios.sindicos(db, perfil.condominio_id), "Apartamento para aprovar",
+            f"{perfil.nome}, que já tem cadastro no SmartCondo, informou ser "
+            f"{perfil.tipo_ocupacao.value} do apartamento {unidade}"
+            f"{'' if perfil.reside else ' (sem morar nele)'}. Aprove ou recuse na tela "
+            "de moradores.")
     return perfis.disponivel(perfil, usuario)
 
 

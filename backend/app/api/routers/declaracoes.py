@@ -10,7 +10,7 @@ qualquer um confere pelo código, sem login e sem ver dado pessoal.
 from __future__ import annotations
 
 import re
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, timedelta
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
@@ -19,17 +19,18 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import exigir_papel
 from app.core.database import get_db
+from app.core.formato import reais
 from app.core.limite import limitar
-from app.core.tempo import hoje_local
+from app.core.tempo import agora_utc, hoje_local
 from app.models.condominio import Condominio, Unidade
 from app.models.declaracao import DeclaracaoQuitacao
-from app.models.enums import CanalVerificacao, Papel, StatusCobranca, StatusUsuario
+from app.models.enums import Papel, StatusCobranca
 from app.models.financeiro import Cobranca, Pagamento
 from app.models.usuario import Usuario
 from app.schemas.declaracao import (
     DeclaracaoEntrada, DeclaracaoPublica, DeclaracaoSaida, RevogacaoEntrada,
 )
-from app.services import notificacao, registro
+from app.services import destinatarios, registro
 from app.services.quitacao import (
     ALFABETO, TAMANHO_CODIGO, VALIDADE_DIAS, formatar as _formatar, novo_codigo,
 )
@@ -44,10 +45,6 @@ sindico = exigir_papel(Papel.SINDICO)
 
 def _hoje() -> date:
     return hoje_local()
-
-
-def _reais(valor: Decimal) -> str:
-    return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def _situacao(d: DeclaracaoQuitacao, hoje: date) -> str:
@@ -129,7 +126,7 @@ def emitir(
             status_code=status.HTTP_409_CONFLICT,
             detail=(f"O apartamento {unidade.identificacao} tem {quantas} "
                     f"{'cobrança vencida' if quantas == 1 else 'cobranças vencidas'} em aberto "
-                    f"({_reais(falta)}). Quite antes de emitir a declaração."),
+                    f"({reais(falta)}). Quite antes de emitir a declaração."),
         )
 
     condominio = db.get(Condominio, unidade.condominio_id)
@@ -191,7 +188,7 @@ def revogar(
     if _situacao(d, _hoje()) == "vencida":
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Esta declaração já venceu: não vale mais, não há o que revogar.")
-    d.revogada_em = datetime.now(timezone.utc)
+    d.revogada_em = agora_utc()
     d.revogada_por_id = usuario.id
     d.motivo_revogacao = dados.motivo
     registro.registrar(db, usuario, registro.CANCELOU, registro.DECLARACAO, d.id,
@@ -199,16 +196,12 @@ def revogar(
     db.commit()
     db.refresh(d)
 
-    moradores = db.scalars(select(Usuario).where(
-        Usuario.unidade_id == d.unidade_id, Usuario.papel == Papel.MORADOR,
-        Usuario.status == StatusUsuario.ATIVO,
-    )).all()
-    for m in moradores:
-        notificacao.notificar(
-            m.email, CanalVerificacao.EMAIL, "Declaração de quitação revogada",
-            f"A declaração {_formatar(d.codigo)} do apartamento {d.identificacao_unidade}, de "
-            f"{d.referencia_ate:%d/%m/%Y}, foi revogada pelo síndico. Motivo: {dados.motivo}",
-        )
+    destinatarios.avisar(
+        destinatarios.moradores_da_unidade(db, d.unidade_id, so_quem_mora=False),
+        "Declaração de quitação revogada",
+        f"A declaração {_formatar(d.codigo)} do apartamento {d.identificacao_unidade}, de "
+        f"{d.referencia_ate:%d/%m/%Y}, foi revogada pelo síndico. Motivo: {dados.motivo}",
+    )
     return _saida(d, usuario, _hoje())
 
 

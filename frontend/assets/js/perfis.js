@@ -5,15 +5,10 @@
    Carregado por sessao.js só para quem tem mais de um perfil. */
 (function(global) {
   'use strict';
+  var formato = global.SmartCondo.formato;
+  var criar = formato.el;
   var api = global.SmartCondo.api;
   var ROTULO = { sindico: 'Síndico', morador: 'Morador', porteiro: 'Porteiro', admin: 'Administrador' };
-
-  function criar(tag, classe, texto) {
-    var e = document.createElement(tag);
-    if (classe) e.className = classe;
-    if (texto !== undefined) e.textContent = texto;
-    return e;
-  }
 
   function descrever(p) {
     if (p.papel !== 'morador') {

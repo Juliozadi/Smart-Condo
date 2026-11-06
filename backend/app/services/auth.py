@@ -5,13 +5,14 @@ Documentação, seção 12 — casos de uso "Cadastro", "Login do usuário" e
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta, timezone
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, object_session
 
 from app.core.config import settings
+from app.core.tempo import agora_utc
 from app.core.security import (
     conferir_codigo, conferir_senha, gerar_codigo_verificacao, gerar_hash_codigo,
     gerar_hash_senha,
@@ -21,10 +22,6 @@ from app.models.usuario import CodigoVerificacao, Usuario
 from app.services import notificacao, perfis
 
 MAX_TENTATIVAS_CODIGO = 5
-
-
-def _agora() -> datetime:
-    return datetime.now(timezone.utc)
 
 
 # Login, recuperação de senha e "já existe cadastro" olham só o cadastro
@@ -78,7 +75,7 @@ def cadastro_abandonado(db: Session, email: str, cpf: str) -> Usuario | None:
     ):
         garantir_email_e_cpf_livres(db, email, cpf)
     usuario = next(iter(encontrados.values()))
-    agora = _agora()
+    agora = agora_utc()
     codigo_valido = db.scalar(
         select(CodigoVerificacao.id).where(
             CodigoVerificacao.usuario_id == usuario.id, CodigoVerificacao.expira_em > agora,
@@ -99,7 +96,7 @@ class CodigoMuitoFrequente(Exception):
 
 
 def _pode_emitir(db: Session, usuario: Usuario, finalidade: FinalidadeCodigo) -> bool:
-    agora = _agora()
+    agora = agora_utc()
     validade = timedelta(minutes=settings.CODIGO_VERIFICACAO_EXPIRA_MIN)
     # A tabela guarda só a validade; a emissão é a validade menos o prazo.
     emissoes = [
@@ -144,7 +141,7 @@ def emitir_codigo(
         )
     ).all()
     for pendente in pendentes:
-        pendente.consumido_em = _agora()
+        pendente.consumido_em = agora_utc()
 
     destino = usuario.email if canal == CanalVerificacao.EMAIL else usuario.telefone
     codigo = gerar_codigo_verificacao()
@@ -154,7 +151,7 @@ def emitir_codigo(
         codigo_hash=gerar_hash_codigo(codigo),
         finalidade=finalidade,
         canal=canal,
-        expira_em=_agora() + timedelta(minutes=settings.CODIGO_VERIFICACAO_EXPIRA_MIN),
+        expira_em=agora_utc() + timedelta(minutes=settings.CODIGO_VERIFICACAO_EXPIRA_MIN),
         destino=destino,
     )
     db.add(registro)
@@ -199,8 +196,8 @@ def validar_codigo(
     # contagem volta a zero — o limite de tentativas nunca fecharia e
     # o código de seis dígitos poderia ser descoberto por força bruta.
     # Quem chama só commita no caminho de sucesso.
-    if expira_em < _agora():
-        registro.consumido_em = _agora()
+    if expira_em < agora_utc():
+        registro.consumido_em = agora_utc()
         db.commit()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -208,7 +205,7 @@ def validar_codigo(
         )
 
     if registro.tentativas >= MAX_TENTATIVAS_CODIGO:
-        registro.consumido_em = _agora()
+        registro.consumido_em = agora_utc()
         db.commit()
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -223,7 +220,7 @@ def validar_codigo(
             detail="Código incorreto.",
         )
 
-    registro.consumido_em = _agora()
+    registro.consumido_em = agora_utc()
     return registro
 
 
@@ -247,7 +244,7 @@ def _minutos_de_bloqueio_restantes(usuario: Usuario) -> int:
     bloqueado_ate = usuario.bloqueado_ate
     if bloqueado_ate.tzinfo is None:
         bloqueado_ate = bloqueado_ate.replace(tzinfo=timezone.utc)
-    restante = bloqueado_ate - _agora()
+    restante = bloqueado_ate - agora_utc()
     if restante.total_seconds() <= 0:
         return 0
     return max(1, -(-int(restante.total_seconds()) // 60))
@@ -257,7 +254,7 @@ def _contar_senha_errada(db: Session, usuario: Usuario) -> None:
     """Soma uma tentativa e tranca a conta ao estourar o limite."""
     usuario.tentativas_login += 1
     if usuario.tentativas_login >= settings.MAX_TENTATIVAS_LOGIN:
-        usuario.bloqueado_ate = _agora() + timedelta(minutes=settings.BLOQUEIO_LOGIN_MIN)
+        usuario.bloqueado_ate = agora_utc() + timedelta(minutes=settings.BLOQUEIO_LOGIN_MIN)
         usuario.tentativas_login = 0
     # Precisa gravar aqui: quem chamou vai receber exceção e não commita.
     db.commit()

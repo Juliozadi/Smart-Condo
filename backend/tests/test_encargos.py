@@ -98,7 +98,7 @@ def test_pagamento_acima_do_total_atualizado_e_recusado(cliente, cenario):
     c = _vencida_ha(cliente, cenario, 10)
     r = _pagar(cliente, cenario["ana"], c["id"], "307.01")
     assert r.status_code == 400
-    assert "307.00" in r.json()["detalhe"]
+    assert "R$ 307,00" in r.json()["detalhe"]
 
 
 def test_sindico_define_os_percentuais(cliente, cenario):
@@ -146,7 +146,7 @@ def test_sindico_dispensa_os_encargos_num_acordo(cliente, cenario):
     do_sindico = next(x for x in cliente.get(f"{URL}/cobrancas",
                                              headers=cab(cenario["sindico"])).json()
                       if x["id"] == c["id"])
-    assert do_sindico["ultima_alteracao"]["descricao"] == "Dispensou R$ 7.00 de multa e juros"
+    assert do_sindico["ultima_alteracao"]["descricao"] == "Dispensou R$ 7,00 de multa e juros"
 
 
 def test_dispensa_no_pagamento_parcial_vale_so_para_o_que_foi_pago(cliente, cenario):
@@ -159,7 +159,7 @@ def test_dispensa_no_pagamento_parcial_vale_so_para_o_que_foi_pago(cliente, cena
                                              headers=cab(cenario["sindico"])).json()
                       if x["id"] == c["id"])
     # Sobre R$ 100,00: multa de 2,00 e juros de 0,33.
-    assert do_sindico["ultima_alteracao"]["descricao"] == "Dispensou R$ 2.33 de multa e juros"
+    assert do_sindico["ultima_alteracao"]["descricao"] == "Dispensou R$ 2,33 de multa e juros"
     assert Decimal(do_sindico["total_pago"]) == Decimal("100.00")
     # Sobre os R$ 200,00 que faltam: multa de 4,00 e juros de 0,67.
     assert Decimal(do_sindico["total_atualizado"]) == Decimal("204.67")
