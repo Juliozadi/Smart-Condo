@@ -9,11 +9,11 @@ Documentação, seção 6 (História do Usuário):
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
-
-from app.core.tempo import hoje_local
 from decimal import Decimal
 
 from pydantic import Field, field_validator, model_validator
+
+from app.core.tempo import hoje_local
 
 from app.models.enums import CategoriaDespesa, FormaPagamento, OrigemCobranca, StatusCobranca
 from app.schemas.admin import RegistroSaida
@@ -30,6 +30,20 @@ class PreferenciaCobrancaSaida(PreferenciaCobrancaEntrada):
     morador_id: int
 
 
+def _conferir_competencia(competencia: date, vencimento: date | None) -> None:
+    hoje = hoje_local()
+    competencia = competencia.replace(day=1)
+    # Cobrança condominial prescreve em 5 anos (Código Civil, art. 206,
+    # § 5º, I); mais de um ano à frente é quase sempre ano digitado errado.
+    if competencia < date(hoje.year - 5, hoje.month, 1):
+        raise ValueError("A competência não pode ser de mais de 5 anos atrás.")
+    limite = date(hoje.year + 1, hoje.month, 1)
+    if competencia > limite:
+        raise ValueError("A competência não pode passar de 12 meses à frente.")
+    if vencimento is not None and vencimento < competencia:
+        raise ValueError("O vencimento não pode ser antes do mês de competência.")
+
+
 class CobrancaEntrada(SchemaBase):
     unidade_id: int
     competencia: date = Field(description="Primeiro dia do mês de referência.")
@@ -42,17 +56,7 @@ class CobrancaEntrada(SchemaBase):
 
     @model_validator(mode="after")
     def conferir_datas(self) -> "CobrancaEntrada":
-        hoje = hoje_local()
-        competencia = self.competencia.replace(day=1)
-        # Cobrança condominial prescreve em 5 anos (Código Civil, art. 206,
-        # § 5º, I); mais de um ano à frente é quase sempre ano digitado errado.
-        if competencia < date(hoje.year - 5, hoje.month, 1):
-            raise ValueError("A competência não pode ser de mais de 5 anos atrás.")
-        limite = date(hoje.year + 1, hoje.month, 1)
-        if competencia > limite:
-            raise ValueError("A competência não pode passar de 12 meses à frente.")
-        if self.vencimento is not None and self.vencimento < competencia:
-            raise ValueError("O vencimento não pode ser antes do mês de competência.")
+        _conferir_competencia(self.competencia, self.vencimento)
         return self
 
 
@@ -83,8 +87,10 @@ class CobrancaSaida(SchemaBase):
     valor: Decimal
     vencimento: date
     status: StatusCobranca
-    # Taxa do mês, multa por infração ou uso de espaço.
+    # Taxa do mês, multa por infração, uso de espaço ou parcela de acordo.
     origem: OrigemCobranca = OrigemCobranca.TAXA
+    # O acordo em que a cobrança entrou (negociada) ou de que é parcela.
+    acordo_id: int | None = None
     # O que já abateu do valor (sem a multa e os juros pagos).
     total_pago: Decimal
     # Paga hoje: os encargos do atraso sobre o que falta, e o total a pagar.

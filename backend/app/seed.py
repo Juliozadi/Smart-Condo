@@ -26,7 +26,7 @@ from app.models.comunicado import Comunicado
 from app.models.condominio import Condominio, Unidade
 from app.models.enums import (
     CategoriaComunicado, CategoriaDespesa, CategoriaDocumento, CategoriaVeiculo,
-    EscolhaVoto, MaioriaExigida,
+    EscolhaVoto, MaioriaExigida, OrigemCobranca,
     FormaPagamento, Papel, PrioridadeOcorrencia, PrioridadeOrdemServico, StatusCobranca,
     StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
     StatusInfracao, StatusMudanca, StatusReforma, StatusVisitante,
@@ -41,7 +41,7 @@ from app.models.livro import AnotacaoPortaria, CienciaAnotacao
 from app.models.mudanca import Mudanca
 from app.models.reforma import Reforma
 from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico, VeiculoUnidade
-from app.models.financeiro import Cobranca, Despesa, Pagamento, PreferenciaCobranca
+from app.models.financeiro import Acordo, Cobranca, Despesa, Pagamento, PreferenciaCobranca
 from app.models.portaria import AutorizacaoVisita, Encomenda, Ocorrencia, Visitante
 from app.models.usuario import PermissaoPorteiro, Usuario
 from app.services import arquivos, cobrancas, perfis, registro
@@ -328,6 +328,37 @@ def criar(db) -> dict:
                     valor=valor, forma=FormaPagamento.PIX,
                     pago_em=datetime.combine(vencimento, time(10, 30), tzinfo=timezone.utc),
                 ))
+
+    # ── Acordo de parcelamento: a Marina (410) devia uma taxa antiga e
+    #    parcelou em 3x sem multa e juros; pagou duas, a última vence logo.
+    mes_antigo = somar_meses(primeiro_dia, -6)
+    antiga = Cobranca(unidade_id=unidades["410"].id, competencia=mes_antigo,
+                      descricao=f"Taxa de condomínio {mes_antigo:%m/%Y}", valor=Decimal("410.00"),
+                      vencimento=somar_meses(mes_antigo, 1).replace(day=10),
+                      status=StatusCobranca.NEGOCIADA)
+    db.add(antiga)
+    primeira = somar_meses(HOJE + timedelta(days=5), -2)
+    acordo = Acordo(condominio_id=condominio.id, unidade_id=unidades["410"].id,
+                    criado_por_id=sindico.id, principal=Decimal("410.00"), encargos=Decimal("0.00"),
+                    total=Decimal("410.00"), dispensou_encargos=True, parcelas=3,
+                    primeiro_vencimento=primeira,
+                    observacao="Combinado com a Marina na portaria; multa e juros perdoados.")
+    db.add(acordo)
+    db.flush()
+    antiga.acordo_id = acordo.id
+    for i, valor in enumerate(("136.67", "136.67", "136.66")):
+        vencimento = somar_meses(primeira, i)
+        parcela = Cobranca(unidade_id=unidades["410"].id, competencia=vencimento.replace(day=1),
+                           descricao=f"Acordo nº {acordo.id} — parcela {i + 1}/3",
+                           valor=Decimal(valor), vencimento=vencimento,
+                           status=StatusCobranca.PAGA if i < 2 else StatusCobranca.ABERTA,
+                           origem=OrigemCobranca.ACORDO, acordo_id=acordo.id)
+        db.add(parcela)
+        db.flush()
+        if i < 2:
+            db.add(Pagamento(cobranca_id=parcela.id, pago_por_id=moradores["410"].id,
+                             valor=Decimal(valor), forma=FormaPagamento.PIX,
+                             pago_em=datetime.combine(vencimento, time(9), tzinfo=timezone.utc)))
 
     # ── Despesas: a prestação de contas dos mesmos três meses ────────
     for atras in (2, 1, 0):

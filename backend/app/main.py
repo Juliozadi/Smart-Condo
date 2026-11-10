@@ -17,7 +17,8 @@ from sqlalchemy.exc import DataError, IntegrityError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.routers import (
-    admin, arquivos, assembleias, auth, chaves, comunicados, condominios, contas, declaracoes,
+    acordos, admin, arquivos, assembleias, auth, chaves, comunicados, condominios, contas,
+    declaracoes,
     documentos, financeiro,
     infracoes, livro,
     manutencao, mensagens, mudancas, portaria, preventiva, reformas, reservas, usuarios,
@@ -209,6 +210,7 @@ app.include_router(reservas.router, prefix="/api/v1")
 app.include_router(portaria.router, prefix="/api/v1")
 app.include_router(financeiro.router, prefix="/api/v1")
 app.include_router(contas.router, prefix="/api/v1")
+app.include_router(acordos.router, prefix="/api/v1")
 app.include_router(comunicados.router, prefix="/api/v1")
 app.include_router(assembleias.router, prefix="/api/v1")
 app.include_router(veiculos.router, prefix="/api/v1")

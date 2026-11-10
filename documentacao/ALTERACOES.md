@@ -14,11 +14,11 @@ de um condomínio. Esta versão segue a 2.8.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | Novo RF059: obras e reformas comunicadas ao síndico antes de começar (NBR 16280) |
-| 11 Diagrama de caso de uso | Novo caso: comunicar reforma — agora 42 casos de uso |
-| 14 a 17 | Nova tabela reformas — agora 39 entidades, 471 atributos e 110 relacionamentos |
-| 21 API REST | 174 endpoints: reformas (comunicar, listar, avaliar, prorrogar, concluir, cancelar) |
-| 23 Testes | 717 casos no servidor e 132 testes de interface |
+| 9 Requisitos funcionais | Novo RF059: obras e reformas comunicadas ao síndico antes de começar (NBR 16280). Novo RF060: acordo de parcelamento das cobranças vencidas |
+| 11 Diagrama de caso de uso | Novos casos: comunicar reforma e fazer acordo de parcelamento — agora 43 casos de uso |
+| 14 a 17 | Novas tabelas reformas e acordos; cobrancas ganha acordo_id, o status NEGOCIADA e a origem ACORDO — agora 40 entidades, 488 atributos e 115 relacionamentos |
+| 21 API REST | 177 endpoints: reformas (comunicar, listar, avaliar, prorrogar, concluir, cancelar); acordos de parcelamento (fazer, listar, desfazer) |
+| 23 Testes | 733 casos no servidor e 134 testes de interface |
 
 **Situações tratadas.**
 - A quebradeira começava num sábado de manhã, o porteiro não sabia se
@@ -33,6 +33,17 @@ de um condomínio. Esta versão segue a 2.8.
   irregular. A portaria vê só as aprovadas que estão no prazo: passado o
   fim previsto, a obra some da lista dela. Os prestadores entram pela
   autorização de visita que o morador já deixa.
+- O apartamento que deve dois meses não consegue pagar tudo de uma vez.
+  O síndico fazia o acordo de boca, lançava as parcelas à mão e
+  precisava lembrar de dar baixa nas cobranças antigas, que continuavam
+  vencidas: o apartamento ficava sem votar e sem declaração de quitação
+  mesmo pagando as parcelas em dia. Agora o síndico marca as cobranças
+  vencidas do apartamento; o sistema soma o que falta com a multa e os
+  juros do dia (ou sem eles, se o síndico dispensar) e divide em até 24
+  parcelas mensais, sem perder centavo. As cobranças antigas ficam
+  negociadas e saem do atraso; cada parcela é uma cobrança, com multa e
+  juros próprios se atrasar. O acordo lançado errado se desfaz enquanto
+  nenhuma parcela foi paga.
 
 ## Versão 2.8 — o que todo condomínio de verdade usa
 

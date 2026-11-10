@@ -4,6 +4,130 @@
  */
 const dicionario = [
   {
+    "nome": "acordos",
+    "resumo": "Os acordos de parcelamento: as cobranças vencidas de um apartamento, com a multa e os juros do dia (ou dispensados), divididas em parcelas mensais. As cobranças do acordo ficam negociadas e as parcelas são cobranças novas.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio do acordo"
+      },
+      {
+        "coluna": "unidade_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Apartamento que parcelou a dívida"
+      },
+      {
+        "coluna": "criado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que fez o acordo"
+      },
+      {
+        "coluna": "principal",
+        "tipo": "NUMERIC(10,2)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "O que faltava pagar do valor das cobranças negociadas"
+      },
+      {
+        "coluna": "encargos",
+        "tipo": "NUMERIC(10,2)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Multa e juros das cobranças até o dia do acordo; zero quando dispensados"
+      },
+      {
+        "coluna": "total",
+        "tipo": "NUMERIC(10,2)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Principal mais encargos: o que as parcelas somam, sem perder centavo"
+      },
+      {
+        "coluna": "dispensou_encargos",
+        "tipo": "BOOLEAN",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Se o síndico perdoou a multa e os juros no acordo"
+      },
+      {
+        "coluna": "parcelas",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Número de parcelas mensais, de 1 a 24"
+      },
+      {
+        "coluna": "primeiro_vencimento",
+        "tipo": "DATE",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Vencimento da primeira parcela; as outras vencem no mesmo dia dos meses seguintes"
+      },
+      {
+        "coluna": "observacao",
+        "tipo": "VARCHAR(300)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Recado do síndico sobre o acordo"
+      },
+      {
+        "coluna": "cancelado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o acordo foi desfeito; só antes de qualquer parcela ser paga"
+      },
+      {
+        "coluna": "cancelado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que desfez o acordo"
+      },
+      {
+        "coluna": "motivo_cancelamento",
+        "tipo": "VARCHAR(300)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Por que o acordo foi desfeito; o apartamento recebe"
+      },
+      {
+        "coluna": "criado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que o registro foi criado, preenchido pelo banco"
+      },
+      {
+        "coluna": "atualizado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da última alteração do registro"
+      }
+    ],
+    "regras": [
+      "CHECK ((encargos >= (0)::numeric))",
+      "CHECK (((parcelas >= 1) AND (parcelas <= 24)))",
+      "CHECK ((principal > (0)::numeric))",
+      "CHECK ((total = (principal + encargos)))"
+    ]
+  },
+  {
     "nome": "anotacoes_portaria",
     "resumo": "O livro da portaria: o que o porteiro que sai, ou o síndico, anota para o próximo turno. Não se apaga nem se edita — corrige-se com outra anotação.",
     "colunas": [
@@ -424,7 +548,7 @@ const dicionario = [
         "tipo": "ENUM",
         "obrigatorio": "Sim",
         "chave": "",
-        "descricao": "Situação da cobrança, que acompanha os pagamentos registrados — tipo enumerado status_cobranca, valores: ABERTA, PAGA, VENCIDA, CANCELADA"
+        "descricao": "Situação da cobrança, que acompanha os pagamentos registrados — tipo enumerado status_cobranca, valores: ABERTA, PAGA, VENCIDA, CANCELADA, NEGOCIADA"
       },
       {
         "coluna": "criado_em",
@@ -445,7 +569,14 @@ const dicionario = [
         "tipo": "ENUM",
         "obrigatorio": "Sim",
         "chave": "",
-        "descricao": "De onde vem a cobrança: a taxa do mês (uma por apartamento e mês), uma multa ou o uso de um espaço — tipo enumerado origem_cobranca, valores: TAXA, MULTA, USO_ESPACO"
+        "descricao": "De onde vem a cobrança: a taxa do mês (uma por apartamento e mês), uma multa, o uso de um espaço ou a parcela de um acordo — tipo enumerado origem_cobranca, valores: TAXA, MULTA, USO_ESPACO, ACORDO"
+      },
+      {
+        "coluna": "acordo_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "O acordo em que a cobrança entrou (negociada) ou de que é parcela"
       }
     ],
     "regras": [
@@ -3639,6 +3770,30 @@ const dicionario = [
 
 const relacoes = [
   {
+    "origem": "acordos",
+    "coluna": "cancelado_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que desfez o acordo"
+  },
+  {
+    "origem": "acordos",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio do acordo"
+  },
+  {
+    "origem": "acordos",
+    "coluna": "criado_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que fez o acordo"
+  },
+  {
+    "origem": "acordos",
+    "coluna": "unidade_id",
+    "destino": "unidades",
+    "texto": "Apartamento que parcelou a dívida"
+  },
+  {
     "origem": "anotacoes_portaria",
     "coluna": "autor_id",
     "destino": "usuarios",
@@ -3715,6 +3870,12 @@ const relacoes = [
     "coluna": "usuario_id",
     "destino": "usuarios",
     "texto": "Quem deu ciência"
+  },
+  {
+    "origem": "cobrancas",
+    "coluna": "acordo_id",
+    "destino": "acordos",
+    "texto": "O acordo em que a cobrança entrou (negociada) ou de que é parcela"
   },
   {
     "origem": "cobrancas",
@@ -4339,7 +4500,7 @@ const enumerados = [
   },
   {
     "nome": "origem_cobranca",
-    "valores": "TAXA, MULTA, USO_ESPACO"
+    "valores": "TAXA, MULTA, USO_ESPACO, ACORDO"
   },
   {
     "nome": "papel_usuario",
@@ -4355,7 +4516,7 @@ const enumerados = [
   },
   {
     "nome": "status_cobranca",
-    "valores": "ABERTA, PAGA, VENCIDA, CANCELADA"
+    "valores": "ABERTA, PAGA, VENCIDA, CANCELADA, NEGOCIADA"
   },
   {
     "nome": "status_encomenda",

@@ -2485,3 +2485,12 @@ label.contato-btn { position: relative; cursor: pointer; }
 .reforma .infracao-acoes { flex-wrap: wrap; }
 .reforma-condicoes { font-size: 13px; font-weight: 600; color: var(--text); margin: 4px 0; }
 .grupo-tecnico { margin-top: 12px; }
+
+/* ── Acordos de parcelamento ─────────────────────────────────────── */
+.acordo.em_atraso { border-left: 3px solid var(--erro); }
+.acordo .assembleia-topo h3 { margin-bottom: 0; }
+.acordo-parcelas { margin: 8px 0; }
+.acordo-parcelas .parcela-vencida { color: var(--erro); font-weight: 600; }
+.acordo-parcelas .parcela-paga, .acordo-parcelas .parcela-cancelada { color: var(--muted); }
+.acordo-cobrancas #aCobrancas { display: flex; flex-direction: column; gap: 6px; }
+#formAcordo > .permissao-item { margin: 4px 0 12px; }

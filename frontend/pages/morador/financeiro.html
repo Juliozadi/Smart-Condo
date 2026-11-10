@@ -119,6 +119,12 @@
     </div>
     <p class="estado-lista" id="estadoHistorico"></p>
 
+    <div id="secaoAcordos" hidden>
+      <h2 class="section-title"><img src="../../assets/img/icons/handshake.svg" width="16" height="16" alt=""> Acordos de Parcelamento</h2>
+      <div id="listaAcordos" aria-live="polite"></div>
+      <p class="estado-lista" id="estadoAcordos"></p>
+    </div>
+
   </main>
 
 <script src="../../assets/js/validation.js"></script>
@@ -137,11 +143,12 @@
   var cobrancas = [];
 
   var ROTULO_STATUS = {
-    aberta: 'Aberta', vencida: 'Vencida', paga: 'Paga', cancelada: 'Cancelada'
+    aberta: 'Aberta', vencida: 'Vencida', paga: 'Paga', cancelada: 'Cancelada',
+    negociada: 'Negociada'
   };
   var CLASSE_STATUS = {
     aberta: 'badge-pending', vencida: 'badge-alert',
-    paga: 'badge-ok', cancelada: 'badge-neutral'
+    paga: 'badge-ok', cancelada: 'badge-neutral', negociada: 'badge-neutral'
   };
   var ROTULO_FORMA = {
     pix: 'Pix', boleto: 'Boleto bancário',
@@ -371,6 +378,8 @@
   carregarPreferencia().then(carregar, carregar);
 })();
 </script>
+<script src="../../assets/js/acordos.js"></script>
+<script>window.SmartCondo.acordos.montar('morador');</script>
 <script src="../../assets/js/sessao.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>
 </body>

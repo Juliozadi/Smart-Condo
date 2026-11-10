@@ -70,14 +70,17 @@ class StatusCobranca(str, enum.Enum):
     PAGA = "paga"
     VENCIDA = "vencida"
     CANCELADA = "cancelada"
+    # Entrou num acordo de parcelamento: a dívida passa a ser as parcelas.
+    NEGOCIADA = "negociada"
 
 
 class OrigemCobranca(str, enum.Enum):
     """De onde vem a cobrança. A taxa condominial é uma por apartamento e
-    mês; multa e uso de espaço entram ao lado dela."""
+    mês; multa, uso de espaço e as parcelas de um acordo entram ao lado dela."""
     TAXA = "taxa"
     MULTA = "multa"
     USO_ESPACO = "uso_espaco"
+    ACORDO = "acordo"
 
 
 class StatusVisitante(str, enum.Enum):

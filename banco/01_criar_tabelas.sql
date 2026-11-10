@@ -29,6 +29,7 @@ DROP TABLE IF EXISTS
     comunicados,
     pagamentos,
     cobrancas,
+    acordos,
     preferencias_cobranca,
     registros_ocupacao,
     reservas,
@@ -94,7 +95,8 @@ CREATE TYPE escolha_voto AS ENUM (
 CREATE TYPE origem_cobranca AS ENUM (
     'TAXA',
     'MULTA',
-    'USO_ESPACO'
+    'USO_ESPACO',
+    'ACORDO'
 );
 
 CREATE TYPE maioria_exigida AS ENUM (
@@ -167,7 +169,8 @@ CREATE TYPE status_cobranca AS ENUM (
     'ABERTA',
     'PAGA',
     'VENCIDA',
-    'CANCELADA'
+    'CANCELADA',
+    'NEGOCIADA'
 );
 
 CREATE TYPE status_encomenda AS ENUM (
@@ -539,8 +542,10 @@ CREATE TABLE cobrancas (
     status status_cobranca NOT NULL,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
-    -- Taxa do mês, multa por infração ou uso de espaço.
+    -- Taxa do mês, multa por infração, uso de espaço ou parcela de acordo.
     origem origem_cobranca DEFAULT 'TAXA'::origem_cobranca NOT NULL,
+    -- O acordo em que a cobrança entrou (NEGOCIADA) ou de que é parcela.
+    acordo_id integer,
     CONSTRAINT ck_cobranca_valor_positivo CHECK ((valor > (0)::numeric))
 );
 CREATE SEQUENCE cobrancas_id_seq
@@ -557,6 +562,44 @@ ALTER TABLE ONLY cobrancas
 -- Uma taxa condominial por unidade e mês, sem contar as canceladas; multa
 -- e uso de espaço entram ao lado dela.
 CREATE UNIQUE INDEX uq_cobranca_competencia ON cobrancas USING btree (unidade_id, competencia) WHERE ((status <> 'CANCELADA'::status_cobranca) AND (origem = 'TAXA'::origem_cobranca));
+
+-- Acordo de parcelamento: as cobranças vencidas de um apartamento, com a
+-- multa e os juros do dia (ou dispensados), divididas em parcelas mensais.
+-- As cobranças do acordo ficam NEGOCIADA; as parcelas são cobranças com
+-- origem ACORDO.
+CREATE TABLE acordos (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    criado_por_id integer,
+    principal numeric(10,2) NOT NULL,
+    encargos numeric(10,2) NOT NULL,
+    total numeric(10,2) NOT NULL,
+    dispensou_encargos boolean DEFAULT false NOT NULL,
+    parcelas integer NOT NULL,
+    primeiro_vencimento date NOT NULL,
+    observacao character varying(300),
+    cancelado_em timestamp with time zone,
+    cancelado_por_id integer,
+    motivo_cancelamento character varying(300),
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT ck_acordo_encargos CHECK ((encargos >= (0)::numeric)),
+    CONSTRAINT ck_acordo_parcelas CHECK (((parcelas >= 1) AND (parcelas <= 24))),
+    CONSTRAINT ck_acordo_principal CHECK ((principal > (0)::numeric)),
+    CONSTRAINT ck_acordo_total CHECK ((total = (principal + encargos)))
+);
+CREATE SEQUENCE acordos_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE acordos_id_seq OWNED BY acordos.id;
+ALTER TABLE ONLY acordos ALTER COLUMN id SET DEFAULT nextval('acordos_id_seq'::regclass);
+ALTER TABLE ONLY acordos
+    ADD CONSTRAINT acordos_pkey PRIMARY KEY (id);
 
 CREATE TABLE pagamentos (
     id integer NOT NULL,
@@ -1382,6 +1425,21 @@ ALTER TABLE ONLY registros_alteracao
 ALTER TABLE ONLY cobrancas
     ADD CONSTRAINT cobrancas_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY cobrancas
+    ADD CONSTRAINT cobrancas_acordo_id_fkey FOREIGN KEY (acordo_id) REFERENCES acordos(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY acordos
+    ADD CONSTRAINT acordos_cancelado_por_id_fkey FOREIGN KEY (cancelado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY acordos
+    ADD CONSTRAINT acordos_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY acordos
+    ADD CONSTRAINT acordos_criado_por_id_fkey FOREIGN KEY (criado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY acordos
+    ADD CONSTRAINT acordos_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY codigos_verificacao
     ADD CONSTRAINT codigos_verificacao_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE;
 
@@ -1712,6 +1770,12 @@ ALTER TABLE ONLY espacos_comuns
     ADD CONSTRAINT espacos_comuns_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
 
 CREATE INDEX ix_cobrancas_competencia ON cobrancas USING btree (competencia);
+
+CREATE INDEX ix_cobrancas_acordo_id ON cobrancas USING btree (acordo_id);
+
+CREATE INDEX ix_acordos_condominio_id ON acordos USING btree (condominio_id);
+
+CREATE INDEX ix_acordos_unidade_id ON acordos USING btree (unidade_id);
 
 CREATE INDEX ix_cobrancas_status ON cobrancas USING btree (status);
 

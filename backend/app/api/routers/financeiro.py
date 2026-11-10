@@ -27,6 +27,7 @@ from app.schemas.financeiro import (
 )
 from app.services import encargos as calculo_encargos
 from app.services import destinatarios, registro
+from app.services.cobrancas import total_pago, totais_pagos
 
 router = APIRouter(prefix="/financeiro", tags=["Financeiro"])
 
@@ -35,39 +36,6 @@ ZERO = Decimal("0.00")
 
 def _hoje() -> date:
     return hoje_local()
-
-
-# O que abateu do valor da cobrança: cada pagamento menos a parte que foi
-# para a multa e os juros do atraso.
-_ABATIDO = Pagamento.valor - Pagamento.encargos
-
-
-def _total_pago(db: Session, cobranca_id: int) -> Decimal:
-    """Soma, no banco, o que já abateu do valor da cobrança.
-
-    Ler pela relacionamento `cobranca.pagamentos` nao serve logo depois de
-    inserir um pagamento: a coleção já foi carregada antes do flush e fica
-    desatualizada, o que fazia a cobrança quitada continuar em aberto.
-    """
-    total = db.scalar(
-        select(func.coalesce(func.sum(_ABATIDO), 0)).where(
-            Pagamento.cobranca_id == cobranca_id
-        )
-    )
-    return Decimal(total or 0)
-
-
-def _totais_pagos(db: Session, ids: list[int]) -> dict[int, Decimal]:
-    """O total pago de várias cobranças numa consulta só. Somar uma a uma
-    fazia a lista de um ano de um prédio passar de mil consultas."""
-    if not ids:
-        return {}
-    linhas = db.execute(
-        select(Pagamento.cobranca_id, func.sum(_ABATIDO))
-        .where(Pagamento.cobranca_id.in_(ids))
-        .group_by(Pagamento.cobranca_id)
-    ).all()
-    return {cobranca_id: Decimal(total) for cobranca_id, total in linhas}
 
 
 def _encargos_de(c: Cobranca, pago: Decimal, condominio: Condominio,
@@ -79,15 +47,16 @@ def _encargos_de(c: Cobranca, pago: Decimal, condominio: Condominio,
                                      condominio.multa_atraso, condominio.juros_mensais)
 
 
-def _cobranca_saida(db: Session, c: Cobranca, total_pago: Decimal | None = None,
+def _cobranca_saida(db: Session, c: Cobranca, ja_pago: Decimal | None = None,
                     condominio: Condominio | None = None) -> CobrancaSaida:
-    pago = _total_pago(db, c.id) if total_pago is None else total_pago
+    pago = total_pago(db, c.id) if ja_pago is None else ja_pago
     encargos = _encargos_de(c, pago, condominio or c.unidade.condominio, _hoje())
     em_aberto = c.status in (StatusCobranca.ABERTA, StatusCobranca.VENCIDA)
     return CobrancaSaida(
         id=c.id, unidade_id=c.unidade_id, unidade=c.unidade.identificacao,
         competencia=c.competencia, descricao=c.descricao, valor=c.valor,
-        vencimento=c.vencimento, status=c.status, origem=c.origem, total_pago=pago,
+        vencimento=c.vencimento, status=c.status, origem=c.origem, acordo_id=c.acordo_id,
+        total_pago=pago,
         dias_atraso=encargos.dias_atraso, multa=encargos.multa, juros=encargos.juros,
         total_atualizado=(c.valor - pago + encargos.total) if em_aberto else ZERO,
         criado_em=c.criado_em,
@@ -258,7 +227,7 @@ def listar_cobrancas(
 
     cobrancas = db.scalars(consulta.order_by(Cobranca.competencia.desc())).all()
 
-    totais = _totais_pagos(db, [c.id for c in cobrancas])
+    totais = totais_pagos(db, [c.id for c in cobrancas])
     condominio = db.get(Condominio, usuario.condominio_id)
     saida = [_cobranca_saida(db, c, totais.get(c.id, ZERO), condominio) for c in cobrancas]
     if usuario.papel == Papel.SINDICO:
@@ -277,6 +246,12 @@ def _cobranca_do_sindico(db: Session, sindico: Usuario, cobranca_id: int) -> Cob
     if cobranca is None or cobranca.unidade.condominio_id != sindico.condominio_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Cobrança não encontrada."
+        )
+    if cobranca.status == StatusCobranca.NEGOCIADA:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Esta cobrança entrou no acordo nº {cobranca.acordo_id}; a dívida agora são "
+                   "as parcelas.",
         )
     if cobranca.status in (StatusCobranca.PAGA, StatusCobranca.CANCELADA):
         raise HTTPException(
@@ -299,7 +274,7 @@ def corrigir_cobranca(
     tinha correção: a unidade ficava em atraso para sempre."""
     cobranca = _cobranca_do_sindico(db, sindico, cobranca_id)
     novos = dados.model_dump(exclude_unset=True)
-    pago = _total_pago(db, cobranca.id)
+    pago = total_pago(db, cobranca.id)
     if "valor" in novos and novos["valor"] < pago:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -426,6 +401,11 @@ def registrar_pagamento(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Esta cobrança foi cancelada."
         )
+    if cobranca.status == StatusCobranca.NEGOCIADA:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Esta cobrança entrou no acordo nº {cobranca.acordo_id}: pague as parcelas.",
+        )
 
     if dados.dispensar_encargos and usuario.papel != Papel.SINDICO:
         raise HTTPException(
@@ -433,7 +413,7 @@ def registrar_pagamento(
             detail="Só o síndico pode dispensar a multa e os juros.",
         )
 
-    pago = _total_pago(db, cobranca.id)
+    pago = total_pago(db, cobranca.id)
     devidos = _encargos_de(cobranca, pago, cobranca.unidade.condominio, _hoje())
     encargos = calculo_encargos.SEM_ENCARGOS if dados.dispensar_encargos else devidos
     devido = cobranca.valor - pago + encargos.total
@@ -467,7 +447,7 @@ def registrar_pagamento(
     db.flush()
 
     # Quitou: a cobrança fecha.
-    if _total_pago(db, cobranca.id) >= cobranca.valor:
+    if total_pago(db, cobranca.id) >= cobranca.valor:
         cobranca.status = StatusCobranca.PAGA
     # A dispensa fica registrada, com quem dispensou e quanto: os encargos
     # da parte paga agora (no pagamento parcial, o resto continua devendo).
@@ -553,7 +533,7 @@ def resumo(
     abertas = 0
     inadimplentes: set[int] = set()
 
-    totais = _totais_pagos(db, [c.id for c in cobrancas])
+    totais = totais_pagos(db, [c.id for c in cobrancas])
     # Recebido é todo o dinheiro que entrou, multa e juros incluídos.
     total_recebido = Decimal(db.scalar(
         select(func.coalesce(func.sum(Pagamento.valor), 0))

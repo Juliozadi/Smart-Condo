@@ -86,8 +86,10 @@
         <option value="vencida">Vencida</option>
         <option value="paga">Paga</option>
         <option value="cancelada">Cancelada</option>
+        <option value="negociada">Negociada em acordo</option>
       </select>
       <button type="button" id="btnExportar" class="action-btn outline" style="width:auto;margin:0;">Exportar (CSV)</button>
+      <a href="acordos.html" class="action-btn outline" style="width:auto;margin:0;">Acordos de parcelamento</a>
     </div>
     <div class="data-table tabela-status" id="tabelaCobrancas">
       <div class="table-head cols-6"><span>Unidade</span><span>Competência</span><span>Descrição</span><span>Vencimento</span><span>Valor</span><span>Situação</span></div>
@@ -179,11 +181,12 @@
   var unidades = [];
 
   var ROTULO_STATUS = {
-    aberta: 'Aberta', vencida: 'Vencida', paga: 'Paga', cancelada: 'Cancelada'
+    aberta: 'Aberta', vencida: 'Vencida', paga: 'Paga', cancelada: 'Cancelada',
+    negociada: 'Negociada'
   };
   var CLASSE_STATUS = {
     aberta: 'badge-pending', vencida: 'badge-alert',
-    paga: 'badge-ok', cancelada: 'badge-neutral'
+    paga: 'badge-ok', cancelada: 'badge-neutral', negociada: 'badge-neutral'
   };
 
   function partes(iso) { var p = (iso || '').split('-'); return { a: +p[0], m: +p[1], d: +p[2] }; }

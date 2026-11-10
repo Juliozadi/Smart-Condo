@@ -30,7 +30,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 ### 🏠 Morador
 - **Dashboard** — Visão geral com reservas, cobranças, comunicados e encomendas
 - **Reservas** — Agendamento das áreas comuns, com as regras e a taxa de uso de cada espaço
-- **Financeiro** — Cobranças (taxa, multa, uso de espaço), forma de pagamento e histórico
+- **Financeiro** — Cobranças (taxa, multa, uso de espaço, parcelas de acordo), forma de pagamento e histórico
 - **Prestação de Contas** — Despesas e balancete do mês
 - **Declaração de Quitação** — O apartamento em dia, com um código que o comprador confere
 - **Assembleias** — Votação online, um voto por apartamento
@@ -59,6 +59,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 ### 📊 Síndico
 - **Dashboard** — Painel administrativo com indicadores e pendências do condomínio
 - **Financeiro** — Cobranças, pagamentos, encargos e inadimplência
+- **Acordos de Parcelamento** — As cobranças vencidas de um apartamento em até 24 parcelas
 - **Prestação de Contas** — Lançamento de despesas e balancete do mês
 - **Declarações de Quitação** — Emissão para qualquer apartamento em dia e revogação com motivo
 - **Assembleias** — Convocação, pauta e resultado da votação
@@ -175,6 +176,7 @@ frontend/
 │   │   ├── permissoes.js              # O que o porteiro pode registrar
 │   │   ├── assembleias.js             # Cartão da assembleia virtual
 │   │   ├── contas.js                  # Prestação de contas: balancete e despesas
+│   │   ├── acordos.js                 # Acordos de parcelamento
 │   │   ├── declaracoes.js             # Declaração de quitação
 │   │   ├── infracoes.js               # Advertências e multas
 │   │   ├── mudancas.js                # Agendamento de mudança
@@ -186,7 +188,7 @@ frontend/
 │   └── img/
 │       ├── logo.png
 │       ├── acessibilidade.png
-│       └── icons/                     # 45 ícones SVG
+│       └── icons/                     # 46 ícones SVG
 └── pages/
     ├── legal/                         # Termos de uso e privacidade
     ├── cadastro/                      # Cadastro de usuários (3 páginas)
@@ -194,7 +196,7 @@ frontend/
     ├── verificar/                     # Conferência pública da declaração
     ├── morador/                       # Módulo do morador (16 páginas)
     ├── porteiro/                      # Módulo do porteiro (11 páginas)
-    ├── sindico/                       # Módulo do síndico (23 páginas)
+    ├── sindico/                       # Módulo do síndico (24 páginas)
     └── admin/                         # Módulo do administrador (3 páginas)
 ```
 
@@ -205,17 +207,17 @@ backend/
 ├── alembic/                           # Migrações do banco
 ├── app/
 │   ├── core/                          # Configuração, banco e segurança
-│   ├── models/                        # 39 tabelas
+│   ├── models/                        # 40 tabelas
 │   ├── schemas/                       # Entrada e saída da API
 │   ├── services/                      # Regras de negócio
 │   ├── api/routers/                   # Endpoints
 │   ├── seed.py                        # Dados de demonstração
 │   └── main.py
-└── tests/                             # 717 casos de teste
+└── tests/                             # 733 casos de teste
 ```
 
-**Total:** 65 páginas HTML, 2 arquivos CSS, 22 arquivos JS, 45 ícones SVG e
-uma API com 174 endpoints.
+**Total:** 66 páginas HTML, 2 arquivos CSS, 23 arquivos JS, 46 ícones SVG e
+uma API com 177 endpoints.
 
 ---
 
@@ -235,11 +237,11 @@ uvicorn app.main:app --reload
 
 Documentação interativa da API em <http://localhost:8000/docs>.
 
-**174 endpoints**, cobrindo os casos de uso e as histórias de usuário da
+**177 endpoints**, cobrindo os casos de uso e as histórias de usuário da
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e
-comunicados, documentos e chat. **717 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
+comunicados, documentos e chat. **733 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
 
 ---
 

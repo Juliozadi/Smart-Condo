@@ -26,13 +26,13 @@ from app.models.mudanca import HorarioMudanca, Mudanca
 from app.models.reforma import Reforma
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
 from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico, VeiculoUnidade
-from app.models.financeiro import Cobranca, Despesa, Pagamento, PreferenciaCobranca
+from app.models.financeiro import Acordo, Cobranca, Despesa, Pagamento, PreferenciaCobranca
 from app.models.portaria import AutorizacaoVisita, Encomenda, Ocorrencia, Visitante
 from app.models.registro import RegistroAlteracao
 from app.models.usuario import CodigoVerificacao, PermissaoPorteiro, Usuario
 
 __all__ = [
-    "Assembleia", "ItemPauta", "Voto",
+    "Acordo", "Assembleia", "ItemPauta", "Voto",
     "Cobranca", "CodigoVerificacao", "Comunicado", "Condominio", "Despesa", "Documento",
     "DocumentoCadastro",
     "Encomenda", "EspacoComum", "LeituraComunicado", "Mensagem", "MovimentacaoVeiculo", "Mudanca",

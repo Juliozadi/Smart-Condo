@@ -257,7 +257,19 @@ UPDATE espacos_comuns SET taxa_uso = 60.00 WHERE id IN (2, 3);
 INSERT INTO cobrancas (id, unidade_id, competencia, descricao, valor, vencimento, status, origem, criado_em, atualizado_em) VALUES (19, 3, '2026-09-01', 'Uso do espaço Salão de Festas em 25/09/2026', 150.00, '2026-09-25', 'ABERTA', 'USO_ESPACO', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 UPDATE reservas SET cobranca_id = 19 WHERE id = 1;
 
+-- Acordo de parcelamento: a Marina (410) devia a taxa de março e parcelou
+-- em 3x sem multa e juros; pagou duas parcelas, a última vence dia 26.
+INSERT INTO acordos (id, condominio_id, unidade_id, criado_por_id, principal, encargos, total, dispensou_encargos, parcelas, primeiro_vencimento, observacao, cancelado_em, cancelado_por_id, motivo_cancelamento, criado_em, atualizado_em) VALUES (1, 1, 6, 2, 410.00, 0.00, 410.00, true, 3, '2026-07-26', 'Combinado com a Marina na portaria; multa e juros perdoados.', NULL, NULL, NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
+INSERT INTO cobrancas (id, unidade_id, competencia, descricao, valor, vencimento, status, origem, acordo_id, criado_em, atualizado_em) VALUES (20, 6, '2026-03-01', 'Taxa de condomínio 03/2026', 410.00, '2026-04-10', 'NEGOCIADA', 'TAXA', 1, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
+INSERT INTO cobrancas (id, unidade_id, competencia, descricao, valor, vencimento, status, origem, acordo_id, criado_em, atualizado_em) VALUES (21, 6, '2026-07-01', 'Acordo nº 1 — parcela 1/3', 136.67, '2026-07-26', 'PAGA', 'ACORDO', 1, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
+INSERT INTO cobrancas (id, unidade_id, competencia, descricao, valor, vencimento, status, origem, acordo_id, criado_em, atualizado_em) VALUES (22, 6, '2026-08-01', 'Acordo nº 1 — parcela 2/3', 136.67, '2026-08-26', 'PAGA', 'ACORDO', 1, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
+INSERT INTO cobrancas (id, unidade_id, competencia, descricao, valor, vencimento, status, origem, acordo_id, criado_em, atualizado_em) VALUES (23, 6, '2026-09-01', 'Acordo nº 1 — parcela 3/3', 136.66, '2026-09-26', 'ABERTA', 'ACORDO', 1, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
+INSERT INTO pagamentos (id, cobranca_id, pago_por_id, valor, forma, pago_em, comprovante_url, observacao, criado_em, atualizado_em) VALUES (12, 21, 8, 136.67, 'PIX', '2026-07-26 09:00:00+00', NULL, NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
+INSERT INTO pagamentos (id, cobranca_id, pago_por_id, valor, forma, pago_em, comprovante_url, observacao, criado_em, atualizado_em) VALUES (13, 22, 8, 136.67, 'PIX', '2026-08-26 09:00:00+00', NULL, NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
+
 SELECT setval('cobrancas_id_seq', (SELECT COALESCE(MAX(id), 1) FROM cobrancas));
+
+SELECT setval('acordos_id_seq', (SELECT COALESCE(MAX(id), 1) FROM acordos));
 
 SELECT setval('pagamentos_id_seq', (SELECT COALESCE(MAX(id), 1) FROM pagamentos));
 

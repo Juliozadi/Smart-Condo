@@ -13,7 +13,7 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
-    CheckConstraint, Date, DateTime, Enum as SAEnum, ForeignKey, Integer, Numeric,
+    Boolean, CheckConstraint, Date, DateTime, Enum as SAEnum, ForeignKey, Integer, Numeric,
     Index, String, Text, text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -85,6 +85,11 @@ class Cobranca(Base, TimestampMixin):
         SAEnum(OrigemCobranca, name="origem_cobranca"),
         nullable=False, default=OrigemCobranca.TAXA, server_default=text("'TAXA'"),
     )
+    # O acordo de parcelamento: a cobrança que entrou nele (status
+    # NEGOCIADA) ou a parcela que saiu dele (origem ACORDO).
+    acordo_id: Mapped[int | None] = mapped_column(
+        ForeignKey("acordos.id", ondelete="SET NULL"), index=True
+    )
 
     unidade: Mapped["Unidade"] = relationship()
     pagamentos: Mapped[list["Pagamento"]] = relationship(
@@ -134,6 +139,53 @@ class Pagamento(Base, TimestampMixin):
 
     def __repr__(self) -> str:
         return f"<Pagamento {self.id} cobranca={self.cobranca_id} {self.forma.value}>"
+
+
+class Acordo(Base, TimestampMixin):
+    """Acordo de parcelamento: as cobranças vencidas de um apartamento,
+    com a multa e os juros do dia (ou sem eles, se o síndico dispensou),
+    divididas em parcelas mensais. As cobranças do acordo ficam
+    "negociadas" e a dívida passa a ser as parcelas — cada uma uma
+    cobrança, com multa e juros próprios se atrasar. Desfaz-se só antes de
+    qualquer parcela ser paga: as cobranças voltam como estavam."""
+
+    __tablename__ = "acordos"
+    __table_args__ = (
+        CheckConstraint("principal > 0", name="ck_acordo_principal"),
+        CheckConstraint("encargos >= 0", name="ck_acordo_encargos"),
+        CheckConstraint("total = principal + encargos", name="ck_acordo_total"),
+        CheckConstraint("parcelas BETWEEN 1 AND 24", name="ck_acordo_parcelas"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    condominio_id: Mapped[int] = mapped_column(
+        ForeignKey("condominios.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    unidade_id: Mapped[int] = mapped_column(
+        ForeignKey("unidades.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    criado_por_id: Mapped[int | None] = mapped_column(
+        ForeignKey("usuarios.id", ondelete="SET NULL")
+    )
+    # O que faltava pagar do valor das cobranças, e a multa e os juros até
+    # o dia do acordo.
+    principal: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    encargos: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    total: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    dispensou_encargos: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=text("false")
+    )
+    parcelas: Mapped[int] = mapped_column(Integer, nullable=False)
+    primeiro_vencimento: Mapped[date] = mapped_column(Date, nullable=False)
+    observacao: Mapped[str | None] = mapped_column(String(300))
+    cancelado_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    cancelado_por_id: Mapped[int | None] = mapped_column(
+        ForeignKey("usuarios.id", ondelete="SET NULL")
+    )
+    motivo_cancelamento: Mapped[str | None] = mapped_column(String(300))
+
+    unidade: Mapped["Unidade"] = relationship()
+    criado_por: Mapped["Usuario | None"] = relationship(foreign_keys=[criado_por_id])
 
 
 class Despesa(Base, TimestampMixin, InativacaoMixin):

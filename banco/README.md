@@ -4,7 +4,7 @@ Scripts SQL do banco, prontos para rodar no **pgAdmin**.
 
 | Arquivo | O que faz |
 |---|---|
-| `01_criar_tabelas.sql` | Cria os tipos, as 39 tabelas, as chaves e os índices |
+| `01_criar_tabelas.sql` | Cria os tipos, as 40 tabelas, as chaves e os índices |
 | `02_carga_dados.sql` | Carrega um condomínio completo de demonstração |
 
 Os dois arquivos são SQL puro, sem comentários — as explicações ficam
@@ -60,7 +60,7 @@ UNION ALL SELECT 'comunicados', COUNT(*) FROM comunicados;
 
 ---
 
-## As 39 tabelas
+## As 40 tabelas
 
 | Tabela | Guarda |
 |---|---|
@@ -73,7 +73,8 @@ UNION ALL SELECT 'comunicados', COUNT(*) FROM comunicados;
 | `reservas` | Pedidos de reserva, aprovados ou recusados pelo síndico |
 | `registros_ocupacao` | Contagem de pessoas nas áreas de uso livre |
 | `preferencias_cobranca` | Dia do vencimento e forma de pagamento do morador |
-| `cobrancas` | Taxa condominial por unidade e competência, multas e uso de espaço |
+| `cobrancas` | Taxa condominial por unidade e competência, multas, uso de espaço e parcelas de acordo |
+| `acordos` | Acordos de parcelamento: as cobranças vencidas de um apartamento divididas em parcelas |
 | `pagamentos` | Pagamentos recebidos, com meio, valor e data |
 | `despesas` | O que o condomínio gastou, com o comprovante: a prestação de contas |
 | `assembleias` | Assembleias virtuais: convocação, período de votação e cancelamento |
