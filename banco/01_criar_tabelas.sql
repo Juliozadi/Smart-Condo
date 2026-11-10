@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS
+    reformas,
     movimentacoes_chave,
     chaves,
     realizacoes_manutencao,
@@ -59,6 +60,7 @@ DROP TYPE IF EXISTS
     status_ocorrencia,
     status_ordem_servico,
     status_mudanca,
+    status_reforma,
     status_reserva,
     status_usuario,
     status_visitante,
@@ -196,6 +198,14 @@ CREATE TYPE status_ordem_servico AS ENUM (
 );
 
 CREATE TYPE status_mudanca AS ENUM (
+    'PENDENTE',
+    'APROVADA',
+    'RECUSADA',
+    'CANCELADA',
+    'CONCLUIDA'
+);
+
+CREATE TYPE status_reforma AS ENUM (
     'PENDENTE',
     'APROVADA',
     'RECUSADA',
@@ -941,6 +951,48 @@ ALTER TABLE ONLY mudancas ALTER COLUMN id SET DEFAULT nextval('mudancas_id_seq':
 ALTER TABLE ONLY mudancas
     ADD CONSTRAINT mudancas_pkey PRIMARY KEY (id);
 
+-- Obras e reformas comunicadas pelo morador antes de começar (NBR 16280):
+-- o que será feito, o prazo e, se mexe em estrutura ou instalações, o
+-- responsável técnico com a ART ou o RRT; a avaliação do síndico, com as
+-- condições ou o motivo da recusa. A portaria vê as aprovadas no prazo.
+CREATE TABLE reformas (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    solicitada_por_id integer,
+    descricao character varying(500) NOT NULL,
+    empresa character varying(120),
+    altera_estrutura boolean DEFAULT false NOT NULL,
+    responsavel_tecnico character varying(160),
+    art_rrt character varying(40),
+    inicio date NOT NULL,
+    fim date NOT NULL,
+    status status_reforma NOT NULL,
+    avaliada_por_id integer,
+    avaliada_em timestamp with time zone,
+    condicoes character varying(300),
+    motivo_recusa character varying(300),
+    cancelada_por_id integer,
+    cancelada_em timestamp with time zone,
+    motivo_cancelamento character varying(300),
+    concluida_em timestamp with time zone,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT ck_reforma_prazo CHECK ((fim >= inicio)),
+    CONSTRAINT ck_reforma_responsavel CHECK (((NOT altera_estrutura) OR ((responsavel_tecnico IS NOT NULL) AND (art_rrt IS NOT NULL))))
+);
+CREATE SEQUENCE reformas_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE reformas_id_seq OWNED BY reformas.id;
+ALTER TABLE ONLY reformas ALTER COLUMN id SET DEFAULT nextval('reformas_id_seq'::regclass);
+ALTER TABLE ONLY reformas
+    ADD CONSTRAINT reformas_pkey PRIMARY KEY (id);
+
 -- Advertências e multas do síndico ao apartamento, com a defesa e a
 -- decisão; a multa mantida vira cobrança (Código Civil, art. 1.336, § 2º).
 CREATE TABLE infracoes (
@@ -1537,6 +1589,21 @@ ALTER TABLE ONLY mudancas
 ALTER TABLE ONLY mudancas
     ADD CONSTRAINT mudancas_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY reformas
+    ADD CONSTRAINT reformas_avaliada_por_id_fkey FOREIGN KEY (avaliada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY reformas
+    ADD CONSTRAINT reformas_cancelada_por_id_fkey FOREIGN KEY (cancelada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY reformas
+    ADD CONSTRAINT reformas_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY reformas
+    ADD CONSTRAINT reformas_solicitada_por_id_fkey FOREIGN KEY (solicitada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY reformas
+    ADD CONSTRAINT reformas_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY votos
     ADD CONSTRAINT votos_item_id_fkey FOREIGN KEY (item_id) REFERENCES itens_pauta(id) ON DELETE CASCADE;
 
@@ -1776,6 +1843,16 @@ CREATE INDEX ix_mudancas_solicitada_por_id ON mudancas USING btree (solicitada_p
 CREATE INDEX ix_mudancas_status ON mudancas USING btree (status);
 
 CREATE INDEX ix_mudancas_unidade_id ON mudancas USING btree (unidade_id);
+
+CREATE INDEX ix_reformas_condominio_fim ON reformas USING btree (condominio_id, fim);
+
+CREATE INDEX ix_reformas_condominio_id ON reformas USING btree (condominio_id);
+
+CREATE INDEX ix_reformas_solicitada_por_id ON reformas USING btree (solicitada_por_id);
+
+CREATE INDEX ix_reformas_status ON reformas USING btree (status);
+
+CREATE INDEX ix_reformas_unidade_id ON reformas USING btree (unidade_id);
 
 CREATE INDEX ix_votos_item_id ON votos USING btree (item_id);
 

@@ -40,6 +40,7 @@ CASOS = [
     ("Registrar veículo",               ["POR"],                      DIR),
     ("Registrar ocupação de espaço",    ["POR"],                      DIR),
     ("Controlar chaves da portaria",    ["SIN", "POR"],               DIR),
+    ("Comunicar reforma",               ["SIN", "POR", "MOR"],        DIR),
     ("Abrir ocorrência",                ["POR", "MOR"],               DIR),
     ("Solicitar reserva",               ["MOR"],                      DIR),
     ("Confirmar visitante",             ["MOR"],                      DIR),

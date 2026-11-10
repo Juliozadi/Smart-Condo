@@ -20,7 +20,8 @@ from app.api.routers import (
     admin, arquivos, assembleias, auth, chaves, comunicados, condominios, contas, declaracoes,
     documentos, financeiro,
     infracoes, livro,
-    manutencao, mensagens, mudancas, portaria, preventiva, reservas, usuarios, veiculos,
+    manutencao, mensagens, mudancas, portaria, preventiva, reformas, reservas, usuarios,
+    veiculos,
 )
 from app.core.config import settings
 from app.core.corpo import LimiteDeCorpo
@@ -212,6 +213,7 @@ app.include_router(comunicados.router, prefix="/api/v1")
 app.include_router(assembleias.router, prefix="/api/v1")
 app.include_router(veiculos.router, prefix="/api/v1")
 app.include_router(mudancas.router, prefix="/api/v1")
+app.include_router(reformas.router, prefix="/api/v1")
 app.include_router(infracoes.router, prefix="/api/v1")
 app.include_router(livro.router, prefix="/api/v1")
 app.include_router(declaracoes.router, prefix="/api/v1")

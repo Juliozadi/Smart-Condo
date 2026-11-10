@@ -29,7 +29,7 @@ from app.models.enums import (
     EscolhaVoto, MaioriaExigida,
     FormaPagamento, Papel, PrioridadeOcorrencia, PrioridadeOrdemServico, StatusCobranca,
     StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
-    StatusInfracao, StatusMudanca, StatusVisitante,
+    StatusInfracao, StatusMudanca, StatusReforma, StatusVisitante,
     TipoInfracao, TipoMovimentacao, TipoMudanca, TipoOcupacao,
 )
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
@@ -39,6 +39,7 @@ from app.models.infracao import Infracao
 from app.models.preventiva import PlanoManutencao, RealizacaoManutencao
 from app.models.livro import AnotacaoPortaria, CienciaAnotacao
 from app.models.mudanca import Mudanca
+from app.models.reforma import Reforma
 from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico, VeiculoUnidade
 from app.models.financeiro import Cobranca, Despesa, Pagamento, PreferenciaCobranca
 from app.models.portaria import AutorizacaoVisita, Encomenda, Ocorrencia, Visitante
@@ -373,6 +374,32 @@ def criar(db) -> dict:
                    data=dia_util(5), hora_inicio=time(13), hora_fim=time(17),
                    empresa="Mudanças Rápidas", observacao="Móveis grandes: piano e sofá de canto.",
                    status=StatusMudanca.PENDENTE))
+
+    # ── Obras e reformas: a do João está em andamento (a portaria vê), a
+    #    da Ana mexe na parte elétrica e espera o síndico, a da Marina já
+    #    terminou.
+    db.add(Reforma(condominio_id=condominio.id, unidade_id=unidades["204"].id,
+                   solicitada_por_id=moradores["204"].id,
+                   descricao="Troca do piso da sala e pintura dos quartos",
+                   empresa="Reformas Pantanal", inicio=HOJE - timedelta(days=3),
+                   fim=HOJE + timedelta(days=12), status=StatusReforma.APROVADA,
+                   avaliada_por_id=sindico.id, avaliada_em=AGORA - timedelta(days=6),
+                   condicoes="Só das 8h às 17h, de segunda a sexta; entulho em caçamba, "
+                             "nunca no corredor."))
+    db.add(Reforma(condominio_id=condominio.id, unidade_id=unidades["301"].id,
+                   solicitada_por_id=moradores["301"].id,
+                   descricao="Troca do quadro elétrico e da fiação da cozinha",
+                   empresa="Elétrica Bonito", altera_estrutura=True,
+                   responsavel_tecnico="Eng. Paula Ramos", art_rrt="ART 1220260012345",
+                   inicio=HOJE + timedelta(days=6), fim=HOJE + timedelta(days=16),
+                   status=StatusReforma.PENDENTE))
+    db.add(Reforma(condominio_id=condominio.id, unidade_id=unidades["410"].id,
+                   solicitada_por_id=moradores["410"].id,
+                   descricao="Troca dos armários planejados da cozinha",
+                   empresa="Marcenaria Guaicurus", inicio=HOJE - timedelta(days=50),
+                   fim=HOJE - timedelta(days=35), status=StatusReforma.CONCLUIDA,
+                   avaliada_por_id=sindico.id, avaliada_em=AGORA - timedelta(days=55),
+                   concluida_em=AGORA - timedelta(days=36)))
 
     # ── Advertências e multas: uma para o João se defender, uma para o
     #    síndico decidir e uma antiga, já mantida ────────────────────────

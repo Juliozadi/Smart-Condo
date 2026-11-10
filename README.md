@@ -36,6 +36,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 - **Assembleias** — Votação online, um voto por apartamento
 - **Advertências e Multas** — Notificações do síndico e a defesa no prazo
 - **Mudança** — Agendamento dentro das regras do regimento
+- **Obras e Reformas** — Comunicação ao síndico antes de começar, com a ART quando mexe em estrutura (NBR 16280)
 - **Visitantes** — Confirmação de quem chegou, entrada liberada com antecedência e quem pode retirar a chave deixada na portaria
 - **Veículos** — Placas do apartamento, que a portaria reconhece
 - **Comunicados** — Acompanhamento de avisos do condomínio com filtros por categoria
@@ -49,6 +50,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 - **Encomendas** — Registro e controle de retirada de encomendas
 - **Veículos** — Entrada e saída do estacionamento, reconhecendo as placas cadastradas
 - **Mudanças** — As aprovadas pelo síndico, de hoje em diante
+- **Obras Aprovadas** — As reformas no prazo, com as condições do síndico
 - **Livro da Portaria** — Passagem de turno, com a ciência de quem chega
 - **Quadro de Chaves** — Quem levou cada chave; a do apartamento só para quem o morador autorizou
 - **Ocorrências** — Registro de ocorrências durante o turno
@@ -65,6 +67,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 - **Reservas** — Espaços, regras, taxa de uso e aprovação das reservas
 - **Advertências e Multas** — Notificação, defesa e decisão
 - **Mudanças** — Regras do regimento e aprovação dos pedidos
+- **Obras e Reformas** — Aprovação com condições, prorrogação e cancelamento da obra irregular
 - **Livro da Portaria** — A passagem de turno da equipe e as orientações aos porteiros
 - **Quadro de Chaves** — As chaves que a portaria guarda, e com quem estão
 - **Comunicados** — Criação e envio de comunicados
@@ -175,6 +178,7 @@ frontend/
 │   │   ├── declaracoes.js             # Declaração de quitação
 │   │   ├── infracoes.js               # Advertências e multas
 │   │   ├── mudancas.js                # Agendamento de mudança
+│   │   ├── reformas.js                # Obras e reformas (NBR 16280)
 │   │   ├── livro.js                   # Livro da portaria
 │   │   ├── chaves.js                  # Quadro de chaves da portaria
 │   │   ├── preventiva.js              # Manutenção preventiva
@@ -182,15 +186,15 @@ frontend/
 │   └── img/
 │       ├── logo.png
 │       ├── acessibilidade.png
-│       └── icons/                     # 44 ícones SVG
+│       └── icons/                     # 45 ícones SVG
 └── pages/
     ├── legal/                         # Termos de uso e privacidade
     ├── cadastro/                      # Cadastro de usuários (3 páginas)
     ├── login/                         # Recuperação de senha (3 páginas)
     ├── verificar/                     # Conferência pública da declaração
-    ├── morador/                       # Módulo do morador (15 páginas)
-    ├── porteiro/                      # Módulo do porteiro (10 páginas)
-    ├── sindico/                       # Módulo do síndico (22 páginas)
+    ├── morador/                       # Módulo do morador (16 páginas)
+    ├── porteiro/                      # Módulo do porteiro (11 páginas)
+    ├── sindico/                       # Módulo do síndico (23 páginas)
     └── admin/                         # Módulo do administrador (3 páginas)
 ```
 
@@ -201,17 +205,17 @@ backend/
 ├── alembic/                           # Migrações do banco
 ├── app/
 │   ├── core/                          # Configuração, banco e segurança
-│   ├── models/                        # 38 tabelas
+│   ├── models/                        # 39 tabelas
 │   ├── schemas/                       # Entrada e saída da API
 │   ├── services/                      # Regras de negócio
 │   ├── api/routers/                   # Endpoints
 │   ├── seed.py                        # Dados de demonstração
 │   └── main.py
-└── tests/                             # 409 casos de teste
+└── tests/                             # 717 casos de teste
 ```
 
-**Total:** 62 páginas HTML, 2 arquivos CSS, 21 arquivos JS, 44 ícones SVG e
-uma API com 168 endpoints.
+**Total:** 65 páginas HTML, 2 arquivos CSS, 22 arquivos JS, 45 ícones SVG e
+uma API com 174 endpoints.
 
 ---
 
@@ -231,11 +235,11 @@ uvicorn app.main:app --reload
 
 Documentação interativa da API em <http://localhost:8000/docs>.
 
-**168 endpoints**, cobrindo os casos de uso e as histórias de usuário da
+**174 endpoints**, cobrindo os casos de uso e as histórias de usuário da
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e
-comunicados, documentos e chat. **409 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
+comunicados, documentos e chat. **717 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
 
 ---
 

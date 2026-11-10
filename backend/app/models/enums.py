@@ -189,6 +189,17 @@ class StatusMudanca(str, enum.Enum):
     CONCLUIDA = "concluida"
 
 
+class StatusReforma(str, enum.Enum):
+    """A reforma é comunicada antes de começar (NBR 16280): o síndico
+    aprova ou recusa; a aprovada vale até o fim do prazo, e o morador
+    avisa quando terminou."""
+    PENDENTE = "pendente"
+    APROVADA = "aprovada"
+    RECUSADA = "recusada"
+    CANCELADA = "cancelada"
+    CONCLUIDA = "concluida"
+
+
 class TipoInfracao(str, enum.Enum):
     """Código Civil, art. 1.336, § 2º: a convenção prevê a multa; antes
     dela, muitos regimentos pedem a advertência."""

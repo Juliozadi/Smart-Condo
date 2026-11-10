@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Obras e Reformas</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/formato.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-mobile">
+
+  <header class="app-bar">
+    <div class="app-bar-inner">
+      <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
+        <span class="brand-name">Smart<strong>Condo</strong></span>
+      </a>
+      <div class="app-bar-right">
+        <a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/user.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">João Silva</span><span class="profile-role">Morador</span></a>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-wrapper">
+
+    <a href="dashboard.html" class="dash-back">
+      <img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Morador
+    </a>
+
+    <div class="dash-greeting">
+      <p class="greeting-sub">Antes de a obra começar</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/hammer.svg" width="26" height="26" alt=""> Obras e Reformas</h1>
+      <p class="greeting-condo">Comunique a reforma ao síndico; a portaria fica sabendo</p>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Comunicar Reforma</h2>
+    <div class="form-card">
+      <ul class="regras-mudanca" aria-label="O que a norma pede">
+        <li>Comunique com pelo menos 2 dias de antecedência; o síndico aprova ou recusa.</li>
+        <li>Se a obra mexe em estrutura, paredes ou instalações (gás, elétrica, hidráulica), a NBR 16280 exige um responsável técnico com ART ou RRT.</li>
+        <li>A entrada dos prestadores é pela tela de Visitantes Autorizados.</li>
+      </ul>
+      <form id="formReforma" novalidate>
+        <div class="form-group">
+          <label for="rDescricao">O que será feito</label>
+          <textarea id="rDescricao" maxlength="500" rows="3" required placeholder="Ex: troca do piso da sala e pintura dos quartos"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="rInicio">Começa em</label>
+            <input type="date" id="rInicio" required>
+          </div>
+          <div class="form-group">
+            <label for="rFim">Termina em (previsto)</label>
+            <input type="date" id="rFim" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="rEmpresa">Empresa ou profissional (opcional)</label>
+          <input type="text" id="rEmpresa" maxlength="120" autocomplete="off" placeholder="Ex: Reformas Pantanal">
+        </div>
+        <label class="permissao-item" for="rEstrutura">
+          <input type="checkbox" id="rEstrutura"> Mexe em estrutura, paredes ou instalações do prédio
+        </label>
+        <div id="grupoTecnico" class="grupo-tecnico" hidden>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="rResponsavel">Responsável técnico</label>
+              <input type="text" id="rResponsavel" maxlength="160" autocomplete="off" placeholder="Ex: Eng. Paula Ramos">
+            </div>
+            <div class="form-group">
+              <label for="rArt">Número da ART ou do RRT</label>
+              <input type="text" id="rArt" maxlength="40" autocomplete="off" placeholder="Ex: ART 1220260012345">
+            </div>
+          </div>
+        </div>
+        <p class="form-erro" id="erroReforma" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;">Comunicar ao síndico</button>
+      </form>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/hammer.svg" width="16" height="16" alt=""> Reformas do Apartamento</h2>
+    <div id="listaReformas" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoReformas">Carregando…</p>
+
+  </main>
+
+<script src="../../assets/js/reformas.js"></script>
+<script>window.SmartCondo.reformas.montar('morador');</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

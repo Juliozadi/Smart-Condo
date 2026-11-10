@@ -36,6 +36,7 @@ ASSEMBLEIA = "assembleia"
 INFRACAO = "infracao"
 DECLARACAO = "declaracao_quitacao"
 PLANO_MANUTENCAO = "plano_manutencao"
+REFORMA = "reforma"
 
 ROTULO_ACAO = {
     CRIOU: "Criado", EDITOU: "Editado", INATIVOU: "Inativado", REATIVOU: "Reativado",

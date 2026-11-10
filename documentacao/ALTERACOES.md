@@ -7,6 +7,33 @@ O texto escrito pelo grupo foi **preservado**. As mudanças abaixo são de
 duas naturezas: correções do que não correspondia mais ao sistema, e
 seções novas descrevendo o que foi construído desde então.
 
+## Versão 2.9 — mais situações do dia a dia
+
+O professor pediu que o sistema continuasse a tratar as situações reais
+de um condomínio. Esta versão segue a 2.8.
+
+| Seção | O que mudou |
+|---|---|
+| 9 Requisitos funcionais | Novo RF059: obras e reformas comunicadas ao síndico antes de começar (NBR 16280) |
+| 11 Diagrama de caso de uso | Novo caso: comunicar reforma — agora 42 casos de uso |
+| 14 a 17 | Nova tabela reformas — agora 39 entidades, 471 atributos e 110 relacionamentos |
+| 21 API REST | 174 endpoints: reformas (comunicar, listar, avaliar, prorrogar, concluir, cancelar) |
+| 23 Testes | 717 casos no servidor e 132 testes de interface |
+
+**Situações tratadas.**
+- A quebradeira começava num sábado de manhã, o porteiro não sabia se
+  deixava o pedreiro subir e ninguém conferia se a parede derrubada era
+  estrutural. A NBR 16280 pede que a reforma seja comunicada antes, com o
+  prazo e, se mexer em estrutura, paredes ou instalações, o responsável
+  técnico com a ART ou o RRT. Agora o morador — também o dono que não
+  mora, que reforma antes de alugar — comunica a obra com dois dias de
+  antecedência; sem a ART, a que mexe em estrutura nem é aceita. O
+  síndico aprova com as condições do regimento (horário, entulho,
+  elevador) ou recusa com o motivo, prorroga o prazo e cancela a obra
+  irregular. A portaria vê só as aprovadas que estão no prazo: passado o
+  fim previsto, a obra some da lista dela. Os prestadores entram pela
+  autorização de visita que o morador já deixa.
+
 ## Versão 2.8 — o que todo condomínio de verdade usa
 
 Depois da versão 2.7, o professor pediu mais funcionalidades. Esta

@@ -2722,6 +2722,170 @@ const dicionario = [
     ]
   },
   {
+    "nome": "reformas",
+    "resumo": "As obras e reformas comunicadas pelos moradores antes de começar (NBR 16280) — o que será feito, o prazo e, se mexe em estrutura ou instalações, o responsável técnico com a ART ou o RRT — com a avaliação do síndico; a portaria vê as aprovadas no prazo.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio da obra"
+      },
+      {
+        "coluna": "unidade_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Apartamento em obra"
+      },
+      {
+        "coluna": "solicitada_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Morador que comunicou a reforma"
+      },
+      {
+        "coluna": "descricao",
+        "tipo": "VARCHAR(500)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "O que será feito no apartamento"
+      },
+      {
+        "coluna": "empresa",
+        "tipo": "VARCHAR(120)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Empresa ou profissional que faz a obra, quando informado"
+      },
+      {
+        "coluna": "altera_estrutura",
+        "tipo": "BOOLEAN",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Se a obra mexe em estrutura, paredes ou instalações do prédio; nesse caso, o responsável técnico e a ART ou o RRT são obrigatórios"
+      },
+      {
+        "coluna": "responsavel_tecnico",
+        "tipo": "VARCHAR(160)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Engenheiro ou arquiteto responsável pela obra"
+      },
+      {
+        "coluna": "art_rrt",
+        "tipo": "VARCHAR(40)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Número da ART (CREA) ou do RRT (CAU) do responsável técnico"
+      },
+      {
+        "coluna": "inicio",
+        "tipo": "DATE",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Dia em que a obra começa, comunicado com antecedência"
+      },
+      {
+        "coluna": "fim",
+        "tipo": "DATE",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Fim previsto; o síndico pode prorrogar. Passado o fim, a portaria não vê mais a obra"
+      },
+      {
+        "coluna": "status",
+        "tipo": "ENUM",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Pendente, aprovada, recusada, cancelada ou concluída — tipo enumerado status_reforma, valores: PENDENTE, APROVADA, RECUSADA, CANCELADA, CONCLUIDA"
+      },
+      {
+        "coluna": "avaliada_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que aprovou ou recusou"
+      },
+      {
+        "coluna": "avaliada_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Momento em que o síndico aprovou ou recusou"
+      },
+      {
+        "coluna": "condicoes",
+        "tipo": "VARCHAR(300)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Condições do regimento que o síndico pôs na aprovação (horário, entulho, elevador)"
+      },
+      {
+        "coluna": "motivo_recusa",
+        "tipo": "VARCHAR(300)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Por que o síndico recusou; o apartamento recebe"
+      },
+      {
+        "coluna": "cancelada_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Quem cancelou: um morador do apartamento ou o síndico"
+      },
+      {
+        "coluna": "cancelada_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Momento do cancelamento"
+      },
+      {
+        "coluna": "motivo_cancelamento",
+        "tipo": "VARCHAR(300)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Por que foi cancelada; obrigatório quando é o síndico quem cancela (a obra irregular)"
+      },
+      {
+        "coluna": "concluida_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o apartamento ou o síndico avisaram que a obra terminou"
+      },
+      {
+        "coluna": "criado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que o registro foi criado, preenchido pelo banco"
+      },
+      {
+        "coluna": "atualizado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da última alteração do registro"
+      }
+    ],
+    "regras": [
+      "CHECK ((fim >= inicio))",
+      "CHECK (((NOT altera_estrutura) OR ((responsavel_tecnico IS NOT NULL) AND (art_rrt IS NOT NULL))))"
+    ]
+  },
+  {
     "nome": "registros_alteracao",
     "resumo": "Quem criou, editou, inativou ou reativou cada registro, e quando — o \"editado por fulano\" das telas do administrador.",
     "colunas": [
@@ -3961,6 +4125,36 @@ const relacoes = [
     "texto": "Quem registrou a realização"
   },
   {
+    "origem": "reformas",
+    "coluna": "avaliada_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que aprovou ou recusou"
+  },
+  {
+    "origem": "reformas",
+    "coluna": "cancelada_por_id",
+    "destino": "usuarios",
+    "texto": "Quem cancelou: um morador do apartamento ou o síndico"
+  },
+  {
+    "origem": "reformas",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio da obra"
+  },
+  {
+    "origem": "reformas",
+    "coluna": "solicitada_por_id",
+    "destino": "usuarios",
+    "texto": "Morador que comunicou a reforma"
+  },
+  {
+    "origem": "reformas",
+    "coluna": "unidade_id",
+    "destino": "unidades",
+    "texto": "Apartamento em obra"
+  },
+  {
     "origem": "registros_alteracao",
     "coluna": "autor_id",
     "destino": "usuarios",
@@ -4182,6 +4376,10 @@ const enumerados = [
   {
     "nome": "status_ordem_servico",
     "valores": "ABERTA, EM_ANDAMENTO, CONCLUIDA, CANCELADA"
+  },
+  {
+    "nome": "status_reforma",
+    "valores": "PENDENTE, APROVADA, RECUSADA, CANCELADA, CONCLUIDA"
   },
   {
     "nome": "status_reserva",

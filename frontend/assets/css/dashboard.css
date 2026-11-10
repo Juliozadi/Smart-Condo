@@ -2477,3 +2477,11 @@ label.contato-btn { position: relative; cursor: pointer; }
 .chave-retirada { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
 .chave-quem { border: none; padding: 0; margin: 0 0 12px; }
 .chave-quem legend { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+
+/* ── Obras e reformas ────────────────────────────────────────────── */
+.reforma.aguardando { border-left: 3px solid var(--aviso); }
+.reforma.prazo_encerrado { border-left: 3px solid var(--erro); }
+.reforma .assembleia-topo h3 { margin-bottom: 0; }
+.reforma .infracao-acoes { flex-wrap: wrap; }
+.reforma-condicoes { font-size: 13px; font-weight: 600; color: var(--text); margin: 4px 0; }
+.grupo-tecnico { margin-top: 12px; }

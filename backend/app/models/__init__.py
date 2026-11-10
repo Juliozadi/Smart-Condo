@@ -12,7 +12,8 @@ from app.models.enums import (
     EscolhaVoto, MaioriaExigida,
     FinalidadeCodigo, FormaPagamento, Papel, PrioridadeOrdemServico, StatusCobranca,
     StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
-    OrigemCobranca, StatusInfracao, StatusMudanca, StatusVisitante, TipoDocumentoCadastro,
+    OrigemCobranca, StatusInfracao, StatusMudanca, StatusReforma, StatusVisitante,
+    TipoDocumentoCadastro,
     TipoInfracao, TipoMovimentacao, TipoMudanca, TipoOcupacao,
 )
 from app.models.chave import Chave, MovimentacaoChave
@@ -22,6 +23,7 @@ from app.models.infracao import Infracao
 from app.models.livro import AnotacaoPortaria, CienciaAnotacao
 from app.models.mensagem import Mensagem
 from app.models.mudanca import HorarioMudanca, Mudanca
+from app.models.reforma import Reforma
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
 from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico, VeiculoUnidade
 from app.models.financeiro import Cobranca, Despesa, Pagamento, PreferenciaCobranca
@@ -35,7 +37,7 @@ __all__ = [
     "DocumentoCadastro",
     "Encomenda", "EspacoComum", "LeituraComunicado", "Mensagem", "MovimentacaoVeiculo", "Mudanca",
     "HorarioMudanca", "Infracao", "AnotacaoPortaria", "CienciaAnotacao", "DeclaracaoQuitacao",
-    "PlanoManutencao", "RealizacaoManutencao", "Chave", "MovimentacaoChave",
+    "PlanoManutencao", "RealizacaoManutencao", "Chave", "MovimentacaoChave", "Reforma",
     "Ocorrencia", "OrdemServico", "Pagamento", "PermissaoPorteiro",
     "PreferenciaCobranca", "RegistroAlteracao", "RegistroOcupacao", "Reserva", "Unidade",
     "Usuario", "VeiculoUnidade",
@@ -44,7 +46,7 @@ __all__ = [
     "CategoriaVeiculo", "EscolhaVoto", "MaioriaExigida",
     "FinalidadeCodigo", "FormaPagamento", "Papel", "PrioridadeOrdemServico",
     "StatusCobranca", "StatusEncomenda", "StatusOcorrencia", "StatusOrdemServico",
-    "StatusMudanca", "StatusReserva", "StatusUsuario", "StatusVisitante", "TipoDocumentoCadastro",
+    "StatusMudanca", "StatusReforma", "StatusReserva", "StatusUsuario", "StatusVisitante", "TipoDocumentoCadastro",
     "TipoMovimentacao", "TipoMudanca", "TipoOcupacao", "OrigemCobranca", "StatusInfracao",
     "TipoInfracao",
 ]

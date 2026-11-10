@@ -42,9 +42,10 @@ RECORTES = [
         "movimentacoes_chave", "chaves", "veiculos_unidade", "ciencias_anotacao",
         "anotacoes_portaria",
     ]),
-    ("Gestão — assembleias, contas, mudanças, infrações, declarações e manutenção", [
+    ("Gestão — assembleias, contas, mudanças, reformas, infrações, declarações e manutenção", [
         "assembleias", "itens_pauta", "votos", "despesas", "mudancas", "horarios_mudanca",
-        "infracoes", "declaracoes_quitacao", "planos_manutencao", "realizacoes_manutencao",
+        "reformas", "infracoes", "declaracoes_quitacao", "planos_manutencao",
+        "realizacoes_manutencao",
     ]),
 ]
 
@@ -193,6 +194,7 @@ def figura_geral(tabelas, ligacoes, arquivo):
         "declaracoes_quitacao": (0.658, 0.66),
         "planos_manutencao": (0.17, 0.78), "realizacoes_manutencao": (0.34, 0.66),
         "chaves": (0.335, 0.07), "movimentacoes_chave": (0.17, 0.145),
+        "reformas": (0.375, 0.42),
         "assembleias": (0.17, 0.62), "itens_pauta": (0.10, 0.46), "votos": (0.27, 0.46),
     }
     for origem, _, destino in ligacoes:
