@@ -6,6 +6,10 @@ Scripts SQL do banco, prontos para rodar no **pgAdmin**.
 |---|---|
 | `01_criar_tabelas.sql` | Cria os tipos, as 40 tabelas, as chaves e os índices |
 | `02_carga_dados.sql` | Carrega um condomínio completo de demonstração |
+| `03_consultas.sql` | 14 consultas sobre os dados: junções, agrupamentos, subconsultas, janelas |
+| `04_programacao.sql` | Visões, funções, procedimentos, gatilhos e um índice parcial |
+| `05_seguranca.sql` | Papéis de acesso (síndico, portaria, conselho fiscal) e as permissões de cada um |
+| `06_demonstracao.sql` | Usa tudo o que o 04 e o 05 criaram, dentro de uma transação desfeita no fim |
 
 Os dois arquivos são SQL puro, sem comentários — as explicações ficam
 neste README.
@@ -57,6 +61,54 @@ UNION ALL SELECT 'cobrancas',   COUNT(*) FROM cobrancas
 UNION ALL SELECT 'pagamentos',  COUNT(*) FROM pagamentos
 UNION ALL SELECT 'comunicados', COUNT(*) FROM comunicados;
 ```
+
+---
+
+## 2ª parte: consultas, visões, funções, gatilhos e permissões
+
+Depois do `02`, execute na ordem, do mesmo jeito (abrir o arquivo e **F5**):
+
+6. **`03_consultas.sql`** — só lê os dados. Com o arquivo inteiro, o
+   pgAdmin mostra o resultado da última consulta; para ver outra,
+   selecione só ela e aperte **F5**.
+7. **`04_programacao.sql`** — cria a tabela `log_cobrancas`, o índice
+   `ix_cobrancas_em_aberto`, as visões `vw_*`, as funções `fn_*`, os
+   procedimentos `sp_*` e os gatilhos `trg_*`.
+8. **`05_seguranca.sql`** — conectado como **`postgres`**, porque cria
+   papéis (`CREATE ROLE`). Termina mostrando o que cada papel pode fazer.
+9. **`06_demonstracao.sql`** — também como **`postgres`**. Começa com
+   `BEGIN` e termina com `ROLLBACK`: gera a taxa do mês, registra um
+   pagamento e tenta cinco operações proibidas, e no fim nada disso fica
+   no banco. As tentativas barradas aparecem na aba **Messages**.
+
+Todos podem ser executados de novo. Se o `01` for executado outra vez,
+execute também o `04` e o `05`: o `01` recria as tabelas e leva junto as
+visões, os gatilhos e as permissões.
+
+| Objeto | Para quê |
+|---|---|
+| `vw_situacao_unidades` | Cada apartamento: responsável, cobranças e valor em atraso, a vencer, em dia ou inadimplente |
+| `vw_balancete_mensal` | Receitas, despesas, saldo do mês e saldo acumulado |
+| `vw_moradores` | Moradores sem CPF, telefone nem senha, e com o e-mail mascarado |
+| `fn_total_pago(cobranca)` | Quanto já foi abatido da cobrança |
+| `fn_encargos(cobranca, dia)` | Multa (2%) e juros (1% ao mês, dia a dia) do atraso, como o sistema calcula |
+| `fn_rateio(condominio, total)` | Divide um total pela fração ideal, sem perder centavo |
+| `sp_gerar_taxa_mensal(...)` | Lança a taxa do mês para todos os apartamentos, pelo mesmo valor ou pela fração |
+| `sp_registrar_pagamento(...)` | Registra o pagamento com a multa e os juros do dia |
+| `trg_valida_pagamento` | Barra pagamento de cobrança cancelada ou negociada, e pagamento acima do que falta |
+| `trg_quita_cobranca` | Marca a cobrança como paga quando o que foi pago cobre o valor |
+| `trg_log_cobranca` | Guarda em `log_cobrancas` toda mudança de situação, valor ou vencimento |
+| `trg_atualizado_em` | Atualiza a data de alteração em cobranças, unidades e reservas |
+| `ix_cobrancas_em_aberto` | Índice parcial: só as cobranças abertas ou vencidas, que são as consultadas no dia a dia |
+
+| Papel | Pode |
+|---|---|
+| `smartcondo_sindico` | Ler, incluir e alterar tudo, menos o histórico e o log; não apaga nada |
+| `smartcondo_portaria` | Visitantes, encomendas e veículos; dos moradores, só nome e apartamento — sem CPF e sem financeiro |
+| `smartcondo_conselho` | Só as visões de situação das unidades e do balancete |
+
+Esses objetos são da demonstração do banco: o sistema (back-end) não
+depende deles e faz as mesmas regras no próprio código.
 
 ---
 
