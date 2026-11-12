@@ -107,8 +107,12 @@ visões, os gatilhos e as permissões.
 | `smartcondo_portaria` | Visitantes, encomendas e veículos; dos moradores, só nome e apartamento — sem CPF e sem financeiro |
 | `smartcondo_conselho` | Só as visões de situação das unidades e do balancete |
 
-Esses objetos são da demonstração do banco: o sistema (back-end) não
-depende deles e faz as mesmas regras no próprio código.
+Os mesmos objetos estão no banco do sistema: a migração `d8e9f0a1b2c3`
+instala o conteúdo do `04` (por `backend/app/core/objetos_banco.py`), os
+gatilhos agem sobre o que o sistema grava, e a tela **Banco de Dados** do
+síndico mostra as duas visões, calcula o rateio pela `fn_rateio` e lista o
+log que o gatilho escreve. Os papéis do `05` ficam só no pgAdmin: o
+sistema entra no banco com o usuário dele e controla o acesso na API.
 
 ---
 

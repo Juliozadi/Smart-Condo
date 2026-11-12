@@ -89,7 +89,7 @@ BEGIN
         RAISE EXCEPTION 'Faltam as frações ideais de % unidade(s).', v_faltam;
     END IF;
     IF ABS(v_soma - 100) > 0.01 THEN
-        RAISE EXCEPTION 'As frações ideais somam %%%; precisam somar 100%%.', v_soma;
+        RAISE EXCEPTION 'As frações ideais somam %; precisam somar 100%%.', trim_scale(v_soma) || '%';
     END IF;
 
     RETURN QUERY

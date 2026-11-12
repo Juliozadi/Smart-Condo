@@ -18,6 +18,14 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
+# Criados por SQL na migração d8e9f0a1b2c3 (app/core/objetos_banco.py), e
+# não pelos modelos: a comparação dos modelos com o banco não os apaga.
+FORA_DOS_MODELOS = {"log_cobrancas", "ix_cobrancas_em_aberto"}
+
+
+def incluir(objeto, nome, tipo, refletido, comparado) -> bool:
+    return not (refletido and nome in FORA_DOS_MODELOS)
+
 
 def run_migrations_offline() -> None:
     context.configure(
@@ -26,6 +34,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         compare_type=True,
+        include_object=incluir,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -42,6 +51,7 @@ def run_migrations_online() -> None:
             connection=connection,
             target_metadata=target_metadata,
             compare_type=True,
+            include_object=incluir,
         )
         with context.begin_transaction():
             context.run_migrations()

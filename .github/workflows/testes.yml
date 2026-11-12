@@ -138,6 +138,10 @@ jobs:
             -f banco/01_criar_tabelas.sql
           psql -h localhost -U smartcondo -d smartcondo_sql -v ON_ERROR_STOP=1 -q \
             -f banco/02_carga_dados.sql
+          psql -h localhost -U smartcondo -d smartcondo_sql -v ON_ERROR_STOP=1 -q \
+            -f banco/03_consultas.sql > /dev/null
+          psql -h localhost -U smartcondo -d smartcondo_sql -v ON_ERROR_STOP=1 -q \
+            -f banco/04_programacao.sql
 
       - uses: actions/setup-python@v5
         with:
@@ -157,6 +161,7 @@ jobs:
              SECRET_KEY=chave-de-teste-suficientemente-longa-para-o-ci alembic upgrade head)
           psql -h localhost -U smartcondo -d smartcondo_sql -q -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
           psql -h localhost -U smartcondo -d smartcondo_sql -v ON_ERROR_STOP=1 -q -f banco/01_criar_tabelas.sql
+          psql -h localhost -U smartcondo -d smartcondo_sql -v ON_ERROR_STOP=1 -q -f banco/04_programacao.sql
           python banco/comparar_com_migracoes.py \
             postgresql://smartcondo:smartcondo@localhost:5432/smartcondo_mig \
             postgresql://smartcondo:smartcondo@localhost:5432/smartcondo_sql
