@@ -5,6 +5,7 @@ from collections.abc import Callable
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -58,6 +59,33 @@ def get_usuario_atual(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=_motivo_inativo(usuario.status),
         )
+    # Perfil vinculado (services/perfis.py): vale enquanto a conta com
+    # login da pessoa estiver ativa.
+    if usuario.conta_principal_id is not None and (
+        usuario.conta_principal is None or usuario.conta_principal.status != StatusUsuario.ATIVO
+    ):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=_motivo_inativo(StatusUsuario.INATIVO))
+    return usuario
+
+
+def conferir_que_mora(usuario: Usuario) -> None:
+    """A portaria do apartamento — visitas, encomendas, carros, mudanças,
+    reservas — é de quem mora lá. O proprietário que não mora (alugou,
+    está vazio) paga, vota e acompanha as contas, e só."""
+    if usuario.papel == Papel.MORADOR and not usuario.reside:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Você é proprietário deste apartamento, mas não mora nele: visitas, "
+                   "encomendas, reservas, carros e mudanças são de quem mora lá.",
+        )
+
+
+def exigir_morador_residente(usuario: Usuario = Depends(get_usuario_atual)) -> Usuario:
+    if usuario.papel != Papel.MORADOR:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Esta ação é permitida apenas para: morador.")
+    conferir_que_mora(usuario)
     return usuario
 
 
@@ -139,3 +167,17 @@ def exigir_condominio(usuario: Usuario = Depends(get_usuario_atual)) -> Usuario:
             detail="Seu usuário ainda não está vinculado a um condomínio.",
         )
     return usuario
+
+
+def conferir_nome_livre(db: Session, modelo, condominio_id: int, nome: str, mensagem: str,
+                        exceto: int | None = None) -> None:
+    """O nome não se repete entre os ativos do condomínio — a chave do
+    salão, o plano do elevador —, sem diferença de maiúsculas. O índice
+    único do banco garante; aqui a resposta é a mensagem, não o 409 genérico."""
+    consulta = select(modelo.id).where(modelo.condominio_id == condominio_id,
+                                       modelo.inativo_em.is_(None),
+                                       func.lower(modelo.nome) == nome.lower())
+    if exceto is not None:
+        consulta = consulta.where(modelo.id != exceto)
+    if db.scalar(consulta) is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=mensagem)

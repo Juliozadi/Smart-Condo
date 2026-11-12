@@ -5,7 +5,7 @@
   <link rel="icon" href="../../assets/img/logo.png" type="image/png">
   <title>SmartCondo — Ocorrências do Condomínio</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
-  <script src="../../assets/js/api.js"></script><link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <script src="../../assets/js/api.js"></script><script src="../../assets/js/formato.js"></script><link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
 <body class="dashboard-body layout-desktop">
@@ -60,6 +60,7 @@
    fila vem ordenada pela urgência, para o que corre aparecer primeiro. */
 (function() {
   'use strict';
+  var formato = window.SmartCondo.formato;
   var api = window.SmartCondo.api;
   var usuario = api.protegerPagina('sindico');
   if (!usuario) return;
@@ -92,12 +93,6 @@
     var d = new Date(iso);
     if (isNaN(d)) return '';
     return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2);
-  }
-
-  /* Busca sem acento: quem digita "garagem" ou "Lampada" precisa achar
-     "Lâmpada queimada na garagem". */
-  function semAcento(texto) {
-    return (texto || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   }
 
   /* O painel de resposta fica escondido até o síndico pedir, para a
@@ -237,8 +232,10 @@
     return bloco;
   }
 
+  /* Busca sem acento: quem digita "garagem" ou "Lampada" precisa achar
+     "Lâmpada queimada na garagem". */
   function aplicarFiltros() {
-    var busca = semAcento(campo('buscaOcorrencia').value.trim());
+    var busca = formato.semAcento(campo('buscaOcorrencia').value.trim());
     var status = campo('filtroStatus').value;
     var prioridade = campo('filtroPrioridade').value;
 
@@ -246,7 +243,7 @@
       if (status && o.status !== status) return false;
       if (prioridade && o.prioridade !== prioridade) return false;
       if (!busca) return true;
-      var alvo = semAcento([o.titulo, o.descricao, o.aberta_por_nome, o.local, o.unidade]
+      var alvo = formato.semAcento([o.titulo, o.descricao, o.aberta_por_nome, o.local, o.unidade]
         .filter(Boolean).join(' '));
       return alvo.indexOf(busca) >= 0;
     });

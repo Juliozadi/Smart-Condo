@@ -9,7 +9,8 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
-    Boolean, DateTime, Enum as SAEnum, ForeignKey, String, Text, UniqueConstraint,
+    Boolean, CheckConstraint, DateTime, Enum as SAEnum, ForeignKey, String, Text,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -18,11 +19,15 @@ from app.models.base import InativacaoMixin, TimestampMixin
 from app.models.enums import CategoriaComunicado
 
 if TYPE_CHECKING:
+    from app.models.condominio import Unidade
     from app.models.usuario import Usuario
 
 
 class Comunicado(Base, TimestampMixin, InativacaoMixin):
     __tablename__ = "comunicados"
+    __table_args__ = (
+        CheckConstraint("bloco IS NULL OR unidade_id IS NULL", name="ck_comunicado_um_destino"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     condominio_id: Mapped[int] = mapped_column(
@@ -45,7 +50,16 @@ class Comunicado(Base, TimestampMixin, InativacaoMixin):
         DateTime(timezone=True), nullable=False, index=True
     )
 
+    # Para quem: os dois vazios, o condomínio inteiro; o bloco, só quem
+    # mora nele ("falta de água no bloco B"); a unidade, só quem mora no
+    # apartamento — a advertência, que não é da conta dos vizinhos.
+    bloco: Mapped[str | None] = mapped_column(String(20))
+    unidade_id: Mapped[int | None] = mapped_column(
+        ForeignKey("unidades.id", ondelete="CASCADE"), index=True
+    )
+
     autor: Mapped["Usuario"] = relationship(foreign_keys=[autor_id])
+    unidade: Mapped["Unidade | None"] = relationship()
     leituras: Mapped[list["LeituraComunicado"]] = relationship(
         back_populates="comunicado", cascade="all, delete-orphan"
     )

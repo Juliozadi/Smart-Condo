@@ -37,6 +37,25 @@ class MovimentacaoSaida(SchemaBase):
     registrada_em: datetime
 
 
+class VeiculoCadastroEntrada(SchemaBase):
+    placa: Placa
+    modelo: str | None = Field(default=None, max_length=60)
+    cor: str | None = Field(default=None, max_length=30)
+    # Só o síndico informa: o morador cadastra no próprio apartamento.
+    unidade_id: int | None = None
+
+
+class VeiculoCadastradoSaida(SchemaBase):
+    id: int
+    placa: str
+    modelo: str | None = None
+    cor: str | None = None
+    unidade_id: int
+    unidade: str
+    cadastrado_por_nome: str | None = None
+    criado_em: datetime
+
+
 class VeiculoNoPatio(SchemaBase):
     """Veículo cuja última movimentação foi uma entrada."""
     placa: str

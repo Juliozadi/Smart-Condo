@@ -7,6 +7,256 @@ O texto escrito pelo grupo foi **preservado**. As mudanças abaixo são de
 duas naturezas: correções do que não correspondia mais ao sistema, e
 seções novas descrevendo o que foi construído desde então.
 
+## Versão 2.9 — mais situações do dia a dia
+
+O professor pediu que o sistema continuasse a tratar as situações reais
+de um condomínio. Esta versão segue a 2.8.
+
+| Seção | O que mudou |
+|---|---|
+| 9 Requisitos funcionais | Novo RF059: obras e reformas comunicadas ao síndico antes de começar (NBR 16280). Novo RF060: acordo de parcelamento das cobranças vencidas. Novo RF061: a taxa e a cota extra lançadas para todos, rateadas pela fração ideal |
+| 11 Diagrama de caso de uso | Novos casos: comunicar reforma e fazer acordo de parcelamento — agora 43 casos de uso |
+| 14 a 17 | Novas tabelas reformas e acordos; cobrancas ganha acordo_id, o status NEGOCIADA e as origens ACORDO e EXTRA; unidades ganha fracao_ideal — agora 40 entidades, 489 atributos e 115 relacionamentos |
+| 21 API REST | 178 endpoints: reformas (comunicar, listar, avaliar, prorrogar, concluir, cancelar); acordos de parcelamento (fazer, listar, desfazer); a taxa ou a cota extra para todos os apartamentos de uma vez |
+| 23 Testes | 752 casos no servidor e 136 testes de interface |
+
+**Situações tratadas.**
+- A quebradeira começava num sábado de manhã, o porteiro não sabia se
+  deixava o pedreiro subir e ninguém conferia se a parede derrubada era
+  estrutural. A NBR 16280 pede que a reforma seja comunicada antes, com o
+  prazo e, se mexer em estrutura, paredes ou instalações, o responsável
+  técnico com a ART ou o RRT. Agora o morador — também o dono que não
+  mora, que reforma antes de alugar — comunica a obra com dois dias de
+  antecedência; sem a ART, a que mexe em estrutura nem é aceita. O
+  síndico aprova com as condições do regimento (horário, entulho,
+  elevador) ou recusa com o motivo, prorroga o prazo e cancela a obra
+  irregular. A portaria vê só as aprovadas que estão no prazo: passado o
+  fim previsto, a obra some da lista dela. Os prestadores entram pela
+  autorização de visita que o morador já deixa.
+- O apartamento que deve dois meses não consegue pagar tudo de uma vez.
+  O síndico fazia o acordo de boca, lançava as parcelas à mão e
+  precisava lembrar de dar baixa nas cobranças antigas, que continuavam
+  vencidas: o apartamento ficava sem votar e sem declaração de quitação
+  mesmo pagando as parcelas em dia. Agora o síndico marca as cobranças
+  vencidas do apartamento; o sistema soma o que falta com a multa e os
+  juros do dia (ou sem eles, se o síndico dispensar) e divide em até 24
+  parcelas mensais, sem perder centavo. As cobranças antigas ficam
+  negociadas e saem do atraso; cada parcela é uma cobrança, com multa e
+  juros próprios se atrasar. O acordo lançado errado se desfaz enquanto
+  nenhuma parcela foi paga.
+- A convenção manda ratear as despesas pela fração ideal — a cobertura
+  paga mais que o apartamento-tipo —, e a assembleia aprova a pintura da
+  fachada em seis parcelas. O síndico lançava apartamento por
+  apartamento, com a calculadora do lado, e um erro no meio deixava
+  metade do prédio cobrado. Agora cada apartamento tem a sua fração
+  ideal, e a tela avisa quando elas não somam 100%. O síndico lança a
+  taxa do mês ou a cota extra para todos de uma vez — ou todos recebem,
+  ou nenhum —, pelo mesmo valor ou pelo total dividido pelas frações,
+  sem perder centavo. A cota extra entra ao lado da taxa, em até 24
+  parcelas, não se lança duas vezes, e cada apartamento recebe o aviso
+  da sua parte.
+
+## Versão 2.8 — o que todo condomínio de verdade usa
+
+Depois da versão 2.7, o professor pediu mais funcionalidades. Esta
+versão traz o que um condomínio real usa no dia a dia e o sistema ainda
+não tinha.
+
+| Seção | O que mudou |
+|---|---|
+| 9 Requisitos funcionais | Novo RF048: prestação de contas — despesas e balancete do mês. Novo RF049: assembleia virtual com votação. Novo RF050: os veículos do apartamento, que a portaria reconhece pela placa. Novo RF051: agendamento de mudança, com as regras do regimento que o síndico define. Novo RF052: mais de um perfil com o mesmo login (o síndico que também mora, o morador eleito síndico). Novo RF053: o proprietário de mais de um apartamento, morando ou não neles. RF049: o proprietário vota mesmo sem morar no apartamento. Novo RF054: advertências e multas com direito de defesa. RF015 e RF017: taxa de uso dos espaços. Novo RF055: livro da portaria, a passagem de turno. Novo RF056: declaração de quitação que qualquer um confere pelo código. Novo RF057: manutenção preventiva e obrigações com vencimento. Novo RF058: controle de chaves na portaria; RF046: o morador autoriza quem pode retirar a chave do apartamento |
+| 11 Diagrama de caso de uso | Novos casos: prestar contas, convocar assembleia, votar em assembleia, cadastrar veículo, agendar mudança, trocar de perfil, vincular outro apartamento, notificar infração, apresentar defesa e anotar no livro da portaria, emitir declaração de quitação, controlar a manutenção preventiva e controlar as chaves da portaria — agora 41 casos de uso |
+| 14 a 17 | Novas tabelas despesas, assembleias, itens_pauta, votos, veiculos_unidade, mudancas, horarios_mudanca, infracoes, anotacoes_portaria, ciencias_anotacao, declaracoes_quitacao, planos_manutencao, realizacoes_manutencao, chaves e movimentacoes_chave; autorizacoes_visita ganha pode_retirar_chave; condominios ganha mudanca_antecedencia_dias; cobrancas ganha origem (taxa, multa ou uso de espaço); espacos_comuns ganha taxa_uso, e reservas, cobranca_id; usuarios ganha reside e conta_principal_id, e o e-mail e o CPF passam a ser únicos entre os cadastros com login — agora 38 entidades, 449 atributos e 105 relacionamentos; o DER ganha um quarto recorte, de gestão |
+| 21 API REST | 168 endpoints: despesas (lançar, listar, corrigir, cancelar, comprovante) e balancete do mês; assembleias (convocar, listar, votar, cancelar); veículos do apartamento (cadastrar, listar, remover) e a consulta da placa pela portaria; mudanças (consultar e definir as regras, horários tomados, agendar, listar, avaliar, cancelar); perfis da pessoa e troca de perfil; acrescentar e tirar apartamentos do próprio cadastro; advertências e multas (notificar, listar, defender, decidir); livro da portaria (anotar, ler, pendentes, dar ciência); declarações de quitação (emitir, listar, revogar e conferir pelo código, sem login); manutenção preventiva (planos, realizações e histórico); chaves (quadro, quem pode levar, retirada, devolução e histórico). A tabela de módulos da seção, que tinha parado em treze, passa a ter todos, com as rotas de cada um recontadas |
+| 23 Testes | 697 casos no servidor e 131 testes de interface |
+
+**Situações tratadas.**
+- O morador paga a taxa todo mês e não sabe para onde vai o dinheiro; o
+  síndico precisa prestar contas (Código Civil, art. 1.348, VIII), e o
+  sistema só registrava o que entrava. Agora o síndico lança cada
+  despesa — categoria, fornecedor, nota fiscal — e moradores e síndico
+  veem o mesmo balancete do mês: receitas, despesas por categoria, saldo
+  do mês e acumulado. Despesa lançada errada é corrigida ou cancelada com
+  motivo, e nada é apagado.
+- A assembleia é marcada no salão numa noite de semana, vai meia dúzia
+  de pessoas e as decisões valem para todos; desde a Lei 14.309/2022
+  (Código Civil, art. 1.354-A) ela pode ser eletrônica, e o sistema não
+  tinha assembleia nenhuma. Agora o síndico convoca pela tela, com a
+  pauta e o período de votação, e cada apartamento vota de onde estiver,
+  uma vez em cada item. Vota o proprietário — ou o inquilino, se nenhum
+  proprietário tem cadastro — e só o apartamento quite (art. 1.335, III).
+  Cada item diz a maioria que exige: simples, 2/3 de todos os
+  apartamentos (como para mudar a convenção, art. 1.351) ou
+  unanimidade. Durante a votação ninguém vê o placar, nem o síndico; no
+  fim, cada item mostra os votos e se passou.
+- O carro do morador chega ao portão e a portaria não sabe de quem é:
+  pergunta o apartamento e procura na lista, todo dia, para o mesmo
+  carro. Agora o morador cadastra as placas do apartamento (até 10), e
+  ao digitar a placa a portaria vê o apartamento, o modelo e a cor, com
+  o formulário já preenchido — entrada ou saída conforme o carro esteja
+  no pátio. Uma placa vale para um apartamento só; cadastrada em outro,
+  o sistema recusa sem dizer qual (a placa do vizinho é dado dele). Se
+  quem cadastrou se muda, o carro deixa de ser reconhecido sozinho e a
+  placa fica livre.
+- O caminhão de mudança chegava sem aviso, ocupava o elevador de
+  serviço a manhã inteira e encontrava outra mudança na mesma hora; a
+  portaria não sabia se podia deixar entrar. Agora o morador agenda a
+  chegada ou a saída pela tela, dentro do regimento (pelo menos 2 dias
+  de antecedência; de segunda a sexta das 8h às 18h, sábado das 8h às
+  12h, domingo não), vendo os horários já tomados no dia sem saber de
+  quem. Uma mudança de cada vez em cada bloco. O síndico aprova ou recusa
+  com motivo, e o morador recebe a resposta; a portaria vê as aprovadas.
+  A pendente que chega ao horário sem avaliação vira recusada.
+- Cada condomínio tem o seu regimento: num, a mudança vai até as 17h e
+  nunca no sábado; noutro, pede 5 dias de aviso; noutro, vale no domingo
+  de manhã. O síndico define, na tela de mudanças, o aviso mínimo e, dia
+  a dia, se pode haver mudança e em que horário; o morador passa a ver e
+  a cumprir as regras do seu condomínio. As mudanças já agendadas
+  continuam de pé.
+- O síndico que mora no condomínio paga a taxa, reserva o salão e vota
+  como qualquer morador — mas o CPF só podia ter um cadastro, e ele não
+  tinha como ser morador. O morador eleito síndico precisava de outro
+  e-mail e outra senha. Agora a mesma pessoa tem um perfil por papel,
+  com um login só, e troca de perfil no topo da tela: o síndico informa
+  o apartamento no próprio perfil; para o morador eleito, o administrador
+  cadastra o síndico com o e-mail e o CPF que ele já usa. Trocar a senha
+  encerra as sessões de todos os perfis. Quando o mandato acaba, a pessoa
+  continua entrando como moradora, com a mesma senha.
+- O dono de dois apartamentos — um onde mora, outro alugado — só podia
+  ter um. Agora ele acrescenta o outro no perfil (o síndico confirma) e
+  escolhe por qual apartamento está agindo. No que não mora, vê as
+  cobranças e a prestação de contas e vota nas assembleias (o
+  proprietário vota mesmo sem morar), mas visitas, encomendas, reservas,
+  carros e mudanças são do inquilino, e os avisos da portaria não vão
+  para o dono.
+- A festa até as 3h, o cachorro sujando o hall, a obra sem aviso: o
+  síndico mandava bilhete por baixo da porta, e a multa aplicada sem dar
+  chance de defesa costuma cair na Justiça. Agora ele notifica o
+  apartamento pelo sistema — advertência ou multa, com o artigo do
+  regimento —, os moradores recebem por e-mail e têm de 5 a 30 dias para
+  se defender. O síndico decide depois da defesa ou do prazo, sempre com
+  o motivo. A multa vai até 5 vezes a taxa mensal (Código Civil, art.
+  1.336, § 2º) e, mantida, entra nas cobranças do apartamento ao lado da
+  taxa do mês; o síndico vê as reincidências dos últimos 12 meses (art.
+  1.337).
+- A portaria guarda a chave do salão, da piscina, da casa de máquinas — e
+  a do apartamento que o morador deixa para a diarista. Ninguém sabia
+  quem tinha levado a chave do salão, e a chave de um apartamento
+  entregue à pessoa errada abre a porta para um furto. Agora o quadro de
+  chaves registra quem levou, quem entregou e quem recebeu de volta; a
+  chave do apartamento só sai para quem mora lá ou para quem o morador
+  autorizou — com o CPF conferido, no dia em que a autorização vale —, e
+  o apartamento é avisado quando ela sai e quando volta.
+- O AVCB vence e o seguro não cobre o incêndio; a recarga dos extintores
+  passa do prazo e a fiscalização multa; a caixa d'água fica um ano sem
+  limpeza. O síndico controlava numa planilha, ou na memória. Agora cada
+  obrigação tem a periodicidade e o próximo vencimento, o painel avisa o
+  que venceu, e registrar a realização renova o prazo — com o custo
+  lançado, se o síndico quiser, como despesa na prestação de contas.
+- Na venda do apartamento, o comprador e o cartório pedem a prova de que
+  não há taxa atrasada — a dívida de condomínio acompanha o imóvel
+  (Código Civil, art. 1.345) —, e o papel assinado pelo síndico ninguém
+  conseguia conferir. Agora o apartamento sem cobrança vencida em aberto
+  emite a declaração na hora, válida por 30 dias, com um código que
+  qualquer pessoa confere numa página aberta: o texto da declaração e se
+  ela vale, venceu ou foi revogada, sem o nome de quem pediu. O síndico
+  revoga, com motivo, a que deixou de valer (um pagamento estornado).
+- A passagem de turno da portaria era um caderno no balcão: o porteiro
+  da noite escrevia que o entregador volta às 10h para o 204, que o
+  portão da garagem está travando — e o da manhã podia nem abrir. Agora
+  o livro da portaria está no sistema: quem sai anota, e a anotação
+  importante pede a ciência de quem chega, que a vê no painel e mostra
+  quem já leu. O síndico lê tudo e orienta a equipe por ali. Nada se
+  apaga nem se edita, como no livro de papel; o morador não lê.
+- O salão de festas tem taxa de uso (limpeza, gás, desgaste), que vinha
+  no boleto lançada à mão — e, cancelada a festa, alguém precisava
+  lembrar de tirar. Agora o síndico define a taxa no cadastro do espaço;
+  o morador a vê antes de reservar, e ela entra nas cobranças do
+  apartamento quando o síndico aprova, com vencimento no dia da reserva.
+  Cancelada a reserva — pelo morador, pelo síndico, pela inativação do
+  espaço ou do cadastro —, a taxa sai, a não ser que já tenha sido paga.
+- Nos celulares, os campos lado a lado que viram coluna ficam com o mesmo
+  espaçamento dos outros (antes, colados no campo de baixo).
+- Na carga de demonstração, a taxa do mês passa a vencer no dia 10 do
+  mês seguinte: vencendo no próprio mês, a partir do dia 11 todos os
+  apartamentos ficavam em atraso — e ninguém poderia votar.
+
+## Versão 2.7 — situações reais do dia a dia
+
+Na apresentação de 09/10, o professor apontou que, na vida real, o
+condomínio passa por muitas situações que o sistema ainda não tratava.
+Esta versão percorre essas situações, uma a uma.
+
+| Seção | O que mudou |
+|---|---|
+| 9 Requisitos funcionais | RF017: o síndico cancela a reserva já aprovada, com motivo, e o morador vê o motivo da recusa ou do cancelamento. RF015 e RF016: regras de uso de cada espaço (horário, antecedência, duração, limite por apartamento). Novo RF046: o morador autoriza visitante com antecedência, e a portaria registra a entrada sem esperar resposta. Novo RF047: multa e juros da cobrança paga com atraso. RF030: comunicado para um bloco ou para um apartamento. RF021 e RF024: visitante e encomenda para apartamento sem morador |
+| 11 Diagrama de caso de uso | Novo caso do morador: autorizar visitante antes — agora 28 casos de uso |
+| 14 a 17 | reservas ganha cancelada_por_id, cancelada_em e motivo_cancelamento; espacos_comuns ganha horario_abertura, horario_fechamento, antecedencia_minima_dias, duracao_maxima_horas e limite_por_unidade; nova tabela autorizacoes_visita, e visitantes ganha autorizacao_id; condominios ganha multa_atraso e juros_mensais, e pagamentos ganha encargos; comunicados ganha bloco e unidade_id — agora 23 entidades, 283 atributos e 56 relacionamentos |
+| 21 API REST | 115 endpoints: o síndico cancela uma reserva aprovada; o morador autoriza, lista e revoga visitantes com antecedência; consulta e definição da multa e dos juros |
+| 23 Testes | 512 casos no servidor e 111 testes de interface |
+
+**Situações tratadas.**
+- O síndico precisa cancelar uma reserva já aprovada (vazamento no salão,
+  obra, evento do condomínio). Antes ele só avaliava as pendentes: a
+  aprovada ficava de pé e o morador descobria no dia. Agora ele cancela
+  com um motivo, o morador recebe por e-mail e vê na tela, e o horário
+  fica livre. Fica registrado quem cancelou e quando — o morador, o
+  síndico, ou a inativação do espaço ou do cadastro.
+- Cada espaço tem as suas regras: o salão funciona até as 22h (lei do
+  silêncio), precisa ser reservado com dois dias de antecedência, a
+  churrasqueira vale por no máximo seis horas, cada apartamento pode ter
+  uma reserva futura do salão por vez. Nada disso existia: qualquer
+  horário passava. Agora o síndico define essas regras, todas opcionais,
+  o morador as vê ao escolher o espaço, e a API as confere no pedido. O
+  limite conta o apartamento inteiro, e não só quem pede.
+- A diarista que vem toda terça e sexta, o pedreiro da reforma, os
+  convidados do aniversário: a portaria interfonava a cada entrada, e a
+  pessoa esperava a resposta de um morador que podia estar no trabalho —
+  depois de duas horas sem resposta, ficava do lado de fora. Agora o
+  morador deixa a entrada autorizada pela tela nova "Visitantes", com o
+  período, os dias da semana e, se quiser, o CPF; a portaria vê quem está
+  autorizado para hoje, digita o CPF do documento apresentado e registra
+  a entrada, e o morador recebe o aviso. A portaria vê só o meio do CPF
+  autorizado, para não bastar copiá-lo da tela; a autorização de quem se
+  mudou deixa de valer sozinha; e duas portarias registrando a mesma
+  pessoa ao mesmo tempo não a colocam "dentro" duas vezes.
+- O boleto venceu e o morador paga dez dias depois: o sistema cobrava o
+  mesmo valor no dia do vencimento e meses depois, e quem atrasava pagava
+  igual a quem pagava em dia. Agora a cobrança vencida mostra a multa e
+  os juros (Código Civil, art. 1.336, § 1º: multa de até 2% e juros de 1%
+  ao mês, contados por dia) e o total de hoje, que é o valor do botão
+  Pagar. O síndico define os percentuais do condomínio dentro desses
+  limites e, num acordo, recebe sem os encargos — e a dispensa fica
+  registrada. No pagamento parcial, o dinheiro abate primeiro a multa e
+  os juros (art. 354), como manda a lei.
+- "Falta de água no bloco B amanhã" ia para o condomínio inteiro, e a
+  advertência por barulho também — à vista dos vizinhos, um dado que
+  expõe o morador. Agora o síndico escolhe para quem: todo o condomínio,
+  um bloco ou um apartamento. O de bloco aparece só para quem mora nele
+  (e para a portaria); o de um apartamento, só para quem mora lá desde
+  antes da publicação — nem os vizinhos, nem a portaria, nem o morador
+  que chegar depois o veem, e nem conseguem marcá-lo como lido.
+- O apartamento está vazio, à venda, ou o novo morador ainda não se
+  cadastrou: a portaria registrava o visitante, o aviso não chegava a
+  ninguém e ele esperava duas horas por uma confirmação que nunca viria;
+  a encomenda do morador que se mudou ficava na portaria sem ninguém
+  saber. Agora a lista de unidades da portaria marca as "sem morador", a
+  tela avisa ao escolher uma delas, o visitante fica registrado direto
+  como "sem resposta" e quem recebe o aviso — do visitante e da
+  encomenda — é o síndico.
+
+**Erros achados.**
+- No painel do síndico, num monitor de 1440px, a marca "SmartCondo"
+  aparecia cortada: a barra dos painéis tem 480px em qualquer tela, e o
+  botão "Mensagens" por extenso, o nome e o "Sair" não deixavam lugar
+  para ela. Ali o botão fica só com o ícone, como no celular, e ganhou
+  nome acessível desde o início (antes só o recebia depois de carregar
+  o contador de não lidas).
+- O morador nunca via o motivo de uma recusa: a tela só o mostrava nas
+  reservas em aberto, e a recusada ia direto para o histórico. Agora a
+  recusada e a cancelada pelo síndico que ainda estão por vir aparecem
+  no topo, com o motivo, e o histórico também o mostra.
+
 ## Versão 2.6 — espaços comuns pelo síndico e autoria também do síndico
 
 | Seção | O que mudou |

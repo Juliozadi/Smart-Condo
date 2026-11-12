@@ -37,8 +37,15 @@ RECORTES = [
         "leituras_comunicado", "documentos", "ocorrencias", "ordens_servico", "mensagens",
     ]),
     ("Financeiro e portaria", [
-        "cobrancas", "pagamentos", "preferencias_cobranca",
-        "visitantes", "encomendas", "movimentacoes_veiculo",
+        "cobrancas", "pagamentos", "preferencias_cobranca", "acordos",
+        "visitantes", "autorizacoes_visita", "encomendas", "movimentacoes_veiculo",
+        "movimentacoes_chave", "chaves", "veiculos_unidade", "ciencias_anotacao",
+        "anotacoes_portaria",
+    ]),
+    ("Gestão — assembleias, contas, mudanças, reformas, infrações, declarações e manutenção", [
+        "assembleias", "itens_pauta", "votos", "despesas", "mudancas", "horarios_mudanca",
+        "reformas", "infracoes", "declaracoes_quitacao", "planos_manutencao",
+        "realizacoes_manutencao",
     ]),
 ]
 
@@ -175,11 +182,20 @@ def figura_geral(tabelas, ligacoes, arquivo):
         "registros_ocupacao": (0.17, 0.54), "comunicados": (0.17, 0.38),
         "leituras_comunicado": (0.17, 0.22), "documentos": (0.17, 0.07),
         "ocorrencias": (0.83, 0.86), "ordens_servico": (0.83, 0.70),
-        "cobrancas": (0.83, 0.54), "pagamentos": (0.83, 0.38),
+        "cobrancas": (0.83, 0.54), "pagamentos": (0.83, 0.38), "acordos": (0.935, 0.46),
         "preferencias_cobranca": (0.83, 0.22), "visitantes": (0.83, 0.07),
         "encomendas": (0.335, 0.30), "movimentacoes_veiculo": (0.665, 0.30),
         "mensagens": (0.335, 0.56), "documentos_cadastro": (0.665, 0.56),
-        "registros_alteracao": (0.665, 0.76),
+        "registros_alteracao": (0.665, 0.76), "autorizacoes_visita": (0.68, 0.14),
+        "despesas": (0.335, 0.76), "veiculos_unidade": (0.70, 0.44),
+        "mudancas": (0.335, 0.14), "horarios_mudanca": (0.335, 0.86),
+        "infracoes": (0.17, 0.30),
+        "anotacoes_portaria": (0.665, 0.86), "ciencias_anotacao": (0.845, 0.78),
+        "declaracoes_quitacao": (0.658, 0.66),
+        "planos_manutencao": (0.17, 0.78), "realizacoes_manutencao": (0.34, 0.66),
+        "chaves": (0.335, 0.07), "movimentacoes_chave": (0.17, 0.145),
+        "reformas": (0.375, 0.42),
+        "assembleias": (0.17, 0.62), "itens_pauta": (0.10, 0.46), "votos": (0.27, 0.46),
     }
     for origem, _, destino in ligacoes:
         if origem == destino or origem not in pos or destino not in pos:

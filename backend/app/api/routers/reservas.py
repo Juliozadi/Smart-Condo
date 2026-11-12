@@ -8,25 +8,31 @@ from __future__ import annotations
 from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import and_, or_, select, update
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.api.deps import exigir_condominio, exigir_papel, get_usuario_atual
+from app.api.deps import (
+    exigir_condominio, exigir_morador_residente, exigir_papel,
+)
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.tempo import agora_local, hoje_local
 from app.models.condominio import Unidade
-from app.models.enums import Papel, StatusReserva
+from app.models.enums import CanalVerificacao, Papel, StatusReserva
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
 from app.models.usuario import Usuario
 from app.schemas.comuns import Mensagem
 from app.schemas.condominio import (
     EspacoAtualizacao, EspacoEntrada, EspacoSaida, OcupacaoEntrada, OcupacaoSaida,
+    conferir_par_de_horarios,
 )
 from app.schemas.reserva import (
-    AvaliacaoReserva, OcupacaoAgenda, ReservaEntrada, ReservaSaida, ReservaSindicoSaida,
+    AvaliacaoReserva, CancelamentoReserva, OcupacaoAgenda, ReservaEntrada, ReservaSaida,
+    ReservaSindicoSaida,
 )
-from app.services import registro
+from app.services import cobrancas as servico_cobrancas
+from app.services import notificacao, registro
+from app.services.agenda import encerrar_passadas, ja_comecou
 
 router = APIRouter(prefix="/espacos", tags=["Espaços e Reservas"])
 
@@ -54,14 +60,20 @@ def _espacos_saida(db: Session, espacos, com_autoria: bool) -> list[EspacoSaida]
 
 
 def _ja_comecou(reserva: Reserva) -> bool:
-    """A reserva de ontem, ou a de hoje cujo horário já chegou."""
-    agora = agora_local()
-    return reserva.data < agora.date() or (
-        reserva.data == agora.date() and reserva.hora_inicio <= agora.time()
+    return ja_comecou(reserva, agora_local())
+
+
+MOTIVO_ESPACO_INATIVADO = "O espaço foi inativado pelo síndico."
+
+
+def _avisar_cancelamento(reserva: Reserva, espaco_nome: str) -> None:
+    """O morador fica sabendo antes do dia, e não ao chegar no salão."""
+    notificacao.notificar(
+        reserva.morador.email, CanalVerificacao.EMAIL, "Reserva cancelada",
+        f"Sua reserva de {espaco_nome} em {reserva.data:%d/%m/%Y}, das "
+        f"{reserva.hora_inicio:%H:%M} às {reserva.hora_fim:%H:%M}, foi cancelada pelo "
+        f"síndico. Motivo: {reserva.motivo_cancelamento}",
     )
-
-
-MOTIVO_SEM_AVALIACAO = "O horário chegou sem a avaliação do síndico."
 
 
 def _encerrar_passadas(db: Session, condominio_id: int) -> None:
@@ -70,30 +82,65 @@ def _encerrar_passadas(db: Session, condominio_id: int) -> None:
     pendente para sempre. Como a cobrança vencida, isso se acerta na
     consulta: a aprovada cujo horário terminou vira concluída, e a
     pendente cujo horário chegou sem avaliação vira recusada."""
-    agora = agora_local()
-    hoje, hora = agora.date(), agora.time()
     do_condominio = select(EspacoComum.id).where(EspacoComum.condominio_id == condominio_id)
-    db.execute(
-        update(Reserva)
-        .where(
-            Reserva.espaco_id.in_(do_condominio),
-            Reserva.status == StatusReserva.APROVADA,
-            or_(Reserva.data < hoje, and_(Reserva.data == hoje, Reserva.hora_fim <= hora)),
+    encerrar_passadas(db, Reserva, StatusReserva, Reserva.espaco_id.in_(do_condominio),
+                      agora_local())
+
+
+def _plural(n: int, singular: str, plural: str) -> str:
+    return f"{n} {singular if n == 1 else plural}"
+
+
+def _conferir_regras(db: Session, espaco: EspacoComum, morador: Usuario,
+                     dados: ReservaEntrada, hoje: date) -> None:
+    """As regras de uso que o síndico definiu para o espaço (vazio = sem a
+    regra). Roda com o espaço travado, então o limite por apartamento vale
+    também para dois pedidos feitos ao mesmo tempo."""
+    dias = espaco.antecedencia_minima_dias
+    if dias and dados.data < hoje + timedelta(days=dias):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(f"Este espaço precisa ser reservado com pelo menos "
+                    f"{_plural(dias, 'dia', 'dias')} de antecedência."),
         )
-        .values(status=StatusReserva.CONCLUIDA)
-        .execution_options(synchronize_session=False)
-    )
-    db.execute(
-        update(Reserva)
-        .where(
-            Reserva.espaco_id.in_(do_condominio),
-            Reserva.status == StatusReserva.PENDENTE,
-            or_(Reserva.data < hoje, and_(Reserva.data == hoje, Reserva.hora_inicio <= hora)),
+    abre, fecha = espaco.horario_abertura, espaco.horario_fechamento
+    if abre is not None and fecha is not None and (
+            dados.hora_inicio < abre or dados.hora_fim > fecha):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Este espaço funciona das {abre:%H:%M} às {fecha:%H:%M}.",
         )
-        .values(status=StatusReserva.RECUSADA, motivo_recusa=MOTIVO_SEM_AVALIACAO)
-        .execution_options(synchronize_session=False)
-    )
-    db.commit()
+    horas = espaco.duracao_maxima_horas
+    if horas:
+        minutos = ((dados.hora_fim.hour * 60 + dados.hora_fim.minute)
+                   - (dados.hora_inicio.hour * 60 + dados.hora_inicio.minute))
+        if minutos > horas * 60:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(f"Cada reserva deste espaço pode durar no máximo "
+                        f"{_plural(horas, 'hora', 'horas')}."),
+            )
+    limite = espaco.limite_por_unidade
+    if limite and morador.unidade_id is not None:
+        # Conta o apartamento inteiro: a filha não reserva de novo o salão
+        # que a mãe já reservou.
+        do_apartamento = db.scalar(
+            select(func.count(Reserva.id))
+            .join(Usuario, Usuario.id == Reserva.morador_id)
+            .where(
+                Reserva.espaco_id == espaco.id,
+                Reserva.status.in_(STATUS_QUE_OCUPAM),
+                Reserva.data >= hoje,
+                Usuario.unidade_id == morador.unidade_id,
+            )
+        ) or 0
+        if do_apartamento >= limite:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=(f"Seu apartamento já tem "
+                        f"{_plural(do_apartamento, 'reserva futura', 'reservas futuras')} "
+                        f"deste espaço; o limite é {limite} por apartamento."),
+            )
 
 
 def _para_saida(reserva: Reserva) -> ReservaSaida:
@@ -108,6 +155,13 @@ def _para_saida(reserva: Reserva) -> ReservaSaida:
         observacoes=reserva.observacoes,
         status=reserva.status,
         motivo_recusa=reserva.motivo_recusa,
+        cancelada_pelo_sindico=(reserva.status == StatusReserva.CANCELADA
+                                and reserva.cancelada_por_id is not None
+                                and reserva.cancelada_por_id != reserva.morador_id),
+        motivo_cancelamento=reserva.motivo_cancelamento,
+        taxa_uso=(reserva.cobranca.valor if reserva.cobranca else
+                  reserva.espaco.taxa_uso if reserva.status == StatusReserva.PENDENTE else None),
+        cobranca_id=reserva.cobranca_id,
         criado_em=reserva.criado_em,
     )
 
@@ -156,6 +210,10 @@ def cadastrar_espaco(
 ROTULOS_ESPACO = {
     "nome": "o nome", "descricao": "a descrição", "capacidade": "a capacidade",
     "reservavel": "o tipo", "uso_livre": "o tipo", "em_manutencao": "a manutenção",
+    "horario_abertura": "o horário", "horario_fechamento": "o horário",
+    "antecedencia_minima_dias": "a antecedência", "duracao_maxima_horas": "a duração máxima",
+    "limite_por_unidade": "o limite por apartamento",
+    "taxa_uso": "a taxa de uso",
 }
 
 
@@ -179,14 +237,24 @@ def editar_espaco(
     uso_livre = novos.get("uso_livre", espaco.uso_livre)
     if not reservavel and not uso_livre:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=422,
             detail="O espaço precisa ser reservável ou de uso livre.",
         )
+    erro = conferir_par_de_horarios(novos.get("horario_abertura", espaco.horario_abertura),
+                                    novos.get("horario_fechamento", espaco.horario_fechamento))
+    abre = novos.get("horario_abertura", espaco.horario_abertura)
+    fecha = novos.get("horario_fechamento", espaco.horario_fechamento)
+    if not erro and abre is not None and fecha <= abre:
+        erro = "O horário de fechamento precisa ser depois do de abertura."
+    if erro:
+        raise HTTPException(status_code=422, detail=erro)
     mudaram = {c: v for c, v in novos.items() if getattr(espaco, c) != v}
-    # "reservavel" e "uso_livre" mudam juntos quando o tipo troca: um rótulo só.
+    # Campos que mudam juntos (o tipo; o horário): um rótulo só.
     rotulos = dict(ROTULOS_ESPACO)
     if "reservavel" in mudaram and "uso_livre" in mudaram:
         rotulos.pop("uso_livre")
+    if "horario_abertura" in mudaram and "horario_fechamento" in mudaram:
+        rotulos.pop("horario_fechamento")
     descricao = registro.campos_alterados(espaco, mudaram, rotulos)
     for campo, valor in mudaram.items():
         setattr(espaco, campo, valor)
@@ -212,17 +280,24 @@ def inativar_espaco(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Este espaço já está inativo."
         )
-    canceladas = db.execute(
-        update(Reserva)
+    afetadas = db.scalars(
+        select(Reserva)
         .where(
             Reserva.espaco_id == espaco.id,
             Reserva.status.in_(STATUS_QUE_OCUPAM),
             Reserva.data >= hoje_local(),
         )
-        .values(status=StatusReserva.CANCELADA)
-        .execution_options(synchronize_session=False)
-    ).rowcount
-    espaco.inativo_em = datetime.now(timezone.utc)
+        .options(selectinload(Reserva.morador))
+    ).all()
+    agora = datetime.now(timezone.utc)
+    for reserva in afetadas:
+        reserva.status = StatusReserva.CANCELADA
+        reserva.cancelada_por_id = sindico.id
+        reserva.cancelada_em = agora
+        reserva.motivo_cancelamento = MOTIVO_ESPACO_INATIVADO
+        servico_cobrancas.cancelar_taxa_de_uso(db, reserva.cobranca_id)
+    canceladas = len(afetadas)
+    espaco.inativo_em = agora
     espaco.inativado_por_id = sindico.id
     descricao = None
     if canceladas:
@@ -230,6 +305,8 @@ def inativar_espaco(
                      else f"{canceladas} reservas futuras canceladas")
     registro.registrar(db, sindico, registro.INATIVOU, registro.ESPACO, espaco.id, descricao)
     db.commit()
+    for reserva in afetadas:
+        _avisar_cancelamento(reserva, espaco.nome)
     return Mensagem(detalhe="Espaço inativado." + (f" {descricao}." if descricao else ""))
 
 
@@ -405,7 +482,7 @@ def consultar_agenda(
 )
 def solicitar_reserva(
     dados: ReservaEntrada,
-    morador: Usuario = Depends(exigir_papel(Papel.MORADOR)),
+    morador: Usuario = Depends(exigir_morador_residente),
     db: Session = Depends(get_db),
 ) -> ReservaSaida:
     # Antes da conferência de conflito: a pendente cujo horário chegou sem
@@ -450,6 +527,7 @@ def solicitar_reserva(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Não é possível reservar uma data passada."
         )
+    _conferir_regras(db, espaco, morador, dados, agora.date())
     if espaco.capacidade and dados.pessoas_estimadas and dados.pessoas_estimadas > espaco.capacidade:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -486,7 +564,7 @@ def solicitar_reserva(
 
 @router.get("/reservas/minhas", response_model=list[ReservaSaida], summary="Minhas reservas")
 def minhas_reservas(
-    morador: Usuario = Depends(exigir_papel(Papel.MORADOR)), db: Session = Depends(get_db)
+    morador: Usuario = Depends(exigir_morador_residente), db: Session = Depends(get_db)
 ) -> list[ReservaSaida]:
     _encerrar_passadas(db, morador.condominio_id)
     reservas = db.scalars(
@@ -502,7 +580,7 @@ def minhas_reservas(
 )
 def cancelar_reserva(
     reserva_id: int,
-    morador: Usuario = Depends(exigir_papel(Papel.MORADOR)),
+    morador: Usuario = Depends(exigir_morador_residente),
     db: Session = Depends(get_db),
 ) -> ReservaSaida:
     # Travada até o commit: o síndico pode estar avaliando enquanto o
@@ -525,6 +603,9 @@ def cancelar_reserva(
         )
 
     reserva.status = StatusReserva.CANCELADA
+    reserva.cancelada_por_id = morador.id
+    reserva.cancelada_em = datetime.now(timezone.utc)
+    servico_cobrancas.cancelar_taxa_de_uso(db, reserva.cobranca_id)
     db.commit()
     db.refresh(reserva)
     return _para_saida(reserva)
@@ -600,9 +681,70 @@ def avaliar_reserva(
     reserva.motivo_recusa = None if dados.aprovada else dados.motivo
     reserva.avaliada_por_id = sindico.id
     reserva.avaliada_em = datetime.now(timezone.utc)
+    # A taxa de uso do espaço entra nas cobranças do apartamento.
+    if dados.aprovada and reserva.morador.unidade_id:
+        taxa = servico_cobrancas.gerar_taxa_de_uso(db, reserva, reserva.espaco,
+                                                    reserva.morador.unidade_id, hoje_local())
+        if taxa is not None:
+            registro.registrar(db, sindico, registro.CRIOU, registro.COBRANCA, taxa.id,
+                               f"Taxa de uso da reserva {reserva.id}")
 
     db.commit()
     db.refresh(reserva)
+
+    unidade = db.get(Unidade, reserva.morador.unidade_id) if reserva.morador.unidade_id else None
+    return ReservaSindicoSaida(
+        **_para_saida(reserva).model_dump(),
+        morador_id=reserva.morador_id,
+        morador_nome=reserva.morador.nome,
+        unidade=unidade.identificacao if unidade else None,
+    )
+
+
+@router.post(
+    "/reservas/{reserva_id}/cancelamento",
+    response_model=ReservaSindicoSaida,
+    summary="O síndico cancela uma reserva já aprovada",
+)
+def cancelar_pelo_sindico(
+    reserva_id: int,
+    dados: CancelamentoReserva,
+    sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
+    db: Session = Depends(get_db),
+) -> ReservaSindicoSaida:
+    """Vazamento no salão, obra, evento do condomínio: a aprovada ficava de
+    pé e o morador só descobria no dia. O motivo vai para ele por e-mail e
+    aparece na tela; o horário volta a ficar livre."""
+    # Travada: o morador pode estar cancelando ao mesmo tempo.
+    reserva = db.get(Reserva, reserva_id, with_for_update=True)
+    if reserva is None or reserva.espaco.condominio_id != sindico.condominio_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Reserva não encontrada."
+        )
+    if reserva.status == StatusReserva.PENDENTE:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Esta reserva ainda está pendente: use Recusar, com o motivo.",
+        )
+    if reserva.status != StatusReserva.APROVADA:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Só a reserva aprovada pode ser cancelada.",
+        )
+    if _ja_comecou(reserva):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Esta reserva já começou e não pode mais ser cancelada.",
+        )
+
+    reserva.status = StatusReserva.CANCELADA
+    reserva.cancelada_por_id = sindico.id
+    reserva.cancelada_em = datetime.now(timezone.utc)
+    reserva.motivo_cancelamento = dados.motivo
+    servico_cobrancas.cancelar_taxa_de_uso(db, reserva.cobranca_id)
+    db.commit()
+    db.refresh(reserva)
+    _avisar_cancelamento(reserva, reserva.espaco.nome)
 
     unidade = db.get(Unidade, reserva.morador.unidade_id) if reserva.morador.unidade_id else None
     return ReservaSindicoSaida(

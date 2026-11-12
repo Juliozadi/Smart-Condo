@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,9 +17,12 @@ from sqlalchemy.exc import DataError, IntegrityError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.routers import (
-    admin, arquivos, auth, comunicados, condominios, documentos, financeiro, manutencao,
-    mensagens,
-    portaria, reservas, usuarios, veiculos,
+    acordos, admin, arquivos, assembleias, auth, banco, chaves, comunicados, condominios, contas,
+    declaracoes,
+    documentos, financeiro,
+    infracoes, livro,
+    manutencao, mensagens, mudancas, portaria, preventiva, reformas, reservas, usuarios,
+    veiculos,
 )
 from app.core.config import settings
 from app.core.corpo import LimiteDeCorpo
@@ -206,8 +209,19 @@ app.include_router(usuarios.router, prefix="/api/v1")
 app.include_router(reservas.router, prefix="/api/v1")
 app.include_router(portaria.router, prefix="/api/v1")
 app.include_router(financeiro.router, prefix="/api/v1")
+app.include_router(contas.router, prefix="/api/v1")
+app.include_router(acordos.router, prefix="/api/v1")
+app.include_router(banco.router, prefix="/api/v1")
 app.include_router(comunicados.router, prefix="/api/v1")
+app.include_router(assembleias.router, prefix="/api/v1")
 app.include_router(veiculos.router, prefix="/api/v1")
+app.include_router(mudancas.router, prefix="/api/v1")
+app.include_router(reformas.router, prefix="/api/v1")
+app.include_router(infracoes.router, prefix="/api/v1")
+app.include_router(livro.router, prefix="/api/v1")
+app.include_router(declaracoes.router, prefix="/api/v1")
+app.include_router(preventiva.router, prefix="/api/v1")
+app.include_router(chaves.router, prefix="/api/v1")
 app.include_router(manutencao.router, prefix="/api/v1")
 app.include_router(documentos.router, prefix="/api/v1")
 app.include_router(arquivos.router, prefix="/api/v1")

@@ -40,6 +40,10 @@ def test_sindico_registra_pagamento_recebido(navegador):
     linha = pg.locator("#tabelaCobrancas .table-row", has=pg.locator(f'[title="{titulo}"]'))
     pago_antes = pago(linha.get_attribute("title"))
     botao.click()
+    # Em atraso, R$ 1,00 não cobre a multa e os juros: o síndico dispensa
+    # os encargos (acordo), e o real inteiro abate o valor.
+    if pg.locator("#grupoDispensar").is_visible():
+        pg.check("#pDispensar")
     pg.fill("#pValor", "1.00")
     pg.select_option("#pForma", "boleto")
     pg.fill("#pObservacao", "Pago no banco")

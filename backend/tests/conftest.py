@@ -35,6 +35,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 
 import app.models  # noqa: E402,F401  (registra as tabelas no metadata)
+from app.core import objetos_banco  # noqa: E402
 from app.core.database import Base, SessionLocal, engine, get_db  # noqa: E402
 from app.main import app as aplicacao  # noqa: E402
 
@@ -45,8 +46,21 @@ def schema_de_teste():
         conexao.execute(text("DROP SCHEMA public CASCADE"))
         conexao.execute(text("CREATE SCHEMA public"))
     Base.metadata.create_all(engine)
+    # As visões, funções e gatilhos que a migração instala: a suíte toda
+    # roda com eles, como o sistema de verdade.
+    _sql_puro(objetos_banco.CRIAR)
     yield
+    _sql_puro(objetos_banco.REMOVER)
     Base.metadata.drop_all(engine)
+
+
+def _sql_puro(sql):
+    conexao = engine.raw_connection()
+    try:
+        conexao.driver_connection.execute(sql)
+        conexao.commit()
+    finally:
+        conexao.close()
 
 
 @pytest.fixture(autouse=True)

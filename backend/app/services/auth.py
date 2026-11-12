@@ -5,34 +5,36 @@ Documentação, seção 12 — casos de uso "Cadastro", "Login do usuário" e
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta, timezone
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, object_session
 
 from app.core.config import settings
+from app.core.tempo import agora_utc
 from app.core.security import (
     conferir_codigo, conferir_senha, gerar_codigo_verificacao, gerar_hash_codigo,
     gerar_hash_senha,
 )
 from app.models.enums import CanalVerificacao, FinalidadeCodigo, Papel, StatusUsuario
 from app.models.usuario import CodigoVerificacao, Usuario
-from app.services import notificacao
+from app.services import notificacao, perfis
 
 MAX_TENTATIVAS_CODIGO = 5
 
 
-def _agora() -> datetime:
-    return datetime.now(timezone.utc)
-
-
+# Login, recuperação de senha e "já existe cadastro" olham só o cadastro
+# principal da pessoa: os perfis vinculados repetem e-mail e CPF, sem
+# login próprio (services/perfis.py).
 def buscar_por_email(db: Session, email: str) -> Usuario | None:
-    return db.scalar(select(Usuario).where(Usuario.email == email.lower()))
+    return db.scalar(select(Usuario).where(
+        Usuario.email == email.lower(), Usuario.conta_principal_id.is_(None)))
 
 
 def buscar_por_cpf(db: Session, cpf: str) -> Usuario | None:
-    return db.scalar(select(Usuario).where(Usuario.cpf == cpf))
+    return db.scalar(select(Usuario).where(
+        Usuario.cpf == cpf, Usuario.conta_principal_id.is_(None)))
 
 
 def garantir_email_e_cpf_livres(db: Session, email: str, cpf: str) -> None:
@@ -73,7 +75,7 @@ def cadastro_abandonado(db: Session, email: str, cpf: str) -> Usuario | None:
     ):
         garantir_email_e_cpf_livres(db, email, cpf)
     usuario = next(iter(encontrados.values()))
-    agora = _agora()
+    agora = agora_utc()
     codigo_valido = db.scalar(
         select(CodigoVerificacao.id).where(
             CodigoVerificacao.usuario_id == usuario.id, CodigoVerificacao.expira_em > agora,
@@ -94,7 +96,7 @@ class CodigoMuitoFrequente(Exception):
 
 
 def _pode_emitir(db: Session, usuario: Usuario, finalidade: FinalidadeCodigo) -> bool:
-    agora = _agora()
+    agora = agora_utc()
     validade = timedelta(minutes=settings.CODIGO_VERIFICACAO_EXPIRA_MIN)
     # A tabela guarda só a validade; a emissão é a validade menos o prazo.
     emissoes = [
@@ -139,7 +141,7 @@ def emitir_codigo(
         )
     ).all()
     for pendente in pendentes:
-        pendente.consumido_em = _agora()
+        pendente.consumido_em = agora_utc()
 
     destino = usuario.email if canal == CanalVerificacao.EMAIL else usuario.telefone
     codigo = gerar_codigo_verificacao()
@@ -149,7 +151,7 @@ def emitir_codigo(
         codigo_hash=gerar_hash_codigo(codigo),
         finalidade=finalidade,
         canal=canal,
-        expira_em=_agora() + timedelta(minutes=settings.CODIGO_VERIFICACAO_EXPIRA_MIN),
+        expira_em=agora_utc() + timedelta(minutes=settings.CODIGO_VERIFICACAO_EXPIRA_MIN),
         destino=destino,
     )
     db.add(registro)
@@ -194,8 +196,8 @@ def validar_codigo(
     # contagem volta a zero — o limite de tentativas nunca fecharia e
     # o código de seis dígitos poderia ser descoberto por força bruta.
     # Quem chama só commita no caminho de sucesso.
-    if expira_em < _agora():
-        registro.consumido_em = _agora()
+    if expira_em < agora_utc():
+        registro.consumido_em = agora_utc()
         db.commit()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -203,7 +205,7 @@ def validar_codigo(
         )
 
     if registro.tentativas >= MAX_TENTATIVAS_CODIGO:
-        registro.consumido_em = _agora()
+        registro.consumido_em = agora_utc()
         db.commit()
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -218,7 +220,7 @@ def validar_codigo(
             detail="Código incorreto.",
         )
 
-    registro.consumido_em = _agora()
+    registro.consumido_em = agora_utc()
     return registro
 
 
@@ -242,7 +244,7 @@ def _minutos_de_bloqueio_restantes(usuario: Usuario) -> int:
     bloqueado_ate = usuario.bloqueado_ate
     if bloqueado_ate.tzinfo is None:
         bloqueado_ate = bloqueado_ate.replace(tzinfo=timezone.utc)
-    restante = bloqueado_ate - _agora()
+    restante = bloqueado_ate - agora_utc()
     if restante.total_seconds() <= 0:
         return 0
     return max(1, -(-int(restante.total_seconds()) // 60))
@@ -252,7 +254,7 @@ def _contar_senha_errada(db: Session, usuario: Usuario) -> None:
     """Soma uma tentativa e tranca a conta ao estourar o limite."""
     usuario.tentativas_login += 1
     if usuario.tentativas_login >= settings.MAX_TENTATIVAS_LOGIN:
-        usuario.bloqueado_ate = _agora() + timedelta(minutes=settings.BLOQUEIO_LOGIN_MIN)
+        usuario.bloqueado_ate = agora_utc() + timedelta(minutes=settings.BLOQUEIO_LOGIN_MIN)
         usuario.tentativas_login = 0
     # Precisa gravar aqui: quem chamou vai receber exceção e não commita.
     db.commit()
@@ -274,7 +276,7 @@ def autenticar(db: Session, email: str, senha: str) -> Usuario:
     # disparava (40 senhas conferidas em paralelo, contra um limite de 5).
     usuario = db.scalar(
         select(Usuario)
-        .where(Usuario.email == email.lower())
+        .where(Usuario.email == email.lower(), Usuario.conta_principal_id.is_(None))
         .with_for_update()
         .execution_options(populate_existing=True)
     )
@@ -314,8 +316,13 @@ def autenticar(db: Session, email: str, senha: str) -> Usuario:
 
 
 def encerrar_sessoes(usuario: Usuario) -> None:
-    """Invalida todos os tokens já emitidos para o usuário."""
-    usuario.versao_sessao = (usuario.versao_sessao or 0) + 1
+    """Invalida todos os tokens já emitidos para a pessoa, em todos os
+    perfis: a senha é uma só, e quem roubou a sessão de um perfil não
+    pode continuar no outro."""
+    db = object_session(usuario)
+    alvos = perfis.da_pessoa(db, usuario) if db is not None else [usuario]
+    for perfil in alvos:
+        perfil.versao_sessao = (perfil.versao_sessao or 0) + 1
 
 
 def trocar_senha(db: Session, usuario: Usuario, senha_atual: str, nova_senha: str) -> None:

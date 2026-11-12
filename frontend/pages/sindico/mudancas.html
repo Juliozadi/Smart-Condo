@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Mudanças</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script><script src="../../assets/js/formato.js"></script><link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-desktop">
+  <header class="app-bar"><div class="app-bar-inner wide">
+    <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
+    <div class="app-bar-right"><a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role">Síndico</span></a><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
+  </div></header>
+  <main class="dash-wrapper wide">
+    <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
+    <div class="dash-greeting">
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/box-open.svg" width="26" height="26" alt=""> Mudanças</h1>
+      <p class="greeting-condo">Os moradores pedem o dia e o horário; você aprova, e a portaria fica sabendo</p>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Regras do Regimento</h2>
+    <div class="form-card">
+      <ul class="regras-mudanca" id="regrasMudanca"></ul>
+      <button type="button" class="contato-btn" id="btnEditarRegras" aria-expanded="false"
+              aria-controls="formRegras">Editar as regras</button>
+      <form id="formRegras" class="regras-form" novalidate hidden>
+        <div class="form-group regras-antecedencia">
+          <label for="rAntecedencia">Aviso mínimo (dias)</label>
+          <input type="number" id="rAntecedencia" min="0" max="60" step="1" required>
+        </div>
+        <fieldset class="regras-dias">
+          <legend>Dias e horários permitidos</legend>
+          <div id="regrasDias"></div>
+        </fieldset>
+        <p class="captura-dica">Valem para os pedidos feitos daqui em diante; as mudanças já
+        agendadas continuam de pé.</p>
+        <p class="form-erro" id="erroRegras" role="alert"></p>
+        <button type="submit" class="action-btn compacto">Salvar as regras</button>
+      </form>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/clock.svg" width="16" height="16" alt=""> Para Avaliar</h2>
+    <div class="reserve-list" id="listaPendentes" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoPendentes">Carregando…</p>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt=""> Agendadas</h2>
+    <div class="reserve-list" id="listaAprovadas"></div>
+    <p class="estado-lista" id="estadoAprovadas"></p>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/scroll.svg" width="16" height="16" alt=""> Histórico</h2>
+    <div class="reserve-list" id="listaHistorico"></div>
+    <p class="estado-lista" id="estadoHistorico"></p>
+  </main>
+
+<script src="../../assets/js/mudancas.js"></script>
+<script>
+/* Mudanças para o síndico: aprova ou recusa (com motivo) as pedidas,
+   cancela uma agendada se precisar (o morador recebe o motivo) e vê o
+   histórico. */
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api, mudancas = window.SmartCondo.mudancas;
+  var usuario = api.protegerPagina('sindico');
+  if (!usuario) return;
+
+  function campo(id) { return document.getElementById(id); }
+  function botao(texto, classe, rotulo, acao) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'contato-btn' + (classe ? ' ' + classe : '');
+    b.textContent = texto;
+    b.setAttribute('aria-label', rotulo);
+    b.addEventListener('click', function() { acao(b); });
+    return b;
+  }
+  function enviar(b, caminho, corpo) {
+    b.disabled = true;
+    api.post(caminho, corpo).then(carregar)
+      .catch(function(e) { b.disabled = false; alert(e.message); });
+  }
+  function pedirMotivo(pergunta) {
+    var motivo = prompt(pergunta, '');
+    if (motivo === null) return null;
+    if (motivo.trim().length < 3) { alert('Informe o motivo; o morador recebe.'); return null; }
+    return motivo.trim();
+  }
+
+  function preencher(lista, idLista, idEstado, vazio, comAcoes) {
+    var caixa = campo(idLista);
+    caixa.innerHTML = '';
+    campo(idEstado).textContent = lista.length ? '' : vazio;
+    lista.forEach(function(m) {
+      var card = mudancas.cartao(m, true);
+      var quando = 'do apto ' + m.unidade + ' em ' + m.data.split('-').reverse().join('/');
+      if (comAcoes && m.status === 'pendente') {
+        card.acoes.appendChild(botao('Aprovar', null, 'Aprovar a mudança ' + quando, function(b) {
+          enviar(b, '/mudancas/' + m.id + '/avaliacao', { aprovada: true });
+        }));
+        card.acoes.appendChild(botao('Recusar', 'perigo-texto', 'Recusar a mudança ' + quando, function(b) {
+          var motivo = pedirMotivo('Motivo da recusa (o morador recebe):');
+          if (motivo) enviar(b, '/mudancas/' + m.id + '/avaliacao', { aprovada: false, motivo: motivo });
+        }));
+      }
+      if (comAcoes && m.status === 'aprovada') {
+        card.acoes.appendChild(botao('Cancelar', 'perigo-texto', 'Cancelar a mudança ' + quando, function(b) {
+          var motivo = pedirMotivo('Motivo do cancelamento (o morador recebe):');
+          if (motivo) enviar(b, '/mudancas/' + m.id + '/cancelamento', { motivo: motivo });
+        }));
+      }
+      caixa.appendChild(card);
+    });
+  }
+
+  function carregar() {
+    return api.get('/mudancas').then(function(lista) {
+      function crescente(a, b) { return (a.data + a.hora_inicio) < (b.data + b.hora_inicio) ? -1 : 1; }
+      var pendentes = lista.filter(function(m) { return m.status === 'pendente'; }).sort(crescente);
+      var aprovadas = lista.filter(function(m) { return m.status === 'aprovada'; }).sort(crescente);
+      var historico = lista.filter(function(m) {
+        return m.status !== 'pendente' && m.status !== 'aprovada';
+      }).slice(0, 30);
+      preencher(pendentes, 'listaPendentes', 'estadoPendentes', 'Nenhuma mudança esperando avaliação.', true);
+      preencher(aprovadas, 'listaAprovadas', 'estadoAprovadas', 'Nenhuma mudança agendada.', true);
+      preencher(historico, 'listaHistorico', 'estadoHistorico', 'Nada no histórico ainda.', false);
+    }).catch(function(e) { campo('estadoPendentes').textContent = e.message; });
+  }
+
+  // ── Regras do regimento: o síndico define os dias e horários ──────
+  var NOMES = ['', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+  function mostrarRegras(r) {
+    var ul = campo('regrasMudanca');
+    ul.innerHTML = '';
+    mudancas.frasesDasRegras(r).forEach(function(frase) {
+      var li = document.createElement('li');
+      li.textContent = frase;
+      ul.appendChild(li);
+    });
+    campo('rAntecedencia').value = r.antecedencia_minima_dias;
+    var caixa = campo('regrasDias');
+    caixa.innerHTML = '';
+    for (var dia = 1; dia <= 7; dia++) {
+      var h = r.horarios[dia];
+      var linha = document.createElement('div');
+      linha.className = 'regra-dia';
+      linha.dataset.dia = dia;
+      linha.innerHTML =
+        '<label class="regra-dia-nome"><input type="checkbox" id="rPermite' + dia + '" class="regra-permite"> ' +
+          NOMES[dia] + '</label>' +
+        '<label class="oculto-acessivel" for="rIni' + dia + '">Início — ' + NOMES[dia] + '</label>' +
+        '<input type="time" id="rIni' + dia + '" class="regra-inicio" step="900">' +
+        '<span aria-hidden="true">às</span>' +
+        '<label class="oculto-acessivel" for="rFim' + dia + '">Fim — ' + NOMES[dia] + '</label>' +
+        '<input type="time" id="rFim' + dia + '" class="regra-fim" step="900">';
+      var permite = linha.querySelector('.regra-permite');
+      var ini = linha.querySelector('.regra-inicio'), fim = linha.querySelector('.regra-fim');
+      permite.checked = !!h;
+      ini.value = h ? mudancas.hora(h.inicio) : '08:00';
+      fim.value = h ? mudancas.hora(h.fim) : '18:00';
+      ini.disabled = fim.disabled = !h;
+      permite.addEventListener('change', (function(i, f, p) {
+        return function() { i.disabled = f.disabled = !p.checked; };
+      })(ini, fim, permite));
+      caixa.appendChild(linha);
+    }
+  }
+  campo('btnEditarRegras').addEventListener('click', function() {
+    var form = campo('formRegras');
+    form.hidden = !form.hidden;
+    this.setAttribute('aria-expanded', String(!form.hidden));
+  });
+  campo('formRegras').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('erroRegras');
+    erro.className = 'form-erro';
+    erro.textContent = '';
+    var horarios = {};
+    var problema = '';
+    campo('regrasDias').querySelectorAll('.regra-dia').forEach(function(linha) {
+      if (!linha.querySelector('.regra-permite').checked) return;
+      var ini = linha.querySelector('.regra-inicio').value, fim = linha.querySelector('.regra-fim').value;
+      if (!ini || !fim || fim <= ini) problema = 'Em ' + NOMES[+linha.dataset.dia].toLowerCase() +
+        ', o fim do horário precisa ser depois do início.';
+      horarios[linha.dataset.dia] = { inicio: ini, fim: fim };
+    });
+    var antecedencia = parseInt(campo('rAntecedencia').value, 10);
+    if (isNaN(antecedencia) || antecedencia < 0 || antecedencia > 60) problema = 'O aviso mínimo vai de 0 a 60 dias.';
+    if (!Object.keys(horarios).length) problema = 'Escolha pelo menos um dia para as mudanças.';
+    if (problema) { erro.textContent = problema; return; }
+    var botao = this.querySelector('button[type=submit]');
+    botao.disabled = true;
+    api.put('/mudancas/regras', { antecedencia_minima_dias: antecedencia, horarios: horarios })
+      .then(function(r) {
+        mostrarRegras(r);
+        erro.className = 'form-erro sucesso';
+        erro.textContent = 'Regras salvas. Os moradores já veem as novas.';
+      })
+      .catch(function(e) { erro.textContent = e.message; })
+      .then(function() { botao.disabled = false; });
+  });
+  api.get('/mudancas/regras').then(mostrarRegras).catch(function() {});
+  campo('hdrName').textContent = usuario.nome;
+  carregar();
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

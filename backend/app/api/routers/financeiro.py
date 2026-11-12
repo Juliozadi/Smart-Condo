@@ -12,21 +12,22 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session, contains_eager
 
-from app.api.deps import exigir_condominio, exigir_papel, exigir_permissao_porteiro
+from app.api.deps import exigir_condominio, exigir_papel
 from app.core.database import get_db
-from app.core.tempo import hoje_local
-from app.models.condominio import Unidade
-from app.models.enums import Papel, StatusCobranca, StatusUsuario
+from app.core.formato import reais
+from app.core.tempo import hoje_local, somar_meses
+from app.models.condominio import Condominio, Unidade
+from app.models.enums import OrigemCobranca, Papel, StatusCobranca, StatusUsuario
 from app.models.financeiro import Cobranca, Pagamento, PreferenciaCobranca
 from app.models.usuario import Usuario
 from app.schemas.financeiro import (
-    CancelamentoCobranca, CobrancaAtualizacao, CobrancaEntrada, CobrancaSaida,
-    PagamentoEntrada, PagamentoSaida,
+    CancelamentoCobranca, CobrancaAtualizacao, CobrancaEntrada, CobrancaLoteEntrada,
+    CobrancaSaida, EncargosCondominio, LoteSaida, PagamentoEntrada, PagamentoSaida,
     PreferenciaCobrancaEntrada, PreferenciaCobrancaSaida, ResumoFinanceiro,
 )
-from app.services import registro
-from app.services import notificacao
-from app.models.enums import CanalVerificacao
+from app.services import encargos as calculo_encargos
+from app.services import destinatarios, registro
+from app.services.cobrancas import ratear, total_pago, totais_pagos
 
 router = APIRouter(prefix="/financeiro", tags=["Financeiro"])
 
@@ -37,40 +38,27 @@ def _hoje() -> date:
     return hoje_local()
 
 
-def _total_pago(db: Session, cobranca_id: int) -> Decimal:
-    """Soma os pagamentos no banco.
-
-    Ler pela relacionamento `cobranca.pagamentos` nao serve logo depois de
-    inserir um pagamento: a coleção já foi carregada antes do flush e fica
-    desatualizada, o que fazia a cobrança quitada continuar em aberto.
-    """
-    total = db.scalar(
-        select(func.coalesce(func.sum(Pagamento.valor), 0)).where(
-            Pagamento.cobranca_id == cobranca_id
-        )
-    )
-    return Decimal(total or 0)
+def _encargos_de(c: Cobranca, pago: Decimal, condominio: Condominio,
+                 dia: date) -> calculo_encargos.Encargos:
+    """Multa e juros se o que falta for pago em `dia`."""
+    if c.status not in (StatusCobranca.ABERTA, StatusCobranca.VENCIDA):
+        return calculo_encargos.SEM_ENCARGOS
+    return calculo_encargos.calcular(c.valor - pago, c.vencimento, dia,
+                                     condominio.multa_atraso, condominio.juros_mensais)
 
 
-def _totais_pagos(db: Session, ids: list[int]) -> dict[int, Decimal]:
-    """O total pago de várias cobranças numa consulta só. Somar uma a uma
-    fazia a lista de um ano de um prédio passar de mil consultas."""
-    if not ids:
-        return {}
-    linhas = db.execute(
-        select(Pagamento.cobranca_id, func.sum(Pagamento.valor))
-        .where(Pagamento.cobranca_id.in_(ids))
-        .group_by(Pagamento.cobranca_id)
-    ).all()
-    return {cobranca_id: Decimal(total) for cobranca_id, total in linhas}
-
-
-def _cobranca_saida(db: Session, c: Cobranca, total_pago: Decimal | None = None) -> CobrancaSaida:
+def _cobranca_saida(db: Session, c: Cobranca, ja_pago: Decimal | None = None,
+                    condominio: Condominio | None = None) -> CobrancaSaida:
+    pago = total_pago(db, c.id) if ja_pago is None else ja_pago
+    encargos = _encargos_de(c, pago, condominio or c.unidade.condominio, _hoje())
+    em_aberto = c.status in (StatusCobranca.ABERTA, StatusCobranca.VENCIDA)
     return CobrancaSaida(
         id=c.id, unidade_id=c.unidade_id, unidade=c.unidade.identificacao,
         competencia=c.competencia, descricao=c.descricao, valor=c.valor,
-        vencimento=c.vencimento, status=c.status,
-        total_pago=_total_pago(db, c.id) if total_pago is None else total_pago,
+        vencimento=c.vencimento, status=c.status, origem=c.origem, acordo_id=c.acordo_id,
+        total_pago=pago,
+        dias_atraso=encargos.dias_atraso, multa=encargos.multa, juros=encargos.juros,
+        total_atualizado=(c.valor - pago + encargos.total) if em_aberto else ZERO,
         criado_em=c.criado_em,
     )
 
@@ -170,7 +158,7 @@ def gerar_cobranca(
     ja_existe = db.scalar(
         select(Cobranca).where(
             Cobranca.unidade_id == unidade.id, Cobranca.competencia == competencia,
-            Cobranca.status != StatusCobranca.CANCELADA,
+            Cobranca.status != StatusCobranca.CANCELADA, Cobranca.origem == OrigemCobranca.TAXA,
         )
     )
     if ja_existe is not None:
@@ -194,6 +182,130 @@ def gerar_cobranca(
     db.commit()
     db.refresh(cobranca)
     return _cobranca_saida(db, cobranca)
+
+
+# Diferença tolerada na soma das frações ideais (arredondamento da convenção).
+TOLERANCIA_FRACOES = Decimal("0.01")
+
+
+@router.post(
+    "/cobrancas/lote",
+    response_model=LoteSaida,
+    status_code=status.HTTP_201_CREATED,
+    summary="Gera as cobranças de todos os apartamentos",
+)
+def gerar_lote(
+    dados: CobrancaLoteEntrada,
+    sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
+    db: Session = Depends(get_db),
+) -> LoteSaida:
+    """A taxa do mês ou uma cota extra para todos os apartamentos, numa
+    chamada só: pelo mesmo valor, ou rateada pela fração ideal de cada um
+    (como manda a maioria das convenções), sem perder centavo. Antes a tela
+    lançava apartamento por apartamento, e um erro no meio deixava metade
+    do prédio cobrado. Na taxa, quem já tem a do mês é pulado; a cota extra
+    se divide em até 24 parcelas mensais."""
+    # Dois lotes ao mesmo tempo (clique duplo) esperam um pelo outro.
+    db.execute(select(func.pg_advisory_xact_lock(
+        sindico.condominio_id, func.hashtext("cobrancas:lote"))))
+    unidades = db.scalars(
+        select(Unidade).where(Unidade.condominio_id == sindico.condominio_id,
+                              Unidade.pendente.is_(False))
+        .order_by(Unidade.bloco, Unidade.numero)
+    ).all()
+    if not unidades:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Nenhum apartamento cadastrado no condomínio.")
+
+    if dados.rateio == "fracao":
+        sem = [u.identificacao for u in unidades if u.fracao_ideal is None]
+        if sem:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Para ratear pela fração ideal, informe a de todos os apartamentos. "
+                       f"Faltam: {', '.join(sem[:10])}{'…' if len(sem) > 10 else ''}.")
+        soma = sum((u.fracao_ideal for u in unidades), Decimal("0"))
+        if abs(soma - 100) > TOLERANCIA_FRACOES:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"As frações ideais somam {soma.normalize():f}%; precisam somar 100%. "
+                       "Confira na convenção.")
+        partes = ratear(dados.valor, [u.fracao_ideal for u in unidades])
+    else:
+        partes = [dados.valor] * len(unidades)
+
+    competencia = dados.competencia.replace(day=1)
+    hoje = _hoje()
+    puladas: list[str] = []
+    geradas: list[Cobranca] = []
+    if dados.tipo == "taxa":
+        ja_tem = set(db.scalars(select(Cobranca.unidade_id).where(
+            Cobranca.unidade_id.in_([u.id for u in unidades]),
+            Cobranca.competencia == competencia, Cobranca.origem == OrigemCobranca.TAXA,
+            Cobranca.status != StatusCobranca.CANCELADA,
+        )).all())
+        for u, valor in zip(unidades, partes):
+            if u.id in ja_tem:
+                puladas.append(u.identificacao)
+                continue
+            vencimento = dados.vencimento or _dia_de_vencimento(db, u.id, competencia)
+            geradas.append(Cobranca(
+                unidade_id=u.id, competencia=competencia, descricao=dados.descricao,
+                valor=valor, vencimento=vencimento,
+                status=StatusCobranca.VENCIDA if vencimento < hoje else StatusCobranca.ABERTA,
+            ))
+    else:
+        def rotulo(i: int) -> str:
+            if dados.parcelas == 1:
+                return dados.descricao
+            return f"{dados.descricao} — parcela {i + 1}/{dados.parcelas}"
+        repetida = db.scalar(select(Cobranca.id).where(
+            Cobranca.unidade_id.in_([u.id for u in unidades]),
+            Cobranca.origem == OrigemCobranca.EXTRA, Cobranca.competencia == competencia,
+            Cobranca.descricao == rotulo(0), Cobranca.status != StatusCobranca.CANCELADA,
+        ).limit(1))
+        if repetida is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Esta cota extra já foi lançada nesta competência. Para lançar outra, "
+                       "mude a descrição.")
+        for u, parte in zip(unidades, partes):
+            primeiro = dados.vencimento or _dia_de_vencimento(db, u.id, competencia)
+            for i, valor in enumerate(ratear(parte, [Decimal(1)] * dados.parcelas)):
+                vencimento = somar_meses(primeiro, i)
+                geradas.append(Cobranca(
+                    unidade_id=u.id, competencia=somar_meses(competencia, i),
+                    descricao=rotulo(i), valor=valor, vencimento=vencimento,
+                    origem=OrigemCobranca.EXTRA,
+                    status=StatusCobranca.VENCIDA if vencimento < hoje else StatusCobranca.ABERTA,
+                ))
+    if any(c.valor <= 0 for c in geradas):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="O valor é pequeno demais para dividir entre os apartamentos.")
+    db.add_all(geradas)
+    db.flush()
+    for c in geradas:
+        registro.registrar(db, sindico, registro.CRIOU, registro.COBRANCA, c.id)
+    # A cota extra foge da rotina do mês: cada apartamento fica sabendo da
+    # sua parte, inclusive o proprietário que não mora nele. O texto sai
+    # antes do commit, que expira os objetos; o envio, depois.
+    avisos = []
+    if dados.tipo == "extra":
+        vezes = ("à vista" if dados.parcelas == 1
+                 else f"em {dados.parcelas} parcelas mensais")
+        primeiros = {c.unidade_id: c.vencimento for c in reversed(geradas)}
+        avisos = [(u.id, f"{dados.descricao}: a parte da unidade {u.identificacao} é "
+                         f"{reais(parte)}, {vezes}, com o primeiro vencimento em "
+                         f"{primeiros[u.id]:%d/%m/%Y}.")
+                  for u, parte in zip(unidades, partes)]
+    total = sum((c.valor for c in geradas), Decimal("0.00"))
+    quantas = len(geradas)
+    db.commit()
+    for unidade_id, texto in avisos:
+        destinatarios.avisar(
+            destinatarios.moradores_da_unidade(db, unidade_id, so_quem_mora=False),
+            "Cota extra lançada", texto)
+    return LoteSaida(geradas=quantas, puladas=puladas, total=total)
 
 
 @router.get("/cobrancas", response_model=list[CobrancaSaida], summary="Lista as cobranças")
@@ -239,8 +351,9 @@ def listar_cobrancas(
 
     cobrancas = db.scalars(consulta.order_by(Cobranca.competencia.desc())).all()
 
-    totais = _totais_pagos(db, [c.id for c in cobrancas])
-    saida = [_cobranca_saida(db, c, totais.get(c.id, ZERO)) for c in cobrancas]
+    totais = totais_pagos(db, [c.id for c in cobrancas])
+    condominio = db.get(Condominio, usuario.condominio_id)
+    saida = [_cobranca_saida(db, c, totais.get(c.id, ZERO), condominio) for c in cobrancas]
     if usuario.papel == Papel.SINDICO:
         ultimas = registro.ultimas(db, registro.COBRANCA, (c.id for c in cobrancas))
         saida = [c.model_copy(update={"ultima_alteracao": ultimas.get(c.id)}) for c in saida]
@@ -257,6 +370,12 @@ def _cobranca_do_sindico(db: Session, sindico: Usuario, cobranca_id: int) -> Cob
     if cobranca is None or cobranca.unidade.condominio_id != sindico.condominio_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Cobrança não encontrada."
+        )
+    if cobranca.status == StatusCobranca.NEGOCIADA:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Esta cobrança entrou no acordo nº {cobranca.acordo_id}; a dívida agora são "
+                   "as parcelas.",
         )
     if cobranca.status in (StatusCobranca.PAGA, StatusCobranca.CANCELADA):
         raise HTTPException(
@@ -279,15 +398,15 @@ def corrigir_cobranca(
     tinha correção: a unidade ficava em atraso para sempre."""
     cobranca = _cobranca_do_sindico(db, sindico, cobranca_id)
     novos = dados.model_dump(exclude_unset=True)
-    pago = _total_pago(db, cobranca.id)
+    pago = total_pago(db, cobranca.id)
     if "valor" in novos and novos["valor"] < pago:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"Já foram pagos R$ {pago}; o valor não pode ficar abaixo disso.",
+            detail=f"Já foram pagos {reais(pago)}; o valor não pode ficar abaixo disso.",
         )
     if "vencimento" in novos and novos["vencimento"] < cobranca.competencia:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=422,
             detail="O vencimento não pode ser antes do mês de competência.",
         )
     descricao = registro.campos_alterados(cobranca, novos, ROTULOS_COBRANCA)
@@ -324,7 +443,8 @@ def cancelar_cobranca(
     """Nada é apagado: a cobrança fica como cancelada, com o motivo e quem
     cancelou no histórico, e não impede lançar a correta no mesmo mês."""
     cobranca = _cobranca_do_sindico(db, sindico, cobranca_id)
-    if _total_pago(db, cobranca.id) > 0:
+    # Qualquer pagamento, mesmo o que só cobriu multa e juros: entrou dinheiro.
+    if db.scalar(select(Pagamento.id).where(Pagamento.cobranca_id == cobranca.id).limit(1)):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Esta cobrança já tem pagamento. Corrija o valor em vez de cancelar.",
@@ -335,6 +455,41 @@ def cancelar_cobranca(
     db.commit()
     db.refresh(cobranca)
     return _cobranca_saida(db, cobranca)
+
+
+# ── Multa e juros do atraso ──────────────────────────────────────────
+ROTULOS_ENCARGOS = {"multa_atraso": "a multa por atraso", "juros_mensais": "os juros ao mês"}
+
+
+@router.get("/encargos", response_model=EncargosCondominio,
+            summary="Multa e juros cobrados no atraso")
+def consultar_encargos(
+    usuario: Usuario = Depends(exigir_papel(Papel.MORADOR, Papel.SINDICO)),
+    db: Session = Depends(get_db),
+) -> EncargosCondominio:
+    return EncargosCondominio.model_validate(db.get(Condominio, usuario.condominio_id))
+
+
+@router.put("/encargos", response_model=EncargosCondominio,
+            summary="Define a multa e os juros do atraso")
+def definir_encargos(
+    dados: EncargosCondominio,
+    sindico: Usuario = Depends(exigir_papel(Papel.SINDICO)),
+    db: Session = Depends(get_db),
+) -> EncargosCondominio:
+    """Os percentuais da convenção, até os limites do Código Civil (art.
+    1.336, § 1º). Valem para os pagamentos feitos daqui em diante."""
+    condominio = db.get(Condominio, sindico.condominio_id, with_for_update=True)
+    novos = dados.model_dump()
+    descricao = registro.campos_alterados(condominio, novos, ROTULOS_ENCARGOS)
+    for campo, valor in novos.items():
+        setattr(condominio, campo, valor)
+    if descricao:
+        registro.registrar(db, sindico, registro.EDITOU, registro.CONDOMINIO, condominio.id,
+                           descricao)
+    db.commit()
+    db.refresh(condominio)
+    return EncargosCondominio.model_validate(condominio)
 
 
 # ── Pagamentos ───────────────────────────────────────────────────────
@@ -370,12 +525,35 @@ def registrar_pagamento(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Esta cobrança foi cancelada."
         )
+    if cobranca.status == StatusCobranca.NEGOCIADA:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Esta cobrança entrou no acordo nº {cobranca.acordo_id}: pague as parcelas.",
+        )
 
-    restante = cobranca.valor - _total_pago(db, cobranca.id)
-    if dados.valor > restante:
+    if dados.dispensar_encargos and usuario.papel != Papel.SINDICO:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Só o síndico pode dispensar a multa e os juros.",
+        )
+
+    pago = total_pago(db, cobranca.id)
+    devidos = _encargos_de(cobranca, pago, cobranca.unidade.condominio, _hoje())
+    encargos = calculo_encargos.SEM_ENCARGOS if dados.dispensar_encargos else devidos
+    devido = cobranca.valor - pago + encargos.total
+    if dados.valor > devido:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"O valor passa do que falta pagar (R$ {restante}).",
+            detail=f"O valor passa do que falta pagar ({reais(devido)}).",
+        )
+    # O pagamento abate primeiro a multa e os juros (Código Civil, art.
+    # 354). Um pagamento que nem os cobre seria todo encargo, e a próxima
+    # conta cobraria a multa de novo sobre o mesmo débito.
+    if dados.valor < encargos.total:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="O pagamento em atraso precisa cobrir ao menos a multa e os juros "
+                   f"({reais(encargos.total)}).",
         )
 
     agora = datetime.now(timezone.utc)
@@ -383,6 +561,7 @@ def registrar_pagamento(
         cobranca_id=cobranca.id,
         pago_por_id=usuario.id,
         valor=dados.valor,
+        encargos=encargos.total,
         forma=dados.forma,
         pago_em=agora,
         comprovante_url=dados.comprovante_url,
@@ -392,42 +571,41 @@ def registrar_pagamento(
     db.flush()
 
     # Quitou: a cobrança fecha.
-    if _total_pago(db, cobranca.id) >= cobranca.valor:
+    if total_pago(db, cobranca.id) >= cobranca.valor:
         cobranca.status = StatusCobranca.PAGA
+    # A dispensa fica registrada, com quem dispensou e quanto: os encargos
+    # da parte paga agora (no pagamento parcial, o resto continua devendo).
+    if dados.dispensar_encargos and devidos.total:
+        condominio = cobranca.unidade.condominio
+        dispensado = calculo_encargos.calcular(
+            dados.valor, cobranca.vencimento, _hoje(),
+            condominio.multa_atraso, condominio.juros_mensais).total
+        registro.registrar(db, usuario, registro.EDITOU, registro.COBRANCA, cobranca.id,
+                           f"Dispensou {reais(dispensado)} de multa e juros")
 
     db.commit()
     db.refresh(pagamento)
 
     # "o próprio sistema me notificar com qual meio o pagamento foi realizado,
     # por quem e a data do pagamento" (seção 6).
-    # O síndico atual: o antigo continua no banco, inativado.
-    sindico = db.scalar(
-        select(Usuario).where(
-            Usuario.condominio_id == usuario.condominio_id, Usuario.papel == Papel.SINDICO,
-            Usuario.status == StatusUsuario.ATIVO,
-        )
-    )
-    texto = (f"Unidade {cobranca.unidade.identificacao}: R$ {pagamento.valor} "
+    texto = (f"Unidade {cobranca.unidade.identificacao}: {reais(pagamento.valor)} "
              f"por {pagamento.forma.value}, registrado por {usuario.nome} "
              f"em {pagamento.pago_em:%d/%m/%Y}.")
+    if pagamento.encargos:
+        texto += f" Inclui {reais(pagamento.encargos)} de multa e juros pelo atraso."
     if usuario.papel == Papel.SINDICO:
         # O síndico registrou o que recebeu fora do app (boleto, depósito):
         # quem fica sabendo são os moradores da unidade, não ele mesmo.
-        moradores = db.scalars(
-            select(Usuario).where(
-                Usuario.unidade_id == cobranca.unidade_id, Usuario.papel == Papel.MORADOR,
-                Usuario.status == StatusUsuario.ATIVO,
-            )
-        ).all()
-        for morador in moradores:
-            notificacao.notificar(morador.email, CanalVerificacao.EMAIL,
-                                  "Pagamento registrado", texto)
-    elif sindico is not None:
-        notificacao.notificar(sindico.email, CanalVerificacao.EMAIL, "Pagamento recebido", texto)
+        destinatarios.avisar(
+            destinatarios.moradores_da_unidade(db, cobranca.unidade_id, so_quem_mora=False),
+            "Pagamento registrado", texto)
+    else:
+        destinatarios.avisar(destinatarios.sindicos(db, usuario.condominio_id),
+                             "Pagamento recebido", texto)
 
     return PagamentoSaida(
         id=pagamento.id, cobranca_id=pagamento.cobranca_id, valor=pagamento.valor,
-        forma=pagamento.forma, pago_em=pagamento.pago_em, pago_por_id=usuario.id,
+        encargos=pagamento.encargos, forma=pagamento.forma, pago_em=pagamento.pago_em, pago_por_id=usuario.id,
         pago_por_nome=usuario.nome, comprovante_url=pagamento.comprovante_url,
         observacao=pagamento.observacao,
     )
@@ -455,7 +633,8 @@ def listar_pagamentos(
 
     return [
         PagamentoSaida(
-            id=p.id, cobranca_id=p.cobranca_id, valor=p.valor, forma=p.forma,
+            id=p.id, cobranca_id=p.cobranca_id, valor=p.valor, encargos=p.encargos,
+            forma=p.forma,
             pago_em=p.pago_em, pago_por_id=p.pago_por_id,
             pago_por_nome=p.pago_por.nome if p.pago_por else None,
             comprovante_url=p.comprovante_url, observacao=p.observacao,
@@ -478,10 +657,15 @@ def resumo(
     abertas = 0
     inadimplentes: set[int] = set()
 
-    totais = _totais_pagos(db, [c.id for c in cobrancas])
+    totais = totais_pagos(db, [c.id for c in cobrancas])
+    # Recebido é todo o dinheiro que entrou, multa e juros incluídos.
+    total_recebido = Decimal(db.scalar(
+        select(func.coalesce(func.sum(Pagamento.valor), 0))
+        .join(Cobranca).join(Unidade)
+        .where(Unidade.condominio_id == sindico.condominio_id)
+    ) or 0)
     for c in cobrancas:
         pago = totais.get(c.id, ZERO)
-        total_recebido += pago
         if c.status in (StatusCobranca.ABERTA, StatusCobranca.VENCIDA):
             falta = c.valor - pago
             total_aberto += falta

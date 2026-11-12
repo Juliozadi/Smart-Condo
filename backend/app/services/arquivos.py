@@ -44,7 +44,8 @@ PORTARIA = "portaria"
 OCORRENCIAS = "ocorrencias"
 DOCUMENTOS = "documentos"
 CONDOMINIO = "condominio"   # atas, convenção, regimento…
-_PASTAS_PRIVADAS = {PORTARIA, OCORRENCIAS, DOCUMENTOS, CONDOMINIO}
+DESPESAS = "despesas"       # notas fiscais e recibos da prestação de contas
+_PASTAS_PRIVADAS = {PORTARIA, OCORRENCIAS, DOCUMENTOS, CONDOMINIO, DESPESAS}
 
 
 class ArquivoRecusado(ValueError):

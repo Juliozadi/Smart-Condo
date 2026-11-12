@@ -70,6 +70,20 @@ class StatusCobranca(str, enum.Enum):
     PAGA = "paga"
     VENCIDA = "vencida"
     CANCELADA = "cancelada"
+    # Entrou num acordo de parcelamento: a dívida passa a ser as parcelas.
+    NEGOCIADA = "negociada"
+
+
+class OrigemCobranca(str, enum.Enum):
+    """De onde vem a cobrança. A taxa condominial é uma por apartamento e
+    mês; multa, uso de espaço e as parcelas de um acordo entram ao lado dela."""
+    TAXA = "taxa"
+    MULTA = "multa"
+    USO_ESPACO = "uso_espaco"
+    ACORDO = "acordo"
+    # Cota extra (chamada de capital): a obra ou o fundo que a assembleia
+    # aprovou, rateado entre os apartamentos, às vezes em parcelas.
+    EXTRA = "extra"
 
 
 class StatusVisitante(str, enum.Enum):
@@ -138,6 +152,74 @@ class StatusOrdemServico(str, enum.Enum):
     EM_ANDAMENTO = "em_andamento"
     CONCLUIDA = "concluida"
     CANCELADA = "cancelada"
+
+
+class MaioriaExigida(str, enum.Enum):
+    """Quantos votos um item da pauta precisa para ser aprovado."""
+    SIMPLES = "simples"            # mais a favor que contra (art. 1.352)
+    DOIS_TERCOS = "dois_tercos"    # 2/3 de todas as unidades (arts. 1.341 e 1.351)
+    UNANIMIDADE = "unanimidade"    # todas as unidades
+
+
+class EscolhaVoto(str, enum.Enum):
+    A_FAVOR = "a_favor"
+    CONTRA = "contra"
+    ABSTENCAO = "abstencao"
+
+
+class CategoriaDespesa(str, enum.Enum):
+    """Para onde vai o dinheiro do condomínio, na prestação de contas."""
+    AGUA = "agua"
+    ENERGIA = "energia"
+    LIMPEZA = "limpeza"
+    MANUTENCAO = "manutencao"
+    SEGURANCA = "seguranca"
+    PESSOAL = "pessoal"
+    ADMINISTRACAO = "administracao"
+    OBRAS = "obras"
+    OUTROS = "outros"
+
+
+class TipoMudanca(str, enum.Enum):
+    """Quem está chegando ao apartamento ou saindo dele."""
+    CHEGADA = "chegada"
+    SAIDA = "saida"
+
+
+class StatusMudanca(str, enum.Enum):
+    """O síndico aprova ou recusa; a portaria só deixa entrar a aprovada."""
+    PENDENTE = "pendente"
+    APROVADA = "aprovada"
+    RECUSADA = "recusada"
+    CANCELADA = "cancelada"
+    CONCLUIDA = "concluida"
+
+
+class StatusReforma(str, enum.Enum):
+    """A reforma é comunicada antes de começar (NBR 16280): o síndico
+    aprova ou recusa; a aprovada vale até o fim do prazo, e o morador
+    avisa quando terminou."""
+    PENDENTE = "pendente"
+    APROVADA = "aprovada"
+    RECUSADA = "recusada"
+    CANCELADA = "cancelada"
+    CONCLUIDA = "concluida"
+
+
+class TipoInfracao(str, enum.Enum):
+    """Código Civil, art. 1.336, § 2º: a convenção prevê a multa; antes
+    dela, muitos regimentos pedem a advertência."""
+    ADVERTENCIA = "advertencia"
+    MULTA = "multa"
+
+
+class StatusInfracao(str, enum.Enum):
+    """Notificada, o apartamento tem prazo para se defender; o síndico
+    decide depois da defesa ou do fim do prazo."""
+    NOTIFICADA = "notificada"
+    DEFESA_APRESENTADA = "defesa_apresentada"
+    CONFIRMADA = "confirmada"
+    ANULADA = "anulada"
 
 
 class CategoriaDocumento(str, enum.Enum):

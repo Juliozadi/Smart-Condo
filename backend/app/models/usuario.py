@@ -10,7 +10,8 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
-    Boolean, Date, DateTime, Enum as SAEnum, ForeignKey, Integer, String, Text, func,
+    Boolean, Date, DateTime, Enum as SAEnum, ForeignKey, Index, Integer, String, Text, func,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -26,12 +27,21 @@ if TYPE_CHECKING:
 
 class Usuario(Base, TimestampMixin):
     __tablename__ = "usuarios"
+    # E-mail e CPF são de uma pessoa só — entre os cadastros principais.
+    # Os perfis vinculados (o síndico que também mora, o dono de outro
+    # apartamento) repetem os dados da pessoa e não têm login próprio.
+    __table_args__ = (
+        Index("uq_usuarios_email_principal", "email", unique=True,
+              postgresql_where=text("conta_principal_id IS NULL")),
+        Index("uq_usuarios_cpf_principal", "cpf", unique=True,
+              postgresql_where=text("conta_principal_id IS NULL")),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
     nome: Mapped[str] = mapped_column(String(160), nullable=False)
-    email: Mapped[str] = mapped_column(String(180), unique=True, nullable=False, index=True)
-    cpf: Mapped[str] = mapped_column(String(14), unique=True, nullable=False, index=True)
+    email: Mapped[str] = mapped_column(String(180), nullable=False, index=True)
+    cpf: Mapped[str] = mapped_column(String(14), nullable=False, index=True)
     telefone: Mapped[str] = mapped_column(String(20), nullable=False)
     data_nascimento: Mapped[date | None] = mapped_column(Date)
 
@@ -58,6 +68,17 @@ class Usuario(Base, TimestampMixin):
     )
     tipo_ocupacao: Mapped[TipoOcupacao | None] = mapped_column(
         SAEnum(TipoOcupacao, name="tipo_ocupacao")
+    )
+    # O proprietário que não mora no apartamento (alugou, está vazio): paga,
+    # vota e acompanha as contas, mas a portaria do apartamento — visitas,
+    # encomendas, carros, mudanças — é de quem mora lá.
+    reside: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default=text("true")
+    )
+    # Preenchido no perfil vinculado: aponta para o cadastro com login da
+    # mesma pessoa (services/perfis.py).
+    conta_principal_id: Mapped[int | None] = mapped_column(
+        ForeignKey("usuarios.id", ondelete="CASCADE"), index=True
     )
 
     foto_url: Mapped[str | None] = mapped_column(String(500))
@@ -93,6 +114,9 @@ class Usuario(Base, TimestampMixin):
     unidade: Mapped["Unidade | None"] = relationship(
         back_populates="moradores", foreign_keys=[unidade_id]
     )
+    conta_principal: Mapped["Usuario | None"] = relationship(
+        remote_side="Usuario.id", foreign_keys=[conta_principal_id]
+    )
     permissoes: Mapped["PermissaoPorteiro | None"] = relationship(
         back_populates="porteiro",
         cascade="all, delete-orphan",
@@ -103,6 +127,11 @@ class Usuario(Base, TimestampMixin):
     @property
     def ativo(self) -> bool:
         return self.status == StatusUsuario.ATIVO
+
+    @property
+    def perfil_vinculado(self) -> bool:
+        """Outro perfil de quem já tem cadastro (services/perfis.py)."""
+        return self.conta_principal_id is not None
 
     def __repr__(self) -> str:
         return f"<Usuario {self.id} {self.email!r} {self.papel.value}>"

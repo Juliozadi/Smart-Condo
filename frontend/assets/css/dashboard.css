@@ -2087,6 +2087,12 @@ a.contato-btn { text-decoration: none; }
   .chat-abrir { padding: 7px 9px; }
   .chat-abrir-texto { display: none; }
 }
+/* Os painéis (layout-mobile) têm a barra de 480px em qualquer tela: com
+   "Mensagens" por extenso, o nome e o "Sair", a marca não cabia, e
+   "SmartCondo" passava por baixo do botão num monitor de 1440px. Como no
+   celular, ali o botão fica só com o ícone (o contador continua). */
+.layout-mobile .chat-abrir { padding: 7px 9px; }
+.layout-mobile .chat-abrir-texto { display: none; }
 
 .chat-fundo { position: fixed; inset: 0; background: rgba(8,20,22,.45); z-index: 1000; }
 .chat-painel {
@@ -2204,14 +2210,16 @@ body.tema-escuro .chat-avatar.sindico, body.tema-escuro .chat-avatar.porteiro { 
 .historico-edicao li:last-child { border-bottom: 0; }
 .table-row.inativo > span:first-child strong { color: var(--muted); }
 .list-item.inativo .list-info h3 { color: var(--muted); }
-/* Unidades e vagas (síndico): no celular o andar sai para caber. */
+/* Unidades e vagas (síndico): no celular o andar e os moradores saem para caber. */
 #tabelaUnidades .table-head,
-#tabelaUnidades .table-row { grid-template-columns: minmax(0,2fr) 1fr 1fr 1fr 48px; }
+#tabelaUnidades .table-row { grid-template-columns: minmax(0,2fr) 1fr 1fr 1fr 1fr 48px; }
 @media (max-width: 640px) {
   #tabelaUnidades .table-head,
   #tabelaUnidades .table-row { grid-template-columns: minmax(0,1.6fr) 1fr 1fr 40px; }
   #tabelaUnidades .table-head span:nth-child(2),
-  #tabelaUnidades .table-row span:nth-child(2) { display: none; }
+  #tabelaUnidades .table-row span:nth-child(2),
+  #tabelaUnidades .table-head span:nth-child(5),
+  #tabelaUnidades .table-row > span:nth-child(5) { display: none; }
 }
 /* Botão pequeno ao lado de um texto na linha (corrigir cobrança). */
 .btn-acao.btn-acao-mini { width: 24px; height: 24px; margin-left: 6px; vertical-align: middle; display: inline-flex; }
@@ -2222,3 +2230,269 @@ body.tema-escuro .chat-avatar.sindico, body.tema-escuro .chat-avatar.porteiro { 
 /* "Administrador" é longo: no celular a coluna do papel corta com
    reticências em vez de passar por cima do selo de status. */
 .papel-usuario { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Regras de uso do espaço, no formulário do síndico */
+.regras-espaco {
+  border: 1px dashed var(--border); border-radius: var(--radius-md);
+  padding: 10px 14px 4px; margin: 4px 0 14px;
+}
+.regras-espaco legend {
+  font-size: 12px; font-weight: 700; color: var(--muted); padding: 0 6px;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.regras-espaco[hidden] { display: none; }
+.regras-aviso { font-size: 12px; color: var(--muted); margin: -4px 0 10px; }
+
+/* Dias da semana da autorização de visita (tela do morador) */
+.dias-semana { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 10px; }
+.dias-semana label {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-md);
+  font-size: 13px; font-weight: 600; color: var(--text); background: var(--surface);
+  cursor: pointer;
+}
+.dias-semana label:has(input:checked) { border-color: var(--primary-texto); background: var(--surface-2); }
+.dias-semana input { accent-color: var(--primary); width: 15px; height: 15px; margin: 0; }
+.dias-semana .regras-aviso { flex-basis: 100%; margin: 2px 0 0; }
+
+/* Autorizado pelo morador, na portaria */
+.aviso-autorizacao {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  border: 1.5px solid var(--primary-texto); border-radius: var(--radius-md);
+  padding: 10px 14px; margin-bottom: 12px; font-size: 13px; color: var(--text);
+  background: var(--surface-2);
+}
+.aviso-autorizacao[hidden] { display: none; }
+
+/* Multa e juros da cobrança em atraso, no financeiro do morador */
+.list-info .encargos-atraso { font-size: 12px; font-weight: 600; color: var(--erro); margin-top: 2px; }
+
+/* Comunicado para um bloco ou um apartamento, na lista do síndico */
+.destino-comunicado { display: block; font-size: 11px; font-weight: 600; color: var(--text-2); margin-top: 2px; }
+
+/* Apartamento sem morador no sistema, nos formulários da portaria */
+.aviso-sem-morador { font-size: 13px; font-weight: 600; color: var(--erro); margin: -4px 0 12px; }
+.aviso-sem-morador[hidden] { display: none; }
+
+/* Prestação de contas: barras por categoria e lista de despesas */
+.categoria-despesa {
+  display: grid; grid-template-columns: 130px 1fr auto; align-items: center; gap: 12px;
+  padding: 6px 0; font-size: 13px; color: var(--text);
+}
+.categoria-nome { font-weight: 600; }
+.categoria-barra { height: 10px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
+.categoria-barra span { display: block; height: 100%; border-radius: 5px; background: var(--primary); }
+.categoria-valor { font-weight: 700; font-variant-numeric: tabular-nums; }
+.valor-despesa { font-weight: 800; font-size: 14px; color: var(--text); white-space: nowrap; }
+.despesa-cancelada { opacity: .6; }
+.despesa-cancelada .valor-despesa { text-decoration: line-through; }
+.balance-value.negativo { color: #ffd9d4; }
+.rotulo-mes { font-size: 13px; font-weight: 700; color: var(--text-2); align-self: center; }
+.contato-btn.perigo-texto { color: var(--erro); }
+.contato-btn:focus-within { outline: 2px solid var(--primary); outline-offset: 2px; }
+/* Campo de arquivo escondido à vista, mas alcançável pelo teclado: o
+   rótulo em volta faz as vezes de botão. */
+.oculto-acessivel {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+@media (max-width: 640px) {
+  .categoria-despesa { grid-template-columns: 96px 1fr auto; gap: 8px; }
+}
+label.contato-btn { position: relative; cursor: pointer; }
+/* O mês do balancete, na barra de ações */
+.barra-acoes input[type="month"] {
+  padding: 9px 12px; border-radius: var(--radius-xs); border: 1.5px solid var(--border);
+  background: var(--surface); color: var(--text); font: inherit; font-size: 14px; font-weight: 600;
+}
+.layout-mobile .barra-acoes { flex-direction: row; align-items: center; }
+
+/* Assembleia virtual */
+.assembleia { margin-bottom: 16px; }
+.assembleia-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.assembleia-topo h3 { font-size: 16px; }
+.assembleia-periodo, .assembleia-quorum { font-size: 13px; color: var(--text-2); margin: 6px 0; }
+.assembleia-descricao { font-size: 13px; color: var(--text-2); margin: 4px 0; }
+.assembleia-pauta { margin: 10px 0 12px 20px; display: flex; flex-direction: column; gap: 10px; }
+.assembleia-pauta li { font-size: 14px; color: var(--text); }
+.assembleia-maioria { font-size: 12px; color: var(--text-2); }
+.assembleia-meu-voto { font-size: 12px; font-weight: 700; color: var(--primary-texto); margin-top: 3px; }
+.assembleia-resultado { font-size: 13px; color: var(--text-2); margin-top: 4px; }
+.assembleia-resultado .badge { margin-right: 6px; }
+.cedula { border-top: 1px dashed var(--border); padding-top: 12px; margin-top: 4px; }
+.cedula fieldset { border: 0; padding: 0; margin: 0 0 12px; }
+.cedula legend { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.cedula .opcoes-voto { display: flex; flex-wrap: wrap; gap: 8px; }
+.cedula .opcoes-voto label {
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; cursor: pointer;
+  border: 1.5px solid var(--border); border-radius: var(--radius-md);
+  font-size: 13px; font-weight: 600; color: var(--text); background: var(--surface);
+}
+.cedula .opcoes-voto label:has(input:checked) { border-color: var(--primary-texto); background: var(--surface-2); }
+.cedula .opcoes-voto input { accent-color: var(--primary); margin: 0; }
+.pauta-campos .item-pauta {
+  display: grid; grid-template-columns: 1fr 220px auto; gap: 12px; align-items: end;
+}
+.pauta-campos .item-remover { margin-bottom: 14px; padding: 9px 12px; }
+.pauta-campos #btnNovoItem { margin-bottom: 10px; }
+@media (max-width: 640px) {
+  .pauta-campos .item-pauta { grid-template-columns: 1fr; gap: 0; }
+  .pauta-campos .item-remover { justify-self: start; }
+}
+
+/* ── Veículos do apartamento ─────────────────────────────────────── */
+.placa-cadastrada { letter-spacing: 2px; font-variant-numeric: tabular-nums; }
+.placa-reconhecida { margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--teal, #0d9488); }
+.placa-reconhecida.desconhecida { color: var(--muted); font-weight: 500; }
+
+/* ── Agendamento de mudança ──────────────────────────────────────── */
+.regras-mudanca { margin: 0 0 16px; padding-left: 18px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+.ocupados-dia { font-size: 13px; color: var(--muted); margin: -4px 0 12px; min-height: 0; }
+.ocupados-dia:empty { display: none; }
+.ocupados-dia.fechado { color: var(--erro); font-weight: 600; }
+.mudanca-lado { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+.mudanca .mudanca-obs { font-style: italic; margin-top: 4px; }
+.mudanca .mudanca-motivo { color: var(--erro); font-weight: 600; margin-top: 4px; }
+@media (max-width: 520px) {
+  .reserve-card.mudanca { flex-wrap: wrap; }
+  .mudanca-lado { flex-direction: row; align-items: center; width: 100%; justify-content: flex-end; }
+}
+
+/* ── Uma pessoa, vários perfis ───────────────────────────────────── */
+[data-reside][hidden] { display: none !important; }
+.aviso-nao-reside {
+  display: flex; gap: 10px; align-items: flex-start; margin: 0 0 20px;
+  padding: 12px 14px; border-radius: var(--radius-md);
+  background: var(--surface-2); border: 1px solid var(--border);
+  font-size: 13px; color: var(--text-2); line-height: 1.5;
+}
+.aviso-nao-reside[hidden] { display: none; }
+.aviso-nao-reside img { flex-shrink: 0; margin-top: 2px; }
+
+.perfil-troca { position: relative; }
+.perfil-trocar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: var(--radius-xl);
+  background: var(--primary-light); border: 1px solid var(--primary);
+  font: inherit; font-size: 12px; font-weight: 700; color: var(--primary-texto);
+  cursor: pointer; transition: all .2s; white-space: nowrap;
+}
+.perfil-trocar:hover { filter: brightness(.97); }
+.perfil-trocar img { width: 15px; height: 15px; display: block; }
+.perfil-menu {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 60;
+  min-width: 250px; max-width: calc(100vw - 32px);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: 6px;
+}
+.perfil-menu[hidden] { display: none; }
+.perfil-menu-titulo { font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .5px; color: var(--muted); padding: 8px 10px 4px; }
+.perfil-menu-item {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  width: 100%; padding: 10px; border: 0; border-radius: var(--radius-sm);
+  background: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--text);
+  text-align: left; cursor: pointer;
+}
+.perfil-menu-item:hover:not([disabled]), .perfil-menu-item:focus-visible { background: var(--primary-light); }
+.perfil-menu-item[disabled] { cursor: default; color: var(--muted); }
+.perfil-menu-item.atual { color: var(--primary-texto); }
+.perfil-menu-item small { font-size: 11px; font-weight: 600; color: var(--muted); }
+@media (max-width: 640px) {
+  .perfil-trocar { padding: 7px 9px; }
+  .perfil-trocar-texto { display: none; }
+}
+
+.meus-apartamentos .apto-lista { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 18px; }
+.apto-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.apto-info { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+.apto-info span { font-size: 12px; color: var(--muted); }
+.apto-reside { display: flex; gap: 8px; align-items: center; font-size: 13px; font-weight: 600; margin: 4px 0 6px; }
+.apto-reside-nota { margin-top: 0; }
+/* Na barra estreita dos painéis do morador, como o botão de Mensagens. */
+.layout-mobile .perfil-trocar { padding: 7px 9px; }
+.layout-mobile .perfil-trocar-texto { display: none; }
+.layout-mobile.com-perfis .profile-name { display: none; }
+.apto-form .form-group { margin-bottom: 0; }
+.regras-form { margin-top: 14px; }
+.regras-form[hidden] { display: none; }
+.regras-antecedencia { max-width: 220px; }
+.regras-dias { border: 0; padding: 0; margin: 4px 0 10px; }
+.regras-dias legend { font-size: 13px; font-weight: 600; color: var(--text-2); margin-bottom: 8px; }
+.regra-dia { display: grid; grid-template-columns: 130px 150px auto 150px; justify-content: start; gap: 10px; align-items: center; margin-bottom: 8px; }
+.regra-dia input[type=time] { width: 100%; min-width: 0; box-sizing: border-box; }
+.regra-dia-nome { display: flex; gap: 8px; align-items: center; font-size: 13px; font-weight: 600; }
+.regra-dia input[type=time] { padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface-2); font: inherit; color: var(--text); }
+.regra-dia input[type=time]:disabled { opacity: .45; }
+@media (max-width: 520px) {
+  .regra-dia { grid-template-columns: 1fr auto 1fr; gap: 6px 8px; margin-bottom: 12px; }
+  .regra-dia-nome { grid-column: 1 / -1; }
+}
+
+/* ── Advertências e multas ───────────────────────────────────────── */
+.infracao-descricao { font-size: 14px; color: var(--text); margin: 8px 0; line-height: 1.5; }
+.infracao-prazo { font-size: 13px; font-weight: 700; color: var(--aviso); margin: 4px 0; }
+.infracao-reincidencia { font-size: 12px; font-weight: 600; color: var(--erro); margin: 4px 0; }
+.infracao-defesa { margin: 10px 0; padding: 10px 14px; border-left: 3px solid var(--info);
+  background: var(--surface-2); border-radius: var(--radius-sm); font-size: 13px; color: var(--text-2); }
+.infracao-decisao { font-size: 13px; color: var(--text-2); margin: 8px 0 0; }
+.infracao-acoes { display: flex; gap: 8px; margin-top: 12px; }
+.infracao-defesa-form { margin-top: 12px; }
+
+/* ── Livro da portaria ───────────────────────────────────────────── */
+.anotacao.importante { border-left: 3px solid var(--erro); }
+.anotacao .assembleia-topo h3 { margin-bottom: 0; }
+.anotacao-texto { font-size: 14px; color: var(--text); margin: 8px 0; line-height: 1.5;
+  white-space: pre-line; overflow-wrap: anywhere; }
+.anotacao-cientes { font-size: 12px; color: var(--text-2); margin: 4px 0 0; }
+.anotacao-ciente { margin-top: 12px; }
+.anotacao > :last-child { margin-bottom: 0; }
+.dash-card .badge { flex-shrink: 0; }
+
+/* ── Declaração de quitação ──────────────────────────────────────── */
+.declaracao .assembleia-topo h3 { margin-bottom: 0; }
+.declaracao-codigo { font-size: 13px; color: var(--text-2); margin: 6px 0 0; overflow-wrap: anywhere; }
+.declaracao-codigo strong { color: var(--text); letter-spacing: .5px; font-family: ui-monospace, monospace; }
+
+/* ── Manutenção preventiva ───────────────────────────────────────── */
+.plano.vencida { border-left: 3px solid var(--erro); }
+.plano.vence_em_breve { border-left: 3px solid var(--aviso); }
+.plano .assembleia-topo h3 { margin-bottom: 0; }
+.plano-obs { font-size: 13px; color: var(--text-2); margin: 4px 0; white-space: pre-line; }
+.plano .infracao-acoes { flex-wrap: wrap; }
+.plano-realizacao { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+.plano-historico { margin-top: 12px; font-size: 13px; color: var(--text-2); }
+.plano-historico-lista { list-style: none; margin: 0; padding: 0; }
+.plano-historico-lista li { padding: 6px 0; border-top: 1px solid var(--border); }
+.plano-historico-obs { display: block; font-size: 12px; color: var(--muted); }
+
+/* ── Quadro de chaves ────────────────────────────────────────────── */
+.chave.fora { border-left: 3px solid var(--aviso); }
+.chave .assembleia-topo h3 { margin-bottom: 0; }
+.chave .infracao-acoes { flex-wrap: wrap; }
+.chave-com { font-size: 13px; font-weight: 700; color: var(--aviso); margin: 4px 0; }
+.chave-retirada { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+.chave-quem { border: none; padding: 0; margin: 0 0 12px; }
+.chave-quem legend { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+
+/* ── Obras e reformas ────────────────────────────────────────────── */
+.reforma.aguardando { border-left: 3px solid var(--aviso); }
+.reforma.prazo_encerrado { border-left: 3px solid var(--erro); }
+.reforma .assembleia-topo h3 { margin-bottom: 0; }
+.reforma .infracao-acoes { flex-wrap: wrap; }
+.reforma-condicoes { font-size: 13px; font-weight: 600; color: var(--text); margin: 4px 0; }
+.grupo-tecnico { margin-top: 12px; }
+
+/* ── Acordos de parcelamento ─────────────────────────────────────── */
+.acordo.em_atraso { border-left: 3px solid var(--erro); }
+.acordo .assembleia-topo h3 { margin-bottom: 0; }
+.acordo-parcelas { margin: 8px 0; }
+.acordo-parcelas .parcela-vencida { color: var(--erro); font-weight: 600; }
+.acordo-parcelas .parcela-paga, .acordo-parcelas .parcela-cancelada { color: var(--muted); }
+.acordo-cobrancas #aCobrancas { display: flex; flex-direction: column; gap: 6px; }
+#formAcordo > .permissao-item { margin: 4px 0 12px; }

@@ -7,6 +7,7 @@
   <title>SmartCondo — Financeiro</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
   <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/formato.js"></script>
   <link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
@@ -52,6 +53,10 @@
     <div class="list-items" id="listaAbertas"></div>
     <p class="estado-lista" id="estadoAbertas">Carregando…</p>
     <p class="form-erro" id="erroPagamento" role="alert"></p>
+
+    <a href="quitacao.html" class="action-btn outline">
+      <img src="../../assets/img/icons/file-contract.svg" width="16" height="16" alt=""> Declaração de quitação
+    </a>
 
     <!-- Formas de pagamento e data da cobrança — doc, seção 6 -->
     <h2 class="section-title"><img src="../../assets/img/icons/financeiro.svg" width="16" height="16" alt=""> Como Você Quer Pagar</h2>
@@ -114,6 +119,12 @@
     </div>
     <p class="estado-lista" id="estadoHistorico"></p>
 
+    <div id="secaoAcordos" hidden>
+      <h2 class="section-title"><img src="../../assets/img/icons/handshake.svg" width="16" height="16" alt=""> Acordos de Parcelamento</h2>
+      <div id="listaAcordos" aria-live="polite"></div>
+      <p class="estado-lista" id="estadoAcordos"></p>
+    </div>
+
   </main>
 
 <script src="../../assets/js/validation.js"></script>
@@ -123,6 +134,7 @@
    pagamento, que é o que o síndico usa ao gerar a cobrança do mês. */
 (function() {
   'use strict';
+  var formato = window.SmartCondo.formato;
   var api = window.SmartCondo.api;
   var usuario = api.protegerPagina('morador');
   if (!usuario) return;
@@ -131,11 +143,12 @@
   var cobrancas = [];
 
   var ROTULO_STATUS = {
-    aberta: 'Aberta', vencida: 'Vencida', paga: 'Paga', cancelada: 'Cancelada'
+    aberta: 'Aberta', vencida: 'Vencida', paga: 'Paga', cancelada: 'Cancelada',
+    negociada: 'Negociada'
   };
   var CLASSE_STATUS = {
     aberta: 'badge-pending', vencida: 'badge-alert',
-    paga: 'badge-ok', cancelada: 'badge-neutral'
+    paga: 'badge-ok', cancelada: 'badge-neutral', negociada: 'badge-neutral'
   };
   var ROTULO_FORMA = {
     pix: 'Pix', boleto: 'Boleto bancário',
@@ -144,11 +157,6 @@
   var MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
-  function dinheiro(valor) {
-    return 'R$ ' + Number(valor).toLocaleString('pt-BR', {
-      minimumFractionDigits: 2, maximumFractionDigits: 2
-    });
-  }
   function partes(iso) { var p = (iso || '').split('-'); return { a: +p[0], m: +p[1], d: +p[2] }; }
   function dataCurta(iso) {
     var p = partes(iso);
@@ -164,6 +172,9 @@
     return Math.round((alvo - new Date().setHours(0, 0, 0, 0)) / 86400000);
   }
   function falta(c) { return Number(c.valor) - Number(c.total_pago || 0); }
+  // O que pagar hoje: em atraso, já com a multa e os juros (o servidor faz a conta).
+  function aPagar(c) { return Number(c.total_atualizado) || falta(c); }
+  function temEncargos(c) { return Number(c.multa) + Number(c.juros) > 0; }
 
   function formaEscolhida() {
     var marcada = document.querySelector('input[name="forma_pagamento"]:checked');
@@ -192,25 +203,33 @@
               : dias === 0 ? 'vence hoje'
               : 'vence em ' + dias + (dias === 1 ? ' dia' : ' dias');
     p.textContent = 'Vencimento ' + dataCurta(c.vencimento) + ' · ' + prazo +
-      ' · ' + dinheiro(falta(c)) + (Number(c.total_pago) > 0 ? ' (parcial já pago)' : '');
+      ' · ' + formato.dinheiro(falta(c)) + (Number(c.total_pago) > 0 ? ' (parcial já pago)' : '');
     info.appendChild(h);
     info.appendChild(p);
+    if (temEncargos(c)) {
+      var encargos = document.createElement('p');
+      encargos.className = 'encargos-atraso';
+      encargos.textContent = 'Com o atraso: multa de ' + formato.dinheiro(c.multa) + ' e juros de ' +
+        formato.dinheiro(c.juros) + ' · total hoje ' + formato.dinheiro(c.total_atualizado);
+      info.appendChild(encargos);
+    }
 
     var pagar = document.createElement('button');
     pagar.type = 'button';
     pagar.className = 'action-btn';
     pagar.style.cssText = 'width:auto;margin:0;padding:10px 18px;font-size:13px;';
-    pagar.textContent = 'Pagar ' + dinheiro(falta(c));
+    pagar.textContent = 'Pagar ' + formato.dinheiro(aPagar(c));
     pagar.addEventListener('click', function() {
       var forma = formaEscolhida();
-      if (!confirm('Registrar o pagamento de ' + dinheiro(falta(c)) +
+      if (!confirm('Registrar o pagamento de ' + formato.dinheiro(aPagar(c)) +
+                   (temEncargos(c) ? ' (com multa e juros do atraso)' : '') +
                    ' por ' + ROTULO_FORMA[forma] + '?')) return;
       pagar.disabled = true;
       var erro = campo('erroPagamento');
       erro.className = 'form-erro';
       erro.textContent = '';
       api.post('/financeiro/cobrancas/' + c.id + '/pagamentos',
-               { valor: falta(c), forma: forma })
+               { valor: aPagar(c).toFixed(2), forma: forma })
         .then(function() {
           erro.className = 'form-erro sucesso';
           erro.textContent = 'Pagamento registrado por ' + ROTULO_FORMA[forma] +
@@ -237,7 +256,7 @@
     linha.innerHTML = '<span></span><span></span><span></span><span><span class="badge"></span></span>';
     linha.children[0].textContent = competenciaLonga(c.competencia);
     linha.children[1].textContent = dataCurta(c.vencimento);
-    linha.children[2].textContent = dinheiro(c.valor);
+    linha.children[2].textContent = formato.dinheiro(c.valor);
     var selo = linha.children[3].firstChild;
     selo.className = 'badge ' + (CLASSE_STATUS[c.status] || 'badge-neutral');
     selo.textContent = ROTULO_STATUS[c.status] || c.status;
@@ -255,11 +274,11 @@
         var abertas = cobrancas.filter(function(c) {
           return c.status === 'aberta' || c.status === 'vencida';
         });
-        var devendo = abertas.reduce(function(soma, c) { return soma + falta(c); }, 0);
+        var devendo = abertas.reduce(function(soma, c) { return soma + aPagar(c); }, 0);
         var vencidas = abertas.filter(function(c) { return c.status === 'vencida'; });
 
-        campo('balanceValor').textContent = devendo > 0 ? dinheiro(devendo) : 'Em dia';
-        campo('totAPagar').textContent = devendo > 0 ? dinheiro(devendo) : 'R$ 0,00';
+        campo('balanceValor').textContent = devendo > 0 ? formato.dinheiro(devendo) : 'Em dia';
+        campo('totAPagar').textContent = devendo > 0 ? formato.dinheiro(devendo) : 'R$ 0,00';
         campo('totPagas').textContent =
           cobrancas.filter(function(c) { return c.status === 'paga'; }).length;
         campo('totAtraso').textContent = vencidas.length;
@@ -359,6 +378,8 @@
   carregarPreferencia().then(carregar, carregar);
 })();
 </script>
+<script src="../../assets/js/acordos.js"></script>
+<script>window.SmartCondo.acordos.montar('morador');</script>
 <script src="../../assets/js/sessao.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>
 </body>

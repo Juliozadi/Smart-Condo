@@ -20,22 +20,32 @@ from sqlalchemy import select, text
 from app.core.config import settings
 from app.core.database import Base, SessionLocal, engine
 from app.core.security import gerar_hash_senha
-from app.core.tempo import hoje_local
+from app.core.tempo import hoje_local, somar_meses
+from app.models.assembleia import Assembleia, ItemPauta, Voto
 from app.models.comunicado import Comunicado
 from app.models.condominio import Condominio, Unidade
 from app.models.enums import (
-    CanalVerificacao, CategoriaComunicado, CategoriaDocumento, CategoriaVeiculo,
+    CategoriaComunicado, CategoriaDespesa, CategoriaDocumento, CategoriaVeiculo,
+    EscolhaVoto, MaioriaExigida, OrigemCobranca,
     FormaPagamento, Papel, PrioridadeOcorrencia, PrioridadeOrdemServico, StatusCobranca,
     StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
-    StatusVisitante,
-    TipoMovimentacao, TipoOcupacao,
+    StatusInfracao, StatusMudanca, StatusReforma, StatusVisitante,
+    TipoInfracao, TipoMovimentacao, TipoMudanca, TipoOcupacao,
 )
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
-from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico
-from app.models.financeiro import Cobranca, Pagamento, PreferenciaCobranca
-from app.models.portaria import Encomenda, Ocorrencia, Visitante
+from app.models.chave import Chave, MovimentacaoChave
+from app.models.declaracao import DeclaracaoQuitacao
+from app.models.infracao import Infracao
+from app.models.preventiva import PlanoManutencao, RealizacaoManutencao
+from app.models.livro import AnotacaoPortaria, CienciaAnotacao
+from app.models.mudanca import Mudanca
+from app.models.reforma import Reforma
+from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico, VeiculoUnidade
+from app.models.financeiro import Acordo, Cobranca, Despesa, Pagamento, PreferenciaCobranca
+from app.models.portaria import AutorizacaoVisita, Encomenda, Ocorrencia, Visitante
 from app.models.usuario import PermissaoPorteiro, Usuario
-from app.services import arquivos, registro
+from app.services import arquivos, cobrancas, perfis, registro
+from app.services.quitacao import VALIDADE_DIAS, novo_codigo
 
 SENHA = "smartcondo123"
 HOJE = hoje_local()
@@ -91,7 +101,7 @@ def limpar(db) -> None:
     # os registros que apontavam para eles, só ocupariam espaço — e são
     # dados pessoais sem finalidade.
     for pasta in ("fotos", arquivos.PORTARIA, arquivos.OCORRENCIAS, arquivos.DOCUMENTOS,
-                  arquivos.CONDOMINIO):
+                  arquivos.CONDOMINIO, arquivos.DESPESAS):
         for arquivo in arquivos._pasta(pasta).iterdir():
             if arquivo.is_file():
                 arquivo.unlink()
@@ -134,14 +144,17 @@ def criar(db) -> dict:
     sindico.condominio_id = condominio.id
 
     # ── Unidades ──────────────────────────────────────────────────────
+    # A fração ideal da convenção, em %: os apartamentos de duas vagas são
+    # maiores e pagam mais no rateio; somam 100%.
     unidades: dict[str, Unidade] = {}
-    for numero, andar, vagas in [
-        ("101", 1, 1), ("102", 1, 1), ("204", 2, 2), ("301", 3, 1),
-        ("302", 3, 1), ("410", 4, 2), ("502", 5, 2),
+    for numero, andar, vagas, fracao in [
+        ("101", 1, 1, "13.5"), ("102", 1, 1, "13.5"), ("204", 2, 2, "15.5"),
+        ("301", 3, 1, "13.5"), ("302", 3, 1, "13.5"), ("410", 4, 2, "15.5"),
+        ("502", 5, 2, "15.0"),
     ]:
         u = Unidade(
             condominio_id=condominio.id, numero=numero, bloco="unico",
-            andar=andar, vagas_garagem=vagas,
+            andar=andar, vagas_garagem=vagas, fracao_ideal=Decimal(fracao),
         )
         db.add(u)
         unidades[numero] = u
@@ -194,6 +207,18 @@ def criar(db) -> dict:
     )
     db.flush()
 
+    # ── Uma pessoa, vários perfis (services/perfis.py) ────────────────
+    # O síndico mora no 101; o João, além do 204, onde mora, é dono do 302,
+    # que alugou — vê as cobranças e vota por ele, mas não a portaria.
+    for dono, unidade, reside in [(sindico, "101", True), (moradores["204"], "302", False)]:
+        db.add(Usuario(
+            nome=dono.nome, email=dono.email, cpf=dono.cpf, telefone=dono.telefone,
+            senha_hash=perfis.SEM_SENHA, papel=Papel.MORADOR, status=StatusUsuario.ATIVO,
+            condominio_id=condominio.id, unidade_id=unidades[unidade].id,
+            tipo_ocupacao=TipoOcupacao.PROPRIETARIO, reside=reside, conta_principal_id=dono.id,
+        ))
+    db.flush()
+
     # ── Espaços comuns ────────────────────────────────────────────────
     espacos: dict[str, EspacoComum] = {}
     for nome, capacidade, reservavel, uso_livre, manutencao, descricao in [
@@ -213,6 +238,15 @@ def criar(db) -> dict:
         )
         db.add(e)
         espacos[nome] = e
+    # Regras de uso do salão, como num condomínio de verdade: até as 23h,
+    # reserva com dois dias de antecedência, uma futura por apartamento.
+    salao = espacos["Salão de Festas"]
+    salao.horario_abertura, salao.horario_fechamento = _hora(8), _hora(23)
+    salao.antecedencia_minima_dias = 2
+    salao.limite_por_unidade = 1
+    # Taxa de uso, cobrada quando o síndico aprova a reserva.
+    salao.taxa_uso = Decimal("150.00")
+    espacos["Churrasqueira 1"].taxa_uso = espacos["Churrasqueira 2"].taxa_uso = Decimal("60.00")
     db.flush()
 
     # ── Ocupação atual das áreas de uso livre ─────────────────────────
@@ -223,12 +257,16 @@ def criar(db) -> dict:
         ))
 
     # ── Reservas ──────────────────────────────────────────────────────
-    db.add(Reserva(
-        espaco_id=espacos["Salão de Festas"].id, morador_id=moradores["204"].id,
+    festa = Reserva(
+        espaco_id=salao.id, morador_id=moradores["204"].id,
         data=HOJE + timedelta(days=4), hora_inicio=_hora(14), hora_fim=_hora(22),
         pessoas_estimadas=50, observacoes="Aniversário de 15 anos",
         status=StatusReserva.APROVADA, avaliada_por_id=sindico.id, avaliada_em=AGORA,
-    ))
+    )
+    db.add(festa)
+    db.flush()
+    # Aprovada: a taxa de uso do salão já está nas cobranças do 204.
+    cobrancas.gerar_taxa_de_uso(db, festa, salao, unidades["204"].id, HOJE)
     db.add(Reserva(
         espaco_id=espacos["Churrasqueira 2"].id, morador_id=moradores["301"].id,
         data=HOJE + timedelta(days=11), hora_inicio=_hora(11), hora_fim=_hora(18),
@@ -264,13 +302,16 @@ def criar(db) -> dict:
 
         for unidade in ("101", "102", "204", "301", "302", "410"):
             valor = Decimal("320.00") if unidade != "410" else Decimal("410.00")
-            vencimento = mes.replace(day=10)
-            # A competência mais antiga já está quitada; a do meio tem um
-            # inadimplente; a atual está toda em aberto.
-            if atras == 2:
+            # A competência vence no dia 10 do mês seguinte. O 302 é o
+            # inadimplente: deve a mais antiga, que venceu no dia 10 do mês
+            # passado — em atraso em qualquer dia em que o seed rode — e a do
+            # meio, que vence no dia 10 deste mês (antes disso, só em
+            # aberto). Os outros pagaram as duas. A atual está toda em
+            # aberto, sem ninguém atrasado nela — senão, na demonstração,
+            # nenhum apartamento estaria quite para votar.
+            vencimento = (mes.replace(day=28) + timedelta(days=4)).replace(day=10)
+            if atras and unidade != "302":
                 situacao = StatusCobranca.PAGA
-            elif atras == 1:
-                situacao = StatusCobranca.VENCIDA if unidade == "302" else StatusCobranca.PAGA
             else:
                 situacao = StatusCobranca.VENCIDA if vencimento < HOJE else StatusCobranca.ABERTA
 
@@ -290,6 +331,284 @@ def criar(db) -> dict:
                     valor=valor, forma=FormaPagamento.PIX,
                     pago_em=datetime.combine(vencimento, time(10, 30), tzinfo=timezone.utc),
                 ))
+
+    # ── Acordo de parcelamento: a Marina (410) devia uma taxa antiga e
+    #    parcelou em 3x sem multa e juros; pagou duas, a última vence logo.
+    mes_antigo = somar_meses(primeiro_dia, -6)
+    antiga = Cobranca(unidade_id=unidades["410"].id, competencia=mes_antigo,
+                      descricao=f"Taxa de condomínio {mes_antigo:%m/%Y}", valor=Decimal("410.00"),
+                      vencimento=somar_meses(mes_antigo, 1).replace(day=10),
+                      status=StatusCobranca.NEGOCIADA)
+    db.add(antiga)
+    primeira = somar_meses(HOJE + timedelta(days=5), -2)
+    acordo = Acordo(condominio_id=condominio.id, unidade_id=unidades["410"].id,
+                    criado_por_id=sindico.id, principal=Decimal("410.00"), encargos=Decimal("0.00"),
+                    total=Decimal("410.00"), dispensou_encargos=True, parcelas=3,
+                    primeiro_vencimento=primeira,
+                    observacao="Combinado com a Marina na portaria; multa e juros perdoados.")
+    db.add(acordo)
+    db.flush()
+    antiga.acordo_id = acordo.id
+    for i, valor in enumerate(("136.67", "136.67", "136.66")):
+        vencimento = somar_meses(primeira, i)
+        parcela = Cobranca(unidade_id=unidades["410"].id, competencia=vencimento.replace(day=1),
+                           descricao=f"Acordo nº {acordo.id} — parcela {i + 1}/3",
+                           valor=Decimal(valor), vencimento=vencimento,
+                           status=StatusCobranca.PAGA if i < 2 else StatusCobranca.ABERTA,
+                           origem=OrigemCobranca.ACORDO, acordo_id=acordo.id)
+        db.add(parcela)
+        db.flush()
+        if i < 2:
+            db.add(Pagamento(cobranca_id=parcela.id, pago_por_id=moradores["410"].id,
+                             valor=Decimal(valor), forma=FormaPagamento.PIX,
+                             pago_em=datetime.combine(vencimento, time(9), tzinfo=timezone.utc)))
+
+    # ── Despesas: a prestação de contas dos mesmos três meses ────────
+    for atras in (2, 1, 0):
+        mes = primeiro_dia
+        for _ in range(atras):
+            mes = (mes - timedelta(days=1)).replace(day=1)
+        for dia, categoria, descricao, valor, fornecedor in [
+            (5, CategoriaDespesa.LIMPEZA, "Limpeza das áreas comuns", "780.00",
+             "Brilho Serviços"),
+            (8, CategoriaDespesa.ENERGIA, "Energia das áreas comuns", "312.37", "Energisa"),
+            (8, CategoriaDespesa.AGUA, "Água e esgoto", "198.90", "Águas Guariroba"),
+            (12, CategoriaDespesa.ADMINISTRACAO, "Tarifas bancárias", "39.90", None),
+        ] + ([(15, CategoriaDespesa.MANUTENCAO, "Troca da bomba da piscina", "980.00",
+               "Hidráulica Silva")] if atras == 1 else []):
+            data = mes.replace(day=dia)
+            if data > HOJE:
+                continue
+            db.add(Despesa(condominio_id=condominio.id, lancada_por_id=sindico.id,
+                           categoria=categoria,
+                           descricao=descricao, valor=Decimal(valor), data=data,
+                           fornecedor=fornecedor))
+
+    # ── Carros cadastrados pelos moradores ───────────────────────────
+    for unidade, placa, modelo, cor in [("204", "RIO2A18", "Gol", "Prata"),
+                                        ("301", "QAZ1B23", "Onix", "Branco")]:
+        db.add(VeiculoUnidade(condominio_id=condominio.id, unidade_id=unidades[unidade].id,
+                              cadastrado_por_id=moradores[unidade].id, placa=placa,
+                              modelo=modelo, cor=cor))
+
+    # ── Mudanças: uma aprovada (a portaria vê) e uma para o síndico avaliar ──
+    def dia_util(a_partir: int) -> date:
+        dia = HOJE + timedelta(days=a_partir)
+        while dia.isoweekday() > 5:
+            dia += timedelta(days=1)
+        return dia
+
+    db.add(Mudanca(condominio_id=condominio.id, unidade_id=unidades["102"].id,
+                   solicitada_por_id=moradores["102"].id, tipo=TipoMudanca.SAIDA,
+                   data=dia_util(1), hora_inicio=time(8), hora_fim=time(12),
+                   empresa="Transportes Pantanal", status=StatusMudanca.APROVADA,
+                   avaliada_por_id=sindico.id, avaliada_em=AGORA - timedelta(days=2)))
+    db.add(Mudanca(condominio_id=condominio.id, unidade_id=unidades["410"].id,
+                   solicitada_por_id=moradores["410"].id, tipo=TipoMudanca.CHEGADA,
+                   data=dia_util(5), hora_inicio=time(13), hora_fim=time(17),
+                   empresa="Mudanças Rápidas", observacao="Móveis grandes: piano e sofá de canto.",
+                   status=StatusMudanca.PENDENTE))
+
+    # ── Obras e reformas: a do João está em andamento (a portaria vê), a
+    #    da Ana mexe na parte elétrica e espera o síndico, a da Marina já
+    #    terminou.
+    db.add(Reforma(condominio_id=condominio.id, unidade_id=unidades["204"].id,
+                   solicitada_por_id=moradores["204"].id,
+                   descricao="Troca do piso da sala e pintura dos quartos",
+                   empresa="Reformas Pantanal", inicio=HOJE - timedelta(days=3),
+                   fim=HOJE + timedelta(days=12), status=StatusReforma.APROVADA,
+                   avaliada_por_id=sindico.id, avaliada_em=AGORA - timedelta(days=6),
+                   condicoes="Só das 8h às 17h, de segunda a sexta; entulho em caçamba, "
+                             "nunca no corredor."))
+    db.add(Reforma(condominio_id=condominio.id, unidade_id=unidades["301"].id,
+                   solicitada_por_id=moradores["301"].id,
+                   descricao="Troca do quadro elétrico e da fiação da cozinha",
+                   empresa="Elétrica Bonito", altera_estrutura=True,
+                   responsavel_tecnico="Eng. Paula Ramos", art_rrt="ART 1220260012345",
+                   inicio=HOJE + timedelta(days=6), fim=HOJE + timedelta(days=16),
+                   status=StatusReforma.PENDENTE))
+    db.add(Reforma(condominio_id=condominio.id, unidade_id=unidades["410"].id,
+                   solicitada_por_id=moradores["410"].id,
+                   descricao="Troca dos armários planejados da cozinha",
+                   empresa="Marcenaria Guaicurus", inicio=HOJE - timedelta(days=50),
+                   fim=HOJE - timedelta(days=35), status=StatusReforma.CONCLUIDA,
+                   avaliada_por_id=sindico.id, avaliada_em=AGORA - timedelta(days=55),
+                   concluida_em=AGORA - timedelta(days=36)))
+
+    # ── Advertências e multas: uma para o João se defender, uma para o
+    #    síndico decidir e uma antiga, já mantida ────────────────────────
+    regimento = "Regimento interno, art. 12 (silêncio das 22h às 8h)"
+    db.add(Infracao(
+        condominio_id=condominio.id, unidade_id=unidades["204"].id, aplicada_por_id=sindico.id,
+        tipo=TipoInfracao.MULTA, artigo=regimento, valor=Decimal("160.00"),
+        descricao="Som alto e convidados no corredor depois da meia-noite de sábado, com "
+                  "reclamação de três apartamentos.",
+        ocorrida_em=HOJE - timedelta(days=3), prazo_defesa=HOJE + timedelta(days=7),
+        status=StatusInfracao.NOTIFICADA,
+    ))
+    db.add(Infracao(
+        condominio_id=condominio.id, unidade_id=unidades["301"].id, aplicada_por_id=sindico.id,
+        tipo=TipoInfracao.ADVERTENCIA, artigo="Regimento interno, art. 18 (animais)",
+        descricao="Cachorro solto e sem coleira no hall e no elevador social.",
+        ocorrida_em=HOJE - timedelta(days=12), prazo_defesa=HOJE - timedelta(days=2),
+        status=StatusInfracao.DEFESA_APRESENTADA, defesa_por_id=moradores["301"].id,
+        defesa="O cachorro escapou quando a porta do apartamento abriu; foi a primeira vez e "
+               "já instalamos um portão.",
+        defesa_em=AGORA - timedelta(days=5),
+    ))
+    db.add(Infracao(
+        condominio_id=condominio.id, unidade_id=unidades["410"].id, aplicada_por_id=sindico.id,
+        tipo=TipoInfracao.ADVERTENCIA, artigo="Regimento interno, art. 9 (garagem)",
+        descricao="Carro estacionado na vaga de visitantes por três dias seguidos.",
+        ocorrida_em=HOJE - timedelta(days=60), prazo_defesa=HOJE - timedelta(days=50),
+        status=StatusInfracao.CONFIRMADA, decidida_por_id=sindico.id,
+        decisao_motivo="Sem defesa no prazo; câmeras confirmam.",
+        decidida_em=AGORA - timedelta(days=49),
+    ))
+
+    # ── Declarações de quitação: a do João (204) é de hoje; a da Ana
+    #    (301) já venceu; a da Marina (410) o síndico revogou. O 302, do
+    #    João sem morar, está em atraso e não emite. As antigas são de
+    #    antes do cadastro de demonstração, e só o síndico as vê; a de hoje
+    #    leva a hora do banco, a mesma do cadastro, e o João a vê.
+    for unidade, dias, revogada in [("204", 0, False), ("301", 40, False), ("410", 15, True)]:
+        emitida, dia = AGORA - timedelta(days=dias), HOJE - timedelta(days=dias)
+        d = DeclaracaoQuitacao(
+            condominio_id=condominio.id, unidade_id=unidades[unidade].id,
+            emitida_por_id=moradores[unidade].id, codigo=novo_codigo(db),
+            referencia_ate=dia, valida_ate=dia + timedelta(days=VALIDADE_DIAS),
+            condominio_nome=condominio.nome, condominio_cnpj=condominio.cnpj,
+            identificacao_unidade=unidades[unidade].identificacao, sindico_nome=sindico.nome,
+            emitida_em=emitida if dias else None,
+        )
+        if revogada:
+            d.revogada_em = emitida + timedelta(days=3)
+            d.revogada_por_id = sindico.id
+            d.motivo_revogacao = "O pagamento de agosto foi estornado pelo banco."
+        db.add(d)
+    db.flush()
+
+    # ── Manutenção preventiva: a recarga dos extintores venceu, a limpeza
+    #    da caixa d'água vence em 20 dias; o resto está em dia
+    #    (o elevador, mensal, avisa só uma semana antes)
+    for nome, meses, aviso, ultima, fornecedor, custos in [
+        ("Recarga dos extintores", 12, 30, HOJE - timedelta(days=375), "Extintores MS", [1280]),
+        ("Limpeza da caixa d'água", 6, 30, somar_meses(HOJE + timedelta(days=20), -6),
+         "Hidro Limpeza Pantanal", [600]),
+        ("Manutenção dos elevadores", 1, 7, HOJE - timedelta(days=5), "Elevadores Pantanal",
+         [450, 450, 450]),
+        ("Inspeção do para-raios (SPDA)", 12, 30, HOJE - timedelta(days=120), "Elétrica Silva",
+         [380]),
+        ("AVCB (vistoria do Corpo de Bombeiros)", 36, 60,
+         somar_meses(HOJE + timedelta(days=300), -36), None, []),
+    ]:
+        plano = PlanoManutencao(
+            condominio_id=condominio.id, nome=nome, periodicidade_meses=meses,
+            proximo_vencimento=somar_meses(ultima, meses), ultima_realizacao=ultima,
+            antecedencia_aviso_dias=aviso, fornecedor=fornecedor,
+        )
+        db.add(plano)
+        db.flush()
+        # Uma realização por período, da mais recente para trás.
+        for i, custo in enumerate(custos):
+            db.add(RealizacaoManutencao(
+                plano_id=plano.id, data=somar_meses(ultima, -meses * i),
+                custo=Decimal(custo), registrada_por_id=sindico.id,
+            ))
+    db.flush()
+
+    # ── Chaves: o quadro da portaria. A da churrasqueira saiu há duas horas
+    #    com o Bruno; a cópia do 204 está com a Rosa, a diarista que o João
+    #    autorizou a buscá-la (com o CPF conferido)
+    rosa = AutorizacaoVisita(
+        unidade_id=unidades["204"].id, autorizado_por_id=moradores["204"].id,
+        nome="Rosa Lima", documento="61932675140", tipo="Diarista",
+        valida_de=HOJE, valida_ate=HOJE + timedelta(days=90),
+        observacao="Pega a chave na portaria às terças e sextas.", pode_retirar_chave=True,
+    )
+    db.add(rosa)
+    chaves = {}
+    for nome, posicao, unidade, observacao in [
+        ("Salão de festas", "A1", None, None),
+        ("Churrasqueira", "A2", None, None),
+        ("Piscina — portão", "A3", None, None),
+        ("Casa de máquinas", "B1", None, "Só para a empresa do elevador e o zelador."),
+        ("Apto 204 — cópia", "C1", "204", "Deixada pelo João para a diarista."),
+    ]:
+        chaves[nome] = Chave(condominio_id=condominio.id, nome=nome, posicao=posicao,
+                             unidade_id=unidades[unidade].id if unidade else None,
+                             observacao=observacao)
+        db.add(chaves[nome])
+    db.flush()
+    db.add(MovimentacaoChave(
+        chave_id=chaves["Salão de festas"].id, retirada_por_nome="Ana Beatriz Rocha (301)",
+        retirada_em=AGORA - timedelta(days=1, hours=6), retirada_registrada_por_id=carlos.id,
+        devolvida_em=AGORA - timedelta(days=1), devolucao_registrada_por_id=renata.id,
+    ))
+    db.add(MovimentacaoChave(
+        chave_id=chaves["Churrasqueira"].id, retirada_por_nome="Bruno Cardoso (102)",
+        retirada_em=AGORA - timedelta(hours=2), retirada_registrada_por_id=carlos.id,
+    ))
+    # Sem retirada_em: vale a hora do banco, a mesma do cadastro do João, e
+    # ele vê no histórico da chave dele.
+    db.add(MovimentacaoChave(
+        chave_id=chaves["Apto 204 — cópia"].id, retirada_por_nome=rosa.nome,
+        retirada_por_documento=rosa.documento, autorizacao_id=rosa.id,
+        retirada_registrada_por_id=carlos.id,
+    ))
+    db.flush()
+
+    # ── Livro da portaria: a Renata passou o turno da noite com um aviso
+    #    que o Carlos ainda não leu; a orientação do síndico, os dois leram
+    for autor, horas, importante, texto, cientes in [
+        (renata, 72, True, "A moradora do 410 pediu para não interfonar depois das 22h; "
+                           "encomenda que chegar à noite fica para o dia seguinte.", [carlos]),
+        (sindico, 48, True, "Manutenção do portão da garagem na quinta, das 8h às 12h: "
+                            "abrir pelo controle manual e avisar quem chegar de carro.",
+         [carlos, renata]),
+        (carlos, 20, False, "Turno tranquilo. O portão da garagem travou duas vezes; "
+                            "já está anotado para a manutenção.", []),
+        (renata, 9, True, "O entregador do mercado volta às 10h com as compras do 204; "
+                          "o João autorizou deixar na portaria.", []),
+    ]:
+        nota = AnotacaoPortaria(condominio_id=condominio.id, autor_id=autor.id, texto=texto,
+                                importante=importante, criado_em=AGORA - timedelta(hours=horas))
+        db.add(nota)
+        db.flush()
+        for quem in cientes:
+            db.add(CienciaAnotacao(anotacao_id=nota.id, usuario_id=quem.id,
+                                   ciente_em=nota.criado_em + timedelta(hours=3)))
+
+    # ── Assembleias: uma encerrada, com resultado, e uma em votação ───
+    E = EscolhaVoto
+    for titulo, descricao, abre, dias, itens, votos in [
+        ("Assembleia geral ordinária", "Prestação de contas e obras do ano.",
+         AGORA - timedelta(days=30), 3,
+         [("Aprovar as contas do semestre", MaioriaExigida.SIMPLES),
+          ("Pintura da fachada (R$ 42 mil, rateados em 6 parcelas)", MaioriaExigida.DOIS_TERCOS)],
+         # 3 de 6 apartamentos a favor da pintura: maioria dos votos, mas
+         # não os 2/3 do condomínio — a pintura não passa.
+         {"204": (E.A_FAVOR, E.A_FAVOR), "301": (E.A_FAVOR, E.A_FAVOR),
+          "102": (E.A_FAVOR, E.CONTRA), "410": (E.ABSTENCAO, E.A_FAVOR)}),
+        ("Assembleia extraordinária — portão e piscina", "Votação pelo SmartCondo.",
+         AGORA - timedelta(hours=2), 5,
+         [("Troca do portão da garagem (R$ 18 mil, em 3 parcelas)", MaioriaExigida.SIMPLES),
+          ("Piscina aberta das 8h às 22h", MaioriaExigida.SIMPLES)],
+         {"301": (E.A_FAVOR, E.A_FAVOR)}),
+    ]:
+        assembleia = Assembleia(
+            condominio_id=condominio.id, convocada_por_id=sindico.id, titulo=titulo,
+            descricao=descricao, abre_em=abre, encerra_em=abre + timedelta(days=dias),
+            itens=[ItemPauta(ordem=n, titulo=t, maioria=m)
+                   for n, (t, m) in enumerate(itens, start=1)],
+        )
+        db.add(assembleia)
+        db.flush()
+        for unidade, escolhas in votos.items():
+            for item, escolha in zip(assembleia.itens, escolhas):
+                db.add(Voto(item_id=item.id, unidade_id=unidades[unidade].id,
+                            usuario_id=moradores[unidade].id, escolha=escolha,
+                            votado_em=abre + timedelta(hours=3)))
 
     # ── Comunicados ───────────────────────────────────────────────────
     for titulo, conteudo, categoria, fixado, dias in [
@@ -322,18 +641,18 @@ def criar(db) -> dict:
     # ── Portaria ──────────────────────────────────────────────────────
     db.add(Visitante(
         unidade_id=unidades["204"].id, registrado_por_id=carlos.id,
-        nome="Marcos Alves", documento="01864196947", tipo_visita="Visita pessoal",
+        nome="Marcos Alves", documento="05234167844", tipo_visita="Visita pessoal",
         status=StatusVisitante.AGUARDANDO_CONFIRMACAO,
     ))
     db.add(Visitante(
         unidade_id=unidades["301"].id, registrado_por_id=carlos.id,
-        nome="Fernanda Souza", documento="01617283592", tipo_visita="Visita pessoal",
+        nome="Fernanda Souza", documento="05234168573", tipo_visita="Visita pessoal",
         status=StatusVisitante.DENTRO, entrada_em=AGORA - timedelta(hours=2),
         confirmado_por_id=moradores["301"].id, confirmado_em=AGORA - timedelta(hours=2),
     ))
     db.add(Visitante(
         unidade_id=unidades["102"].id, registrado_por_id=renata.id,
-        nome="Lucas Oliveira", documento="01493826859", tipo_visita="Prestador de serviço",
+        nome="Lucas Oliveira", documento="05234169200", tipo_visita="Prestador de serviço",
         placa_veiculo="ABC1D23", status=StatusVisitante.SAIU,
         entrada_em=AGORA - timedelta(hours=6), saida_em=AGORA - timedelta(hours=1),
         confirmado_por_id=moradores["102"].id, confirmado_em=AGORA - timedelta(hours=6),
@@ -505,6 +824,9 @@ Pronto. Contas criadas (todas com a senha "{SENHA}"):
 
   pedro@smartcondo.com está aguardando aprovação do síndico — use para
   demonstrar a tela de aprovação de cadastros.
+
+  Perfis: o síndico também mora no 101, e o morador@ (João, 204) é dono
+  do 302, alugado. Os dois trocam de perfil no topo da tela.
 
   Código de acesso do condomínio: PALM-2025
   (é o que o morador informa ao se cadastrar)

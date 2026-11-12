@@ -28,32 +28,55 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 ## 🎯 Funcionalidades por Perfil
 
 ### 🏠 Morador
-- **Dashboard** — Visão geral com reservas, financeiro e comunicados
-- **Reservas** — Agendamento de áreas comuns (salão, churrasqueira, piscina, academia, playground)
-- **Financeiro** — Visualização de boletos, saldo devedor e histórico de pagamentos
+- **Dashboard** — Visão geral com reservas, cobranças, comunicados e encomendas
+- **Reservas** — Agendamento das áreas comuns, com as regras e a taxa de uso de cada espaço
+- **Financeiro** — Cobranças (taxa, cota extra, multa, uso de espaço, parcelas de acordo), forma de pagamento e histórico
+- **Prestação de Contas** — Despesas e balancete do mês
+- **Declaração de Quitação** — O apartamento em dia, com um código que o comprador confere
+- **Assembleias** — Votação online, um voto por apartamento
+- **Advertências e Multas** — Notificações do síndico e a defesa no prazo
+- **Mudança** — Agendamento dentro das regras do regimento
+- **Obras e Reformas** — Comunicação ao síndico antes de começar, com a ART quando mexe em estrutura (NBR 16280)
+- **Visitantes** — Confirmação de quem chegou, entrada liberada com antecedência e quem pode retirar a chave deixada na portaria
+- **Veículos** — Placas do apartamento, que a portaria reconhece
 - **Comunicados** — Acompanhamento de avisos do condomínio com filtros por categoria
 - **Documentos** — Acesso a atas, convenção e regimento interno
 - **Ocorrências** — Abertura e acompanhamento de solicitações
-- **Perfil** — Edição de dados pessoais e alteração de senha
+- **Perfil** — Dados pessoais, senha, foto e troca de perfil (quem tem mais de um apartamento)
 
 ### 🚪 Porteiro
-- **Dashboard** — Visão geral de visitantes, encomendas e comunicados
-- **Visitantes** — Controle de entrada e saída de visitantes
+- **Dashboard** — Visão geral de visitantes, encomendas, carros no pátio e avisos
+- **Visitantes** — Controle de entrada e saída, com foto e entradas liberadas pelo morador
 - **Encomendas** — Registro e controle de retirada de encomendas
-- **Veículos** — Controle de entrada e saída de veículos
+- **Veículos** — Entrada e saída do estacionamento, reconhecendo as placas cadastradas
+- **Mudanças** — As aprovadas pelo síndico, de hoje em diante
+- **Obras Aprovadas** — As reformas no prazo, com as condições do síndico
+- **Livro da Portaria** — Passagem de turno, com a ciência de quem chega
+- **Quadro de Chaves** — Quem levou cada chave; a do apartamento só para quem o morador autorizou
 - **Ocorrências** — Registro de ocorrências durante o turno
 - **Perfil** — Edição de dados pessoais
 
 ### 📊 Síndico
-- **Dashboard** — Painel administrativo com indicadores do condomínio
-- **Financeiro** — Gestão financeira completa, geração de boletos e inadimplência
-- **Moradores** — Cadastro e aprovação de novos moradores
-- **Porteiros** — Gestão da equipe de portaria
-- **Reservas** — Aprovação ou recusa de reservas
+- **Dashboard** — Painel administrativo com indicadores e pendências do condomínio
+- **Financeiro** — Cobranças, pagamentos, encargos e inadimplência; a taxa e a cota extra para todos, rateadas pela fração ideal
+- **Acordos de Parcelamento** — As cobranças vencidas de um apartamento em até 24 parcelas
+- **Prestação de Contas** — Lançamento de despesas e balancete do mês
+- **Declarações de Quitação** — Emissão para qualquer apartamento em dia e revogação com motivo
+- **Assembleias** — Convocação, pauta e resultado da votação
+- **Moradores** — Cadastro e aprovação de novos moradores; unidades com vagas e fração ideal
+- **Porteiros** — Equipe de portaria e as permissões de cada um
+- **Reservas** — Espaços, regras, taxa de uso e aprovação das reservas
+- **Advertências e Multas** — Notificação, defesa e decisão
+- **Mudanças** — Regras do regimento e aprovação dos pedidos
+- **Obras e Reformas** — Aprovação com condições, prorrogação e cancelamento da obra irregular
+- **Livro da Portaria** — A passagem de turno da equipe e as orientações aos porteiros
+- **Quadro de Chaves** — As chaves que a portaria guarda, e com quem estão
 - **Comunicados** — Criação e envio de comunicados
 - **Manutenção** — Abertura e acompanhamento de ordens de serviço
+- **Manutenção Preventiva** — AVCB, extintores, caixa d'água e o que mais vence, com aviso no painel
 - **Ocorrências** — Resposta aos chamados de moradores e porteiros
-- **Perfil** — Edição de dados pessoais e troca de senha
+- **Documentos** — Atas, convenção, regimento e plantas
+- **Perfil** — Dados pessoais, senha e o apartamento em que mora, se morar
 
 ### ⭐ Administrador
 - **Dashboard** — Indicadores da plataforma inteira
@@ -140,25 +163,40 @@ frontend/
 │   │   └── dashboard.css              # Estilos dos dashboards
 │   ├── js/
 │   │   ├── api.js                     # Cliente da API: token, erros e rotas
+│   │   ├── formato.js                 # Dinheiro, datas, CPF, telefone e elementos
 │   │   ├── sessao.js                  # Guarda de rota e dados do cabeçalho
 │   │   ├── admin-ui.js                # Modal, tabelas e formatações
 │   │   ├── validation.js              # Validações e máscaras de input
+│   │   ├── perfil.js                  # Tela de perfil (morador, porteiro e síndico)
 │   │   ├── foto.js                    # Captura de foto (vídeo porteiro)
 │   │   ├── foto-perfil.js             # Envio e troca da foto de perfil
+│   │   ├── apartamentos.js            # "Meus apartamentos" no perfil
+│   │   ├── perfis.js                  # Troca de perfil na barra superior
 │   │   ├── chat.js                    # Mensagens entre os perfis
 │   │   ├── permissoes.js              # O que o porteiro pode registrar
+│   │   ├── assembleias.js             # Cartão da assembleia virtual
+│   │   ├── contas.js                  # Prestação de contas: balancete e despesas
+│   │   ├── acordos.js                 # Acordos de parcelamento
+│   │   ├── declaracoes.js             # Declaração de quitação
+│   │   ├── infracoes.js               # Advertências e multas
+│   │   ├── mudancas.js                # Agendamento de mudança
+│   │   ├── reformas.js                # Obras e reformas (NBR 16280)
+│   │   ├── livro.js                   # Livro da portaria
+│   │   ├── chaves.js                  # Quadro de chaves da portaria
+│   │   ├── preventiva.js              # Manutenção preventiva
 │   │   └── acessibilidade.js          # Acessibilidade, VLibras e tema
 │   └── img/
 │       ├── logo.png
 │       ├── acessibilidade.png
-│       └── icons/                     # 43 ícones SVG
+│       └── icons/                     # 46 ícones SVG
 └── pages/
     ├── legal/                         # Termos de uso e privacidade
     ├── cadastro/                      # Cadastro de usuários (3 páginas)
     ├── login/                         # Recuperação de senha (3 páginas)
-    ├── morador/                       # Módulo do morador (8 páginas)
-    ├── porteiro/                      # Módulo do porteiro (7 páginas)
-    ├── sindico/                       # Módulo do síndico (14 páginas)
+    ├── verificar/                     # Conferência pública da declaração
+    ├── morador/                       # Módulo do morador (16 páginas)
+    ├── porteiro/                      # Módulo do porteiro (11 páginas)
+    ├── sindico/                       # Módulo do síndico (24 páginas)
     └── admin/                         # Módulo do administrador (3 páginas)
 ```
 
@@ -169,17 +207,17 @@ backend/
 ├── alembic/                           # Migrações do banco
 ├── app/
 │   ├── core/                          # Configuração, banco e segurança
-│   ├── models/                        # 22 tabelas
+│   ├── models/                        # 40 tabelas
 │   ├── schemas/                       # Entrada e saída da API
 │   ├── services/                      # Regras de negócio
 │   ├── api/routers/                   # Endpoints
 │   ├── seed.py                        # Dados de demonstração
 │   └── main.py
-└── tests/                             # 409 casos de teste
+└── tests/                             # 733 casos de teste
 ```
 
-**Total:** 43 páginas HTML, 2 arquivos CSS, 9 arquivos JS, 43 ícones SVG e
-uma API com 109 endpoints.
+**Total:** 66 páginas HTML, 2 arquivos CSS, 23 arquivos JS, 46 ícones SVG e
+uma API com 178 endpoints.
 
 ---
 
@@ -199,11 +237,11 @@ uvicorn app.main:app --reload
 
 Documentação interativa da API em <http://localhost:8000/docs>.
 
-**109 endpoints**, cobrindo os casos de uso e as histórias de usuário da
+**178 endpoints**, cobrindo os casos de uso e as histórias de usuário da
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e
-comunicados, documentos e chat. **409 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
+comunicados, documentos e chat. **733 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
 
 ---
 

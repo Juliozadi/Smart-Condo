@@ -1,4 +1,20 @@
 DROP TABLE IF EXISTS
+    reformas,
+    movimentacoes_chave,
+    chaves,
+    realizacoes_manutencao,
+    planos_manutencao,
+    declaracoes_quitacao,
+    ciencias_anotacao,
+    anotacoes_portaria,
+    infracoes,
+    horarios_mudanca,
+    mudancas,
+    veiculos_unidade,
+    votos,
+    itens_pauta,
+    assembleias,
+    despesas,
     registros_alteracao,
     documentos_cadastro,
     mensagens,
@@ -8,10 +24,12 @@ DROP TABLE IF EXISTS
     ocorrencias,
     encomendas,
     visitantes,
+    autorizacoes_visita,
     leituras_comunicado,
     comunicados,
     pagamentos,
     cobrancas,
+    acordos,
     preferencias_cobranca,
     registros_ocupacao,
     reservas,
@@ -26,22 +44,31 @@ CASCADE;
 DROP TYPE IF EXISTS
     canal_verificacao,
     categoria_comunicado,
+    categoria_despesa,
     categoria_documento,
     categoria_veiculo,
+    escolha_voto,
     finalidade_codigo,
+    maioria_exigida,
     forma_pagamento,
+    origem_cobranca,
     papel_usuario,
     prioridade_ocorrencia,
     prioridade_ordem_servico,
     status_cobranca,
     status_encomenda,
+    status_infracao,
     status_ocorrencia,
     status_ordem_servico,
+    status_mudanca,
+    status_reforma,
     status_reserva,
     status_usuario,
     status_visitante,
     tipo_documento_cadastro,
+    tipo_infracao,
     tipo_movimentacao,
+    tipo_mudanca,
     tipo_ocupacao
 CASCADE;
 
@@ -57,6 +84,38 @@ CREATE TYPE categoria_comunicado AS ENUM (
     'SEGURANCA',
     'EVENTO',
     'URGENTE'
+);
+
+CREATE TYPE escolha_voto AS ENUM (
+    'A_FAVOR',
+    'CONTRA',
+    'ABSTENCAO'
+);
+
+CREATE TYPE origem_cobranca AS ENUM (
+    'TAXA',
+    'MULTA',
+    'USO_ESPACO',
+    'ACORDO',
+    'EXTRA'
+);
+
+CREATE TYPE maioria_exigida AS ENUM (
+    'SIMPLES',
+    'DOIS_TERCOS',
+    'UNANIMIDADE'
+);
+
+CREATE TYPE categoria_despesa AS ENUM (
+    'AGUA',
+    'ENERGIA',
+    'LIMPEZA',
+    'MANUTENCAO',
+    'SEGURANCA',
+    'PESSOAL',
+    'ADMINISTRACAO',
+    'OBRAS',
+    'OUTROS'
 );
 
 CREATE TYPE categoria_documento AS ENUM (
@@ -111,13 +170,21 @@ CREATE TYPE status_cobranca AS ENUM (
     'ABERTA',
     'PAGA',
     'VENCIDA',
-    'CANCELADA'
+    'CANCELADA',
+    'NEGOCIADA'
 );
 
 CREATE TYPE status_encomenda AS ENUM (
     'AGUARDANDO_RETIRADA',
     'RETIRADA',
     'RECUSADA'
+);
+
+CREATE TYPE status_infracao AS ENUM (
+    'NOTIFICADA',
+    'DEFESA_APRESENTADA',
+    'CONFIRMADA',
+    'ANULADA'
 );
 
 CREATE TYPE status_ocorrencia AS ENUM (
@@ -132,6 +199,22 @@ CREATE TYPE status_ordem_servico AS ENUM (
     'EM_ANDAMENTO',
     'CONCLUIDA',
     'CANCELADA'
+);
+
+CREATE TYPE status_mudanca AS ENUM (
+    'PENDENTE',
+    'APROVADA',
+    'RECUSADA',
+    'CANCELADA',
+    'CONCLUIDA'
+);
+
+CREATE TYPE status_reforma AS ENUM (
+    'PENDENTE',
+    'APROVADA',
+    'RECUSADA',
+    'CANCELADA',
+    'CONCLUIDA'
 );
 
 CREATE TYPE status_reserva AS ENUM (
@@ -170,6 +253,16 @@ CREATE TYPE tipo_movimentacao AS ENUM (
     'SAIDA'
 );
 
+CREATE TYPE tipo_infracao AS ENUM (
+    'ADVERTENCIA',
+    'MULTA'
+);
+
+CREATE TYPE tipo_mudanca AS ENUM (
+    'CHEGADA',
+    'SAIDA'
+);
+
 CREATE TYPE tipo_ocupacao AS ENUM (
     'PROPRIETARIO',
     'INQUILINO',
@@ -193,7 +286,16 @@ CREATE TABLE condominios (
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
     codigo_acesso character varying(20) NOT NULL,
     inativo_em timestamp with time zone,
-    inativado_por_id integer
+    inativado_por_id integer,
+    -- Multa e juros da cobrança paga com atraso, em %: até 2% e 1% ao mês
+    -- (Código Civil, art. 1.336, § 1º).
+    multa_atraso numeric(4,2) DEFAULT 2.00 NOT NULL,
+    juros_mensais numeric(4,2) DEFAULT 1.00 NOT NULL,
+    -- Com quantos dias de aviso o morador agenda a mudança (regimento).
+    mudanca_antecedencia_dias integer DEFAULT 2 NOT NULL,
+    CONSTRAINT ck_condominio_juros CHECK (((juros_mensais >= (0)::numeric) AND (juros_mensais <= (1)::numeric))),
+    CONSTRAINT ck_condominio_multa CHECK (((multa_atraso >= (0)::numeric) AND (multa_atraso <= (2)::numeric))),
+    CONSTRAINT ck_condominio_mudanca_antecedencia CHECK (((mudanca_antecedencia_dias >= 0) AND (mudanca_antecedencia_dias <= 60)))
 );
 CREATE SEQUENCE condominios_id_seq
     AS integer
@@ -216,7 +318,9 @@ CREATE TABLE unidades (
     vagas_garagem integer NOT NULL,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
-    pendente boolean DEFAULT false NOT NULL
+    pendente boolean DEFAULT false NOT NULL,
+    fracao_ideal numeric(7,4),
+    CONSTRAINT ck_unidade_fracao_ideal CHECK (((fracao_ideal IS NULL) OR ((fracao_ideal > (0)::numeric) AND (fracao_ideal <= (100)::numeric))))
 );
 CREATE SEQUENCE unidades_id_seq
     AS integer
@@ -254,7 +358,9 @@ CREATE TABLE usuarios (
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
     versao_sessao integer DEFAULT 0 NOT NULL,
-    unidade_desde timestamp with time zone DEFAULT now() NOT NULL
+    unidade_desde timestamp with time zone DEFAULT now() NOT NULL,
+    reside boolean DEFAULT true NOT NULL,
+    conta_principal_id integer
 );
 CREATE SEQUENCE usuarios_id_seq
     AS integer
@@ -329,7 +435,16 @@ CREATE TABLE espacos_comuns (
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
     inativo_em timestamp with time zone,
-    inativado_por_id integer
+    inativado_por_id integer,
+    horario_abertura time without time zone,
+    horario_fechamento time without time zone,
+    antecedencia_minima_dias integer,
+    duracao_maxima_horas integer,
+    limite_por_unidade integer,
+    -- Taxa de uso, cobrada quando o síndico aprova a reserva; vazia, sem taxa.
+    taxa_uso numeric(10,2),
+    CONSTRAINT ck_espaco_horario CHECK ((horario_fechamento > horario_abertura)),
+    CONSTRAINT ck_espaco_taxa_uso CHECK (((taxa_uso IS NULL) OR (taxa_uso > (0)::numeric)))
 );
 CREATE SEQUENCE espacos_comuns_id_seq
     AS integer
@@ -358,6 +473,11 @@ CREATE TABLE reservas (
     motivo_recusa text,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    cancelada_por_id integer,
+    cancelada_em timestamp with time zone,
+    motivo_cancelamento text,
+    -- A cobrança da taxa de uso, gerada na aprovação.
+    cobranca_id integer,
     CONSTRAINT ck_reserva_intervalo CHECK ((hora_fim > hora_inicio))
 );
 CREATE SEQUENCE reservas_id_seq
@@ -425,6 +545,10 @@ CREATE TABLE cobrancas (
     status status_cobranca NOT NULL,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    -- Taxa do mês, multa por infração, uso de espaço ou parcela de acordo.
+    origem origem_cobranca DEFAULT 'TAXA'::origem_cobranca NOT NULL,
+    -- O acordo em que a cobrança entrou (NEGOCIADA) ou de que é parcela.
+    acordo_id integer,
     CONSTRAINT ck_cobranca_valor_positivo CHECK ((valor > (0)::numeric))
 );
 CREATE SEQUENCE cobrancas_id_seq
@@ -438,8 +562,47 @@ ALTER SEQUENCE cobrancas_id_seq OWNED BY cobrancas.id;
 ALTER TABLE ONLY cobrancas ALTER COLUMN id SET DEFAULT nextval('cobrancas_id_seq'::regclass);
 ALTER TABLE ONLY cobrancas
     ADD CONSTRAINT cobrancas_pkey PRIMARY KEY (id);
--- Uma cobrança por unidade e mês, sem contar as canceladas.
-CREATE UNIQUE INDEX uq_cobranca_competencia ON cobrancas USING btree (unidade_id, competencia) WHERE (status <> 'CANCELADA'::status_cobranca);
+-- Uma taxa condominial por unidade e mês, sem contar as canceladas; multa
+-- e uso de espaço entram ao lado dela.
+CREATE UNIQUE INDEX uq_cobranca_competencia ON cobrancas USING btree (unidade_id, competencia) WHERE ((status <> 'CANCELADA'::status_cobranca) AND (origem = 'TAXA'::origem_cobranca));
+
+-- Acordo de parcelamento: as cobranças vencidas de um apartamento, com a
+-- multa e os juros do dia (ou dispensados), divididas em parcelas mensais.
+-- As cobranças do acordo ficam NEGOCIADA; as parcelas são cobranças com
+-- origem ACORDO.
+CREATE TABLE acordos (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    criado_por_id integer,
+    principal numeric(10,2) NOT NULL,
+    encargos numeric(10,2) NOT NULL,
+    total numeric(10,2) NOT NULL,
+    dispensou_encargos boolean DEFAULT false NOT NULL,
+    parcelas integer NOT NULL,
+    primeiro_vencimento date NOT NULL,
+    observacao character varying(300),
+    cancelado_em timestamp with time zone,
+    cancelado_por_id integer,
+    motivo_cancelamento character varying(300),
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT ck_acordo_encargos CHECK ((encargos >= (0)::numeric)),
+    CONSTRAINT ck_acordo_parcelas CHECK (((parcelas >= 1) AND (parcelas <= 24))),
+    CONSTRAINT ck_acordo_principal CHECK ((principal > (0)::numeric)),
+    CONSTRAINT ck_acordo_total CHECK ((total = (principal + encargos)))
+);
+CREATE SEQUENCE acordos_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE acordos_id_seq OWNED BY acordos.id;
+ALTER TABLE ONLY acordos ALTER COLUMN id SET DEFAULT nextval('acordos_id_seq'::regclass);
+ALTER TABLE ONLY acordos
+    ADD CONSTRAINT acordos_pkey PRIMARY KEY (id);
 
 CREATE TABLE pagamentos (
     id integer NOT NULL,
@@ -452,6 +615,9 @@ CREATE TABLE pagamentos (
     observacao text,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    -- Parte do valor que pagou multa e juros do atraso.
+    encargos numeric(10,2) DEFAULT 0 NOT NULL,
+    CONSTRAINT ck_pagamento_encargos CHECK (((encargos >= (0)::numeric) AND (encargos <= valor))),
     CONSTRAINT ck_pagamento_valor_positivo CHECK ((valor > (0)::numeric))
 );
 CREATE SEQUENCE pagamentos_id_seq
@@ -466,6 +632,108 @@ ALTER TABLE ONLY pagamentos ALTER COLUMN id SET DEFAULT nextval('pagamentos_id_s
 ALTER TABLE ONLY pagamentos
     ADD CONSTRAINT pagamentos_pkey PRIMARY KEY (id);
 
+-- O que o condomínio gastou: a outra metade da prestação de contas
+-- (Código Civil, art. 1.348, VIII). A lançada errada é cancelada com
+-- motivo (inativo_em) e sai do balancete; nada é apagado.
+CREATE TABLE despesas (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    lancada_por_id integer,
+    categoria categoria_despesa NOT NULL,
+    descricao character varying(180) NOT NULL,
+    valor numeric(10,2) NOT NULL,
+    data date NOT NULL,
+    fornecedor character varying(120),
+    comprovante_arquivo character varying(100),
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    inativo_em timestamp with time zone,
+    inativado_por_id integer,
+    CONSTRAINT ck_despesa_valor_positivo CHECK ((valor > (0)::numeric))
+);
+CREATE SEQUENCE despesas_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE despesas_id_seq OWNED BY despesas.id;
+ALTER TABLE ONLY despesas ALTER COLUMN id SET DEFAULT nextval('despesas_id_seq'::regclass);
+ALTER TABLE ONLY despesas
+    ADD CONSTRAINT despesas_pkey PRIMARY KEY (id);
+
+-- Assembleia virtual (Código Civil, art. 1.354-A): convocação, pauta e
+-- um voto por apartamento em cada item. Cancelar é inativar.
+CREATE TABLE assembleias (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    convocada_por_id integer,
+    titulo character varying(180) NOT NULL,
+    descricao text,
+    abre_em timestamp with time zone NOT NULL,
+    encerra_em timestamp with time zone NOT NULL,
+    motivo_cancelamento character varying(300),
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    inativo_em timestamp with time zone,
+    inativado_por_id integer,
+    CONSTRAINT ck_assembleia_periodo CHECK ((encerra_em > abre_em))
+);
+CREATE SEQUENCE assembleias_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE assembleias_id_seq OWNED BY assembleias.id;
+ALTER TABLE ONLY assembleias ALTER COLUMN id SET DEFAULT nextval('assembleias_id_seq'::regclass);
+ALTER TABLE ONLY assembleias
+    ADD CONSTRAINT assembleias_pkey PRIMARY KEY (id);
+
+CREATE TABLE itens_pauta (
+    id integer NOT NULL,
+    assembleia_id integer NOT NULL,
+    ordem integer NOT NULL,
+    titulo character varying(180) NOT NULL,
+    descricao text,
+    maioria maioria_exigida NOT NULL
+);
+CREATE SEQUENCE itens_pauta_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE itens_pauta_id_seq OWNED BY itens_pauta.id;
+ALTER TABLE ONLY itens_pauta ALTER COLUMN id SET DEFAULT nextval('itens_pauta_id_seq'::regclass);
+ALTER TABLE ONLY itens_pauta
+    ADD CONSTRAINT itens_pauta_pkey PRIMARY KEY (id);
+
+CREATE TABLE votos (
+    id integer NOT NULL,
+    item_id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    usuario_id integer,
+    escolha escolha_voto NOT NULL,
+    votado_em timestamp with time zone NOT NULL
+);
+CREATE SEQUENCE votos_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE votos_id_seq OWNED BY votos.id;
+ALTER TABLE ONLY votos ALTER COLUMN id SET DEFAULT nextval('votos_id_seq'::regclass);
+ALTER TABLE ONLY votos
+    ADD CONSTRAINT votos_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY votos
+    ADD CONSTRAINT uq_voto_por_unidade UNIQUE (item_id, unidade_id);
+
 CREATE TABLE comunicados (
     id integer NOT NULL,
     condominio_id integer NOT NULL,
@@ -478,7 +746,12 @@ CREATE TABLE comunicados (
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
     inativo_em timestamp with time zone,
-    inativado_por_id integer
+    inativado_por_id integer,
+    -- Para quem: os dois vazios, o condomínio inteiro; ou um bloco, ou um
+    -- apartamento (a advertência, que não é da conta dos vizinhos).
+    bloco character varying(20),
+    unidade_id integer,
+    CONSTRAINT ck_comunicado_um_destino CHECK (((bloco IS NULL) OR (unidade_id IS NULL)))
 );
 CREATE SEQUENCE comunicados_id_seq
     AS integer
@@ -527,7 +800,8 @@ CREATE TABLE visitantes (
     confirmado_por_id integer,
     confirmado_em timestamp with time zone,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
-    atualizado_em timestamp with time zone DEFAULT now() NOT NULL
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    autorizacao_id integer
 );
 CREATE SEQUENCE visitantes_id_seq
     AS integer
@@ -540,6 +814,38 @@ ALTER SEQUENCE visitantes_id_seq OWNED BY visitantes.id;
 ALTER TABLE ONLY visitantes ALTER COLUMN id SET DEFAULT nextval('visitantes_id_seq'::regclass);
 ALTER TABLE ONLY visitantes
     ADD CONSTRAINT visitantes_pkey PRIMARY KEY (id);
+
+-- Entrada liberada pelo morador antes de o visitante chegar (diarista,
+-- prestador, convidados). Revogar é inativar; nada é apagado.
+CREATE TABLE autorizacoes_visita (
+    id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    autorizado_por_id integer,
+    nome character varying(160) NOT NULL,
+    documento character varying(20),
+    tipo character varying(60) NOT NULL,
+    valida_de date NOT NULL,
+    valida_ate date NOT NULL,
+    dias_semana character varying(7),
+    observacao character varying(300),
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    inativo_em timestamp with time zone,
+    inativado_por_id integer,
+    pode_retirar_chave boolean DEFAULT false NOT NULL,
+    CONSTRAINT ck_autorizacao_periodo CHECK ((valida_ate >= valida_de))
+);
+CREATE SEQUENCE autorizacoes_visita_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE autorizacoes_visita_id_seq OWNED BY autorizacoes_visita.id;
+ALTER TABLE ONLY autorizacoes_visita ALTER COLUMN id SET DEFAULT nextval('autorizacoes_visita_id_seq'::regclass);
+ALTER TABLE ONLY autorizacoes_visita
+    ADD CONSTRAINT autorizacoes_visita_pkey PRIMARY KEY (id);
 
 CREATE TABLE encomendas (
     id integer NOT NULL,
@@ -627,6 +933,363 @@ ALTER SEQUENCE movimentacoes_veiculo_id_seq OWNED BY movimentacoes_veiculo.id;
 ALTER TABLE ONLY movimentacoes_veiculo ALTER COLUMN id SET DEFAULT nextval('movimentacoes_veiculo_id_seq'::regclass);
 ALTER TABLE ONLY movimentacoes_veiculo
     ADD CONSTRAINT movimentacoes_veiculo_pkey PRIMARY KEY (id);
+
+-- Placas cadastradas de cada apartamento, para a portaria reconhecer o
+-- carro do morador. Uma placa ativa por condomínio; remover é inativar.
+CREATE TABLE veiculos_unidade (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    cadastrado_por_id integer,
+    placa character varying(10) NOT NULL,
+    modelo character varying(60),
+    cor character varying(30),
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    inativo_em timestamp with time zone,
+    inativado_por_id integer
+);
+CREATE SEQUENCE veiculos_unidade_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE veiculos_unidade_id_seq OWNED BY veiculos_unidade.id;
+ALTER TABLE ONLY veiculos_unidade ALTER COLUMN id SET DEFAULT nextval('veiculos_unidade_id_seq'::regclass);
+ALTER TABLE ONLY veiculos_unidade
+    ADD CONSTRAINT veiculos_unidade_pkey PRIMARY KEY (id);
+
+-- Mudanças pedidas pelo morador e avaliadas pelo síndico; a portaria vê
+-- as aprovadas. Uma de cada vez em cada bloco (conferido pela API).
+CREATE TABLE mudancas (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    solicitada_por_id integer,
+    tipo tipo_mudanca NOT NULL,
+    data date NOT NULL,
+    hora_inicio time without time zone NOT NULL,
+    hora_fim time without time zone NOT NULL,
+    empresa character varying(120),
+    observacao character varying(300),
+    status status_mudanca NOT NULL,
+    avaliada_por_id integer,
+    avaliada_em timestamp with time zone,
+    motivo_recusa character varying(300),
+    cancelada_por_id integer,
+    cancelada_em timestamp with time zone,
+    motivo_cancelamento character varying(300),
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT ck_mudanca_intervalo CHECK ((hora_fim > hora_inicio))
+);
+CREATE SEQUENCE mudancas_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE mudancas_id_seq OWNED BY mudancas.id;
+ALTER TABLE ONLY mudancas ALTER COLUMN id SET DEFAULT nextval('mudancas_id_seq'::regclass);
+ALTER TABLE ONLY mudancas
+    ADD CONSTRAINT mudancas_pkey PRIMARY KEY (id);
+
+-- Obras e reformas comunicadas pelo morador antes de começar (NBR 16280):
+-- o que será feito, o prazo e, se mexe em estrutura ou instalações, o
+-- responsável técnico com a ART ou o RRT; a avaliação do síndico, com as
+-- condições ou o motivo da recusa. A portaria vê as aprovadas no prazo.
+CREATE TABLE reformas (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    solicitada_por_id integer,
+    descricao character varying(500) NOT NULL,
+    empresa character varying(120),
+    altera_estrutura boolean DEFAULT false NOT NULL,
+    responsavel_tecnico character varying(160),
+    art_rrt character varying(40),
+    inicio date NOT NULL,
+    fim date NOT NULL,
+    status status_reforma NOT NULL,
+    avaliada_por_id integer,
+    avaliada_em timestamp with time zone,
+    condicoes character varying(300),
+    motivo_recusa character varying(300),
+    cancelada_por_id integer,
+    cancelada_em timestamp with time zone,
+    motivo_cancelamento character varying(300),
+    concluida_em timestamp with time zone,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT ck_reforma_prazo CHECK ((fim >= inicio)),
+    CONSTRAINT ck_reforma_responsavel CHECK (((NOT altera_estrutura) OR ((responsavel_tecnico IS NOT NULL) AND (art_rrt IS NOT NULL))))
+);
+CREATE SEQUENCE reformas_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE reformas_id_seq OWNED BY reformas.id;
+ALTER TABLE ONLY reformas ALTER COLUMN id SET DEFAULT nextval('reformas_id_seq'::regclass);
+ALTER TABLE ONLY reformas
+    ADD CONSTRAINT reformas_pkey PRIMARY KEY (id);
+
+-- Advertências e multas do síndico ao apartamento, com a defesa e a
+-- decisão; a multa mantida vira cobrança (Código Civil, art. 1.336, § 2º).
+CREATE TABLE infracoes (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    aplicada_por_id integer,
+    tipo tipo_infracao NOT NULL,
+    descricao text NOT NULL,
+    artigo character varying(120),
+    ocorrida_em date NOT NULL,
+    valor numeric(10,2),
+    prazo_defesa date NOT NULL,
+    status status_infracao NOT NULL,
+    defesa text,
+    defesa_em timestamp with time zone,
+    defesa_por_id integer,
+    decisao_motivo text,
+    decidida_em timestamp with time zone,
+    decidida_por_id integer,
+    cobranca_id integer,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT ck_infracao_valor CHECK ((((tipo = 'MULTA'::tipo_infracao) AND (valor > (0)::numeric)) OR ((tipo = 'ADVERTENCIA'::tipo_infracao) AND (valor IS NULL))))
+);
+CREATE SEQUENCE infracoes_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE infracoes_id_seq OWNED BY infracoes.id;
+ALTER TABLE ONLY infracoes ALTER COLUMN id SET DEFAULT nextval('infracoes_id_seq'::regclass);
+ALTER TABLE ONLY infracoes
+    ADD CONSTRAINT infracoes_pkey PRIMARY KEY (id);
+
+-- Dias e horários em que o regimento permite mudança; o dia sem linha
+-- não tem mudança. Condomínio sem nenhuma linha segue a regra padrão.
+CREATE TABLE horarios_mudanca (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    dia_semana integer NOT NULL,
+    hora_inicio time without time zone NOT NULL,
+    hora_fim time without time zone NOT NULL,
+    CONSTRAINT ck_horario_mudanca_dia CHECK (((dia_semana >= 1) AND (dia_semana <= 7))),
+    CONSTRAINT ck_horario_mudanca_intervalo CHECK ((hora_fim > hora_inicio))
+);
+CREATE SEQUENCE horarios_mudanca_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE horarios_mudanca_id_seq OWNED BY horarios_mudanca.id;
+ALTER TABLE ONLY horarios_mudanca ALTER COLUMN id SET DEFAULT nextval('horarios_mudanca_id_seq'::regclass);
+ALTER TABLE ONLY horarios_mudanca
+    ADD CONSTRAINT horarios_mudanca_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY horarios_mudanca
+    ADD CONSTRAINT uq_horario_mudanca_dia UNIQUE (condominio_id, dia_semana);
+
+-- Livro da portaria: o que o próximo turno precisa saber. Não se apaga
+-- nem se edita — corrige-se com outra anotação, como no livro de papel.
+CREATE TABLE anotacoes_portaria (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    autor_id integer,
+    texto text NOT NULL,
+    importante boolean NOT NULL,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL
+);
+CREATE SEQUENCE anotacoes_portaria_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE anotacoes_portaria_id_seq OWNED BY anotacoes_portaria.id;
+ALTER TABLE ONLY anotacoes_portaria ALTER COLUMN id SET DEFAULT nextval('anotacoes_portaria_id_seq'::regclass);
+ALTER TABLE ONLY anotacoes_portaria
+    ADD CONSTRAINT anotacoes_portaria_pkey PRIMARY KEY (id);
+
+-- Quem leu cada anotação do livro, e quando: uma vez por pessoa.
+CREATE TABLE ciencias_anotacao (
+    id integer NOT NULL,
+    anotacao_id integer NOT NULL,
+    usuario_id integer NOT NULL,
+    ciente_em timestamp with time zone DEFAULT now() NOT NULL
+);
+CREATE SEQUENCE ciencias_anotacao_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE ciencias_anotacao_id_seq OWNED BY ciencias_anotacao.id;
+ALTER TABLE ONLY ciencias_anotacao ALTER COLUMN id SET DEFAULT nextval('ciencias_anotacao_id_seq'::regclass);
+ALTER TABLE ONLY ciencias_anotacao
+    ADD CONSTRAINT ciencias_anotacao_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY ciencias_anotacao
+    ADD CONSTRAINT uq_ciencia_anotacao UNIQUE (anotacao_id, usuario_id);
+
+-- Declaração de quitação: o apartamento não tinha débito vencido até o
+-- dia; o código é o que qualquer um confere. Guarda o que dizia no dia
+-- (condomínio, apartamento, síndico). Não se apaga; o síndico revoga.
+CREATE TABLE declaracoes_quitacao (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    emitida_por_id integer,
+    codigo character varying(16) NOT NULL,
+    referencia_ate date NOT NULL,
+    valida_ate date NOT NULL,
+    condominio_nome character varying(160) NOT NULL,
+    condominio_cnpj character varying(18) NOT NULL,
+    identificacao_unidade character varying(45) NOT NULL,
+    sindico_nome character varying(160),
+    emitida_em timestamp with time zone DEFAULT now() NOT NULL,
+    revogada_em timestamp with time zone,
+    revogada_por_id integer,
+    motivo_revogacao text,
+    CONSTRAINT ck_declaracao_revogacao CHECK (((revogada_em IS NULL) = (motivo_revogacao IS NULL))),
+    CONSTRAINT ck_declaracao_validade CHECK ((valida_ate >= referencia_ate))
+);
+CREATE SEQUENCE declaracoes_quitacao_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE declaracoes_quitacao_id_seq OWNED BY declaracoes_quitacao.id;
+ALTER TABLE ONLY declaracoes_quitacao ALTER COLUMN id SET DEFAULT nextval('declaracoes_quitacao_id_seq'::regclass);
+ALTER TABLE ONLY declaracoes_quitacao
+    ADD CONSTRAINT declaracoes_quitacao_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY declaracoes_quitacao
+    ADD CONSTRAINT declaracoes_quitacao_codigo_key UNIQUE (codigo);
+
+-- Manutenção preventiva: o que vence de tempos em tempos (AVCB,
+-- extintores, caixa d'água, elevadores), com a periodicidade e o próximo
+-- vencimento. Remover é inativar.
+CREATE TABLE planos_manutencao (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    nome character varying(120) NOT NULL,
+    periodicidade_meses integer NOT NULL,
+    proximo_vencimento date NOT NULL,
+    antecedencia_aviso_dias integer DEFAULT 30 NOT NULL,
+    fornecedor character varying(120),
+    observacao text,
+    ultima_realizacao date,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    inativo_em timestamp with time zone,
+    inativado_por_id integer,
+    CONSTRAINT ck_plano_manutencao_antecedencia CHECK (((antecedencia_aviso_dias >= 0) AND (antecedencia_aviso_dias <= 180))),
+    CONSTRAINT ck_plano_manutencao_periodicidade CHECK (((periodicidade_meses >= 1) AND (periodicidade_meses <= 120)))
+);
+CREATE SEQUENCE planos_manutencao_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE planos_manutencao_id_seq OWNED BY planos_manutencao.id;
+ALTER TABLE ONLY planos_manutencao ALTER COLUMN id SET DEFAULT nextval('planos_manutencao_id_seq'::regclass);
+ALTER TABLE ONLY planos_manutencao
+    ADD CONSTRAINT planos_manutencao_pkey PRIMARY KEY (id);
+
+-- Cada vez que a manutenção foi feita: o dia, o custo e a despesa
+-- lançada com ele na prestação de contas.
+CREATE TABLE realizacoes_manutencao (
+    id integer NOT NULL,
+    plano_id integer NOT NULL,
+    data date NOT NULL,
+    custo numeric(10,2),
+    observacao text,
+    registrada_por_id integer,
+    despesa_id integer,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT ck_realizacao_manutencao_custo CHECK (((custo IS NULL) OR (custo > (0)::numeric)))
+);
+CREATE SEQUENCE realizacoes_manutencao_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE realizacoes_manutencao_id_seq OWNED BY realizacoes_manutencao.id;
+ALTER TABLE ONLY realizacoes_manutencao ALTER COLUMN id SET DEFAULT nextval('realizacoes_manutencao_id_seq'::regclass);
+ALTER TABLE ONLY realizacoes_manutencao
+    ADD CONSTRAINT realizacoes_manutencao_pkey PRIMARY KEY (id);
+
+-- O quadro de chaves da portaria: as das áreas comuns e as dos
+-- apartamentos (unidade_id), que só saem para quem mora lá ou para quem
+-- o morador autorizou. Remover é inativar.
+CREATE TABLE chaves (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    unidade_id integer,
+    nome character varying(80) NOT NULL,
+    posicao character varying(20),
+    observacao character varying(300),
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    inativo_em timestamp with time zone,
+    inativado_por_id integer
+);
+CREATE SEQUENCE chaves_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE chaves_id_seq OWNED BY chaves.id;
+ALTER TABLE ONLY chaves ALTER COLUMN id SET DEFAULT nextval('chaves_id_seq'::regclass);
+ALTER TABLE ONLY chaves
+    ADD CONSTRAINT chaves_pkey PRIMARY KEY (id);
+
+-- Cada retirada de chave e a devolução dela: quem levou, quem entregou e
+-- quem recebeu de volta.
+CREATE TABLE movimentacoes_chave (
+    id integer NOT NULL,
+    chave_id integer NOT NULL,
+    retirada_por_nome character varying(160) NOT NULL,
+    retirada_por_documento character varying(20),
+    morador_id integer,
+    autorizacao_id integer,
+    retirada_em timestamp with time zone DEFAULT now() NOT NULL,
+    retirada_registrada_por_id integer,
+    devolvida_em timestamp with time zone,
+    devolucao_registrada_por_id integer,
+    observacao character varying(300)
+);
+CREATE SEQUENCE movimentacoes_chave_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE movimentacoes_chave_id_seq OWNED BY movimentacoes_chave.id;
+ALTER TABLE ONLY movimentacoes_chave ALTER COLUMN id SET DEFAULT nextval('movimentacoes_chave_id_seq'::regclass);
+ALTER TABLE ONLY movimentacoes_chave
+    ADD CONSTRAINT movimentacoes_chave_pkey PRIMARY KEY (id);
 
 CREATE TABLE ordens_servico (
     id integer NOT NULL,
@@ -765,6 +1428,21 @@ ALTER TABLE ONLY registros_alteracao
 ALTER TABLE ONLY cobrancas
     ADD CONSTRAINT cobrancas_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY cobrancas
+    ADD CONSTRAINT cobrancas_acordo_id_fkey FOREIGN KEY (acordo_id) REFERENCES acordos(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY acordos
+    ADD CONSTRAINT acordos_cancelado_por_id_fkey FOREIGN KEY (cancelado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY acordos
+    ADD CONSTRAINT acordos_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY acordos
+    ADD CONSTRAINT acordos_criado_por_id_fkey FOREIGN KEY (criado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY acordos
+    ADD CONSTRAINT acordos_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY codigos_verificacao
     ADD CONSTRAINT codigos_verificacao_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE;
 
@@ -846,6 +1524,165 @@ ALTER TABLE ONLY ordens_servico
 ALTER TABLE ONLY ordens_servico
     ADD CONSTRAINT ordens_servico_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY assembleias
+    ADD CONSTRAINT assembleias_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY assembleias
+    ADD CONSTRAINT assembleias_convocada_por_id_fkey FOREIGN KEY (convocada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY assembleias
+    ADD CONSTRAINT assembleias_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY itens_pauta
+    ADD CONSTRAINT itens_pauta_assembleia_id_fkey FOREIGN KEY (assembleia_id) REFERENCES assembleias(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY veiculos_unidade
+    ADD CONSTRAINT veiculos_unidade_cadastrado_por_id_fkey FOREIGN KEY (cadastrado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY veiculos_unidade
+    ADD CONSTRAINT veiculos_unidade_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY veiculos_unidade
+    ADD CONSTRAINT veiculos_unidade_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY veiculos_unidade
+    ADD CONSTRAINT veiculos_unidade_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY reservas
+    ADD CONSTRAINT reservas_cobranca_id_fkey FOREIGN KEY (cobranca_id) REFERENCES cobrancas(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY infracoes
+    ADD CONSTRAINT infracoes_aplicada_por_id_fkey FOREIGN KEY (aplicada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY infracoes
+    ADD CONSTRAINT infracoes_cobranca_id_fkey FOREIGN KEY (cobranca_id) REFERENCES cobrancas(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY infracoes
+    ADD CONSTRAINT infracoes_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY infracoes
+    ADD CONSTRAINT infracoes_decidida_por_id_fkey FOREIGN KEY (decidida_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY infracoes
+    ADD CONSTRAINT infracoes_defesa_por_id_fkey FOREIGN KEY (defesa_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY infracoes
+    ADD CONSTRAINT infracoes_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY horarios_mudanca
+    ADD CONSTRAINT horarios_mudanca_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY anotacoes_portaria
+    ADD CONSTRAINT anotacoes_portaria_autor_id_fkey FOREIGN KEY (autor_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY anotacoes_portaria
+    ADD CONSTRAINT anotacoes_portaria_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ciencias_anotacao
+    ADD CONSTRAINT ciencias_anotacao_anotacao_id_fkey FOREIGN KEY (anotacao_id) REFERENCES anotacoes_portaria(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ciencias_anotacao
+    ADD CONSTRAINT ciencias_anotacao_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY declaracoes_quitacao
+    ADD CONSTRAINT declaracoes_quitacao_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY declaracoes_quitacao
+    ADD CONSTRAINT declaracoes_quitacao_emitida_por_id_fkey FOREIGN KEY (emitida_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY declaracoes_quitacao
+    ADD CONSTRAINT declaracoes_quitacao_revogada_por_id_fkey FOREIGN KEY (revogada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY declaracoes_quitacao
+    ADD CONSTRAINT declaracoes_quitacao_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY planos_manutencao
+    ADD CONSTRAINT planos_manutencao_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY planos_manutencao
+    ADD CONSTRAINT planos_manutencao_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY realizacoes_manutencao
+    ADD CONSTRAINT realizacoes_manutencao_despesa_id_fkey FOREIGN KEY (despesa_id) REFERENCES despesas(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY realizacoes_manutencao
+    ADD CONSTRAINT realizacoes_manutencao_plano_id_fkey FOREIGN KEY (plano_id) REFERENCES planos_manutencao(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY realizacoes_manutencao
+    ADD CONSTRAINT realizacoes_manutencao_registrada_por_id_fkey FOREIGN KEY (registrada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY chaves
+    ADD CONSTRAINT chaves_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY chaves
+    ADD CONSTRAINT chaves_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY chaves
+    ADD CONSTRAINT chaves_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY movimentacoes_chave
+    ADD CONSTRAINT movimentacoes_chave_autorizacao_id_fkey FOREIGN KEY (autorizacao_id) REFERENCES autorizacoes_visita(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY movimentacoes_chave
+    ADD CONSTRAINT movimentacoes_chave_chave_id_fkey FOREIGN KEY (chave_id) REFERENCES chaves(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY movimentacoes_chave
+    ADD CONSTRAINT movimentacoes_chave_devolucao_registrada_por_id_fkey FOREIGN KEY (devolucao_registrada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY movimentacoes_chave
+    ADD CONSTRAINT movimentacoes_chave_morador_id_fkey FOREIGN KEY (morador_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY movimentacoes_chave
+    ADD CONSTRAINT movimentacoes_chave_retirada_registrada_por_id_fkey FOREIGN KEY (retirada_registrada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY mudancas
+    ADD CONSTRAINT mudancas_avaliada_por_id_fkey FOREIGN KEY (avaliada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY mudancas
+    ADD CONSTRAINT mudancas_cancelada_por_id_fkey FOREIGN KEY (cancelada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY mudancas
+    ADD CONSTRAINT mudancas_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY mudancas
+    ADD CONSTRAINT mudancas_solicitada_por_id_fkey FOREIGN KEY (solicitada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY mudancas
+    ADD CONSTRAINT mudancas_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY reformas
+    ADD CONSTRAINT reformas_avaliada_por_id_fkey FOREIGN KEY (avaliada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY reformas
+    ADD CONSTRAINT reformas_cancelada_por_id_fkey FOREIGN KEY (cancelada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY reformas
+    ADD CONSTRAINT reformas_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY reformas
+    ADD CONSTRAINT reformas_solicitada_por_id_fkey FOREIGN KEY (solicitada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY reformas
+    ADD CONSTRAINT reformas_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY votos
+    ADD CONSTRAINT votos_item_id_fkey FOREIGN KEY (item_id) REFERENCES itens_pauta(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY votos
+    ADD CONSTRAINT votos_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY votos
+    ADD CONSTRAINT votos_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY despesas
+    ADD CONSTRAINT despesas_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY despesas
+    ADD CONSTRAINT despesas_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY despesas
+    ADD CONSTRAINT despesas_lancada_por_id_fkey FOREIGN KEY (lancada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
 ALTER TABLE ONLY pagamentos
     ADD CONSTRAINT pagamentos_cobranca_id_fkey FOREIGN KEY (cobranca_id) REFERENCES cobrancas(id) ON DELETE CASCADE;
 
@@ -871,6 +1708,9 @@ ALTER TABLE ONLY reservas
     ADD CONSTRAINT reservas_avaliada_por_id_fkey FOREIGN KEY (avaliada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY reservas
+    ADD CONSTRAINT reservas_cancelada_por_id_fkey FOREIGN KEY (cancelada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY reservas
     ADD CONSTRAINT reservas_espaco_id_fkey FOREIGN KEY (espaco_id) REFERENCES espacos_comuns(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY reservas
@@ -887,6 +1727,26 @@ ALTER TABLE ONLY usuarios
 
 ALTER TABLE ONLY usuarios
     ADD CONSTRAINT fk_usuarios_avaliado_por_id_usuarios FOREIGN KEY (avaliado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+-- Perfil vinculado (o síndico que também mora, o dono de outro
+-- apartamento): aponta para o cadastro com login da mesma pessoa.
+ALTER TABLE ONLY usuarios
+    ADD CONSTRAINT usuarios_conta_principal_id_fkey FOREIGN KEY (conta_principal_id) REFERENCES usuarios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY autorizacoes_visita
+    ADD CONSTRAINT autorizacoes_visita_autorizado_por_id_fkey FOREIGN KEY (autorizado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY autorizacoes_visita
+    ADD CONSTRAINT autorizacoes_visita_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY autorizacoes_visita
+    ADD CONSTRAINT autorizacoes_visita_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY comunicados
+    ADD CONSTRAINT comunicados_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY visitantes
+    ADD CONSTRAINT visitantes_autorizacao_id_fkey FOREIGN KEY (autorizacao_id) REFERENCES autorizacoes_visita(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY visitantes
     ADD CONSTRAINT visitantes_confirmado_por_id_fkey FOREIGN KEY (confirmado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
@@ -913,6 +1773,12 @@ ALTER TABLE ONLY espacos_comuns
     ADD CONSTRAINT espacos_comuns_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
 
 CREATE INDEX ix_cobrancas_competencia ON cobrancas USING btree (competencia);
+
+CREATE INDEX ix_cobrancas_acordo_id ON cobrancas USING btree (acordo_id);
+
+CREATE INDEX ix_acordos_condominio_id ON acordos USING btree (condominio_id);
+
+CREATE INDEX ix_acordos_unidade_id ON acordos USING btree (unidade_id);
 
 CREATE INDEX ix_cobrancas_status ON cobrancas USING btree (status);
 
@@ -986,6 +1852,85 @@ CREATE INDEX ix_ordens_servico_prioridade ON ordens_servico USING btree (priorid
 
 CREATE INDEX ix_ordens_servico_status ON ordens_servico USING btree (status);
 
+CREATE INDEX ix_assembleias_condominio_id ON assembleias USING btree (condominio_id);
+
+CREATE INDEX ix_assembleias_convocada_por_id ON assembleias USING btree (convocada_por_id);
+
+CREATE INDEX ix_itens_pauta_assembleia_id ON itens_pauta USING btree (assembleia_id);
+
+CREATE INDEX ix_veiculos_unidade_cadastrado_por_id ON veiculos_unidade USING btree (cadastrado_por_id);
+
+CREATE INDEX ix_veiculos_unidade_condominio_id ON veiculos_unidade USING btree (condominio_id);
+
+CREATE INDEX ix_veiculos_unidade_unidade_id ON veiculos_unidade USING btree (unidade_id);
+
+CREATE UNIQUE INDEX uq_veiculo_placa_ativa ON veiculos_unidade USING btree (condominio_id, placa) WHERE (inativo_em IS NULL);
+
+CREATE INDEX ix_horarios_mudanca_condominio_id ON horarios_mudanca USING btree (condominio_id);
+
+CREATE INDEX ix_anotacoes_portaria_condominio_criado ON anotacoes_portaria USING btree (condominio_id, criado_em);
+
+CREATE INDEX ix_ciencias_anotacao_anotacao_id ON ciencias_anotacao USING btree (anotacao_id);
+
+CREATE INDEX ix_declaracoes_quitacao_condominio_id ON declaracoes_quitacao USING btree (condominio_id);
+
+CREATE INDEX ix_declaracoes_quitacao_unidade_id ON declaracoes_quitacao USING btree (unidade_id);
+
+CREATE INDEX ix_planos_manutencao_condominio_id ON planos_manutencao USING btree (condominio_id);
+
+-- Dois planos ativos com o mesmo nome confundem o painel; o removido libera o nome.
+CREATE UNIQUE INDEX uq_plano_manutencao_nome ON planos_manutencao USING btree (condominio_id, lower((nome)::text)) WHERE (inativo_em IS NULL);
+
+CREATE INDEX ix_realizacoes_manutencao_plano_id ON realizacoes_manutencao USING btree (plano_id);
+
+CREATE INDEX ix_chaves_condominio_id ON chaves USING btree (condominio_id);
+
+CREATE INDEX ix_chaves_unidade_id ON chaves USING btree (unidade_id);
+
+-- Duas chaves ativas com o mesmo nome confundem a portaria.
+CREATE UNIQUE INDEX uq_chave_nome ON chaves USING btree (condominio_id, lower((nome)::text)) WHERE (inativo_em IS NULL);
+
+CREATE INDEX ix_movimentacoes_chave_chave_id ON movimentacoes_chave USING btree (chave_id);
+
+-- A chave que está fora não sai de novo antes de voltar.
+CREATE UNIQUE INDEX uq_chave_fora ON movimentacoes_chave USING btree (chave_id) WHERE (devolvida_em IS NULL);
+
+CREATE INDEX ix_infracoes_condominio_id ON infracoes USING btree (condominio_id);
+
+CREATE INDEX ix_infracoes_status ON infracoes USING btree (status);
+
+CREATE INDEX ix_infracoes_unidade_criado ON infracoes USING btree (unidade_id, criado_em);
+
+CREATE INDEX ix_mudancas_condominio_data ON mudancas USING btree (condominio_id, data);
+
+CREATE INDEX ix_mudancas_condominio_id ON mudancas USING btree (condominio_id);
+
+CREATE INDEX ix_mudancas_solicitada_por_id ON mudancas USING btree (solicitada_por_id);
+
+CREATE INDEX ix_mudancas_status ON mudancas USING btree (status);
+
+CREATE INDEX ix_mudancas_unidade_id ON mudancas USING btree (unidade_id);
+
+CREATE INDEX ix_reformas_condominio_fim ON reformas USING btree (condominio_id, fim);
+
+CREATE INDEX ix_reformas_condominio_id ON reformas USING btree (condominio_id);
+
+CREATE INDEX ix_reformas_solicitada_por_id ON reformas USING btree (solicitada_por_id);
+
+CREATE INDEX ix_reformas_status ON reformas USING btree (status);
+
+CREATE INDEX ix_reformas_unidade_id ON reformas USING btree (unidade_id);
+
+CREATE INDEX ix_votos_item_id ON votos USING btree (item_id);
+
+CREATE INDEX ix_votos_unidade_id ON votos USING btree (unidade_id);
+
+CREATE INDEX ix_votos_usuario_id ON votos USING btree (usuario_id);
+
+CREATE INDEX ix_despesas_condominio_data ON despesas USING btree (condominio_id, data);
+
+CREATE INDEX ix_despesas_lancada_por_id ON despesas USING btree (lancada_por_id);
+
 CREATE INDEX ix_pagamentos_cobranca_id ON pagamentos USING btree (cobranca_id);
 
 CREATE INDEX ix_pagamentos_pago_por_id ON pagamentos USING btree (pago_por_id);
@@ -1016,6 +1961,14 @@ CREATE INDEX ix_usuarios_condominio_id ON usuarios USING btree (condominio_id);
 
 CREATE INDEX ix_usuarios_unidade_id ON usuarios USING btree (unidade_id);
 
+CREATE INDEX ix_comunicados_unidade_id ON comunicados USING btree (unidade_id);
+
+CREATE INDEX ix_autorizacoes_visita_autorizado_por_id ON autorizacoes_visita USING btree (autorizado_por_id);
+
+CREATE INDEX ix_autorizacoes_visita_unidade_id ON autorizacoes_visita USING btree (unidade_id);
+
+CREATE INDEX ix_visitantes_autorizacao_id ON visitantes USING btree (autorizacao_id);
+
 CREATE INDEX ix_visitantes_registrado_por_id ON visitantes USING btree (registrado_por_id);
 
 CREATE INDEX ix_visitantes_status ON visitantes USING btree (status);
@@ -1030,9 +1983,17 @@ CREATE UNIQUE INDEX ix_permissoes_porteiro_porteiro_id ON permissoes_porteiro US
 
 CREATE UNIQUE INDEX ix_preferencias_cobranca_morador_id ON preferencias_cobranca USING btree (morador_id);
 
-CREATE UNIQUE INDEX ix_usuarios_cpf ON usuarios USING btree (cpf);
+CREATE INDEX ix_usuarios_cpf ON usuarios USING btree (cpf);
 
-CREATE UNIQUE INDEX ix_usuarios_email ON usuarios USING btree (email);
+CREATE INDEX ix_usuarios_email ON usuarios USING btree (email);
+
+CREATE INDEX ix_usuarios_conta_principal_id ON usuarios USING btree (conta_principal_id);
+
+-- E-mail e CPF são de uma pessoa só, entre os cadastros com login; os
+-- perfis vinculados repetem os dados dela.
+CREATE UNIQUE INDEX uq_usuarios_cpf_principal ON usuarios USING btree (cpf) WHERE (conta_principal_id IS NULL);
+
+CREATE UNIQUE INDEX uq_usuarios_email_principal ON usuarios USING btree (email) WHERE (conta_principal_id IS NULL);
 
 CREATE INDEX ix_registros_alteracao_autor_id ON registros_alteracao USING btree (autor_id);
 

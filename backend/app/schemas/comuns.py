@@ -3,12 +3,13 @@ from __future__ import annotations
 
 import re
 import unicodedata
-from datetime import date
-
-from app.core.tempo import hoje_local
+from datetime import date, time
 from typing import Annotated
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StringConstraints
+
+from app.core.tempo import hoje_local
+
 
 def validar_forca_senha(valor: str) -> str:
     """Regras mostradas ao usuário na tela de nova senha.
@@ -123,6 +124,28 @@ def validar_endereco_web(valor: str) -> str:
     return endereco
 
 
+def vazio_e_nada(valor):
+    """Para usar antes da validação (mode="before"): o texto opcional em
+    branco ("", "   ") vira None — o campo fica vazio, e não gravado como
+    um texto em branco."""
+    if isinstance(valor, str) and not valor.strip():
+        return None
+    return valor
+
+
+def validar_sem_fuso(valor: time) -> time:
+    """O horário é o do condomínio. Com fuso ("14:00Z"), a comparação com
+    a hora local estourava e o pedido virava erro 500."""
+    if valor.tzinfo is not None:
+        raise ValueError("Informe o horário sem fuso, no horário do condomínio.")
+    return valor
+
+
+def conferir_intervalo(inicio: time, fim: time) -> None:
+    if fim <= inicio:
+        raise ValueError("O horário de término precisa ser depois do início.")
+
+
 def limpar_placa(valor: str) -> str:
     """Tira hífen, ponto e espaço e passa para maiúsculas: ABC-1D23,
     abc1d23 e ABC 1D23 são a mesma placa."""
@@ -162,6 +185,7 @@ DataNascimento = Annotated[date, AfterValidator(validar_data_nascimento)]
 EnderecoWeb = Annotated[str, Field(max_length=500), AfterValidator(validar_endereco_web)]
 Placa = Annotated[str, Field(max_length=10), AfterValidator(validar_placa)]
 IdUnidade = Annotated[str, AfterValidator(normalizar_unidade)]
+Horario = Annotated[time, AfterValidator(validar_sem_fuso)]
 
 
 class SchemaBase(BaseModel):

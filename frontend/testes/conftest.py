@@ -26,7 +26,7 @@ PAPEIS = ("admin", "sindico", "porteiro", "morador")
 # Telas abertas sem login.
 PUBLICAS = ["index.html", "404.html", "diagnostico.html"] + sorted(
     str(p.relative_to(RAIZ)).replace(os.sep, "/")
-    for pasta in ("cadastro", "login", "legal")
+    for pasta in ("cadastro", "login", "legal", "verificar")
     for p in (RAIZ / "pages" / pasta).glob("*.html")
 ) + sorted(
     str(p.relative_to(RAIZ)).replace(os.sep, "/")
@@ -73,6 +73,13 @@ def abrir(navegador, largura=1280, tema="light", papel=None):
         pg.click("#btnEntrar")
         pg.wait_for_url(f"**/{papel}/dashboard.html", timeout=15000)
     return ctx, pg
+
+
+def token_da_aba(pg):
+    """O token da sessão aberta na aba, para chamar a API direto. Um login a
+    mais pela API conta no limite de 30 logins por minuto por origem — e a
+    suíte, rápida no CI, chegava a ele, e a tela de login recebia 429."""
+    return {"Authorization": "Bearer " + pg.evaluate("localStorage.getItem('smartcondo_token')")}
 
 
 def ir(pg, pagina, espera=700):

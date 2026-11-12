@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Acordos de Parcelamento</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/formato.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-desktop">
+  <header class="app-bar"><div class="app-bar-inner">
+    <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
+    <div class="app-bar-right"><a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role">Síndico</span></a><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
+  </div></header>
+  <main class="dash-wrapper">
+    <a href="financeiro.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Financeiro</a>
+    <div class="dash-greeting">
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/handshake.svg" width="26" height="26" alt=""> Acordos de Parcelamento</h1>
+      <p class="greeting-condo">As cobranças vencidas de um apartamento, divididas em parcelas</p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card teal"><span class="stat-value" id="totAcordosEmDia">—</span><span class="stat-label"><img src="../../assets/img/icons/circle-check.svg" width="16" height="16" alt="">Em dia</span></div>
+      <div class="stat-card red"><span class="stat-value" id="totAcordosAtraso">—</span><span class="stat-label"><img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt="">Parcela em atraso</span></div>
+      <div class="stat-card blue"><span class="stat-value" id="totAcordosQuitados">—</span><span class="stat-label"><img src="../../assets/img/icons/handshake.svg" width="16" height="16" alt="">Quitados</span></div>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/plus.svg" width="16" height="16" alt=""> Novo Acordo</h2>
+    <div class="form-card">
+      <form id="formAcordo" novalidate>
+        <div class="form-group">
+          <label for="aUnidade">Apartamento</label>
+          <select id="aUnidade" required><option value="">Escolha o apartamento</option></select>
+        </div>
+        <fieldset class="chave-quem acordo-cobrancas">
+          <legend>Cobranças vencidas que entram no acordo</legend>
+          <div id="aCobrancas"></div>
+        </fieldset>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="aParcelas">Parcelas (1 a 24)</label>
+            <input type="number" id="aParcelas" min="1" max="24" value="3" required>
+          </div>
+          <div class="form-group">
+            <label for="aPrimeiro">Primeira parcela vence em</label>
+            <input type="date" id="aPrimeiro" required>
+          </div>
+        </div>
+        <label class="permissao-item" for="aDispensar">
+          <input type="checkbox" id="aDispensar"> Dispensar a multa e os juros do atraso
+        </label>
+        <div class="form-group">
+          <label for="aObservacao">Observação (opcional)</label>
+          <input type="text" id="aObservacao" maxlength="300" placeholder="Ex: combinado na reunião de 10/11">
+        </div>
+        <p class="captura-dica" id="aPrevia" aria-live="polite"></p>
+        <p class="captura-dica">As cobranças do acordo ficam negociadas e deixam de contar como atraso; cada
+        parcela é uma cobrança nova, com multa e juros próprios se atrasar. O acordo lançado errado
+        se desfaz enquanto nenhuma parcela foi paga.</p>
+        <p class="form-erro" id="erroAcordo" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;">Fazer o acordo</button>
+      </form>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/handshake.svg" width="16" height="16" alt=""> Acordos</h2>
+    <div id="listaAcordos" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoAcordos">Carregando…</p>
+  </main>
+
+<script src="../../assets/js/acordos.js"></script>
+<script>window.SmartCondo.acordos.montar('sindico');</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

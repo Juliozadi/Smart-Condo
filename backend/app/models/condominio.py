@@ -6,9 +6,12 @@ morador: condomínio, bloco/torre e número de vagas na garagem.
 """
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, ForeignKey, Integer, String, UniqueConstraint, false
+from sqlalchemy import (
+    Boolean, CheckConstraint, ForeignKey, Integer, Numeric, String, UniqueConstraint, false, text,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -20,6 +23,14 @@ if TYPE_CHECKING:
 
 class Condominio(Base, TimestampMixin, InativacaoMixin):
     __tablename__ = "condominios"
+    __table_args__ = (
+        # Código Civil, art. 1.336, § 1º: multa de até 2% e, sem outro valor
+        # na convenção, juros de 1% ao mês.
+        CheckConstraint("multa_atraso BETWEEN 0 AND 2", name="ck_condominio_multa"),
+        CheckConstraint("juros_mensais BETWEEN 0 AND 1", name="ck_condominio_juros"),
+        CheckConstraint("mudanca_antecedencia_dias BETWEEN 0 AND 60",
+                        name="ck_condominio_mudanca_antecedencia"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     nome: Mapped[str] = mapped_column(String(160), nullable=False)
@@ -43,6 +54,19 @@ class Condominio(Base, TimestampMixin, InativacaoMixin):
     uf: Mapped[str] = mapped_column(String(2), nullable=False)
 
     telefone: Mapped[str | None] = mapped_column(String(20))
+
+    # Encargos da cobrança paga com atraso, em % (app/services/encargos.py).
+    multa_atraso: Mapped[Decimal] = mapped_column(
+        Numeric(4, 2), nullable=False, default=Decimal("2.00"), server_default=text("2.00")
+    )
+    juros_mensais: Mapped[Decimal] = mapped_column(
+        Numeric(4, 2), nullable=False, default=Decimal("1.00"), server_default=text("1.00")
+    )
+    # Com quantos dias de aviso o morador agenda a mudança; os horários de
+    # cada dia ficam em horarios_mudanca (regimento interno).
+    mudanca_antecedencia_dias: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=2, server_default=text("2")
+    )
 
     # O síndico que cadastrou o condomínio (pré-requisito da seção 12:
     # "Existir um síndico ativo").
@@ -73,6 +97,8 @@ class Unidade(Base, TimestampMixin):
     __tablename__ = "unidades"
     __table_args__ = (
         UniqueConstraint("condominio_id", "bloco", "numero", name="uq_unidade_no_condominio"),
+        CheckConstraint("fracao_ideal IS NULL OR (fracao_ideal > 0 AND fracao_ideal <= 100)",
+                        name="ck_unidade_fracao_ideal"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -84,6 +110,11 @@ class Unidade(Base, TimestampMixin):
     bloco: Mapped[str] = mapped_column(String(20), nullable=False, default="unico")
     andar: Mapped[int | None] = mapped_column(Integer)
     vagas_garagem: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # A parte do apartamento no condomínio, em porcentagem, como está na
+    # convenção (a cobertura costuma ter mais que o apartamento-tipo). É
+    # por ela que se rateiam a taxa e as cotas extras, quando a convenção
+    # manda; as do condomínio somam 100%.
+    fracao_ideal: Mapped[Decimal | None] = mapped_column(Numeric(7, 4))
     # Criada pelo autocadastro de um morador e ainda não confirmada por um
     # responsável: não aparece nas listas. Sem isso, qualquer um com o
     # código de acesso criava unidades ("9999") que ficavam para a portaria

@@ -31,6 +31,13 @@ DOCUMENTO = "documento"
 ESPACO = "espaco"
 UNIDADE = "unidade"
 COBRANCA = "cobranca"
+DESPESA = "despesa"
+ASSEMBLEIA = "assembleia"
+INFRACAO = "infracao"
+DECLARACAO = "declaracao_quitacao"
+PLANO_MANUTENCAO = "plano_manutencao"
+REFORMA = "reforma"
+ACORDO = "acordo"
 
 ROTULO_ACAO = {
     CRIOU: "Criado", EDITOU: "Editado", INATIVOU: "Inativado", REATIVOU: "Reativado",

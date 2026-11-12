@@ -7,6 +7,7 @@
   <title>SmartCondo — Painel do Síndico</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
   <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/formato.js"></script>
   <link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
@@ -47,7 +48,19 @@
     <div class="dash-grid-sq">
       <a href="financeiro.html" class="dash-card-sq">
         <div class="card-icon icon-yellow"><img src="../../assets/img/icons/financeiro.svg" width="16" height="16" alt="Financeiro"></div>
-        <h3>Financeiro</h3><p>Receitas, despesas e inadimplência</p>
+        <h3>Financeiro</h3><p>Cobranças, pagamentos e inadimplência</p>
+      </a>
+      <a href="contas.html" class="dash-card-sq">
+        <div class="card-icon icon-teal"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt="Prestação de contas"></div>
+        <h3>Prestação de Contas</h3><p>Despesas e balancete do mês</p>
+      </a>
+      <a href="quitacao.html" class="dash-card-sq">
+        <div class="card-icon icon-teal"><img src="../../assets/img/icons/file-contract.svg" width="16" height="16" alt="Declarações"></div>
+        <h3>Declarações de Quitação</h3><p>O apartamento em dia, com código</p>
+      </a>
+      <a href="assembleias.html" class="dash-card-sq">
+        <div class="card-icon icon-purple"><img src="../../assets/img/icons/stamp.svg" width="16" height="16" alt="Assembleias"></div>
+        <h3>Assembleias</h3><p>Convocação e votação online</p>
       </a>
       <a href="moradores.html" class="dash-card-sq">
         <div class="card-icon icon-teal"><img src="../../assets/img/icons/moradores.svg" width="16" height="16" alt="Moradores"></div>
@@ -57,13 +70,37 @@
         <div class="card-icon icon-blue"><img src="../../assets/img/icons/porteiros.svg" width="16" height="16" alt="Porteiros"></div>
         <h3>Porteiros</h3><p>Equipe, turnos e escalas</p>
       </a>
+      <a href="chaves.html" class="dash-card-sq">
+        <div class="card-icon icon-yellow"><img src="../../assets/img/icons/key.svg" width="16" height="16" alt="Chaves"></div>
+        <h3>Quadro de Chaves</h3><p>As chaves da portaria</p>
+      </a>
+      <a href="livro.html" class="dash-card-sq">
+        <div class="card-icon icon-blue"><img src="../../assets/img/icons/pen.svg" width="16" height="16" alt="Livro"></div>
+        <h3>Livro da Portaria</h3><p>Passagem de turno da equipe</p>
+      </a>
       <a href="reservas.html" class="dash-card-sq">
         <div class="card-icon icon-purple"><img src="../../assets/img/icons/reservas.svg" width="16" height="16" alt="Reservas"></div>
         <h3>Reservas</h3><p>Espaços e agendamentos</p>
       </a>
+      <a href="infracoes.html" class="dash-card-sq">
+        <div class="card-icon icon-red"><img src="../../assets/img/icons/triangle-exclamation.svg" width="16" height="16" alt="Advertências e multas"></div>
+        <h3>Advertências e Multas</h3><p>Notificação, defesa e decisão</p>
+      </a>
+      <a href="mudancas.html" class="dash-card-sq">
+        <div class="card-icon icon-yellow"><img src="../../assets/img/icons/box-open.svg" width="16" height="16" alt="Mudanças"></div>
+        <h3>Mudanças</h3><p>Pedidos de dia e horário</p>
+      </a>
+      <a href="reformas.html" class="dash-card-sq">
+        <div class="card-icon icon-yellow"><img src="../../assets/img/icons/hammer.svg" width="16" height="16" alt="Obras e reformas"></div>
+        <h3>Obras e Reformas</h3><p>Aprovar, prorrogar, embargar</p>
+      </a>
       <a href="comunicados.html" class="dash-card-sq">
         <div class="card-icon icon-orange"><img src="../../assets/img/icons/comunicados.svg" width="16" height="16" alt="Comunicados"></div>
         <h3>Comunicados</h3><p>Avisos e notificações</p>
+      </a>
+      <a href="preventiva.html" class="dash-card-sq">
+        <div class="card-icon icon-yellow"><img src="../../assets/img/icons/calendar-check.svg" width="16" height="16" alt="Preventiva"></div>
+        <h3>Manutenção Preventiva</h3><p>AVCB, extintores, caixa d'água</p>
       </a>
       <a href="manutencao.html" class="dash-card-sq">
         <div class="card-icon icon-red"><img src="../../assets/img/icons/manutencao.svg" width="16" height="16" alt="Manutenção"></div>
@@ -76,6 +113,10 @@
       <a href="documentos.html" class="dash-card-sq">
         <div class="card-icon icon-purple"><img src="../../assets/img/icons/folder-open.svg" width="16" height="16" alt="Documentos"></div>
         <h3>Documentos</h3><p>Atas, convenção e regimento</p>
+      </a>
+      <a href="banco.html" class="dash-card-sq">
+        <div class="card-icon icon-blue"><img src="../../assets/img/icons/database.svg" width="16" height="16" alt="Banco de dados"></div>
+        <h3>Banco de Dados</h3><p>Visões, rateio e log das cobranças</p>
       </a>
     </div>
 
@@ -114,13 +155,15 @@
    financeiro, as reservas a aprovar e as ocorrências ainda abertas. */
 (function() {
   'use strict';
+  var formato = window.SmartCondo.formato;
   var api = window.SmartCondo.api;
   var usuario = api.protegerPagina('sindico');
   if (!usuario) return;
 
   function campo(id) { return document.getElementById(id); }
 
-  var ROTULO_COBRANCA = { aberta: 'Aberta', vencida: 'Vencida', paga: 'Paga', cancelada: 'Cancelada' };
+  var ROTULO_COBRANCA = { aberta: 'Aberta', vencida: 'Vencida', paga: 'Paga', cancelada: 'Cancelada',
+                         negociada: 'Negociada' };
   var ROTULO_RESERVA = {
     pendente: 'Pendente', aprovada: 'Aprovada', recusada: 'Recusada',
     cancelada: 'Cancelada', concluida: 'Concluída'
@@ -137,22 +180,17 @@
     baixa:   ['icon-blue', 'circle-exclamation.svg']
   };
 
-  function dinheiro(valor) {
-    return 'R$ ' + Number(valor).toLocaleString('pt-BR', {
-      minimumFractionDigits: 2, maximumFractionDigits: 2
-    });
-  }
   function partes(iso) { var p = String(iso || '').slice(0, 10).split('-'); return { a: p[0], m: p[1], d: p[2] }; }
   function dataCurta(iso) { var p = partes(iso); return p.d + '/' + p.m; }
   function competencia(iso) { var p = partes(iso); return p.m + '/' + p.a; }
   function hora(h) { return (h || '').slice(0, 5).replace(':', 'h'); }
 
-  /* As três cargas correm em paralelo e cada uma anota a sua pendência
+  /* As cargas correm em paralelo e cada uma anota a sua pendência
      quando a resposta chega. Guardar por chave, e não empilhar, mantém
      a frase sempre na mesma ordem — senão o mesmo dado aparecia numa
      ordem diferente a cada carregamento, conforme qual requisição
      respondesse primeiro. */
-  var ORDEM_PENDENCIAS = ['cadastros', 'reservas', 'inadimplencia'];
+  var ORDEM_PENDENCIAS = ['cadastros', 'reservas', 'inadimplencia', 'preventiva', 'livro'];
   var pendencias = {};
 
   function anotarPendencia(chave, texto) {
@@ -182,9 +220,9 @@
       api.get('/financeiro/cobrancas?status=vencida')
     ]).then(function(r) {
       var resumo = r[0], vencidas = r[1];
-      campo('finRecebido').textContent = dinheiro(resumo.total_recebido);
-      campo('finAberto').textContent = dinheiro(resumo.total_aberto);
-      campo('finVencido').textContent = dinheiro(resumo.total_vencido);
+      campo('finRecebido').textContent = formato.dinheiro(resumo.total_recebido);
+      campo('finAberto').textContent = formato.dinheiro(resumo.total_aberto);
+      campo('finVencido').textContent = formato.dinheiro(resumo.total_vencido);
       campo('totInadimplentes').textContent = resumo.unidades_inadimplentes;
       if (resumo.unidades_inadimplentes) {
         anotarPendencia('inadimplencia', resumo.unidades_inadimplentes +
@@ -203,7 +241,7 @@
         linha.innerHTML = '<span><strong></strong></span><span></span><span></span><span><span class="badge badge-alert"></span></span>';
         linha.children[0].firstChild.textContent = c.unidade || '—';
         linha.children[1].textContent = competencia(c.competencia);
-        linha.children[2].textContent = dinheiro(Number(c.valor) - Number(c.total_pago || 0));
+        linha.children[2].textContent = formato.dinheiro(Number(c.valor) - Number(c.total_pago || 0));
         linha.children[3].firstChild.textContent = ROTULO_COBRANCA[c.status] || c.status;
         tabela.appendChild(linha);
       });
@@ -238,6 +276,26 @@
         tabela.appendChild(linha);
       });
     }).catch(function(e) { campo('estadoReservas').textContent = e.message; });
+  }
+
+  function carregarPreventiva() {
+    return api.get('/manutencao-preventiva').then(function(planos) {
+      var vencidas = planos.filter(function(p) { return p.situacao === 'vencida'; }).length;
+      if (vencidas) {
+        anotarPendencia('preventiva', vencidas + (vencidas === 1
+          ? ' manutenção preventiva vencida' : ' manutenções preventivas vencidas'));
+      }
+    }).catch(function() {});
+  }
+
+  function carregarLivro() {
+    return api.get('/livro-portaria/pendentes').then(function(p) {
+      if (p.total) {
+        anotarPendencia('livro', p.total + (p.total === 1
+          ? ' anotação importante no livro da portaria para ler'
+          : ' anotações importantes no livro da portaria para ler'));
+      }
+    }).catch(function() {});
   }
 
   function carregarOcorrencias() {
@@ -300,6 +358,8 @@
   carregarFinanceiro();
   carregarReservas();
   carregarOcorrencias();
+  carregarPreventiva();
+  carregarLivro();
 })();
 </script>
 <script src="../../assets/js/sessao.js"></script>

@@ -4,12 +4,14 @@ Documentação, seção 12 — caso de uso "Cadastro do condomínio" (síndico).
 """
 from __future__ import annotations
 
-from datetime import datetime
+from decimal import Decimal
+
+from datetime import datetime, time
 
 from pydantic import Field, model_validator
 
 from app.schemas.admin import RegistroSaida
-from app.schemas.comuns import CEP, CNPJ, IdUnidade, SchemaBase, Telefone, UF
+from app.schemas.comuns import CEP, CNPJ, UF, Horario, IdUnidade, SchemaBase, Telefone
 
 
 class CondominioEntrada(SchemaBase):
@@ -55,6 +57,9 @@ class UnidadeEntrada(SchemaBase):
     bloco: IdUnidade = Field(default="unico", max_length=20)
     andar: int | None = Field(default=None, ge=0, le=200)
     vagas_garagem: int = Field(default=0, ge=0, le=20)
+    # Em porcentagem, como na convenção (1,2500 = 1,25% do condomínio).
+    fracao_ideal: Decimal | None = Field(default=None, gt=0, le=100, max_digits=7,
+                                         decimal_places=4)
 
 
 class UnidadeSaida(UnidadeEntrada):
@@ -62,14 +67,18 @@ class UnidadeSaida(UnidadeEntrada):
     condominio_id: int
     # Só para o síndico: quantos moradores ativos e quem mexeu por último.
     total_moradores: int | None = None
+    # Para a portaria e o síndico: nenhum morador ativo, ninguém a avisar.
+    sem_morador: bool | None = None
     ultima_alteracao: RegistroSaida | None = None
 
 
 class UnidadeAtualizacao(SchemaBase):
-    """Andar e vagas. Número e bloco não mudam: moradores, cobranças e a
-    portaria apontam para a unidade por eles."""
+    """Andar, vagas e fração ideal. Número e bloco não mudam: moradores,
+    cobranças e a portaria apontam para a unidade por eles."""
     andar: int | None = Field(default=None, ge=0, le=200)
     vagas_garagem: int | None = Field(default=None, ge=0, le=20)
+    fracao_ideal: Decimal | None = Field(default=None, gt=0, le=100, max_digits=7,
+                                         decimal_places=4)
 
     @model_validator(mode="after")
     def _vagas_nao_nulas(self):
@@ -78,7 +87,36 @@ class UnidadeAtualizacao(SchemaBase):
         return self
 
 
-class EspacoEntrada(SchemaBase):
+class RegrasDoEspaco(SchemaBase):
+    """Regras de uso do espaço, definidas pelo síndico. Vazio = sem a regra.
+
+    O salão que funciona até as 22h (lei do silêncio), a reserva com dois
+    dias de antecedência, a churrasqueira por no máximo seis horas, uma
+    reserva futura por apartamento."""
+    horario_abertura: Horario | None = None
+    horario_fechamento: Horario | None = None
+    antecedencia_minima_dias: int | None = Field(default=None, ge=0, le=180)
+    duracao_maxima_horas: int | None = Field(default=None, ge=1, le=24)
+    limite_por_unidade: int | None = Field(default=None, ge=1, le=50)
+    # Cobrada do apartamento quando o síndico aprova a reserva.
+    taxa_uso: Decimal | None = Field(default=None, gt=0, max_digits=10, decimal_places=2)
+
+    @model_validator(mode="after")
+    def _horario_coerente(self):
+        abre, fecha = self.horario_abertura, self.horario_fechamento
+        if abre is not None and fecha is not None and fecha <= abre:
+            raise ValueError("O horário de fechamento precisa ser depois do de abertura.")
+        return self
+
+
+def conferir_par_de_horarios(abre: time | None, fecha: time | None) -> str | None:
+    """Abertura e fechamento andam juntos: só um deles não diz nada."""
+    if (abre is None) != (fecha is None):
+        return "Informe o horário de abertura e o de fechamento, ou nenhum dos dois."
+    return None
+
+
+class EspacoEntrada(RegrasDoEspaco):
     nome: str = Field(min_length=2, max_length=120)
     descricao: str | None = Field(default=None, max_length=2000)
     capacidade: int = Field(default=0, ge=0, le=10000)
@@ -91,11 +129,15 @@ class EspacoEntrada(SchemaBase):
         # Nem reservável nem de uso livre: o espaço não serviria para nada.
         if not self.reservavel and not self.uso_livre:
             raise ValueError("O espaço precisa ser reservável ou de uso livre.")
+        erro = conferir_par_de_horarios(self.horario_abertura, self.horario_fechamento)
+        if erro:
+            raise ValueError(erro)
         return self
 
 
-class EspacoAtualizacao(SchemaBase):
-    """Só o que veio muda. Campos obrigatórios não aceitam null."""
+class EspacoAtualizacao(RegrasDoEspaco):
+    """Só o que veio muda. Campos obrigatórios não aceitam null; as regras
+    aceitam (null tira a regra)."""
     nome: str | None = Field(default=None, min_length=2, max_length=120)
     descricao: str | None = Field(default=None, max_length=2000)
     capacidade: int | None = Field(default=None, ge=0, le=10000)
@@ -120,6 +162,12 @@ class EspacoSaida(SchemaBase):
     reservavel: bool
     uso_livre: bool
     em_manutencao: bool
+    horario_abertura: time | None = None
+    horario_fechamento: time | None = None
+    antecedencia_minima_dias: int | None = None
+    duracao_maxima_horas: int | None = None
+    limite_por_unidade: int | None = None
+    taxa_uso: Decimal | None = None
     inativo: bool = False
     # Só para o síndico: "Editado por Fulano em 28/09 14:32".
     ultima_alteracao: RegistroSaida | None = None

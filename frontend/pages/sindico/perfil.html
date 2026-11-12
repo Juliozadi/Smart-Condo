@@ -7,6 +7,7 @@
   <title>SmartCondo — Meu Perfil</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
   <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/formato.js"></script>
   <link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -126,6 +127,8 @@
       <p class="p-nota">CPF e e-mail não mudam por aqui: o e-mail é o login e o CPF identifica o cadastro.</p>
     </div>
 
+    <div id="meusApartamentos"></div>
+
     <div class="p-card">
       <h2><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt=""> Segurança</h2>
       <form id="formSenha" class="p-senha" novalidate>
@@ -138,6 +141,8 @@
         <button type="submit" class="action-btn compacto">Trocar senha</button>
       </form>
     </div>
+
+    <p class="form-erro" id="avisoPerfil" role="alert"></p>
 
     <div class="p-actions" id="viewActions">
       <button class="action-btn" onclick="entrarEdicao()"><img src="../../assets/img/icons/pen.svg" width="16" height="16" alt=""> Editar Perfil</button>
@@ -160,196 +165,11 @@
     <div class="t-progress"></div>
   </div>
   <script src="../../assets/js/validation.js"></script>
-<script>
-/* Perfil: carrega o próprio cadastro de GET /auth/eu e grava o que o
-   sistema deixa o usuário mudar — nome, telefone e data de nascimento —
-   em PATCH /usuarios/eu. A senha vai por POST /auth/senha/trocar. */
-(function() {
-  'use strict';
-  var api = window.SmartCondo.api;
-  var usuario = api.protegerPagina('sindico');
-  if (!usuario) return;
-
-  function campo(id) { return document.getElementById(id); }
-  var perfil = null;
-  var dadosOriginais = null;
-
-  var ROTULO_OCUPACAO = {
-    proprietario: 'Proprietário', inquilino: 'Inquilino', coabitante: 'Coabitante'
-  };
-
-  function mostrar(id, texto) {
-    var el = campo('val-' + id);
-    if (!el) return;
-    var badge = el.querySelector('.b-txt');
-    if (badge) badge.textContent = texto || '—';
-    else el.textContent = texto || '—';
-  }
-  function formatarTelefone(valor) {
-    var d = (valor || '').replace(/\D/g, '');
-    if (d.length === 11) return '(' + d.slice(0, 2) + ') ' + d.slice(2, 7) + '-' + d.slice(7);
-    if (d.length === 10) return '(' + d.slice(0, 2) + ') ' + d.slice(2, 6) + '-' + d.slice(6);
-    return valor || '';
-  }
-  function formatarCpf(valor) {
-    var d = (valor || '').replace(/\D/g, '');
-    if (d.length !== 11) return valor || '';
-    return d.slice(0, 3) + '.' + d.slice(3, 6) + '.' + d.slice(6, 9) + '-' + d.slice(9);
-  }
-  function dataBr(iso) {
-    if (!iso) return '';
-    var p = String(iso).slice(0, 10).split('-');
-    return p[2] + '/' + p[1] + '/' + p[0];
-  }
-  function mesAno(iso) {
-    var d = new Date(iso);
-    if (isNaN(d)) return '';
-    var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
-                 'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-    return meses[d.getMonth()] + ' de ' + d.getFullYear();
-  }
-
-  function pintar(p) {
-    perfil = p;
-    campo('viewNome').textContent = p.nome;
-    var nomeTopo = document.getElementById('hdrName');
-    if (nomeTopo) nomeTopo.textContent = p.nome;
-
-    mostrar('nome', p.nome);
-    mostrar('cpf', formatarCpf(p.cpf));
-    mostrar('nasc', p.data_nascimento ? dataBr(p.data_nascimento) : 'Não informada');
-    mostrar('email', p.email);
-    mostrar('tel', formatarTelefone(p.telefone));
-    mostrar('desde', mesAno(p.criado_em));
-
-    if (campo('val-apto')) {
-      mostrar('apto', p.unidade ? p.unidade.numero : '—');
-      mostrar('bloco', p.unidade && p.unidade.bloco && p.unidade.bloco !== 'unico'
-        ? p.unidade.bloco : 'Único');
-      mostrar('andar', p.unidade && p.unidade.andar ? p.unidade.andar + 'º andar' : '—');
-      mostrar('ocupacao', ROTULO_OCUPACAO[p.tipo_ocupacao] || '—');
-      mostrar('vagas', p.unidade ? String(p.unidade.vagas_garagem) : '—');
-    }
-
-    campo('edit-nome').value = p.nome;
-    campo('edit-tel').value = formatarTelefone(p.telefone);
-    campo('edit-nasc').value = p.data_nascimento ? String(p.data_nascimento).slice(0, 10) : '';
-
-    var sub = campo('tituloSub');
-    if (sub) {
-      sub.textContent = (p.unidade ? 'Apto ' + p.unidade.numero + ' — ' : '') + p.nome;
-    }
-
-    var etiqueta = document.querySelector('.p-tag');
-    if (etiqueta) {
-      etiqueta.textContent = (p.unidade ? 'Apto ' + p.unidade.numero : '') || '';
-      api.get('/condominios/meu')
-        .then(function(c) {
-          etiqueta.textContent = c.nome + (p.unidade ? ' · Apto ' + p.unidade.numero : '');
-        })
-        .catch(function() {});
-    }
-    fotoPerfil.mostrar(p.foto_url);
-  }
-
-  function entrarEdicao() {
-    dadosOriginais = {};
-    document.querySelectorAll('.p-edit input, .p-edit select').forEach(function(inp) {
-      dadosOriginais[inp.id] = inp.value;
-    });
-    document.querySelectorAll('.p-card').forEach(function(c) { c.classList.add('edit-mode'); });
-    campo('viewActions').style.display = 'none';
-    campo('editActions').style.display = 'flex';
-  }
-
-  function sairEdicao() {
-    document.querySelectorAll('.p-card').forEach(function(c) { c.classList.remove('edit-mode'); });
-    campo('viewActions').style.display = 'flex';
-    campo('editActions').style.display = 'none';
-    dadosOriginais = null;
-  }
-
-  function cancelarEdicao() {
-    if (dadosOriginais) {
-      document.querySelectorAll('.p-edit input, .p-edit select').forEach(function(inp) {
-        if (dadosOriginais[inp.id] !== undefined) inp.value = dadosOriginais[inp.id];
-      });
-    }
-    sairEdicao();
-  }
-
-  function salvarDados() {
-    var nome = campo('edit-nome').value.trim();
-    if (nome.length < 3) {
-      mostrarToast('Não foi possível salvar', 'O nome precisa ter pelo menos 3 caracteres.');
-      return;
-    }
-    var corpo = { nome: nome, telefone: campo('edit-tel').value };
-    // Data em branco significa "não informada"; a API aceita nulo.
-    corpo.data_nascimento = campo('edit-nasc').value || null;
-
-    var botao = campo('editActions').querySelector('button');
-    if (botao) botao.disabled = true;
-
-    api.patch('/usuarios/eu', corpo)
-      .then(function(p) {
-        pintar(p);
-        // A sessão guarda o nome que aparece no topo das outras telas.
-        api.sessao.abrir(api.sessao.token(), p);
-        sairEdicao();
-        mostrarToast('Perfil atualizado', 'Suas alterações foram salvas.');
-      })
-      .catch(function(e) { mostrarToast('Não foi possível salvar', e.message); })
-      .then(function() { if (botao) botao.disabled = false; });
-  }
-
-  campo('formSenha').addEventListener('submit', function(evento) {
-    evento.preventDefault();
-    var erro = campo('erroSenha');
-    erro.className = 'form-erro';
-    erro.textContent = '';
-
-    var atual = campo('senhaAtual').value;
-    var nova = campo('senhaNova').value;
-    var confirma = campo('senhaConfirma').value;
-    if (!atual || !nova) {
-      erro.textContent = 'Informe a senha atual e a nova senha.';
-      return;
-    }
-    if (nova.length < 8) {
-      erro.textContent = 'A nova senha precisa ter pelo menos 8 caracteres.';
-      return;
-    }
-    if (nova !== confirma) {
-      erro.textContent = 'A confirmação não confere com a nova senha.';
-      return;
-    }
-
-    var botao = this.querySelector('button[type=submit]');
-    botao.disabled = true;
-    api.post('/auth/senha/trocar', { senha_atual: atual, nova_senha: nova })
-      .then(function(r) {
-        // As outras sessões foram encerradas; esta segue com o token novo.
-        api.sessao.abrir(r.access_token, api.sessao.usuario());
-        campo('formSenha').reset();
-        erro.className = 'form-erro sucesso';
-        erro.textContent = r.detalhe;
-      })
-      .catch(function(e) { erro.textContent = e.message; })
-      .then(function() { botao.disabled = false; });
-  });
-
-  window.entrarEdicao = entrarEdicao;
-  window.salvarDados = salvarDados;
-  window.cancelarEdicao = cancelarEdicao;
-
-  api.get('/auth/eu')
-    .then(pintar)
-    .catch(function(e) { mostrarToast('Não foi possível carregar o perfil', e.message); });
-})();
-</script>
+<script src="../../assets/js/perfil.js"></script>
+<script>window.SmartCondo.perfil.montar('sindico');</script>
 
 <script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/apartamentos.js"></script>
 <script src="../../assets/js/foto-perfil.js"></script>
 <script src="../../assets/js/acessibilidade.js"></script>
 </body>

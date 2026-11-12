@@ -3,34 +3,50 @@
 Importar tudo aqui garante que o Alembic e o SQLAlchemy enxerguem todas as
 tabelas ao resolver o mapeamento e gerar as migrações.
 """
+from app.models.assembleia import Assembleia, ItemPauta, Voto
 from app.models.comunicado import Comunicado, LeituraComunicado
 from app.models.condominio import Condominio, Unidade
 from app.models.documento_cadastro import DocumentoCadastro
 from app.models.enums import (
-    CanalVerificacao, CategoriaComunicado, CategoriaDocumento, CategoriaVeiculo,
+    CanalVerificacao, CategoriaComunicado, CategoriaDespesa, CategoriaDocumento, CategoriaVeiculo,
+    EscolhaVoto, MaioriaExigida,
     FinalidadeCodigo, FormaPagamento, Papel, PrioridadeOrdemServico, StatusCobranca,
     StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
-    StatusVisitante, TipoDocumentoCadastro, TipoMovimentacao, TipoOcupacao,
+    OrigemCobranca, StatusInfracao, StatusMudanca, StatusReforma, StatusVisitante,
+    TipoDocumentoCadastro,
+    TipoInfracao, TipoMovimentacao, TipoMudanca, TipoOcupacao,
 )
+from app.models.chave import Chave, MovimentacaoChave
+from app.models.declaracao import DeclaracaoQuitacao
+from app.models.preventiva import PlanoManutencao, RealizacaoManutencao
+from app.models.infracao import Infracao
+from app.models.livro import AnotacaoPortaria, CienciaAnotacao
 from app.models.mensagem import Mensagem
+from app.models.mudanca import HorarioMudanca, Mudanca
+from app.models.reforma import Reforma
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
-from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico
-from app.models.financeiro import Cobranca, Pagamento, PreferenciaCobranca
-from app.models.portaria import Encomenda, Ocorrencia, Visitante
+from app.models.operacao import Documento, MovimentacaoVeiculo, OrdemServico, VeiculoUnidade
+from app.models.financeiro import Acordo, Cobranca, Despesa, Pagamento, PreferenciaCobranca
+from app.models.portaria import AutorizacaoVisita, Encomenda, Ocorrencia, Visitante
 from app.models.registro import RegistroAlteracao
 from app.models.usuario import CodigoVerificacao, PermissaoPorteiro, Usuario
 
 __all__ = [
-    "Cobranca", "CodigoVerificacao", "Comunicado", "Condominio", "Documento",
+    "Acordo", "Assembleia", "ItemPauta", "Voto",
+    "Cobranca", "CodigoVerificacao", "Comunicado", "Condominio", "Despesa", "Documento",
     "DocumentoCadastro",
-    "Encomenda", "EspacoComum", "LeituraComunicado", "Mensagem", "MovimentacaoVeiculo",
+    "Encomenda", "EspacoComum", "LeituraComunicado", "Mensagem", "MovimentacaoVeiculo", "Mudanca",
+    "HorarioMudanca", "Infracao", "AnotacaoPortaria", "CienciaAnotacao", "DeclaracaoQuitacao",
+    "PlanoManutencao", "RealizacaoManutencao", "Chave", "MovimentacaoChave", "Reforma",
     "Ocorrencia", "OrdemServico", "Pagamento", "PermissaoPorteiro",
     "PreferenciaCobranca", "RegistroAlteracao", "RegistroOcupacao", "Reserva", "Unidade",
-    "Usuario",
-    "Visitante",
-    "CanalVerificacao", "CategoriaComunicado", "CategoriaDocumento", "CategoriaVeiculo",
+    "Usuario", "VeiculoUnidade",
+    "AutorizacaoVisita", "Visitante",
+    "CanalVerificacao", "CategoriaComunicado", "CategoriaDespesa", "CategoriaDocumento",
+    "CategoriaVeiculo", "EscolhaVoto", "MaioriaExigida",
     "FinalidadeCodigo", "FormaPagamento", "Papel", "PrioridadeOrdemServico",
     "StatusCobranca", "StatusEncomenda", "StatusOcorrencia", "StatusOrdemServico",
-    "StatusReserva", "StatusUsuario", "StatusVisitante", "TipoDocumentoCadastro",
-    "TipoMovimentacao", "TipoOcupacao",
+    "StatusMudanca", "StatusReforma", "StatusReserva", "StatusUsuario", "StatusVisitante", "TipoDocumentoCadastro",
+    "TipoMovimentacao", "TipoMudanca", "TipoOcupacao", "OrigemCobranca", "StatusInfracao",
+    "TipoInfracao",
 ]

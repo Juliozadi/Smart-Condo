@@ -7,6 +7,7 @@
   <title>SmartCondo — Reservas de Espaços</title>
   <link rel="stylesheet" href="../../assets/css/style.css">
   <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/formato.js"></script>
   <link rel="stylesheet" href="../../assets/css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
@@ -66,10 +67,11 @@
       <form id="formReserva" novalidate>
         <div class="form-group">
           <label for="reserv_espacoDesejado">Espaço desejado</label>
-          <select id="reserv_espacoDesejado" required>
+          <select id="reserv_espacoDesejado" required aria-describedby="regrasEspaco">
             <option value="" disabled selected>Selecione o espaço</option>
           </select>
         </div>
+        <p class="regras-aviso" id="regrasEspaco" role="status"></p>
         <div class="form-row">
           <div class="form-group"><label for="reserv_data">Data</label><input id="reserv_data" type="date" required></div>
           <div class="form-group"><label for="reserv_horarioDeInicio">Horário de início</label><input id="reserv_horarioDeInicio" type="time" required></div>
@@ -107,6 +109,7 @@
    ocupados, que é o sigilo exigido pela seção 6. */
 (function() {
   'use strict';
+  var formato = window.SmartCondo.formato;
   var api = window.SmartCondo.api;
   if (!api.protegerPagina('morador')) return;
 
@@ -129,14 +132,10 @@
   function dataCurta(iso) { var p = partes(iso); return ('0' + p.d).slice(-2) + '/' + ('0' + p.m).slice(-2); }
   function hora(h) { return (h || '').slice(0, 5).replace(':', 'h'); }
   function periodo(r) { return hora(r.hora_inicio) + '–' + hora(r.hora_fim); }
-  function hoje() {
-    var d = new Date();
-    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
-  }
   function jaComecou(r) {
     var d = new Date();
     var agora = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
-    return r.data < hoje() || (r.data === hoje() && (r.hora_inicio || '').slice(0, 5) <= agora);
+    return r.data < formato.hojeIso() || (r.data === formato.hojeIso() && (r.hora_inicio || '').slice(0, 5) <= agora);
   }
 
   // ── Ocupação em tempo real ──────────────────────────────────────
@@ -235,6 +234,29 @@
     }).catch(function(e) { campo('estadoEspacos').textContent = e.message; });
   }
 
+  // ── Regras do espaço escolhido, antes de pedir ─────────────────
+  function mostrarRegrasEspaco() {
+    var e = espacos.filter(function(x) { return String(x.id) === campo('reserv_espacoDesejado').value; })[0];
+    var partes = [];
+    if (e && e.horario_abertura && e.horario_fechamento) {
+      partes.push('funciona das ' + hora(e.horario_abertura) + ' às ' + hora(e.horario_fechamento));
+    }
+    if (e && e.antecedencia_minima_dias) {
+      partes.push('reserve com ' + e.antecedencia_minima_dias +
+                  (e.antecedencia_minima_dias === 1 ? ' dia' : ' dias') + ' de antecedência');
+    }
+    if (e && e.duracao_maxima_horas) partes.push('até ' + e.duracao_maxima_horas + 'h por reserva');
+    if (e && e.limite_por_unidade) {
+      partes.push(e.limite_por_unidade + (e.limite_por_unidade === 1 ? ' reserva futura' : ' reservas futuras') +
+                  ' por apartamento');
+    }
+    if (e && e.taxa_uso) {
+      partes.push('taxa de uso de ' + formato.dinheiro(e.taxa_uso) + ', nas cobranças do apartamento quando o síndico aprovar');
+    }
+    campo('regrasEspaco').textContent = partes.length ? 'Regras deste espaço: ' + partes.join(' · ') + '.' : '';
+  }
+  campo('reserv_espacoDesejado').addEventListener('change', mostrarRegrasEspaco);
+
   // ── Agenda: mostra se o horário já está ocupado, sem dizer por quem ─
   function conferirAgenda() {
     var espacoId = campo('reserv_espacoDesejado').value;
@@ -279,12 +301,14 @@
     var h = document.createElement('h3');
     h.textContent = r.espaco_nome;
     var p = document.createElement('p');
-    p.textContent = periodo(r) + (r.pessoas_estimadas ? ' · ' + r.pessoas_estimadas + ' pessoas' : '');
+    p.textContent = periodo(r) + (r.pessoas_estimadas ? ' · ' + r.pessoas_estimadas + ' pessoas' : '') +
+      (r.taxa_uso ? ' · taxa de uso ' + formato.dinheiro(r.taxa_uso) : '');
     info.appendChild(h); info.appendChild(p);
-    if (r.motivo_recusa) {
+    var explicacao = motivoDe(r);
+    if (explicacao) {
       var motivo = document.createElement('p');
       motivo.className = 'reserve-motivo';
-      motivo.textContent = 'Motivo da recusa: ' + r.motivo_recusa;
+      motivo.textContent = explicacao;
       info.appendChild(motivo);
     }
 
@@ -312,11 +336,35 @@
     return card;
   }
 
+  /* Por que a reserva não vai acontecer: o morador precisa saber, e não
+     só ver "Recusada" ou "Cancelada". */
+  function motivoDe(r) {
+    if (r.status === 'recusada' && r.motivo_recusa) return 'Motivo da recusa: ' + r.motivo_recusa;
+    if (r.status === 'cancelada' && r.cancelada_pelo_sindico) {
+      return 'Cancelada pelo síndico' + (r.motivo_cancelamento ? ': ' + r.motivo_cancelamento : '.');
+    }
+    return '';
+  }
+  /* Recusada ou cancelada pelo síndico e ainda por vir: fica no topo,
+     junto das em aberto, para o morador ver antes do dia. */
+  function avisoFuturo(r) {
+    return !jaComecou(r) && (r.status === 'recusada' ||
+                             (r.status === 'cancelada' && r.cancelada_pelo_sindico));
+  }
+
   function montarLinhaHistorico(r) {
     var linha = document.createElement('div');
     linha.className = 'table-row cols-4';
     linha.innerHTML = '<span></span><span></span><span></span><span><span class="badge"></span></span>';
     linha.children[0].textContent = r.espaco_nome;
+    var explicacao = motivoDe(r);
+    if (explicacao) {
+      var detalhe = document.createElement('small');
+      detalhe.className = 'reserve-motivo';
+      detalhe.style.display = 'block';
+      detalhe.textContent = explicacao;
+      linha.children[0].appendChild(detalhe);
+    }
     linha.children[1].textContent = dataCurta(r.data);
     linha.children[2].textContent = periodo(r);
     var selo = linha.children[3].firstChild;
@@ -330,9 +378,9 @@
     return api.get('/espacos/reservas/minhas')
       .then(function(lista) {
         // As em aberto da mais próxima para a mais distante.
-        var ativas = lista.filter(function(r) { return ATIVAS.indexOf(r.status) >= 0; })
+        var ativas = lista.filter(function(r) { return ATIVAS.indexOf(r.status) >= 0 || avisoFuturo(r); })
           .sort(function(a, b) { return (a.data + a.hora_inicio) < (b.data + b.hora_inicio) ? -1 : 1; });
-        var encerradas = lista.filter(function(r) { return ATIVAS.indexOf(r.status) < 0; });
+        var encerradas = lista.filter(function(r) { return ATIVAS.indexOf(r.status) < 0 && !avisoFuturo(r); });
 
         campo('totAprovadas').textContent =
           lista.filter(function(r) { return r.status === 'aprovada'; }).length;
@@ -406,7 +454,7 @@
       .then(function() { botao.disabled = false; botao.textContent = texto; });
   });
 
-  campo('reserv_data').min = hoje();
+  campo('reserv_data').min = formato.hojeIso();
   ['reserv_espacoDesejado', 'reserv_data'].forEach(function(id) {
     campo(id).addEventListener('change', conferirAgenda);
   });

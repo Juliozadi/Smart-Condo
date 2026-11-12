@@ -12,7 +12,8 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
-    CheckConstraint, Date, DateTime, Enum as SAEnum, ForeignKey, Numeric, String, Text,
+    CheckConstraint, Date, DateTime, Enum as SAEnum, ForeignKey, Index, Numeric, String, Text,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -70,6 +71,37 @@ class MovimentacaoVeiculo(Base, TimestampMixin):
 
     def __repr__(self) -> str:
         return f"<MovimentacaoVeiculo {self.id} {self.placa} {self.tipo.value}>"
+
+
+class VeiculoUnidade(Base, TimestampMixin, InativacaoMixin):
+    """Placa cadastrada de um apartamento, para a portaria reconhecer o
+    carro do morador. Remover é inativar; a placa só pode estar ativa em
+    um apartamento do condomínio por vez."""
+
+    __tablename__ = "veiculos_unidade"
+    __table_args__ = (
+        Index("uq_veiculo_placa_ativa", "condominio_id", "placa", unique=True,
+              postgresql_where=text("inativo_em IS NULL")),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    condominio_id: Mapped[int] = mapped_column(
+        ForeignKey("condominios.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    unidade_id: Mapped[int] = mapped_column(
+        ForeignKey("unidades.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    # Quem cadastrou: o morador (o carro deixa de valer se ele se mudar) ou
+    # o síndico.
+    cadastrado_por_id: Mapped[int | None] = mapped_column(
+        ForeignKey("usuarios.id", ondelete="SET NULL"), index=True
+    )
+    placa: Mapped[str] = mapped_column(String(10), nullable=False)
+    modelo: Mapped[str | None] = mapped_column(String(60))
+    cor: Mapped[str | None] = mapped_column(String(30))
+
+    unidade: Mapped["Unidade"] = relationship()
+    cadastrado_por: Mapped["Usuario | None"] = relationship(foreign_keys=[cadastrado_por_id])
 
 
 class OrdemServico(Base, TimestampMixin):

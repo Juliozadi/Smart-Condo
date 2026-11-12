@@ -34,7 +34,7 @@ from app.schemas.comuns import Mensagem
 from app.schemas.documento_cadastro import DocumentoCadastroSaida
 from app.schemas.usuario import (
     CanaisSaida,
-    CadastroMorador, CadastroSaida, ConfirmacaoCodigo, LoginEntrada, PerfilSaida,
+    CadastroMorador, CadastroSaida, ConfirmacaoCodigo, LoginEntrada, PerfilDisponivel, PerfilSaida,
     RedefinicaoSenha, ReenvioCodigo, SenhaTrocadaSaida, SolicitacaoRecuperacao, TokenSaida,
     TrocaSenha,
     UsuarioSaida,
@@ -42,7 +42,7 @@ from app.schemas.usuario import (
 from app.services import arquivos
 from app.services import auth as servico_auth
 from app.services import documentos_cadastro
-from app.services import registro
+from app.services import perfis, registro
 from app.services.notificacao import mascarar_destino
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
@@ -303,11 +303,43 @@ def login(dados: LoginEntrada, db: Session = Depends(get_db)) -> TokenSaida:
             detail={"detalhe": _mensagem_bloqueio(usuario), "situacao": usuario.status.value},
         )
 
+    return _sessao(db, usuario)
+
+
+def _sessao(db: Session, usuario: Usuario) -> TokenSaida:
     return TokenSaida(
         access_token=criar_token_acesso(str(usuario.id), usuario.papel.value, usuario.versao_sessao),
         expira_em_min=settings.ACCESS_TOKEN_EXPIRA_MIN,
-        usuario=UsuarioSaida.model_validate(usuario),
+        usuario=perfis.com_perfis(db, usuario, UsuarioSaida),
     )
+
+
+@router.get("/perfis", response_model=list[PerfilDisponivel],
+            summary="Os perfis da pessoa: síndico, morador, outros apartamentos")
+def listar_perfis(
+    usuario: Usuario = Depends(get_usuario_atual), db: Session = Depends(get_db),
+) -> list[PerfilDisponivel]:
+    return [perfis.disponivel(p, usuario) for p in perfis.da_pessoa(db, usuario)
+            if p.status in perfis.VIGENTES]
+
+
+@router.post("/perfis/{usuario_id}", response_model=TokenSaida,
+             summary="Troca de perfil sem digitar a senha de novo")
+def trocar_perfil(
+    usuario_id: int,
+    usuario: Usuario = Depends(get_usuario_atual),
+    db: Session = Depends(get_db),
+) -> TokenSaida:
+    """A sessão atual já provou quem é a pessoa: ela recebe a sessão de
+    outro perfil dela — e só dela."""
+    alvo = next((p for p in perfis.da_pessoa(db, usuario) if p.id == usuario_id), None)
+    if alvo is None or alvo.status not in perfis.VIGENTES:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Perfil não encontrado.")
+    if alvo.status != StatusUsuario.ATIVO:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Este perfil ainda aguarda a aprovação do síndico.")
+    return _sessao(db, alvo)
 
 
 @router.post(
@@ -359,8 +391,10 @@ def redefinir_senha(dados: RedefinicaoSenha, db: Session = Depends(get_db)) -> M
 
 
 @router.get("/eu", response_model=PerfilSaida, summary="Dados do usuário autenticado")
-def usuario_autenticado(usuario: Usuario = Depends(get_usuario_atual)) -> Usuario:
-    return usuario
+def usuario_autenticado(
+    usuario: Usuario = Depends(get_usuario_atual), db: Session = Depends(get_db),
+) -> PerfilSaida:
+    return perfis.com_perfis(db, usuario, PerfilSaida)
 
 
 @router.post("/senha/trocar", response_model=SenhaTrocadaSaida, summary="Troca a senha estando logado")
@@ -371,8 +405,11 @@ def trocar_senha(
 ) -> SenhaTrocadaSaida:
     """As outras sessões são encerradas; esta continua com o token novo
     que vai na resposta."""
-    servico_auth.trocar_senha(db, usuario, dados.senha_atual, dados.nova_senha)
-    registro.registrar(db, usuario, registro.EDITOU, registro.USUARIO, usuario.id,
+    # A senha é da pessoa, no cadastro com login, mesmo trocada de dentro
+    # de outro perfil; as sessões de todos os perfis são encerradas.
+    dono = perfis.principal(usuario)
+    servico_auth.trocar_senha(db, dono, dados.senha_atual, dados.nova_senha)
+    registro.registrar(db, usuario, registro.EDITOU, registro.USUARIO, dono.id,
                        "Alterou a própria senha")
     db.commit()
     return SenhaTrocadaSaida(

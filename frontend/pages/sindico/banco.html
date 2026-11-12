@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Banco de Dados</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/formato.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-desktop">
+  <header class="app-bar"><div class="app-bar-inner">
+    <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
+    <div class="app-bar-right"><a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role">Síndico</span></a><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
+  </div></header>
+  <main class="dash-wrapper">
+    <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
+    <div class="dash-greeting">
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/database.svg" width="26" height="26" alt=""> Banco de Dados</h1>
+      <p class="greeting-condo">O que o próprio banco calcula: visões, função de rateio e o log gravado pelo gatilho</p>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/database.svg" width="16" height="16" alt=""> Situação dos apartamentos</h2>
+    <p class="secao-ajuda">Visão <code>vw_situacao_unidades</code>: cobranças em atraso, valor devido e a vencer de cada apartamento.</p>
+    <div class="data-table" id="tabelaSituacao">
+      <div class="table-head cols-5"><span>Apartamento</span><span>Responsável</span><span>Em atraso</span><span>A vencer</span><span>Situação</span></div>
+    </div>
+    <p class="estado-lista" id="estadoSituacao">Carregando…</p>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/database.svg" width="16" height="16" alt=""> Balancete mensal</h2>
+    <p class="secao-ajuda">Visão <code>vw_balancete_mensal</code>: o que entrou (pagamentos), o que saiu (despesas) e o saldo acumulado.</p>
+    <div class="data-table" id="tabelaBalancete">
+      <div class="table-head cols-5"><span>Mês</span><span>Receitas</span><span>Despesas</span><span>Saldo do mês</span><span>Saldo acumulado</span></div>
+    </div>
+    <p class="estado-lista" id="estadoBalancete">Carregando…</p>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/database.svg" width="16" height="16" alt=""> Rateio pela fração ideal</h2>
+    <p class="secao-ajuda">Função <code>fn_rateio</code>: divide um total pela fração ideal de cada apartamento, sem perder centavo.</p>
+    <div class="form-card">
+      <form id="formRateio" novalidate>
+        <div class="form-group">
+          <label for="rTotal">Total a dividir (R$)</label>
+          <input type="number" id="rTotal" min="0.01" max="10000000" step="0.01" value="1000.01" required>
+        </div>
+        <p class="form-erro" id="erroRateio" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;">Calcular no banco</button>
+      </form>
+    </div>
+    <div class="data-table" id="tabelaRateio" hidden>
+      <div class="table-head cols-4"><span>Apartamento</span><span>Fração ideal</span><span>Parte</span><span></span></div>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/database.svg" width="16" height="16" alt=""> Log das cobranças</h2>
+    <p class="secao-ajuda">Gravado pelo gatilho <code>trg_log_cobranca</code> a cada mudança de situação, valor ou vencimento de uma cobrança — inclusive quando o pagamento quita a cobrança. Ninguém escreve nesse log diretamente.</p>
+    <div class="data-table" id="tabelaLog">
+      <div class="table-head cols-6"><span>Quando</span><span>Apto</span><span>Cobrança</span><span>Situação</span><span>Valor</span><span>Vencimento</span></div>
+    </div>
+    <p class="estado-lista" id="estadoLog">Carregando…</p>
+  </main>
+
+<script>
+(function() {
+  'use strict';
+  var api = window.SmartCondo.api;
+  var formato = window.SmartCondo.formato;
+  var usuario = api.protegerPagina('sindico');
+  if (!usuario) return;
+  function campo(id) { return document.getElementById(id); }
+  campo('hdrName').textContent = usuario.nome;
+
+  var STATUS = { ABERTA: 'aberta', VENCIDA: 'vencida', PAGA: 'paga', CANCELADA: 'cancelada', NEGOCIADA: 'negociada' };
+
+  function linha(classe, valores) {
+    var l = formato.el('div', 'table-row ' + classe);
+    valores.forEach(function(v) {
+      if (v instanceof Node) { var s = formato.el('span'); s.appendChild(v); l.appendChild(s); }
+      else l.appendChild(formato.el('span', null, v === null || v === undefined ? '—' : String(v)));
+    });
+    return l;
+  }
+  function limpar(id) {
+    var tabela = campo(id);
+    var cabecalho = tabela.querySelector('.table-head');
+    tabela.innerHTML = '';
+    tabela.appendChild(cabecalho);
+    return tabela;
+  }
+  function mes(iso) { return iso.slice(5, 7) + '/' + iso.slice(0, 4); }
+  function mudou(antes, depois, fmt) {
+    if (antes === depois) return fmt(depois);
+    return fmt(antes) + ' → ' + fmt(depois);
+  }
+  function dinheiroOuNada(v) { return v === null ? '—' : formato.dinheiro(v); }
+  function dataOuNada(v) { return v === null ? '—' : formato.data(v); }
+  function statusOuNada(v) { return v === null ? '—' : (STATUS[v] || v); }
+
+  function carregarSituacao() {
+    return api.get('/banco/situacao-unidades').then(function(lista) {
+      var tabela = limpar('tabelaSituacao');
+      lista.forEach(function(s) {
+        var selo = formato.el('span', 'badge ' + (s.situacao === 'EM DIA' ? 'badge-ok' : 'badge-alert'),
+                              s.situacao === 'EM DIA' ? 'Em dia' : 'Inadimplente');
+        tabela.appendChild(linha('cols-5', [
+          'Apto ' + s.apartamento, s.responsavel,
+          s.cobrancas_em_atraso + (s.cobrancas_em_atraso === 1 ? ' cobrança · ' : ' cobranças · ') +
+            formato.dinheiro(s.valor_em_atraso),
+          formato.dinheiro(s.a_vencer), selo]));
+      });
+      campo('estadoSituacao').textContent = lista.length ? '' : 'Nenhum apartamento.';
+    }).catch(function(e) { campo('estadoSituacao').textContent = e.message; });
+  }
+
+  function carregarBalancete() {
+    return api.get('/banco/balancete').then(function(lista) {
+      var tabela = limpar('tabelaBalancete');
+      lista.forEach(function(m) {
+        tabela.appendChild(linha('cols-5', [mes(m.mes), formato.dinheiro(m.receitas),
+          formato.dinheiro(m.despesas), formato.dinheiro(m.saldo_do_mes),
+          formato.dinheiro(m.saldo_acumulado)]));
+      });
+      campo('estadoBalancete').textContent = lista.length ? '' : 'Nenhuma receita ou despesa ainda.';
+    }).catch(function(e) { campo('estadoBalancete').textContent = e.message; });
+  }
+
+  function carregarLog() {
+    return api.get('/banco/log-cobrancas').then(function(lista) {
+      var tabela = limpar('tabelaLog');
+      lista.forEach(function(l) {
+        tabela.appendChild(linha('cols-6', [formato.quando(l.alterado_em), l.apartamento, l.descricao,
+          mudou(l.status_anterior, l.status_novo, statusOuNada),
+          mudou(l.valor_anterior, l.valor_novo, dinheiroOuNada),
+          mudou(l.vencimento_anterior, l.vencimento_novo, dataOuNada)]));
+      });
+      campo('estadoLog').textContent = lista.length ? ''
+        : 'Nenhuma mudança ainda. Registre um pagamento ou corrija uma cobrança no Financeiro e volte aqui.';
+    }).catch(function(e) { campo('estadoLog').textContent = e.message; });
+  }
+
+  campo('formRateio').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    var erro = campo('erroRateio');
+    erro.textContent = '';
+    var total = campo('rTotal').value;
+    if (!(Number(total) > 0)) { erro.textContent = 'Informe um total maior que zero.'; return; }
+    var botao = this.querySelector('button[type=submit]');
+    botao.disabled = true;
+    api.get('/banco/rateio?total=' + encodeURIComponent(Number(total).toFixed(2))).then(function(partes) {
+      var tabela = limpar('tabelaRateio');
+      var soma = 0;
+      partes.forEach(function(p) {
+        soma += Math.round(Number(p.valor) * 100);
+        tabela.appendChild(linha('cols-4', ['Apto ' + p.apartamento,
+          Number(p.fracao).toLocaleString('pt-BR', { maximumFractionDigits: 4 }) + '%',
+          formato.dinheiro(p.valor), '']));
+      });
+      tabela.appendChild(linha('cols-4 rateio-soma', ['Soma', '', formato.dinheiro(soma / 100), '']));
+      tabela.hidden = false;
+    }).catch(function(e) { erro.textContent = e.message; campo('tabelaRateio').hidden = true; })
+      .then(function() { botao.disabled = false; });
+  });
+
+  carregarSituacao();
+  carregarBalancete();
+  carregarLog();
+})();
+</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>
