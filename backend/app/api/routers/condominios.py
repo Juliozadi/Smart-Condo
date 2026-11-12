@@ -144,11 +144,12 @@ def cadastrar_unidade(
     return unidade
 
 
-ROTULOS_UNIDADE = {"andar": "o andar", "vagas_garagem": "as vagas de garagem"}
+ROTULOS_UNIDADE = {"andar": "o andar", "vagas_garagem": "as vagas de garagem",
+                   "fracao_ideal": "a fração ideal"}
 
 
 @router.put(
-    "/meu/unidades/{unidade_id}", response_model=UnidadeSaida, summary="Edita andar e vagas"
+    "/meu/unidades/{unidade_id}", response_model=UnidadeSaida, summary="Edita andar, vagas e fração ideal"
 )
 def editar_unidade(
     unidade_id: int,

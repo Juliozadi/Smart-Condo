@@ -82,7 +82,7 @@ DESCRICOES = {
     "condominios.multa_atraso": "Multa, em %, da cobrança paga depois do vencimento; de 0 a 2 (Código Civil, art. 1.336, § 1º)",
     "condominios.juros_mensais": "Juros ao mês, em %, contados por dia de atraso; de 0 a 1 (Código Civil, art. 1.336, § 1º)",
     "condominios.mudanca_antecedencia_dias": "Com quantos dias de aviso o morador agenda a mudança, pelo regimento; de 0 a 60",
-    "cobrancas.origem": "De onde vem a cobrança: a taxa do mês (uma por apartamento e mês), uma multa, o uso de um espaço ou a parcela de um acordo",
+    "cobrancas.origem": "De onde vem a cobrança: a taxa do mês (uma por apartamento e mês), uma cota extra aprovada em assembleia, uma multa, o uso de um espaço ou a parcela de um acordo",
     "acordos.principal": "O que faltava pagar do valor das cobranças negociadas",
     "acordos.encargos": "Multa e juros das cobranças até o dia do acordo; zero quando dispensados",
     "acordos.total": "Principal mais encargos: o que as parcelas somam, sem perder centavo",
@@ -135,6 +135,7 @@ DESCRICOES = {
     "unidades.bloco": "Bloco ou torre, quando o condomínio tiver mais de um",
     "unidades.andar": "Andar em que a unidade fica",
     "unidades.vagas_garagem": "Quantidade de vagas de garagem da unidade; a soma das vagas alimenta o cálculo de ocupação do estacionamento",
+    "unidades.fracao_ideal": "Fração ideal da unidade na convenção, em % (até 4 casas); quando todas somam 100%, a taxa e a cota extra podem ser rateadas por ela (opcional)",
     "unidades.pendente": "Verdadeiro quando a unidade foi criada pelo autocadastro de um morador e ainda não foi confirmada pelo síndico; não aparece nas listas da portaria e do síndico até a aprovação",
 
     "usuarios.nome": "Nome completo",

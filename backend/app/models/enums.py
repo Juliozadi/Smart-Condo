@@ -81,6 +81,9 @@ class OrigemCobranca(str, enum.Enum):
     MULTA = "multa"
     USO_ESPACO = "uso_espaco"
     ACORDO = "acordo"
+    # Cota extra (chamada de capital): a obra ou o fundo que a assembleia
+    # aprovou, rateado entre os apartamentos, às vezes em parcelas.
+    EXTRA = "extra"
 
 
 class StatusVisitante(str, enum.Enum):

@@ -97,6 +97,8 @@ class Unidade(Base, TimestampMixin):
     __tablename__ = "unidades"
     __table_args__ = (
         UniqueConstraint("condominio_id", "bloco", "numero", name="uq_unidade_no_condominio"),
+        CheckConstraint("fracao_ideal IS NULL OR (fracao_ideal > 0 AND fracao_ideal <= 100)",
+                        name="ck_unidade_fracao_ideal"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -108,6 +110,11 @@ class Unidade(Base, TimestampMixin):
     bloco: Mapped[str] = mapped_column(String(20), nullable=False, default="unico")
     andar: Mapped[int | None] = mapped_column(Integer)
     vagas_garagem: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # A parte do apartamento no condomínio, em porcentagem, como está na
+    # convenção (a cobertura costuma ter mais que o apartamento-tipo). É
+    # por ela que se rateiam a taxa e as cotas extras, quando a convenção
+    # manda; as do condomínio somam 100%.
+    fracao_ideal: Mapped[Decimal | None] = mapped_column(Numeric(7, 4))
     # Criada pelo autocadastro de um morador e ainda não confirmada por um
     # responsável: não aparece nas listas. Sem isso, qualquer um com o
     # código de acesso criava unidades ("9999") que ficavam para a portaria

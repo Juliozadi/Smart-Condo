@@ -38,21 +38,30 @@
 
     <h2 class="section-title"><img src="../../assets/img/icons/bolt.svg" width="16" height="16" alt=""> Gerar Cobranças</h2>
     <div class="form-card">
-      <h3>Cobrança mensal</h3>
+      <h3>Taxa do mês ou cota extra</h3>
       <form id="formCobranca" novalidate>
         <div class="form-row">
-          <div class="form-group"><label for="fin_competencia">Competência</label><input id="fin_competencia" type="month" required style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
-          <div class="form-group"><label for="fin_valor">Valor por unidade (R$)</label><input id="fin_valor" type="number" min="0.01" step="0.01" required placeholder="Ex: 380.00" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
+          <div class="form-group"><label for="fin_tipo">O que lançar</label><select id="fin_tipo" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"><option value="taxa" selected>Taxa do mês</option><option value="extra">Cota extra (obra, fundo aprovado em assembleia)</option></select></div>
+          <div class="form-group"><label for="fin_rateio">Como dividir</label><select id="fin_rateio" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"><option value="igual" selected>Mesmo valor para cada apartamento</option><option value="fracao">Pela fração ideal de cada um</option></select></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label for="fin_descricao">Descrição</label><input id="fin_descricao" type="text" required minlength="3" maxlength="180" placeholder="Ex: Taxa condominial" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
+          <div class="form-group"><label for="fin_competencia">Competência</label><input id="fin_competencia" type="month" required style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
+          <div class="form-group"><label for="fin_valor" id="rotuloValor">Valor por unidade (R$)</label><input id="fin_valor" type="number" min="0.01" step="0.01" required placeholder="Ex: 380.00" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="fin_descricao">Descrição</label><input id="fin_descricao" type="text" required minlength="3" maxlength="150" placeholder="Ex: Taxa condominial" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
           <div class="form-group"><label for="fin_unidade">Unidade</label><select id="fin_unidade" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"><option value="" selected>Todas as unidades</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" id="grupoParcelas" hidden><label for="fin_parcelas">Parcelas mensais (1 a 24)</label><input id="fin_parcelas" type="number" min="1" max="24" value="1" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
+          <div class="form-group"><label for="fin_vencimento">Vencimento (opcional)</label><input id="fin_vencimento" type="date" style="width:100%;padding:12px;border-radius:var(--radius-xs);border:1.5px solid var(--border);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface-2);outline:none;"></div>
         </div>
         <p class="aviso-notificacao">
           <img src="../../assets/img/icons/bullhorn.svg" alt="">
-          <span>Sem informar a data de vencimento, cada cobrança usa o
-          <strong>dia que o morador escolheu</strong> na preferência dele. Unidades que já
-          tenham cobrança nesta competência são puladas.</span>
+          <span>Sem informar o vencimento, cada cobrança usa o
+          <strong>dia que o morador escolheu</strong> na preferência dele. Na taxa do mês, unidades que já
+          a tenham são puladas. Pela fração ideal, informe o <strong>total do condomínio</strong>: cada
+          apartamento paga a sua parte, e as frações (na tela de moradores) precisam somar 100%.</span>
         </p>
         <p class="form-erro" id="erroCobranca" role="alert"></p>
         <button class="action-btn" type="submit" style="margin-top:4px;">Gerar Cobranças</button>
@@ -299,6 +308,22 @@
     }).catch(function() {});
   }
 
+  // Taxa ou cota extra; mesmo valor ou fração ideal: o rótulo do valor e
+  // as parcelas acompanham a escolha. Um apartamento só, só a taxa igual.
+  function ajustarFormulario() {
+    var extra = campo('fin_tipo').value === 'extra';
+    var fracao = campo('fin_rateio').value === 'fracao';
+    campo('grupoParcelas').hidden = !extra;
+    if (!extra) campo('fin_parcelas').value = 1;
+    campo('rotuloValor').textContent = fracao ? 'Total do condomínio (R$)'
+      : (extra ? 'Valor por apartamento, somando as parcelas (R$)' : 'Valor por unidade (R$)');
+    campo('fin_unidade').disabled = extra || fracao;
+    if (extra || fracao) campo('fin_unidade').value = '';
+    campo('fin_descricao').placeholder = extra ? 'Ex: Pintura da fachada' : 'Ex: Taxa condominial';
+  }
+  campo('fin_tipo').addEventListener('change', ajustarFormulario);
+  campo('fin_rateio').addEventListener('change', ajustarFormulario);
+
   campo('formCobranca').addEventListener('submit', function(evento) {
     evento.preventDefault();
     var erro = campo('erroCobranca');
@@ -308,16 +333,12 @@
     var competencia = campo('fin_competencia').value;
     var valor = campo('fin_valor').value;
     var descricao = campo('fin_descricao').value.trim();
+    var vencimento = campo('fin_vencimento').value || null;
     if (!competencia || !valor || descricao.length < 3) {
       erro.textContent = 'Preencha a competência, o valor e a descrição.';
       return;
     }
-
-    var escolhida = campo('fin_unidade').value;
-    var alvos = escolhida
-      ? unidades.filter(function(u) { return String(u.id) === escolhida; })
-      : unidades;
-    if (!alvos.length) {
+    if (!unidades.length) {
       erro.textContent = 'Nenhuma unidade cadastrada no condomínio.';
       return;
     }
@@ -327,34 +348,35 @@
     botao.disabled = true;
     botao.textContent = 'Gerando…';
 
-    var geradas = 0, puladas = 0, falhas = [];
-    // Uma chamada por unidade: a API gera uma cobrança de cada vez, e o
-    // 409 de "já existe nesta competência" é esperado, não é erro.
-    var fila = alvos.reduce(function(anterior, u) {
-      return anterior.then(function() {
-        return api.post('/financeiro/cobrancas', {
-          unidade_id: u.id,
-          competencia: competencia + '-01',
-          descricao: descricao,
-          valor: Number(valor)
-        }).then(function() { geradas++; },
-          function(e) {
-            if (e.status === 409) puladas++;
-            else falhas.push(e.message);
-          });
-      });
-    }, Promise.resolve());
+    var escolhida = campo('fin_unidade').value;
+    var pedido = escolhida
+      ? api.post('/financeiro/cobrancas', {
+          unidade_id: +escolhida, competencia: competencia + '-01', descricao: descricao,
+          valor: valor, vencimento: vencimento
+        }).then(function(c) { return { geradas: 1, puladas: [], total: c.valor }; })
+      // Todos os apartamentos numa chamada só: o servidor rateia e gera
+      // tudo ou nada.
+      : api.post('/financeiro/cobrancas/lote', {
+          competencia: competencia + '-01', descricao: descricao, valor: valor,
+          tipo: campo('fin_tipo').value, rateio: campo('fin_rateio').value,
+          parcelas: +campo('fin_parcelas').value || 1, vencimento: vencimento
+        });
 
-    fila.then(function() {
-      var partesTexto = [geradas + (geradas === 1 ? ' cobrança gerada' : ' cobranças geradas')];
-      if (puladas) partesTexto.push(puladas + ' já existiam nesta competência');
-      if (falhas.length) partesTexto.push(falhas.length + ' com erro: ' + falhas[0]);
-      erro.className = 'form-erro' + (falhas.length ? '' : ' sucesso');
+    pedido.then(function(r) {
+      var partesTexto = [r.geradas + (r.geradas === 1 ? ' cobrança gerada' : ' cobranças geradas') +
+                         ', ' + formato.dinheiro(r.total)];
+      if (r.puladas.length) {
+        partesTexto.push(r.puladas.length + ' já tinham a taxa desta competência (apto ' +
+                         r.puladas.join(', ') + ')');
+      }
+      erro.className = 'form-erro sucesso';
       erro.textContent = partesTexto.join(' · ') + '.';
-      botao.disabled = false;
-      botao.textContent = rotulo;
       return Promise.all([carregarResumo(), carregarCobrancas()]);
-    });
+    }).catch(function(e) { erro.textContent = e.message; })
+      .then(function() {
+        botao.disabled = false;
+        botao.textContent = rotulo;
+      });
   });
 
   var modal = ui.modal('modalCobranca', 'formCorrecao', 'correcaoErro');

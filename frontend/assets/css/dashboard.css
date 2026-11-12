@@ -2210,14 +2210,16 @@ body.tema-escuro .chat-avatar.sindico, body.tema-escuro .chat-avatar.porteiro { 
 .historico-edicao li:last-child { border-bottom: 0; }
 .table-row.inativo > span:first-child strong { color: var(--muted); }
 .list-item.inativo .list-info h3 { color: var(--muted); }
-/* Unidades e vagas (síndico): no celular o andar sai para caber. */
+/* Unidades e vagas (síndico): no celular o andar e os moradores saem para caber. */
 #tabelaUnidades .table-head,
-#tabelaUnidades .table-row { grid-template-columns: minmax(0,2fr) 1fr 1fr 1fr 48px; }
+#tabelaUnidades .table-row { grid-template-columns: minmax(0,2fr) 1fr 1fr 1fr 1fr 48px; }
 @media (max-width: 640px) {
   #tabelaUnidades .table-head,
   #tabelaUnidades .table-row { grid-template-columns: minmax(0,1.6fr) 1fr 1fr 40px; }
   #tabelaUnidades .table-head span:nth-child(2),
-  #tabelaUnidades .table-row span:nth-child(2) { display: none; }
+  #tabelaUnidades .table-row span:nth-child(2),
+  #tabelaUnidades .table-head span:nth-child(5),
+  #tabelaUnidades .table-row > span:nth-child(5) { display: none; }
 }
 /* Botão pequeno ao lado de um texto na linha (corrigir cobrança). */
 .btn-acao.btn-acao-mini { width: 24px; height: 24px; margin-left: 6px; vertical-align: middle; display: inline-flex; }

@@ -569,7 +569,7 @@ const dicionario = [
         "tipo": "ENUM",
         "obrigatorio": "Sim",
         "chave": "",
-        "descricao": "De onde vem a cobrança: a taxa do mês (uma por apartamento e mês), uma multa, o uso de um espaço ou a parcela de um acordo — tipo enumerado origem_cobranca, valores: TAXA, MULTA, USO_ESPACO, ACORDO"
+        "descricao": "De onde vem a cobrança: a taxa do mês (uma por apartamento e mês), uma cota extra aprovada em assembleia, uma multa, o uso de um espaço ou a parcela de um acordo — tipo enumerado origem_cobranca, valores: TAXA, MULTA, USO_ESPACO, ACORDO, EXTRA"
       },
       {
         "coluna": "acordo_id",
@@ -3331,9 +3331,17 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Verdadeiro quando a unidade foi criada pelo autocadastro de um morador e ainda não foi confirmada pelo síndico; não aparece nas listas da portaria e do síndico até a aprovação"
+      },
+      {
+        "coluna": "fracao_ideal",
+        "tipo": "NUMERIC(7,4)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Fração ideal da unidade na convenção, em % (até 4 casas); quando todas somam 100%, a taxa e a cota extra podem ser rateadas por ela (opcional)"
       }
     ],
     "regras": [
+      "CHECK (((fracao_ideal IS NULL) OR ((fracao_ideal > (0)::numeric) AND (fracao_ideal <= (100)::numeric))))",
       "UNIQUE (condominio_id, bloco, numero)"
     ]
   },
@@ -4500,7 +4508,7 @@ const enumerados = [
   },
   {
     "nome": "origem_cobranca",
-    "valores": "TAXA, MULTA, USO_ESPACO, ACORDO"
+    "valores": "TAXA, MULTA, USO_ESPACO, ACORDO, EXTRA"
   },
   {
     "nome": "papel_usuario",

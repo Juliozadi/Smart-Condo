@@ -30,7 +30,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 ### 🏠 Morador
 - **Dashboard** — Visão geral com reservas, cobranças, comunicados e encomendas
 - **Reservas** — Agendamento das áreas comuns, com as regras e a taxa de uso de cada espaço
-- **Financeiro** — Cobranças (taxa, multa, uso de espaço, parcelas de acordo), forma de pagamento e histórico
+- **Financeiro** — Cobranças (taxa, cota extra, multa, uso de espaço, parcelas de acordo), forma de pagamento e histórico
 - **Prestação de Contas** — Despesas e balancete do mês
 - **Declaração de Quitação** — O apartamento em dia, com um código que o comprador confere
 - **Assembleias** — Votação online, um voto por apartamento
@@ -58,12 +58,12 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 
 ### 📊 Síndico
 - **Dashboard** — Painel administrativo com indicadores e pendências do condomínio
-- **Financeiro** — Cobranças, pagamentos, encargos e inadimplência
+- **Financeiro** — Cobranças, pagamentos, encargos e inadimplência; a taxa e a cota extra para todos, rateadas pela fração ideal
 - **Acordos de Parcelamento** — As cobranças vencidas de um apartamento em até 24 parcelas
 - **Prestação de Contas** — Lançamento de despesas e balancete do mês
 - **Declarações de Quitação** — Emissão para qualquer apartamento em dia e revogação com motivo
 - **Assembleias** — Convocação, pauta e resultado da votação
-- **Moradores** — Cadastro e aprovação de novos moradores
+- **Moradores** — Cadastro e aprovação de novos moradores; unidades com vagas e fração ideal
 - **Porteiros** — Equipe de portaria e as permissões de cada um
 - **Reservas** — Espaços, regras, taxa de uso e aprovação das reservas
 - **Advertências e Multas** — Notificação, defesa e decisão
@@ -217,7 +217,7 @@ backend/
 ```
 
 **Total:** 66 páginas HTML, 2 arquivos CSS, 23 arquivos JS, 46 ícones SVG e
-uma API com 177 endpoints.
+uma API com 178 endpoints.
 
 ---
 
@@ -237,7 +237,7 @@ uvicorn app.main:app --reload
 
 Documentação interativa da API em <http://localhost:8000/docs>.
 
-**177 endpoints**, cobrindo os casos de uso e as histórias de usuário da
+**178 endpoints**, cobrindo os casos de uso e as histórias de usuário da
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e

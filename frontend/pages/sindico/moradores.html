@@ -78,14 +78,16 @@
     <p class="estado-lista" id="estadoTabela"></p>
 
     <h2 class="section-title"><img src="../../assets/img/icons/building.svg" width="16" height="16" alt=""> Unidades e Vagas</h2>
-    <p class="secao-ajuda">As vagas de garagem somam a capacidade do estacionamento que a portaria acompanha.</p>
+    <p class="secao-ajuda">As vagas de garagem somam a capacidade do estacionamento que a portaria acompanha.
+    A fração ideal, da convenção, é a parte de cada apartamento no rateio da taxa e das cotas extras.</p>
+    <p class="secao-ajuda" id="somaFracoes" aria-live="polite"></p>
     <div class="barra-acoes">
       <button type="button" class="btn-novo" id="btnNovaUnidade">
         <img src="../../assets/img/icons/plus.svg" alt="">Nova unidade
       </button>
     </div>
     <div class="data-table" id="tabelaUnidades">
-      <div class="table-head"><span>Unidade</span><span>Andar</span><span>Vagas</span><span>Moradores</span><span></span></div>
+      <div class="table-head"><span>Unidade</span><span>Andar</span><span>Vagas</span><span>Fração</span><span>Moradores</span><span></span></div>
     </div>
     <p class="estado-lista" id="estadoUnidades">Carregando…</p>
   </main>
@@ -115,6 +117,10 @@
             <label for="uVagas">Vagas de garagem</label>
             <input type="number" id="uVagas" min="0" max="20" step="1" placeholder="0">
           </div>
+        </div>
+        <div class="form-group">
+          <label for="uFracao">Fração ideal (% do condomínio, como na convenção)</label>
+          <input type="number" id="uFracao" min="0.0001" max="100" step="0.0001" inputmode="decimal" placeholder="Ex: 1.2500">
         </div>
         <p class="modal-erro" id="unidadeErro" role="alert"></p>
         <div class="modal-acoes">
@@ -477,6 +483,7 @@
       campo('uBloco').value = u.bloco === 'unico' ? '' : u.bloco;
       campo('uAndar').value = u.andar === null || u.andar === undefined ? '' : u.andar;
       campo('uVagas').value = u.vagas_garagem;
+      campo('uFracao').value = u.fracao_ideal === null || u.fracao_ideal === undefined ? '' : Number(u.fracao_ideal);
     }
     modalUnidade.abrir();
     if (u) campo('uAndar').focus();
@@ -486,12 +493,14 @@
     var linha = document.createElement('div');
     linha.className = 'table-row';
     linha.innerHTML = '<span><strong></strong><small class="lista-autoria"></small></span>' +
-      '<span></span><span></span><span></span><span class="acoes-linha"></span>';
+      '<span></span><span></span><span></span><span></span><span class="acoes-linha"></span>';
     linha.children[0].firstChild.textContent = u.identificacao;
     linha.children[0].querySelector('.lista-autoria').textContent = ui.textoAlteracao(u.ultima_alteracao);
     linha.children[1].textContent = u.andar === null || u.andar === undefined ? '—' : u.andar + 'º';
     linha.children[2].textContent = u.vagas_garagem;
-    linha.children[3].textContent = u.total_moradores || 0;
+    linha.children[3].textContent = u.fracao_ideal === null || u.fracao_ideal === undefined
+      ? '—' : Number(u.fracao_ideal).toLocaleString('pt-BR', { maximumFractionDigits: 4 }) + '%';
+    linha.children[4].textContent = u.total_moradores || 0;
     var editar = document.createElement('button');
     editar.type = 'button';
     editar.className = 'btn-acao';
@@ -502,7 +511,7 @@
     img.alt = '';
     editar.appendChild(img);
     editar.addEventListener('click', function() { abrirUnidade(u); });
-    linha.children[4].appendChild(editar);
+    linha.children[5].appendChild(editar);
     return linha;
   }
 
@@ -516,6 +525,13 @@
       });
       campo('estadoUnidades').textContent = unidades.length ? '' :
         'Nenhuma unidade ainda. Elas também são criadas quando o morador se cadastra.';
+      var sem = unidades.filter(function(u) { return u.fracao_ideal === null || u.fracao_ideal === undefined; });
+      var soma = unidades.reduce(function(s, u) { return s + Number(u.fracao_ideal || 0); }, 0);
+      campo('somaFracoes').textContent = !unidades.length ? '' : sem.length
+        ? 'Faltam as frações ideais de ' + sem.length + (sem.length === 1 ? ' unidade' : ' unidades') +
+          ' para ratear a taxa por elas.'
+        : 'As frações ideais somam ' + soma.toLocaleString('pt-BR', { maximumFractionDigits: 4 }) + '%' +
+          (Math.abs(soma - 100) > 0.01 ? ' — precisam somar 100% para o rateio.' : '.');
       if (nomeCondominio) {
         campo('resumoCondominio').textContent = nomeCondominio + ' · ' + unidades.length + ' unidades';
       }
@@ -526,9 +542,11 @@
 
   modalUnidade.aoEnviar(function() {
     var andar = campo('uAndar').value, vagas = campo('uVagas').value;
+    var fracao = campo('uFracao').value;
     var corpo = {
       andar: andar === '' ? null : parseInt(andar, 10),
-      vagas_garagem: vagas === '' ? 0 : parseInt(vagas, 10)
+      vagas_garagem: vagas === '' ? 0 : parseInt(vagas, 10),
+      fracao_ideal: fracao === '' ? null : fracao
     };
     if (editandoUnidade) {
       return api.put('/condominios/meu/unidades/' + editandoUnidade.id, corpo);

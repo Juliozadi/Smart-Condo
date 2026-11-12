@@ -65,7 +65,7 @@ UNION ALL SELECT 'comunicados', COUNT(*) FROM comunicados;
 | Tabela | Guarda |
 |---|---|
 | `condominios` | Condomínios cadastrados pelo administrador |
-| `unidades` | Apartamentos ou casas de cada condomínio |
+| `unidades` | Apartamentos ou casas de cada condomínio, com as vagas e a fração ideal |
 | `usuarios` | Administradores, síndicos, porteiros e moradores; quem tem mais de um papel ou apartamento tem um perfil por papel, ligado ao cadastro com o login |
 | `permissoes_porteiro` | O que cada porteiro pode fazer, definido pelo síndico |
 | `codigos_verificacao` | Códigos de confirmação e de recuperação de senha |
@@ -73,7 +73,7 @@ UNION ALL SELECT 'comunicados', COUNT(*) FROM comunicados;
 | `reservas` | Pedidos de reserva, aprovados ou recusados pelo síndico |
 | `registros_ocupacao` | Contagem de pessoas nas áreas de uso livre |
 | `preferencias_cobranca` | Dia do vencimento e forma de pagamento do morador |
-| `cobrancas` | Taxa condominial por unidade e competência, multas, uso de espaço e parcelas de acordo |
+| `cobrancas` | Taxa condominial por unidade e competência, cotas extras, multas, uso de espaço e parcelas de acordo |
 | `acordos` | Acordos de parcelamento: as cobranças vencidas de um apartamento divididas em parcelas |
 | `pagamentos` | Pagamentos recebidos, com meio, valor e data |
 | `despesas` | O que o condomínio gastou, com o comprovante: a prestação de contas |

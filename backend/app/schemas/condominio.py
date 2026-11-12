@@ -57,6 +57,9 @@ class UnidadeEntrada(SchemaBase):
     bloco: IdUnidade = Field(default="unico", max_length=20)
     andar: int | None = Field(default=None, ge=0, le=200)
     vagas_garagem: int = Field(default=0, ge=0, le=20)
+    # Em porcentagem, como na convenção (1,2500 = 1,25% do condomínio).
+    fracao_ideal: Decimal | None = Field(default=None, gt=0, le=100, max_digits=7,
+                                         decimal_places=4)
 
 
 class UnidadeSaida(UnidadeEntrada):
@@ -70,10 +73,12 @@ class UnidadeSaida(UnidadeEntrada):
 
 
 class UnidadeAtualizacao(SchemaBase):
-    """Andar e vagas. Número e bloco não mudam: moradores, cobranças e a
-    portaria apontam para a unidade por eles."""
+    """Andar, vagas e fração ideal. Número e bloco não mudam: moradores,
+    cobranças e a portaria apontam para a unidade por eles."""
     andar: int | None = Field(default=None, ge=0, le=200)
     vagas_garagem: int | None = Field(default=None, ge=0, le=20)
+    fracao_ideal: Decimal | None = Field(default=None, gt=0, le=100, max_digits=7,
+                                         decimal_places=4)
 
     @model_validator(mode="after")
     def _vagas_nao_nulas(self):

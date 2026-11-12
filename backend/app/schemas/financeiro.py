@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from datetime import date, datetime, timedelta
 from decimal import Decimal
+from typing import Literal
 
 from pydantic import Field, field_validator, model_validator
 
@@ -58,6 +59,39 @@ class CobrancaEntrada(SchemaBase):
     def conferir_datas(self) -> "CobrancaEntrada":
         _conferir_competencia(self.competencia, self.vencimento)
         return self
+
+
+class CobrancaLoteEntrada(SchemaBase):
+    """As cobranças de todos os apartamentos de uma vez: a taxa do mês ou
+    uma cota extra (chamada de capital), pelo mesmo valor para todos ou
+    rateada pela fração ideal de cada um."""
+    competencia: date = Field(description="Primeiro dia do mês de referência.")
+    descricao: str = Field(min_length=3, max_length=150)
+    tipo: Literal["taxa", "extra"] = "taxa"
+    # igual: `valor` é o de cada apartamento. fracao: `valor` é o total do
+    # condomínio, rateado pela fração ideal.
+    rateio: Literal["igual", "fracao"] = "igual"
+    valor: Decimal = Field(gt=0, max_digits=12, decimal_places=2)
+    # Só a cota extra se divide em parcelas mensais.
+    parcelas: int = Field(default=1, ge=1, le=24)
+    vencimento: date | None = Field(
+        default=None,
+        description="Se ficar vazio, cada apartamento vence no dia que o morador escolheu.",
+    )
+
+    @model_validator(mode="after")
+    def conferir(self) -> "CobrancaLoteEntrada":
+        _conferir_competencia(self.competencia, self.vencimento)
+        if self.tipo == "taxa" and self.parcelas != 1:
+            raise ValueError("A taxa do mês não se divide em parcelas; a cota extra, sim.")
+        return self
+
+
+class LoteSaida(SchemaBase):
+    geradas: int
+    # Os apartamentos que já tinham a taxa daquela competência.
+    puladas: list[str]
+    total: Decimal
 
 
 class CobrancaAtualizacao(SchemaBase):

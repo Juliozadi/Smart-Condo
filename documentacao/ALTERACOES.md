@@ -14,11 +14,11 @@ de um condomínio. Esta versão segue a 2.8.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | Novo RF059: obras e reformas comunicadas ao síndico antes de começar (NBR 16280). Novo RF060: acordo de parcelamento das cobranças vencidas |
+| 9 Requisitos funcionais | Novo RF059: obras e reformas comunicadas ao síndico antes de começar (NBR 16280). Novo RF060: acordo de parcelamento das cobranças vencidas. Novo RF061: a taxa e a cota extra lançadas para todos, rateadas pela fração ideal |
 | 11 Diagrama de caso de uso | Novos casos: comunicar reforma e fazer acordo de parcelamento — agora 43 casos de uso |
-| 14 a 17 | Novas tabelas reformas e acordos; cobrancas ganha acordo_id, o status NEGOCIADA e a origem ACORDO — agora 40 entidades, 488 atributos e 115 relacionamentos |
-| 21 API REST | 177 endpoints: reformas (comunicar, listar, avaliar, prorrogar, concluir, cancelar); acordos de parcelamento (fazer, listar, desfazer) |
-| 23 Testes | 733 casos no servidor e 134 testes de interface |
+| 14 a 17 | Novas tabelas reformas e acordos; cobrancas ganha acordo_id, o status NEGOCIADA e as origens ACORDO e EXTRA; unidades ganha fracao_ideal — agora 40 entidades, 489 atributos e 115 relacionamentos |
+| 21 API REST | 178 endpoints: reformas (comunicar, listar, avaliar, prorrogar, concluir, cancelar); acordos de parcelamento (fazer, listar, desfazer); a taxa ou a cota extra para todos os apartamentos de uma vez |
+| 23 Testes | 752 casos no servidor e 136 testes de interface |
 
 **Situações tratadas.**
 - A quebradeira começava num sábado de manhã, o porteiro não sabia se
@@ -44,6 +44,17 @@ de um condomínio. Esta versão segue a 2.8.
   negociadas e saem do atraso; cada parcela é uma cobrança, com multa e
   juros próprios se atrasar. O acordo lançado errado se desfaz enquanto
   nenhuma parcela foi paga.
+- A convenção manda ratear as despesas pela fração ideal — a cobertura
+  paga mais que o apartamento-tipo —, e a assembleia aprova a pintura da
+  fachada em seis parcelas. O síndico lançava apartamento por
+  apartamento, com a calculadora do lado, e um erro no meio deixava
+  metade do prédio cobrado. Agora cada apartamento tem a sua fração
+  ideal, e a tela avisa quando elas não somam 100%. O síndico lança a
+  taxa do mês ou a cota extra para todos de uma vez — ou todos recebem,
+  ou nenhum —, pelo mesmo valor ou pelo total dividido pelas frações,
+  sem perder centavo. A cota extra entra ao lado da taxa, em até 24
+  parcelas, não se lança duas vezes, e cada apartamento recebe o aviso
+  da sua parte.
 
 ## Versão 2.8 — o que todo condomínio de verdade usa
 

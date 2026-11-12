@@ -96,7 +96,8 @@ CREATE TYPE origem_cobranca AS ENUM (
     'TAXA',
     'MULTA',
     'USO_ESPACO',
-    'ACORDO'
+    'ACORDO',
+    'EXTRA'
 );
 
 CREATE TYPE maioria_exigida AS ENUM (
@@ -317,7 +318,9 @@ CREATE TABLE unidades (
     vagas_garagem integer NOT NULL,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
-    pendente boolean DEFAULT false NOT NULL
+    pendente boolean DEFAULT false NOT NULL,
+    fracao_ideal numeric(7,4),
+    CONSTRAINT ck_unidade_fracao_ideal CHECK (((fracao_ideal IS NULL) OR ((fracao_ideal > (0)::numeric) AND (fracao_ideal <= (100)::numeric))))
 );
 CREATE SEQUENCE unidades_id_seq
     AS integer

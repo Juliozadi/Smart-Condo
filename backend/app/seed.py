@@ -144,14 +144,17 @@ def criar(db) -> dict:
     sindico.condominio_id = condominio.id
 
     # ── Unidades ──────────────────────────────────────────────────────
+    # A fração ideal da convenção, em %: os apartamentos de duas vagas são
+    # maiores e pagam mais no rateio; somam 100%.
     unidades: dict[str, Unidade] = {}
-    for numero, andar, vagas in [
-        ("101", 1, 1), ("102", 1, 1), ("204", 2, 2), ("301", 3, 1),
-        ("302", 3, 1), ("410", 4, 2), ("502", 5, 2),
+    for numero, andar, vagas, fracao in [
+        ("101", 1, 1, "13.5"), ("102", 1, 1, "13.5"), ("204", 2, 2, "15.5"),
+        ("301", 3, 1, "13.5"), ("302", 3, 1, "13.5"), ("410", 4, 2, "15.5"),
+        ("502", 5, 2, "15.0"),
     ]:
         u = Unidade(
             condominio_id=condominio.id, numero=numero, bloco="unico",
-            andar=andar, vagas_garagem=vagas,
+            andar=andar, vagas_garagem=vagas, fracao_ideal=Decimal(fracao),
         )
         db.add(u)
         unidades[numero] = u
