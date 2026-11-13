@@ -14,11 +14,11 @@ de um condomínio. Esta versão segue a 2.8.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | Novo RF059: obras e reformas comunicadas ao síndico antes de começar (NBR 16280). Novo RF060: acordo de parcelamento das cobranças vencidas. Novo RF061: a taxa e a cota extra lançadas para todos, rateadas pela fração ideal |
-| 11 Diagrama de caso de uso | Novos casos: comunicar reforma e fazer acordo de parcelamento — agora 43 casos de uso |
-| 14 a 17 | Novas tabelas reformas e acordos; cobrancas ganha acordo_id, o status NEGOCIADA e as origens ACORDO e EXTRA; unidades ganha fracao_ideal — agora 40 entidades, 489 atributos e 115 relacionamentos |
-| 21 API REST | 178 endpoints: reformas (comunicar, listar, avaliar, prorrogar, concluir, cancelar); acordos de parcelamento (fazer, listar, desfazer); a taxa ou a cota extra para todos os apartamentos de uma vez |
-| 23 Testes | 752 casos no servidor e 136 testes de interface |
+| 9 Requisitos funcionais | Novo RF059: obras e reformas comunicadas ao síndico antes de começar (NBR 16280). Novo RF060: acordo de parcelamento das cobranças vencidas. Novo RF061: a taxa e a cota extra lançadas para todos, rateadas pela fração ideal. Novo RF062: o que o próprio banco calcula, na tela Banco de Dados do síndico. Novo RF063: achados e perdidos da portaria. Novo RF064: animais de estimação. Novo RF065: medição de água e gás de cada apartamento |
+| 11 Diagrama de caso de uso | Novos casos: comunicar reforma, fazer acordo de parcelamento, achados e perdidos, cadastrar animal de estimação e registrar leitura de consumo — agora 46 casos de uso |
+| 14 a 17 | Novas tabelas reformas e acordos; cobrancas ganha acordo_id, o status NEGOCIADA e as origens ACORDO e EXTRA; unidades ganha fracao_ideal; nova tabela log_cobrancas, escrita por gatilho; novas tabelas achados, animais e leituras_consumo; cobrancas ganha a origem CONSUMO e permissoes_porteiro, registrar_leituras — agora 44 entidades, 547 atributos e 129 relacionamentos |
+| 21 API REST | 197 endpoints: reformas (comunicar, listar, avaliar, prorrogar, concluir, cancelar); acordos de parcelamento (fazer, listar, desfazer); a taxa ou a cota extra para todos os apartamentos de uma vez; banco (situação das unidades, balancete, rateio, log das cobranças); achados e perdidos (registrar, listar, é meu, entregar, doar); animais (cadastrar, corrigir, remover, lembrar a vacina); consumo (grade de leituras, lançamento, cobrança pela tarifa, histórico) |
+| 23 Testes | 815 casos no servidor e 141 testes de interface |
 
 **Situações tratadas.**
 - A quebradeira começava num sábado de manhã, o porteiro não sabia se
@@ -55,6 +55,38 @@ de um condomínio. Esta versão segue a 2.8.
   sem perder centavo. A cota extra entra ao lado da taxa, em até 24
   parcelas, não se lança duas vezes, e cada apartamento recebe o aviso
   da sua parte.
+- As regras mais importantes do financeiro ficavam só no código do
+  sistema: quem gravasse direto no banco podia pagar uma cobrança
+  negociada ou pagar duas vezes. Agora o próprio banco tem visões,
+  funções, procedimentos e gatilhos (a 2ª parte do trabalho de banco de
+  dados), instalados por migração: os gatilhos barram esses pagamentos e
+  guardam o histórico de cada cobrança, e a tela Banco de Dados do
+  síndico mostra a situação dos apartamentos, o balancete, o rateio
+  calculado pelo banco e esse histórico.
+- O guarda-chuva esquecido no salão ia para uma gaveta da portaria, e o
+  dono só sabia se perguntasse ao porteiro certo; o que ninguém
+  reclamava ficava ali para sempre. Agora a portaria registra o que
+  achou, os moradores veem o que está guardado e dizem "é meu", e a
+  entrega registra quem retirou — quem reclamou recebe o aviso, e se
+  não foi ele fica sabendo na hora. Depois de 30 dias sem dono, o
+  síndico doa ou descarta, com o destino anotado.
+- O regimento pede o cadastro dos animais e a vacina antirrábica em dia,
+  mas o síndico não sabia quais apartamentos têm animal, e a portaria,
+  diante de um cachorro solto na garagem, não sabia de quem era. Agora o
+  morador cadastra os animais do apartamento, com a validade da vacina;
+  o síndico vê quem está com a vacina vencida ou sem registro e manda o
+  lembrete (uma vez por semana, no máximo); a portaria consulta com
+  busca por nome, raça, cor ou apartamento. Quem se muda leva os animais
+  da lista.
+- A leitura do hidrômetro de cada apartamento era anotada num caderno e
+  a conta, feita na calculadora; o vazamento só aparecia quando a conta
+  chegava, meses depois. Agora o síndico — ou o porteiro a quem ele
+  liberou — lança as leituras de água e de gás do mês numa grade só,
+  vendo o consumo enquanto digita; a leitura menor que a anterior só
+  passa com a troca do medidor. O apartamento que gastou mais que o
+  dobro da média dos três meses anteriores recebe o aviso na hora. O
+  síndico gera a cobrança pela tarifa, uma por apartamento, sem cobrar
+  duas vezes a mesma leitura, e o morador acompanha o histórico.
 
 ## Versão 2.8 — o que todo condomínio de verdade usa
 

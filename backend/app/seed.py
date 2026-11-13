@@ -29,11 +29,14 @@ from app.models.enums import (
     EscolhaVoto, MaioriaExigida, OrigemCobranca,
     FormaPagamento, Papel, PrioridadeOcorrencia, PrioridadeOrdemServico, StatusCobranca,
     StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
-    StatusInfracao, StatusMudanca, StatusReforma, StatusVisitante,
+    EspecieAnimal, PorteAnimal, TipoConsumo, StatusAchado, StatusInfracao, StatusMudanca, StatusReforma, StatusVisitante,
     TipoInfracao, TipoMovimentacao, TipoMudanca, TipoOcupacao,
 )
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
+from app.models.achado import Achado
+from app.models.animal import Animal
 from app.models.chave import Chave, MovimentacaoChave
+from app.models.consumo import LeituraConsumo
 from app.models.declaracao import DeclaracaoQuitacao
 from app.models.infracao import Infracao
 from app.models.preventiva import PlanoManutencao, RealizacaoManutencao
@@ -171,12 +174,13 @@ def criar(db) -> dict:
     )
     db.flush()
 
-    # O Carlos tem tudo liberado; a Renata não registra veículos nem
-    # ocorrências — assim dá para mostrar a tela de permissões fazendo efeito.
+    # O Carlos tem tudo liberado, inclusive a ronda dos medidores; a Renata
+    # não registra veículos nem ocorrências — assim dá para mostrar a tela de
+    # permissões fazendo efeito.
     db.add(PermissaoPorteiro(
         porteiro_id=carlos.id, definidas_por_id=sindico.id,
         registrar_visitantes=True, registrar_encomendas=True,
-        registrar_veiculos=True, registrar_ocorrencias=True,
+        registrar_veiculos=True, registrar_ocorrencias=True, registrar_leituras=True,
     ))
     db.add(PermissaoPorteiro(
         porteiro_id=renata.id, definidas_por_id=sindico.id,
@@ -556,6 +560,82 @@ def criar(db) -> dict:
         retirada_por_documento=rosa.documento, autorizacao_id=rosa.id,
         retirada_registrada_por_id=carlos.id,
     ))
+    db.flush()
+
+    # ── Achados e perdidos: o guarda-chuva acabou de chegar; a chave do
+    #    carro a Ana já disse que é dela e ainda não buscou; a toalha está
+    #    guardada há 40 dias, sem dono (o síndico pode doar); os óculos
+    #    voltaram para o Bruno
+    for descricao, local, dias, reclamou, entregue in [
+        ("Guarda-chuva preto com cabo de madeira", "Salão de festas", 1, None, None),
+        ("Chave de carro com chaveiro azul", "Garagem, perto da vaga 12", 2, "301", None),
+        ("Toalha de praia listrada", "Piscina", 40, None, None),
+        ("Óculos de sol", "Academia", 6, "102", "Bruno Cardoso"),
+    ]:
+        dono = moradores[reclamou] if reclamou else None
+        db.add(Achado(
+            condominio_id=condominio.id, registrado_por_id=carlos.id, descricao=descricao,
+            local=local, encontrado_em=HOJE - timedelta(days=dias),
+            status=StatusAchado.DEVOLVIDO if entregue else StatusAchado.GUARDADO,
+            reclamado_por_id=dono.id if dono else None,
+            reclamado_em=AGORA - timedelta(days=dias - 1) if dono else None,
+            devolvido_em=AGORA - timedelta(days=dias - 2) if entregue else None,
+            devolvido_por_id=renata.id if entregue else None, entregue_a=entregue,
+        ))
+    db.flush()
+
+    # ── Animais de estimação: o Thor do João está com a vacina em dia; a
+    #    da Luna, da Ana, venceu; a Pipoca, da Marina, não tem registro
+    for unidade, nome, especie, porte, raca, cor, vacina, obs in [
+        ("204", "Thor", EspecieAnimal.CAO, PorteAnimal.GRANDE, "Labrador", "Caramelo", 210,
+         "Dócil, mas puxa a guia no elevador."),
+        ("301", "Luna", EspecieAnimal.GATO, PorteAnimal.PEQUENO, "Siamês", "Creme", -12, None),
+        ("410", "Pipoca", EspecieAnimal.CAO, PorteAnimal.PEQUENO, "Shih-tzu", "Branco e marrom",
+         None, "Late quando fica sozinha."),
+    ]:
+        db.add(Animal(
+            condominio_id=condominio.id, unidade_id=unidades[unidade].id,
+            cadastrado_por_id=moradores[unidade].id, nome=nome, especie=especie, porte=porte,
+            raca=raca, cor=cor, observacao=obs,
+            vacina_antirrabica_ate=HOJE + timedelta(days=vacina) if vacina is not None else None,
+        ))
+    db.flush()
+
+    # ── Medição de água e gás: quatro meses de leitura de água (até o mês
+    #    passado; o deste mês fica para a ronda) e três de gás. No mês
+    #    passado, o 410 gastou 31 m³ de água contra uma média de 9: o
+    #    alerta de possível vazamento.
+    meses = []
+    mes = HOJE.replace(day=1)
+    for _ in range(4):
+        mes = (mes - timedelta(days=1)).replace(day=1)
+        meses.insert(0, mes)
+    for tipo, inicio, consumos in [
+        (TipoConsumo.AGUA, {"101": 812, "102": 455, "204": 1203, "301": 640, "302": 98,
+                            "410": 977},
+         {"101": [11, 12, 10], "102": [7, 8, 7], "204": [15, 14, 16], "301": [9, 9, 10],
+          "302": [2, 1, 2], "410": [9, 9, 31]}),
+        (TipoConsumo.GAS, {"101": 210, "204": 377, "301": 152, "410": 199},
+         {"101": [5, 6], "204": [8, 7], "301": [4, 4], "410": [6, 5]}),
+    ]:
+        for unidade, leitura in inicio.items():
+            seq = consumos[unidade]
+            sequencia = meses[-(len(seq) + 1):]
+            media = None
+            for i, competencia in enumerate(sequencia):
+                consumo = None if i == 0 else Decimal(seq[i - 1])
+                if i > 0:
+                    leitura += seq[i - 1]
+                anteriores = seq[:i - 1] if i > 1 else []
+                media = (Decimal(sum(anteriores[-3:])) / len(anteriores[-3:])
+                         if anteriores else None)
+                acima = bool(consumo is not None and media and consumo > 2 * media
+                             and consumo - media >= 2)
+                db.add(LeituraConsumo(
+                    condominio_id=condominio.id, unidade_id=unidades[unidade].id, tipo=tipo,
+                    competencia=competencia, leitura=Decimal(leitura), consumo=consumo,
+                    acima_do_normal=acima, registrada_por_id=carlos.id,
+                ))
     db.flush()
 
     # ── Livro da portaria: a Renata passou o turno da noite com um aviso

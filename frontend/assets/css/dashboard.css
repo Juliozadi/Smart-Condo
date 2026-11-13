@@ -2484,6 +2484,29 @@ label.contato-btn { position: relative; cursor: pointer; }
 .reforma.aguardando { border-left: 3px solid var(--aviso); }
 .reforma.prazo_encerrado { border-left: 3px solid var(--erro); }
 .reforma .assembleia-topo h3 { margin-bottom: 0; }
+/* Medição de consumo: a grade de leituras do mês, com o campo de cada
+   apartamento; o consumo fora do normal se destaca. */
+.cols-leitura { grid-template-columns: .8fr 1.4fr 1.1fr .6fr 1fr 1.3fr; align-items: center; }
+.cols-leitura input[type=number] { width: 100%; max-width: 140px; padding: 8px 10px; border-radius: var(--radius-xs);
+  border: 1.5px solid var(--border); background: var(--surface-2); font: inherit; }
+.cols-leitura input[type=checkbox] { width: 18px; height: 18px; }
+.cols-leitura .lista-autoria { display: block; }
+.table-row.alerta { border-left: 3px solid var(--aviso); }
+.leitura-apto { font-weight: 700; }
+.aviso-consumo { font-size: 13px; font-weight: 600; color: var(--erro); margin: 0 0 12px; }
+.filtros-consumo { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.filtros-consumo .form-group { margin: 0; min-width: 160px; }
+@media (max-width: 640px) {
+  .cols-leitura { grid-template-columns: 1fr 1fr; row-gap: 6px; }
+  .data-table .table-head.cols-leitura { display: none; }
+}
+/* Animais: a vacina pendente se destaca. */
+.animal.vacina-vencida, .animal.vacina-sem_registro { border-left: 3px solid var(--aviso); }
+.animal .assembleia-topo h3 { margin-bottom: 0; }
+/* Achados e perdidos: o que já tem dono e espera a retirada se destaca. */
+.achado.guardado.reclamado { border-left: 3px solid var(--aviso); }
+.achado .assembleia-topo h3 { margin-bottom: 0; }
+.achado .infracao-acoes { flex-wrap: wrap; }
 .reforma .infracao-acoes { flex-wrap: wrap; }
 .reforma-condicoes { font-size: 13px; font-weight: 600; color: var(--text); margin: 4px 0; }
 .grupo-tecnico { margin-top: 12px; }

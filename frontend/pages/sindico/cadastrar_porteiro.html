@@ -108,6 +108,10 @@
             <div class="toggle-switch"><input type="checkbox" id="perm-ocr" checked><label for="perm-ocr" ></label></div>
           </div>
           <div class="toggle-row">
+            <div class="toggle-info"><strong><img src="../../assets/img/icons/droplet.svg" width="16" height="16" alt="">Leituras de água e gás</strong><span>A ronda dos medidores de cada apartamento</span></div>
+            <div class="toggle-switch"><input type="checkbox" id="perm-lei"><label for="perm-lei" ></label></div>
+          </div>
+          <div class="toggle-row">
             <div class="toggle-info"><strong><img src="../../assets/img/icons/lock.svg" width="16" height="16" alt="">Dados financeiros</strong><span>Restrito — apenas síndico pode acessar</span></div>
             <div class="toggle-switch">
               <input type="checkbox" id="perm-fin" disabled>
@@ -253,7 +257,8 @@ document.getElementById('formPorteiro').addEventListener('submit', function(e) {
         registrar_visitantes: document.getElementById('perm-vis').checked,
         registrar_encomendas: document.getElementById('perm-enc').checked,
         registrar_veiculos: document.getElementById('perm-vei').checked,
-        registrar_ocorrencias: document.getElementById('perm-ocr').checked
+        registrar_ocorrencias: document.getElementById('perm-ocr').checked,
+        registrar_leituras: document.getElementById('perm-lei').checked
       });
     })
     .then(function() { window.location.href = 'porteiros.html?cadastro=ok'; })

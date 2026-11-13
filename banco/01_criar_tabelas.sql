@@ -1,4 +1,7 @@
 DROP TABLE IF EXISTS
+    leituras_consumo,
+    animais,
+    achados,
     reformas,
     movimentacoes_chave,
     chaves,
@@ -42,6 +45,9 @@ DROP TABLE IF EXISTS
 CASCADE;
 
 DROP TYPE IF EXISTS
+    tipo_consumo,
+    especie_animal,
+    porte_animal,
     canal_verificacao,
     categoria_comunicado,
     categoria_despesa,
@@ -61,6 +67,7 @@ DROP TYPE IF EXISTS
     status_ocorrencia,
     status_ordem_servico,
     status_mudanca,
+    status_achado,
     status_reforma,
     status_reserva,
     status_usuario,
@@ -86,6 +93,24 @@ CREATE TYPE categoria_comunicado AS ENUM (
     'URGENTE'
 );
 
+CREATE TYPE tipo_consumo AS ENUM (
+    'AGUA',
+    'GAS'
+);
+
+CREATE TYPE especie_animal AS ENUM (
+    'CAO',
+    'GATO',
+    'AVE',
+    'OUTRO'
+);
+
+CREATE TYPE porte_animal AS ENUM (
+    'PEQUENO',
+    'MEDIO',
+    'GRANDE'
+);
+
 CREATE TYPE escolha_voto AS ENUM (
     'A_FAVOR',
     'CONTRA',
@@ -97,7 +122,8 @@ CREATE TYPE origem_cobranca AS ENUM (
     'MULTA',
     'USO_ESPACO',
     'ACORDO',
-    'EXTRA'
+    'EXTRA',
+    'CONSUMO'
 );
 
 CREATE TYPE maioria_exigida AS ENUM (
@@ -207,6 +233,12 @@ CREATE TYPE status_mudanca AS ENUM (
     'RECUSADA',
     'CANCELADA',
     'CONCLUIDA'
+);
+
+CREATE TYPE status_achado AS ENUM (
+    'GUARDADO',
+    'DEVOLVIDO',
+    'DESCARTADO'
 );
 
 CREATE TYPE status_reforma AS ENUM (
@@ -384,7 +416,8 @@ CREATE TABLE permissoes_porteiro (
     acessar_financeiro boolean NOT NULL,
     definidas_por_id integer,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
-    atualizado_em timestamp with time zone DEFAULT now() NOT NULL
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    registrar_leituras boolean DEFAULT false NOT NULL
 );
 CREATE SEQUENCE permissoes_porteiro_id_seq
     AS integer
@@ -1039,6 +1072,110 @@ ALTER TABLE ONLY reformas ALTER COLUMN id SET DEFAULT nextval('reformas_id_seq':
 ALTER TABLE ONLY reformas
     ADD CONSTRAINT reformas_pkey PRIMARY KEY (id);
 
+-- Achados e perdidos da portaria: o que foi achado, onde e quando; o
+-- morador que disse "é meu"; a entrega, com o nome de quem retirou; ou,
+-- depois do prazo de guarda, a doação ou o descarte pelo síndico.
+CREATE TABLE achados (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    registrado_por_id integer,
+    descricao character varying(200) NOT NULL,
+    local character varying(120) NOT NULL,
+    encontrado_em date NOT NULL,
+    status status_achado NOT NULL,
+    reclamado_por_id integer,
+    reclamado_em timestamp with time zone,
+    devolvido_em timestamp with time zone,
+    devolvido_por_id integer,
+    entregue_a character varying(120),
+    descartado_em timestamp with time zone,
+    descartado_por_id integer,
+    destino character varying(300),
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT ck_achado_descartado CHECK (((status <> 'DESCARTADO'::status_achado) OR ((descartado_em IS NOT NULL) AND (destino IS NOT NULL)))),
+    CONSTRAINT ck_achado_devolvido CHECK (((status <> 'DEVOLVIDO'::status_achado) OR ((devolvido_em IS NOT NULL) AND (entregue_a IS NOT NULL))))
+);
+CREATE SEQUENCE achados_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE achados_id_seq OWNED BY achados.id;
+ALTER TABLE ONLY achados ALTER COLUMN id SET DEFAULT nextval('achados_id_seq'::regclass);
+ALTER TABLE ONLY achados
+    ADD CONSTRAINT achados_pkey PRIMARY KEY (id);
+
+-- Animais de estimação dos apartamentos: espécie, porte, raça e cor; a
+-- validade da vacina antirrábica e o último lembrete do síndico. O
+-- cadastro vale enquanto quem o fez mora no apartamento.
+CREATE TABLE animais (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    cadastrado_por_id integer,
+    nome character varying(60) NOT NULL,
+    especie especie_animal NOT NULL,
+    raca character varying(60),
+    porte porte_animal NOT NULL,
+    cor character varying(40),
+    vacina_antirrabica_ate date,
+    observacao character varying(300),
+    lembrete_vacina_em timestamp with time zone,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    inativo_em timestamp with time zone,
+    inativado_por_id integer
+);
+CREATE SEQUENCE animais_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE animais_id_seq OWNED BY animais.id;
+ALTER TABLE ONLY animais ALTER COLUMN id SET DEFAULT nextval('animais_id_seq'::regclass);
+ALTER TABLE ONLY animais
+    ADD CONSTRAINT animais_pkey PRIMARY KEY (id);
+
+-- Medição individual de água e gás: a leitura de cada mês no medidor de
+-- cada apartamento, o consumo (a diferença para a anterior), a troca de
+-- medidor, o alerta de consumo fora do normal e a cobrança gerada.
+CREATE TABLE leituras_consumo (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    tipo tipo_consumo NOT NULL,
+    competencia date NOT NULL,
+    leitura numeric(10,3) NOT NULL,
+    consumo numeric(10,3),
+    troca_medidor boolean DEFAULT false NOT NULL,
+    acima_do_normal boolean DEFAULT false NOT NULL,
+    observacao character varying(200),
+    registrada_por_id integer,
+    cobranca_id integer,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT ck_leitura_consumo CHECK (((consumo IS NULL) OR (consumo >= (0)::numeric))),
+    CONSTRAINT ck_leitura_valor CHECK ((leitura >= (0)::numeric))
+);
+CREATE SEQUENCE leituras_consumo_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE leituras_consumo_id_seq OWNED BY leituras_consumo.id;
+ALTER TABLE ONLY leituras_consumo ALTER COLUMN id SET DEFAULT nextval('leituras_consumo_id_seq'::regclass);
+ALTER TABLE ONLY leituras_consumo
+    ADD CONSTRAINT leituras_consumo_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY leituras_consumo
+    ADD CONSTRAINT uq_leitura_competencia UNIQUE (unidade_id, tipo, competencia);
+
 -- Advertências e multas do síndico ao apartamento, com a defesa e a
 -- decisão; a multa mantida vira cobrança (Código Civil, art. 1.336, § 2º).
 CREATE TABLE infracoes (
@@ -1665,6 +1802,45 @@ ALTER TABLE ONLY reformas
 ALTER TABLE ONLY reformas
     ADD CONSTRAINT reformas_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY achados
+    ADD CONSTRAINT achados_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY achados
+    ADD CONSTRAINT achados_descartado_por_id_fkey FOREIGN KEY (descartado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY achados
+    ADD CONSTRAINT achados_devolvido_por_id_fkey FOREIGN KEY (devolvido_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY achados
+    ADD CONSTRAINT achados_reclamado_por_id_fkey FOREIGN KEY (reclamado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY achados
+    ADD CONSTRAINT achados_registrado_por_id_fkey FOREIGN KEY (registrado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY animais
+    ADD CONSTRAINT animais_cadastrado_por_id_fkey FOREIGN KEY (cadastrado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY animais
+    ADD CONSTRAINT animais_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY animais
+    ADD CONSTRAINT animais_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY animais
+    ADD CONSTRAINT animais_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY leituras_consumo
+    ADD CONSTRAINT leituras_consumo_cobranca_id_fkey FOREIGN KEY (cobranca_id) REFERENCES cobrancas(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY leituras_consumo
+    ADD CONSTRAINT leituras_consumo_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY leituras_consumo
+    ADD CONSTRAINT leituras_consumo_registrada_por_id_fkey FOREIGN KEY (registrada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY leituras_consumo
+    ADD CONSTRAINT leituras_consumo_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY votos
     ADD CONSTRAINT votos_item_id_fkey FOREIGN KEY (item_id) REFERENCES itens_pauta(id) ON DELETE CASCADE;
 
@@ -1920,6 +2096,26 @@ CREATE INDEX ix_reformas_solicitada_por_id ON reformas USING btree (solicitada_p
 CREATE INDEX ix_reformas_status ON reformas USING btree (status);
 
 CREATE INDEX ix_reformas_unidade_id ON reformas USING btree (unidade_id);
+
+CREATE INDEX ix_achados_condominio_id ON achados USING btree (condominio_id);
+
+CREATE INDEX ix_achados_condominio_status ON achados USING btree (condominio_id, status);
+
+CREATE INDEX ix_achados_reclamado_por_id ON achados USING btree (reclamado_por_id);
+
+CREATE INDEX ix_animais_cadastrado_por_id ON animais USING btree (cadastrado_por_id);
+
+CREATE INDEX ix_animais_condominio_id ON animais USING btree (condominio_id);
+
+CREATE INDEX ix_animais_unidade_id ON animais USING btree (unidade_id);
+
+CREATE INDEX ix_leituras_condominio_competencia ON leituras_consumo USING btree (condominio_id, tipo, competencia);
+
+CREATE INDEX ix_leituras_consumo_cobranca_id ON leituras_consumo USING btree (cobranca_id);
+
+CREATE INDEX ix_leituras_consumo_condominio_id ON leituras_consumo USING btree (condominio_id);
+
+CREATE INDEX ix_leituras_consumo_unidade_id ON leituras_consumo USING btree (unidade_id);
 
 CREATE INDEX ix_votos_item_id ON votos USING btree (item_id);
 

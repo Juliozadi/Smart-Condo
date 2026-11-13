@@ -300,7 +300,7 @@ def test_sistema_mostra_as_acoes_do_porteiro(cliente, sindico):
     chaves = {a["chave"] for a in r.json()}
     assert chaves == {
         "registrar_visitantes", "registrar_encomendas", "registrar_veiculos",
-        "registrar_ocorrencias",
+        "registrar_ocorrencias", "registrar_leituras",
     }
 
 

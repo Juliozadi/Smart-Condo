@@ -52,6 +52,7 @@ ACOES_DO_PORTEIRO = [
     {"chave": "registrar_encomendas", "rotulo": "Registrar encomendas"},
     {"chave": "registrar_veiculos", "rotulo": "Registrar veículos"},
     {"chave": "registrar_ocorrencias", "rotulo": "Registrar ocorrências"},
+    {"chave": "registrar_leituras", "rotulo": "Registrar leituras de água e gás"},
 ]
 
 

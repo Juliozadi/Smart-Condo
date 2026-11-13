@@ -19,6 +19,8 @@
     'encomendas.html': 'registrar_encomendas',
     'veiculos.html': 'registrar_veiculos',
     'ocorrencias.html': 'registrar_ocorrencias',
+    'achados.html': 'registrar_encomendas',
+    'consumo.html': 'registrar_leituras',
   };
 
   function buscar(usuario) {

@@ -4,6 +4,135 @@
  */
 const dicionario = [
   {
+    "nome": "achados",
+    "resumo": "Achados e perdidos da portaria: o que foi achado, onde e quando; o morador que disse que é dono; a entrega, com o nome de quem retirou; ou, passados 30 dias sem dono, a doação ou o descarte pelo síndico, com o destino.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio em cuja portaria o objeto está"
+      },
+      {
+        "coluna": "registrado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Porteiro ou síndico que registrou o objeto"
+      },
+      {
+        "coluna": "descricao",
+        "tipo": "VARCHAR(200)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "O que foi achado (\"guarda-chuva preto com cabo de madeira\")"
+      },
+      {
+        "coluna": "local",
+        "tipo": "VARCHAR(120)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Onde foi achado"
+      },
+      {
+        "coluna": "encontrado_em",
+        "tipo": "DATE",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Dia em que foi achado; até 30 dias para trás no registro"
+      },
+      {
+        "coluna": "status",
+        "tipo": "ENUM",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Guardado na portaria, devolvido a quem é dono ou doado/descartado — tipo enumerado status_achado, valores: GUARDADO, DEVOLVIDO, DESCARTADO"
+      },
+      {
+        "coluna": "reclamado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Morador que disse que o objeto é dele (um por vez)"
+      },
+      {
+        "coluna": "reclamado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o morador disse que é dele"
+      },
+      {
+        "coluna": "devolvido_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando a portaria entregou o objeto"
+      },
+      {
+        "coluna": "devolvido_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Quem da equipe entregou o objeto"
+      },
+      {
+        "coluna": "entregue_a",
+        "tipo": "VARCHAR(120)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Nome de quem retirou, conferido pela portaria; obrigatório na entrega"
+      },
+      {
+        "coluna": "descartado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o síndico doou ou descartou o objeto"
+      },
+      {
+        "coluna": "descartado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que doou ou descartou o objeto"
+      },
+      {
+        "coluna": "destino",
+        "tipo": "VARCHAR(300)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Para onde foi o objeto sem dono (\"doado ao bazar da paróquia\"); obrigatório no descarte"
+      },
+      {
+        "coluna": "criado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que o registro foi criado, preenchido pelo banco"
+      },
+      {
+        "coluna": "atualizado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da última alteração do registro"
+      }
+    ],
+    "regras": [
+      "CHECK (((status <> 'DESCARTADO'::status_achado) OR ((descartado_em IS NOT NULL) AND (destino IS NOT NULL))))",
+      "CHECK (((status <> 'DEVOLVIDO'::status_achado) OR ((devolvido_em IS NOT NULL) AND (entregue_a IS NOT NULL))))"
+    ]
+  },
+  {
     "nome": "acordos",
     "resumo": "Os acordos de parcelamento: as cobranças vencidas de um apartamento, com a multa e os juros do dia (ou dispensados), divididas em parcelas mensais. As cobranças do acordo ficam negociadas e as parcelas são cobranças novas.",
     "colunas": [
@@ -126,6 +255,125 @@ const dicionario = [
       "CHECK ((principal > (0)::numeric))",
       "CHECK ((total = (principal + encargos)))"
     ]
+  },
+  {
+    "nome": "animais",
+    "resumo": "Animais de estimação dos apartamentos, cadastrados pelo morador que mora lá ou pelo síndico: espécie, porte, raça e cor, a validade da vacina antirrábica e o último lembrete do síndico. O cadastro vale enquanto quem o fez mora no apartamento; remover é inativar.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio do apartamento"
+      },
+      {
+        "coluna": "unidade_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Apartamento do animal"
+      },
+      {
+        "coluna": "cadastrado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Morador ou síndico que cadastrou"
+      },
+      {
+        "coluna": "nome",
+        "tipo": "VARCHAR(60)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Nome do animal"
+      },
+      {
+        "coluna": "especie",
+        "tipo": "ENUM",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Cachorro, gato, ave ou outro — tipo enumerado especie_animal, valores: CAO, GATO, AVE, OUTRO"
+      },
+      {
+        "coluna": "raca",
+        "tipo": "VARCHAR(60)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Raça (opcional)"
+      },
+      {
+        "coluna": "porte",
+        "tipo": "ENUM",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Pequeno, médio ou grande — o regimento costuma decidir pelo porte o uso de focinheira e do elevador de serviço — tipo enumerado porte_animal, valores: PEQUENO, MEDIO, GRANDE"
+      },
+      {
+        "coluna": "cor",
+        "tipo": "VARCHAR(40)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Cor (opcional), para a portaria reconhecer o animal"
+      },
+      {
+        "coluna": "vacina_antirrabica_ate",
+        "tipo": "DATE",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Validade da vacina antirrábica (até cerca de um ano à frente); vazia é sem registro"
+      },
+      {
+        "coluna": "observacao",
+        "tipo": "VARCHAR(300)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Observação para os vizinhos e a portaria (\"usar focinheira\")"
+      },
+      {
+        "coluna": "lembrete_vacina_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Último lembrete da vacina mandado pelo síndico; outro só depois de uma semana"
+      },
+      {
+        "coluna": "criado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que o registro foi criado, preenchido pelo banco"
+      },
+      {
+        "coluna": "atualizado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "inativo_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o animal saiu da lista do apartamento"
+      },
+      {
+        "coluna": "inativado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Quem tirou o animal da lista"
+      }
+    ],
+    "regras": []
   },
   {
     "nome": "anotacoes_portaria",
@@ -569,7 +817,7 @@ const dicionario = [
         "tipo": "ENUM",
         "obrigatorio": "Sim",
         "chave": "",
-        "descricao": "De onde vem a cobrança: a taxa do mês (uma por apartamento e mês), uma cota extra aprovada em assembleia, uma multa, o uso de um espaço ou a parcela de um acordo — tipo enumerado origem_cobranca, valores: TAXA, MULTA, USO_ESPACO, ACORDO, EXTRA"
+        "descricao": "De onde vem a cobrança: a taxa do mês (uma por apartamento e mês), uma cota extra aprovada em assembleia, uma multa, o uso de um espaço ou a parcela de um acordo — tipo enumerado origem_cobranca, valores: TAXA, MULTA, USO_ESPACO, ACORDO, EXTRA, CONSUMO"
       },
       {
         "coluna": "acordo_id",
@@ -1848,6 +2096,192 @@ const dicionario = [
     ]
   },
   {
+    "nome": "leituras_consumo",
+    "resumo": "A leitura mensal do medidor de água e do de gás de cada apartamento, lançada pelo síndico ou pelo porteiro a quem ele liberou: o consumo, que é a diferença para a leitura anterior, a troca de medidor, o alerta de consumo acima do normal e a cobrança gerada pela tarifa.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio do apartamento"
+      },
+      {
+        "coluna": "unidade_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Apartamento do medidor"
+      },
+      {
+        "coluna": "tipo",
+        "tipo": "ENUM",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Água ou gás: cada um é um medidor — tipo enumerado tipo_consumo, valores: AGUA, GAS"
+      },
+      {
+        "coluna": "competencia",
+        "tipo": "DATE",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Mês da leitura (sempre o dia 1); uma por apartamento, medidor e mês"
+      },
+      {
+        "coluna": "leitura",
+        "tipo": "NUMERIC(10,3)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "O número lido no medidor, em m³, com até três casas"
+      },
+      {
+        "coluna": "consumo",
+        "tipo": "NUMERIC(10,3)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quanto o apartamento gastou no mês: a leitura menos a anterior, ou a própria leitura quando o medidor foi trocado; vazio na primeira leitura, que é o ponto de partida"
+      },
+      {
+        "coluna": "troca_medidor",
+        "tipo": "BOOLEAN",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Se o medidor foi trocado neste mês; só assim a leitura pode ser menor que a anterior"
+      },
+      {
+        "coluna": "acima_do_normal",
+        "tipo": "BOOLEAN",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Se o consumo passou do dobro da média dos três meses anteriores (e por ao menos 2 m³): o apartamento é avisado, pode ser vazamento"
+      },
+      {
+        "coluna": "observacao",
+        "tipo": "VARCHAR(200)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Observação de quem leu (opcional)"
+      },
+      {
+        "coluna": "registrada_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico ou porteiro que lançou a leitura"
+      },
+      {
+        "coluna": "cobranca_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Cobrança gerada pelo consumo; enquanto ela não for cancelada, a leitura não se corrige"
+      },
+      {
+        "coluna": "criado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que o registro foi criado, preenchido pelo banco"
+      },
+      {
+        "coluna": "atualizado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da última alteração do registro"
+      }
+    ],
+    "regras": [
+      "CHECK (((consumo IS NULL) OR (consumo >= (0)::numeric)))",
+      "CHECK ((leitura >= (0)::numeric))",
+      "UNIQUE (unidade_id, tipo, competencia)"
+    ]
+  },
+  {
+    "nome": "log_cobrancas",
+    "resumo": "O histórico gravado pelo próprio banco: o gatilho trg_log_cobranca escreve uma linha a cada mudança de situação, valor ou vencimento de uma cobrança. Ninguém escreve nela diretamente; a tela Banco de Dados do síndico a lista.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "cobranca_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "A cobrança que mudou"
+      },
+      {
+        "coluna": "status_anterior",
+        "tipo": "VARCHAR(20)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Situação da cobrança antes da mudança"
+      },
+      {
+        "coluna": "status_novo",
+        "tipo": "VARCHAR(20)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Situação da cobrança depois da mudança"
+      },
+      {
+        "coluna": "valor_anterior",
+        "tipo": "NUMERIC(10,2)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Valor antes da mudança"
+      },
+      {
+        "coluna": "valor_novo",
+        "tipo": "NUMERIC(10,2)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Valor depois da mudança"
+      },
+      {
+        "coluna": "vencimento_anterior",
+        "tipo": "DATE",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Vencimento antes da mudança"
+      },
+      {
+        "coluna": "vencimento_novo",
+        "tipo": "DATE",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Vencimento depois da mudança"
+      },
+      {
+        "coluna": "usuario_banco",
+        "tipo": "VARCHAR(63)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Usuário do banco que fez a alteração (current_user), preenchido pelo gatilho"
+      },
+      {
+        "coluna": "alterado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da mudança, preenchido pelo gatilho"
+      }
+    ],
+    "regras": []
+  },
+  {
     "nome": "mensagens",
     "resumo": "As mensagens do chat entre síndico, porteiros e moradores do mesmo condomínio.",
     "colunas": [
@@ -2631,6 +3065,13 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "registrar_leituras",
+        "tipo": "BOOLEAN",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Se o porteiro pode lançar as leituras dos medidores de água e gás (cobrar, só o síndico)"
       }
     ],
     "regras": []
@@ -3778,6 +4219,36 @@ const dicionario = [
 
 const relacoes = [
   {
+    "origem": "achados",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio em cuja portaria o objeto está"
+  },
+  {
+    "origem": "achados",
+    "coluna": "descartado_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que doou ou descartou o objeto"
+  },
+  {
+    "origem": "achados",
+    "coluna": "devolvido_por_id",
+    "destino": "usuarios",
+    "texto": "Quem da equipe entregou o objeto"
+  },
+  {
+    "origem": "achados",
+    "coluna": "reclamado_por_id",
+    "destino": "usuarios",
+    "texto": "Morador que disse que o objeto é dele (um por vez)"
+  },
+  {
+    "origem": "achados",
+    "coluna": "registrado_por_id",
+    "destino": "usuarios",
+    "texto": "Porteiro ou síndico que registrou o objeto"
+  },
+  {
     "origem": "acordos",
     "coluna": "cancelado_por_id",
     "destino": "usuarios",
@@ -3800,6 +4271,30 @@ const relacoes = [
     "coluna": "unidade_id",
     "destino": "unidades",
     "texto": "Apartamento que parcelou a dívida"
+  },
+  {
+    "origem": "animais",
+    "coluna": "cadastrado_por_id",
+    "destino": "usuarios",
+    "texto": "Morador ou síndico que cadastrou"
+  },
+  {
+    "origem": "animais",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio do apartamento"
+  },
+  {
+    "origem": "animais",
+    "coluna": "inativado_por_id",
+    "destino": "usuarios",
+    "texto": "Quem tirou o animal da lista"
+  },
+  {
+    "origem": "animais",
+    "coluna": "unidade_id",
+    "destino": "unidades",
+    "texto": "Apartamento do animal"
   },
   {
     "origem": "anotacoes_portaria",
@@ -4100,6 +4595,36 @@ const relacoes = [
     "coluna": "usuario_id",
     "destino": "usuarios",
     "texto": "Usuário que leu"
+  },
+  {
+    "origem": "leituras_consumo",
+    "coluna": "cobranca_id",
+    "destino": "cobrancas",
+    "texto": "Cobrança gerada pelo consumo; enquanto ela não for cancelada, a leitura não se corrige"
+  },
+  {
+    "origem": "leituras_consumo",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio do apartamento"
+  },
+  {
+    "origem": "leituras_consumo",
+    "coluna": "registrada_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico ou porteiro que lançou a leitura"
+  },
+  {
+    "origem": "leituras_consumo",
+    "coluna": "unidade_id",
+    "destino": "unidades",
+    "texto": "Apartamento do medidor"
+  },
+  {
+    "origem": "log_cobrancas",
+    "coluna": "cobranca_id",
+    "destino": "cobrancas",
+    "texto": "A cobrança que mudou"
   },
   {
     "origem": "mensagens",
@@ -4495,6 +5020,10 @@ const enumerados = [
     "valores": "A_FAVOR, CONTRA, ABSTENCAO"
   },
   {
+    "nome": "especie_animal",
+    "valores": "CAO, GATO, AVE, OUTRO"
+  },
+  {
     "nome": "finalidade_codigo",
     "valores": "CONFIRMACAO_CADASTRO, RECUPERACAO_SENHA"
   },
@@ -4508,11 +5037,15 @@ const enumerados = [
   },
   {
     "nome": "origem_cobranca",
-    "valores": "TAXA, MULTA, USO_ESPACO, ACORDO, EXTRA"
+    "valores": "TAXA, MULTA, USO_ESPACO, ACORDO, EXTRA, CONSUMO"
   },
   {
     "nome": "papel_usuario",
     "valores": "SINDICO, PORTEIRO, MORADOR, ADMIN"
+  },
+  {
+    "nome": "porte_animal",
+    "valores": "PEQUENO, MEDIO, GRANDE"
   },
   {
     "nome": "prioridade_ocorrencia",
@@ -4521,6 +5054,10 @@ const enumerados = [
   {
     "nome": "prioridade_ordem_servico",
     "valores": "BAIXA, MEDIA, ALTA, URGENTE"
+  },
+  {
+    "nome": "status_achado",
+    "valores": "GUARDADO, DEVOLVIDO, DESCARTADO"
   },
   {
     "nome": "status_cobranca",
@@ -4561,6 +5098,10 @@ const enumerados = [
   {
     "nome": "status_visitante",
     "valores": "AGUARDANDO_CONFIRMACAO, CONFIRMADO, RECUSADO, DENTRO, SAIU, SEM_RESPOSTA"
+  },
+  {
+    "nome": "tipo_consumo",
+    "valores": "AGUA, GAS"
   },
   {
     "nome": "tipo_documento_cadastro",

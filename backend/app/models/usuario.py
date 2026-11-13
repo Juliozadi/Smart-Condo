@@ -154,6 +154,10 @@ class PermissaoPorteiro(Base, TimestampMixin):
     registrar_encomendas: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     registrar_veiculos: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     registrar_ocorrencias: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    # A leitura do hidrômetro e do medidor de gás: o síndico libera para o
+    # zelador ou o porteiro que faz a ronda dos medidores.
+    registrar_leituras: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False,
+                                                     server_default=text("false"))
     # O financeiro é do síndico; por padrão o porteiro não acessa.
     # Sem uso: a permissão saiu da tela e da API (o financeiro é sempre
     # recusado ao porteiro). A coluna fica para não perder o histórico.
@@ -173,6 +177,7 @@ class PermissaoPorteiro(Base, TimestampMixin):
             "registrar_encomendas": self.registrar_encomendas,
             "registrar_veiculos": self.registrar_veiculos,
             "registrar_ocorrencias": self.registrar_ocorrencias,
+            "registrar_leituras": self.registrar_leituras,
         }
 
 

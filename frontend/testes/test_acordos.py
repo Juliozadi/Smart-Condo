@@ -3,11 +3,15 @@ parcelas e desfaz o acordo lançado errado; a Marina vê o acordo dela, com
 as parcelas pagas e a que falta."""
 from __future__ import annotations
 
-from conftest import FRONT, SENHA, abrir, ir
+from conftest import FRONT, SENHA, abrir, ir, token_da_aba
+
+API = FRONT.rsplit(":", 1)[0] + ":8000/api/v1"
 
 
 def test_sindico_faz_e_desfaz_o_acordo(navegador):
     ctx, pg = abrir(navegador, papel="sindico")
+    numero = None
+    desfeito = False
     try:
         ir(pg, "pages/sindico/acordos.html", 1500)
         pg.select_option("#aUnidade", label="Apto 302")
@@ -19,6 +23,7 @@ def test_sindico_faz_e_desfaz_o_acordo(navegador):
         pg.wait_for_selector("#erroAcordo.sucesso", timeout=8000)
         numero = pg.inner_text("#erroAcordo").split("nº ")[1].split(" ")[0]
         cartao = pg.locator(".acordo", has_text=f"Acordo nº {numero} — apto 302")
+        cartao.locator(".acordo-parcelas li").nth(1).wait_for(timeout=8000)
         assert cartao.locator(".acordo-parcelas li").count() == 2
         cartao.get_by_text("Em dia", exact=True).wait_for(timeout=4000)
 
@@ -27,8 +32,15 @@ def test_sindico_faz_e_desfaz_o_acordo(navegador):
         cartao.get_by_role("button", name=f"Desfazer o acordo nº {numero}").click()
         pg.locator(".acordo", has_text=f"Acordo nº {numero} — apto 302").get_by_text(
             "Desfeito", exact=True).wait_for(timeout=8000)
+        desfeito = True
         assert pg.erros == []
     finally:
+        # Se algo falhou no meio, o acordo não pode ficar: o 302 sairia do
+        # atraso, e os testes de cobrança e de quitação que vêm depois
+        # falhariam por causa deste.
+        if numero and not desfeito:
+            pg.request.post(f"{API}/financeiro/acordos/{numero}/cancelamento",
+                            headers=token_da_aba(pg), data={"motivo": "Desfeito pelo teste"})
         ctx.close()
 
 

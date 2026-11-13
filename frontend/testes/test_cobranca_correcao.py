@@ -7,13 +7,21 @@ from conftest import abrir, ir
 def test_sindico_corrige_o_valor_e_a_linha_mostra_quem(navegador):
     ctx, pg = abrir(navegador, papel="sindico")
     ir(pg, "pages/sindico/financeiro.html", 1500)
-    botao = pg.locator("#tabelaCobrancas .btn-acao-mini").first
+    linha = pg.locator("#tabelaCobrancas .table-row").filter(has=pg.locator(".btn-acao-mini")).first
+    botao = linha.locator(".btn-acao-mini")
+    # A linha certa pelo botão (apartamento e competência) e pela descrição:
+    # outras linhas também podem ter sido editadas pelo síndico (um acordo
+    # desfeito por outro teste devolve as cobranças com "Editado por").
+    titulo = botao.get_attribute("title")
+    descricao = linha.locator(":scope > span").nth(2).inner_text()
     botao.click()
     original = pg.input_value("#cValor")
     pg.fill("#cValor", f"{float(original) + 10:.2f}")
     pg.click("#formCorrecao button[type=submit]")
     pg.wait_for_timeout(1500)
-    alterada = pg.locator("#tabelaCobrancas .table-row", has_text="Editado por Roberto Nascimento").first
+    alterada = pg.locator("#tabelaCobrancas .table-row", has=pg.locator(f'[title="{titulo}"]'),
+                          has_text=descricao).first
+    assert "Editado por Roberto Nascimento" in alterada.inner_text()
     assert f"{float(original) + 10:.2f}".replace(".", ",") in alterada.inner_text()
     # Volta ao valor original.
     alterada.locator(".btn-acao-mini").click()
