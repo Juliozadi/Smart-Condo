@@ -38,6 +38,7 @@ DECLARACAO = "declaracao_quitacao"
 PLANO_MANUTENCAO = "plano_manutencao"
 REFORMA = "reforma"
 ACORDO = "acordo"
+ACHADO = "achado"
 
 ROTULO_ACAO = {
     CRIOU: "Criado", EDITOU: "Editado", INATIVOU: "Inativado", REATIVOU: "Reativado",

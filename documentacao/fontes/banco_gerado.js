@@ -4,6 +4,135 @@
  */
 const dicionario = [
   {
+    "nome": "achados",
+    "resumo": "Achados e perdidos da portaria: o que foi achado, onde e quando; o morador que disse que é dono; a entrega, com o nome de quem retirou; ou, passados 30 dias sem dono, a doação ou o descarte pelo síndico, com o destino.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio em cuja portaria o objeto está"
+      },
+      {
+        "coluna": "registrado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Porteiro ou síndico que registrou o objeto"
+      },
+      {
+        "coluna": "descricao",
+        "tipo": "VARCHAR(200)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "O que foi achado (\"guarda-chuva preto com cabo de madeira\")"
+      },
+      {
+        "coluna": "local",
+        "tipo": "VARCHAR(120)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Onde foi achado"
+      },
+      {
+        "coluna": "encontrado_em",
+        "tipo": "DATE",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Dia em que foi achado; até 30 dias para trás no registro"
+      },
+      {
+        "coluna": "status",
+        "tipo": "ENUM",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Guardado na portaria, devolvido a quem é dono ou doado/descartado — tipo enumerado status_achado, valores: GUARDADO, DEVOLVIDO, DESCARTADO"
+      },
+      {
+        "coluna": "reclamado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Morador que disse que o objeto é dele (um por vez)"
+      },
+      {
+        "coluna": "reclamado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o morador disse que é dele"
+      },
+      {
+        "coluna": "devolvido_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando a portaria entregou o objeto"
+      },
+      {
+        "coluna": "devolvido_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Quem da equipe entregou o objeto"
+      },
+      {
+        "coluna": "entregue_a",
+        "tipo": "VARCHAR(120)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Nome de quem retirou, conferido pela portaria; obrigatório na entrega"
+      },
+      {
+        "coluna": "descartado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o síndico doou ou descartou o objeto"
+      },
+      {
+        "coluna": "descartado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico que doou ou descartou o objeto"
+      },
+      {
+        "coluna": "destino",
+        "tipo": "VARCHAR(300)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Para onde foi o objeto sem dono (\"doado ao bazar da paróquia\"); obrigatório no descarte"
+      },
+      {
+        "coluna": "criado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que o registro foi criado, preenchido pelo banco"
+      },
+      {
+        "coluna": "atualizado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da última alteração do registro"
+      }
+    ],
+    "regras": [
+      "CHECK (((status <> 'DESCARTADO'::status_achado) OR ((descartado_em IS NOT NULL) AND (destino IS NOT NULL))))",
+      "CHECK (((status <> 'DEVOLVIDO'::status_achado) OR ((devolvido_em IS NOT NULL) AND (entregue_a IS NOT NULL))))"
+    ]
+  },
+  {
     "nome": "acordos",
     "resumo": "Os acordos de parcelamento: as cobranças vencidas de um apartamento, com a multa e os juros do dia (ou dispensados), divididas em parcelas mensais. As cobranças do acordo ficam negociadas e as parcelas são cobranças novas.",
     "colunas": [
@@ -3855,6 +3984,36 @@ const dicionario = [
 
 const relacoes = [
   {
+    "origem": "achados",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio em cuja portaria o objeto está"
+  },
+  {
+    "origem": "achados",
+    "coluna": "descartado_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico que doou ou descartou o objeto"
+  },
+  {
+    "origem": "achados",
+    "coluna": "devolvido_por_id",
+    "destino": "usuarios",
+    "texto": "Quem da equipe entregou o objeto"
+  },
+  {
+    "origem": "achados",
+    "coluna": "reclamado_por_id",
+    "destino": "usuarios",
+    "texto": "Morador que disse que o objeto é dele (um por vez)"
+  },
+  {
+    "origem": "achados",
+    "coluna": "registrado_por_id",
+    "destino": "usuarios",
+    "texto": "Porteiro ou síndico que registrou o objeto"
+  },
+  {
     "origem": "acordos",
     "coluna": "cancelado_por_id",
     "destino": "usuarios",
@@ -4604,6 +4763,10 @@ const enumerados = [
   {
     "nome": "prioridade_ordem_servico",
     "valores": "BAIXA, MEDIA, ALTA, URGENTE"
+  },
+  {
+    "nome": "status_achado",
+    "valores": "GUARDADO, DEVOLVIDO, DESCARTADO"
   },
   {
     "nome": "status_cobranca",

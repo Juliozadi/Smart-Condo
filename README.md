@@ -37,6 +37,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 - **Advertências e Multas** — Notificações do síndico e a defesa no prazo
 - **Mudança** — Agendamento dentro das regras do regimento
 - **Obras e Reformas** — Comunicação ao síndico antes de começar, com a ART quando mexe em estrutura (NBR 16280)
+- **Achados e Perdidos** — O que a portaria guardou; "é meu" e o aviso de quem retirou
 - **Visitantes** — Confirmação de quem chegou, entrada liberada com antecedência e quem pode retirar a chave deixada na portaria
 - **Veículos** — Placas do apartamento, que a portaria reconhece
 - **Comunicados** — Acompanhamento de avisos do condomínio com filtros por categoria
@@ -53,6 +54,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 - **Obras Aprovadas** — As reformas no prazo, com as condições do síndico
 - **Livro da Portaria** — Passagem de turno, com a ciência de quem chega
 - **Quadro de Chaves** — Quem levou cada chave; a do apartamento só para quem o morador autorizou
+- **Achados e Perdidos** — Registro do que foi achado e entrega a quem é dono
 - **Ocorrências** — Registro de ocorrências durante o turno
 - **Perfil** — Edição de dados pessoais
 
@@ -72,6 +74,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 - **Obras e Reformas** — Aprovação com condições, prorrogação e cancelamento da obra irregular
 - **Livro da Portaria** — A passagem de turno da equipe e as orientações aos porteiros
 - **Quadro de Chaves** — As chaves que a portaria guarda, e com quem estão
+- **Achados e Perdidos** — Objetos guardados; depois de 30 dias sem dono, doação ou descarte
 - **Comunicados** — Criação e envio de comunicados
 - **Manutenção** — Abertura e acompanhamento de ordens de serviço
 - **Manutenção Preventiva** — AVCB, extintores, caixa d'água e o que mais vence, com aviso no painel
@@ -183,6 +186,7 @@ frontend/
 │   │   ├── mudancas.js                # Agendamento de mudança
 │   │   ├── reformas.js                # Obras e reformas (NBR 16280)
 │   │   ├── livro.js                   # Livro da portaria
+│   │   ├── achados.js                 # Achados e perdidos da portaria
 │   │   ├── chaves.js                  # Quadro de chaves da portaria
 │   │   ├── preventiva.js              # Manutenção preventiva
 │   │   └── acessibilidade.js          # Acessibilidade, VLibras e tema
@@ -218,7 +222,7 @@ backend/
 ```
 
 **Total:** 66 páginas HTML, 2 arquivos CSS, 23 arquivos JS, 46 ícones SVG e
-uma API com 182 endpoints.
+uma API com 188 endpoints.
 
 ---
 
@@ -238,7 +242,7 @@ uvicorn app.main:app --reload
 
 Documentação interativa da API em <http://localhost:8000/docs>.
 
-**182 endpoints**, cobrindo os casos de uso e as histórias de usuário da
+**188 endpoints**, cobrindo os casos de uso e as histórias de usuário da
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e

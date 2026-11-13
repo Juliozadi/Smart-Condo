@@ -195,6 +195,14 @@ class StatusMudanca(str, enum.Enum):
     CONCLUIDA = "concluida"
 
 
+class StatusAchado(str, enum.Enum):
+    """O objeto achado fica guardado na portaria até ser devolvido a quem
+    é dono ou, passado o prazo de guarda, doado ou descartado pelo síndico."""
+    GUARDADO = "guardado"
+    DEVOLVIDO = "devolvido"
+    DESCARTADO = "descartado"
+
+
 class StatusReforma(str, enum.Enum):
     """A reforma é comunicada antes de começar (NBR 16280): o síndico
     aprova ou recusa; a aprovada vale até o fim do prazo, e o morador

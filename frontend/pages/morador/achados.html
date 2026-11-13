@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Achados e Perdidos</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/formato.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-mobile">
+
+  <header class="app-bar">
+    <div class="app-bar-inner">
+      <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
+        <span class="brand-name">Smart<strong>Condo</strong></span>
+      </a>
+      <div class="app-bar-right">
+        <a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/user.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">João Silva</span><span class="profile-role">Morador</span></a>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-wrapper">
+    <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Morador</a>
+    <div class="dash-greeting">
+      <p class="greeting-sub">Portaria</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/magnifying-glass.svg" width="26" height="26" alt=""> Achados e Perdidos</h1>
+      <p class="greeting-condo">O que foi achado no condomínio e está guardado na portaria</p>
+    </div>
+
+    <p class="secao-ajuda">Perdeu alguma coisa no condomínio? Veja o que a portaria guardou. Se for seu, toque em
+    "É meu" e retire na portaria com um documento com foto — você recebe o aviso quando o objeto for entregue.</p>
+    <div id="listaAchados" aria-live="polite"></div>
+    <p class="estado-lista" id="estadoAchados">Carregando…</p>
+  </main>
+
+<script src="../../assets/js/achados.js"></script>
+<script>window.SmartCondo.achados.montar('morador');</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

@@ -19,6 +19,7 @@ BANCO = os.environ.get("DATABASE_URL_PSQL",
 
 # O que cada tabela é, em uma frase.
 TABELAS = {
+    "achados": "Achados e perdidos da portaria: o que foi achado, onde e quando; o morador que disse que é dono; a entrega, com o nome de quem retirou; ou, passados 30 dias sem dono, a doação ou o descarte pelo síndico, com o destino.",
     "log_cobrancas": "O histórico gravado pelo próprio banco: o gatilho trg_log_cobranca escreve uma linha a cada mudança de situação, valor ou vencimento de uma cobrança. Ninguém escreve nela diretamente; a tela Banco de Dados do síndico a lista.",
     "condominios": "Os condomínios atendidos pela plataforma. É o cadastro raiz: tudo o mais pertence, direta ou indiretamente, a um condomínio.",
     "unidades": "Os apartamentos ou casas de cada condomínio. A unidade é o que liga o morador às cobranças, encomendas, visitantes e ocorrências.",
@@ -65,6 +66,15 @@ TABELAS = {
 # O significado de cada coluna que não é identificador, vínculo ou carimbo
 # de tempo automático — essas são descritas pelo próprio script.
 DESCRICOES = {
+    "achados.descricao": "O que foi achado (\"guarda-chuva preto com cabo de madeira\")",
+    "achados.local": "Onde foi achado",
+    "achados.encontrado_em": "Dia em que foi achado; até 30 dias para trás no registro",
+    "achados.status": "Guardado na portaria, devolvido a quem é dono ou doado/descartado",
+    "achados.reclamado_em": "Quando o morador disse que é dele",
+    "achados.devolvido_em": "Quando a portaria entregou o objeto",
+    "achados.entregue_a": "Nome de quem retirou, conferido pela portaria; obrigatório na entrega",
+    "achados.descartado_em": "Quando o síndico doou ou descartou o objeto",
+    "achados.destino": "Para onde foi o objeto sem dono (\"doado ao bazar da paróquia\"); obrigatório no descarte",
     "log_cobrancas.status_anterior": "Situação da cobrança antes da mudança",
     "log_cobrancas.status_novo": "Situação da cobrança depois da mudança",
     "log_cobrancas.valor_anterior": "Valor antes da mudança",
@@ -374,6 +384,11 @@ DESCRICOES = {
 
 # O que cada vínculo significa, quando o nome da coluna não basta.
 VINCULOS = {
+    "achados.condominio_id": "Condomínio em cuja portaria o objeto está",
+    "achados.registrado_por_id": "Porteiro ou síndico que registrou o objeto",
+    "achados.reclamado_por_id": "Morador que disse que o objeto é dele (um por vez)",
+    "achados.devolvido_por_id": "Quem da equipe entregou o objeto",
+    "achados.descartado_por_id": "Síndico que doou ou descartou o objeto",
     "log_cobrancas.cobranca_id": "A cobrança que mudou",
     "assembleias.condominio_id": "Condomínio que realiza a assembleia",
     "assembleias.convocada_por_id": "Síndico que convocou",

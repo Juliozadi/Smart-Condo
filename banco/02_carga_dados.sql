@@ -1,4 +1,5 @@
 TRUNCATE
+    achados,
     condominios,
     unidades,
     usuarios,
@@ -205,6 +206,11 @@ INSERT INTO movimentacoes_chave (id, chave_id, retirada_por_nome, retirada_por_d
 INSERT INTO movimentacoes_chave (id, chave_id, retirada_por_nome, retirada_por_documento, morador_id, autorizacao_id, retirada_em, retirada_registrada_por_id, devolvida_em, devolucao_registrada_por_id, observacao) VALUES (2, 2, 'Bruno Cardoso (102)', NULL, NULL, NULL, '2026-09-20 23:45:00.611498+00', 3, NULL, NULL, NULL);
 INSERT INTO movimentacoes_chave (id, chave_id, retirada_por_nome, retirada_por_documento, morador_id, autorizacao_id, retirada_em, retirada_registrada_por_id, devolvida_em, devolucao_registrada_por_id, observacao) VALUES (3, 5, 'Rosa Lima', '61932675140', NULL, 1, '2026-09-21 01:45:00.611498+00', 3, NULL, NULL, NULL);
 
+INSERT INTO achados (id, condominio_id, registrado_por_id, descricao, local, encontrado_em, status, reclamado_por_id, reclamado_em, devolvido_em, devolvido_por_id, entregue_a, descartado_em, descartado_por_id, destino, criado_em, atualizado_em) VALUES (1, 1, 3, 'Guarda-chuva preto com cabo de madeira', 'Salão de festas', '2026-09-19', 'GUARDADO', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
+INSERT INTO achados (id, condominio_id, registrado_por_id, descricao, local, encontrado_em, status, reclamado_por_id, reclamado_em, devolvido_em, devolvido_por_id, entregue_a, descartado_em, descartado_por_id, destino, criado_em, atualizado_em) VALUES (2, 1, 3, 'Chave de carro com chaveiro azul', 'Garagem, perto da vaga 12', '2026-09-18', 'GUARDADO', 6, '2026-09-20 01:45:00.611498+00', NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
+INSERT INTO achados (id, condominio_id, registrado_por_id, descricao, local, encontrado_em, status, reclamado_por_id, reclamado_em, devolvido_em, devolvido_por_id, entregue_a, descartado_em, descartado_por_id, destino, criado_em, atualizado_em) VALUES (3, 1, 3, 'Toalha de praia listrada', 'Piscina', '2026-08-11', 'GUARDADO', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
+INSERT INTO achados (id, condominio_id, registrado_por_id, descricao, local, encontrado_em, status, reclamado_por_id, reclamado_em, devolvido_em, devolvido_por_id, entregue_a, descartado_em, descartado_por_id, destino, criado_em, atualizado_em) VALUES (4, 1, 3, 'Óculos de sol', 'Academia', '2026-09-14', 'DEVOLVIDO', 7, '2026-09-16 01:45:00.611498+00', '2026-09-17 01:45:00.611498+00', 4, 'Bruno Cardoso', NULL, NULL, NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
+
 INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo, tipo_conteudo, tamanho_kb, unidade_id, publicado_por_id, publicado_em, criado_em, atualizado_em) VALUES (1, 1, 'Convenção do Condomínio', 'Documento registrado em cartório.', 'CONVENCAO', NULL, NULL, 820, NULL, 2, '2026-09-11 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo, tipo_conteudo, tamanho_kb, unidade_id, publicado_por_id, publicado_em, criado_em, atualizado_em) VALUES (2, 1, 'Regimento Interno', 'Regras de convivência e uso das áreas comuns.', 'REGIMENTO', NULL, NULL, 410, NULL, 2, '2026-09-11 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo, tipo_conteudo, tamanho_kb, unidade_id, publicado_por_id, publicado_em, criado_em, atualizado_em) VALUES (3, 1, 'Ata da Assembleia de Março', 'Prestação de contas e eleição do conselho.', 'ATA', NULL, NULL, 180, NULL, 2, '2026-09-11 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
@@ -314,6 +320,8 @@ SELECT setval('autorizacoes_visita_id_seq', (SELECT COALESCE(MAX(id), 1) FROM au
 SELECT setval('chaves_id_seq', (SELECT COALESCE(MAX(id), 1) FROM chaves));
 
 SELECT setval('movimentacoes_chave_id_seq', (SELECT COALESCE(MAX(id), 1) FROM movimentacoes_chave));
+
+SELECT setval('achados_id_seq', (SELECT COALESCE(MAX(id), 1) FROM achados));
 
 SELECT setval('ordens_servico_id_seq', (SELECT COALESCE(MAX(id), 1) FROM ordens_servico));
 

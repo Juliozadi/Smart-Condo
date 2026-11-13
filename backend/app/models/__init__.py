@@ -12,10 +12,11 @@ from app.models.enums import (
     EscolhaVoto, MaioriaExigida,
     FinalidadeCodigo, FormaPagamento, Papel, PrioridadeOrdemServico, StatusCobranca,
     StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
-    OrigemCobranca, StatusInfracao, StatusMudanca, StatusReforma, StatusVisitante,
+    OrigemCobranca, StatusAchado, StatusInfracao, StatusMudanca, StatusReforma, StatusVisitante,
     TipoDocumentoCadastro,
     TipoInfracao, TipoMovimentacao, TipoMudanca, TipoOcupacao,
 )
+from app.models.achado import Achado
 from app.models.chave import Chave, MovimentacaoChave
 from app.models.declaracao import DeclaracaoQuitacao
 from app.models.preventiva import PlanoManutencao, RealizacaoManutencao
@@ -37,7 +38,7 @@ __all__ = [
     "DocumentoCadastro",
     "Encomenda", "EspacoComum", "LeituraComunicado", "Mensagem", "MovimentacaoVeiculo", "Mudanca",
     "HorarioMudanca", "Infracao", "AnotacaoPortaria", "CienciaAnotacao", "DeclaracaoQuitacao",
-    "PlanoManutencao", "RealizacaoManutencao", "Chave", "MovimentacaoChave", "Reforma",
+    "PlanoManutencao", "RealizacaoManutencao", "Achado", "Chave", "MovimentacaoChave", "Reforma",
     "Ocorrencia", "OrdemServico", "Pagamento", "PermissaoPorteiro",
     "PreferenciaCobranca", "RegistroAlteracao", "RegistroOcupacao", "Reserva", "Unidade",
     "Usuario", "VeiculoUnidade",
@@ -46,7 +47,7 @@ __all__ = [
     "CategoriaVeiculo", "EscolhaVoto", "MaioriaExigida",
     "FinalidadeCodigo", "FormaPagamento", "Papel", "PrioridadeOrdemServico",
     "StatusCobranca", "StatusEncomenda", "StatusOcorrencia", "StatusOrdemServico",
-    "StatusMudanca", "StatusReforma", "StatusReserva", "StatusUsuario", "StatusVisitante", "TipoDocumentoCadastro",
+    "StatusMudanca", "StatusAchado", "StatusReforma", "StatusReserva", "StatusUsuario", "StatusVisitante", "TipoDocumentoCadastro",
     "TipoMovimentacao", "TipoMudanca", "TipoOcupacao", "OrigemCobranca", "StatusInfracao",
     "TipoInfracao",
 ]

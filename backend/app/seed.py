@@ -29,10 +29,11 @@ from app.models.enums import (
     EscolhaVoto, MaioriaExigida, OrigemCobranca,
     FormaPagamento, Papel, PrioridadeOcorrencia, PrioridadeOrdemServico, StatusCobranca,
     StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
-    StatusInfracao, StatusMudanca, StatusReforma, StatusVisitante,
+    StatusAchado, StatusInfracao, StatusMudanca, StatusReforma, StatusVisitante,
     TipoInfracao, TipoMovimentacao, TipoMudanca, TipoOcupacao,
 )
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
+from app.models.achado import Achado
 from app.models.chave import Chave, MovimentacaoChave
 from app.models.declaracao import DeclaracaoQuitacao
 from app.models.infracao import Infracao
@@ -556,6 +557,28 @@ def criar(db) -> dict:
         retirada_por_documento=rosa.documento, autorizacao_id=rosa.id,
         retirada_registrada_por_id=carlos.id,
     ))
+    db.flush()
+
+    # ── Achados e perdidos: o guarda-chuva acabou de chegar; a chave do
+    #    carro a Ana já disse que é dela e ainda não buscou; a toalha está
+    #    guardada há 40 dias, sem dono (o síndico pode doar); os óculos
+    #    voltaram para o Bruno
+    for descricao, local, dias, reclamou, entregue in [
+        ("Guarda-chuva preto com cabo de madeira", "Salão de festas", 1, None, None),
+        ("Chave de carro com chaveiro azul", "Garagem, perto da vaga 12", 2, "301", None),
+        ("Toalha de praia listrada", "Piscina", 40, None, None),
+        ("Óculos de sol", "Academia", 6, "102", "Bruno Cardoso"),
+    ]:
+        dono = moradores[reclamou] if reclamou else None
+        db.add(Achado(
+            condominio_id=condominio.id, registrado_por_id=carlos.id, descricao=descricao,
+            local=local, encontrado_em=HOJE - timedelta(days=dias),
+            status=StatusAchado.DEVOLVIDO if entregue else StatusAchado.GUARDADO,
+            reclamado_por_id=dono.id if dono else None,
+            reclamado_em=AGORA - timedelta(days=dias - 1) if dono else None,
+            devolvido_em=AGORA - timedelta(days=dias - 2) if entregue else None,
+            devolvido_por_id=renata.id if entregue else None, entregue_a=entregue,
+        ))
     db.flush()
 
     # ── Livro da portaria: a Renata passou o turno da noite com um aviso
