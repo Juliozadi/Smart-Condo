@@ -169,9 +169,10 @@
         api.post('/achados', corpo).then(function() {
           form.reset();
           campo('aEncontrado').value = formato.hojeIso();
-          erro.className = 'form-erro sucesso';
-          erro.textContent = 'Registrado. Os moradores já veem o objeto na lista.';
-          return carregar();
+          return carregar().then(function() {
+            erro.className = 'form-erro sucesso';
+            erro.textContent = 'Registrado. Os moradores já veem o objeto na lista.';
+          });
         }).catch(function(e) { erro.textContent = e.message; })
           .then(function() { b.disabled = false; });
       });
