@@ -193,10 +193,13 @@
         api.post('/financeiro/acordos', corpo).then(function(a) {
           form.reset();
           campo('aPrimeiro').value = formato.hojeIso(5);
-          erro.className = 'form-erro sucesso';
-          erro.textContent = 'Acordo nº ' + a.id + ' feito: ' + dinheiro(a.total) + ' em ' +
-            a.parcelas + 'x. O apartamento recebe as parcelas nas cobranças.';
-          return carregar();
+          // O aviso só depois da lista nova: quem lê "feito" já vê o acordo
+          // e as parcelas na tela.
+          return carregar().then(function() {
+            erro.className = 'form-erro sucesso';
+            erro.textContent = 'Acordo nº ' + a.id + ' feito: ' + dinheiro(a.total) + ' em ' +
+              a.parcelas + 'x. O apartamento recebe as parcelas nas cobranças.';
+          });
         }).catch(function(e) { erro.textContent = e.message; })
           .then(function() { b.disabled = false; });
       });
