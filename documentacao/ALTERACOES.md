@@ -14,11 +14,11 @@ de um condomínio. Esta versão segue a 2.8.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | Novo RF059: obras e reformas comunicadas ao síndico antes de começar (NBR 16280). Novo RF060: acordo de parcelamento das cobranças vencidas. Novo RF061: a taxa e a cota extra lançadas para todos, rateadas pela fração ideal. Novo RF062: o que o próprio banco calcula, na tela Banco de Dados do síndico. Novo RF063: achados e perdidos da portaria. Novo RF064: animais de estimação |
-| 11 Diagrama de caso de uso | Novos casos: comunicar reforma, fazer acordo de parcelamento, achados e perdidos e cadastrar animal de estimação — agora 45 casos de uso |
-| 14 a 17 | Novas tabelas reformas e acordos; cobrancas ganha acordo_id, o status NEGOCIADA e as origens ACORDO e EXTRA; unidades ganha fracao_ideal; nova tabela log_cobrancas, escrita por gatilho; novas tabelas achados e animais — agora 43 entidades, 532 atributos e 125 relacionamentos |
-| 21 API REST | 193 endpoints: reformas (comunicar, listar, avaliar, prorrogar, concluir, cancelar); acordos de parcelamento (fazer, listar, desfazer); a taxa ou a cota extra para todos os apartamentos de uma vez; banco (situação das unidades, balancete, rateio, log das cobranças); achados e perdidos (registrar, listar, é meu, entregar, doar); animais (cadastrar, corrigir, remover, lembrar a vacina) |
-| 23 Testes | 797 casos no servidor e 139 testes de interface |
+| 9 Requisitos funcionais | Novo RF059: obras e reformas comunicadas ao síndico antes de começar (NBR 16280). Novo RF060: acordo de parcelamento das cobranças vencidas. Novo RF061: a taxa e a cota extra lançadas para todos, rateadas pela fração ideal. Novo RF062: o que o próprio banco calcula, na tela Banco de Dados do síndico. Novo RF063: achados e perdidos da portaria. Novo RF064: animais de estimação. Novo RF065: medição de água e gás de cada apartamento |
+| 11 Diagrama de caso de uso | Novos casos: comunicar reforma, fazer acordo de parcelamento, achados e perdidos, cadastrar animal de estimação e registrar leitura de consumo — agora 46 casos de uso |
+| 14 a 17 | Novas tabelas reformas e acordos; cobrancas ganha acordo_id, o status NEGOCIADA e as origens ACORDO e EXTRA; unidades ganha fracao_ideal; nova tabela log_cobrancas, escrita por gatilho; novas tabelas achados, animais e leituras_consumo; cobrancas ganha a origem CONSUMO e permissoes_porteiro, registrar_leituras — agora 44 entidades, 547 atributos e 129 relacionamentos |
+| 21 API REST | 197 endpoints: reformas (comunicar, listar, avaliar, prorrogar, concluir, cancelar); acordos de parcelamento (fazer, listar, desfazer); a taxa ou a cota extra para todos os apartamentos de uma vez; banco (situação das unidades, balancete, rateio, log das cobranças); achados e perdidos (registrar, listar, é meu, entregar, doar); animais (cadastrar, corrigir, remover, lembrar a vacina); consumo (grade de leituras, lançamento, cobrança pela tarifa, histórico) |
+| 23 Testes | 815 casos no servidor e 141 testes de interface |
 
 **Situações tratadas.**
 - A quebradeira começava num sábado de manhã, o porteiro não sabia se
@@ -78,6 +78,15 @@ de um condomínio. Esta versão segue a 2.8.
   lembrete (uma vez por semana, no máximo); a portaria consulta com
   busca por nome, raça, cor ou apartamento. Quem se muda leva os animais
   da lista.
+- A leitura do hidrômetro de cada apartamento era anotada num caderno e
+  a conta, feita na calculadora; o vazamento só aparecia quando a conta
+  chegava, meses depois. Agora o síndico — ou o porteiro a quem ele
+  liberou — lança as leituras de água e de gás do mês numa grade só,
+  vendo o consumo enquanto digita; a leitura menor que a anterior só
+  passa com a troca do medidor. O apartamento que gastou mais que o
+  dobro da média dos três meses anteriores recebe o aviso na hora. O
+  síndico gera a cobrança pela tarifa, uma por apartamento, sem cobrar
+  duas vezes a mesma leitura, e o morador acompanha o histórico.
 
 ## Versão 2.8 — o que todo condomínio de verdade usa
 

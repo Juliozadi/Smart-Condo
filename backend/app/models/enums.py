@@ -84,6 +84,8 @@ class OrigemCobranca(str, enum.Enum):
     # Cota extra (chamada de capital): a obra ou o fundo que a assembleia
     # aprovou, rateado entre os apartamentos, às vezes em parcelas.
     EXTRA = "extra"
+    # O consumo medido no hidrômetro ou no medidor de gás do apartamento.
+    CONSUMO = "consumo"
 
 
 class StatusVisitante(str, enum.Enum):
@@ -193,6 +195,12 @@ class StatusMudanca(str, enum.Enum):
     RECUSADA = "recusada"
     CANCELADA = "cancelada"
     CONCLUIDA = "concluida"
+
+
+class TipoConsumo(str, enum.Enum):
+    """O que se mede em cada apartamento, em metros cúbicos."""
+    AGUA = "agua"
+    GAS = "gas"
 
 
 class EspecieAnimal(str, enum.Enum):

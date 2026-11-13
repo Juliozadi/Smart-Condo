@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS
+    leituras_consumo,
     animais,
     achados,
     reformas,
@@ -44,6 +45,7 @@ DROP TABLE IF EXISTS
 CASCADE;
 
 DROP TYPE IF EXISTS
+    tipo_consumo,
     especie_animal,
     porte_animal,
     canal_verificacao,
@@ -91,6 +93,11 @@ CREATE TYPE categoria_comunicado AS ENUM (
     'URGENTE'
 );
 
+CREATE TYPE tipo_consumo AS ENUM (
+    'AGUA',
+    'GAS'
+);
+
 CREATE TYPE especie_animal AS ENUM (
     'CAO',
     'GATO',
@@ -115,7 +122,8 @@ CREATE TYPE origem_cobranca AS ENUM (
     'MULTA',
     'USO_ESPACO',
     'ACORDO',
-    'EXTRA'
+    'EXTRA',
+    'CONSUMO'
 );
 
 CREATE TYPE maioria_exigida AS ENUM (
@@ -408,7 +416,8 @@ CREATE TABLE permissoes_porteiro (
     acessar_financeiro boolean NOT NULL,
     definidas_por_id integer,
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
-    atualizado_em timestamp with time zone DEFAULT now() NOT NULL
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    registrar_leituras boolean DEFAULT false NOT NULL
 );
 CREATE SEQUENCE permissoes_porteiro_id_seq
     AS integer
@@ -1132,6 +1141,41 @@ ALTER TABLE ONLY animais ALTER COLUMN id SET DEFAULT nextval('animais_id_seq'::r
 ALTER TABLE ONLY animais
     ADD CONSTRAINT animais_pkey PRIMARY KEY (id);
 
+-- Medição individual de água e gás: a leitura de cada mês no medidor de
+-- cada apartamento, o consumo (a diferença para a anterior), a troca de
+-- medidor, o alerta de consumo fora do normal e a cobrança gerada.
+CREATE TABLE leituras_consumo (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    tipo tipo_consumo NOT NULL,
+    competencia date NOT NULL,
+    leitura numeric(10,3) NOT NULL,
+    consumo numeric(10,3),
+    troca_medidor boolean DEFAULT false NOT NULL,
+    acima_do_normal boolean DEFAULT false NOT NULL,
+    observacao character varying(200),
+    registrada_por_id integer,
+    cobranca_id integer,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT ck_leitura_consumo CHECK (((consumo IS NULL) OR (consumo >= (0)::numeric))),
+    CONSTRAINT ck_leitura_valor CHECK ((leitura >= (0)::numeric))
+);
+CREATE SEQUENCE leituras_consumo_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE leituras_consumo_id_seq OWNED BY leituras_consumo.id;
+ALTER TABLE ONLY leituras_consumo ALTER COLUMN id SET DEFAULT nextval('leituras_consumo_id_seq'::regclass);
+ALTER TABLE ONLY leituras_consumo
+    ADD CONSTRAINT leituras_consumo_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY leituras_consumo
+    ADD CONSTRAINT uq_leitura_competencia UNIQUE (unidade_id, tipo, competencia);
+
 -- Advertências e multas do síndico ao apartamento, com a defesa e a
 -- decisão; a multa mantida vira cobrança (Código Civil, art. 1.336, § 2º).
 CREATE TABLE infracoes (
@@ -1785,6 +1829,18 @@ ALTER TABLE ONLY animais
 ALTER TABLE ONLY animais
     ADD CONSTRAINT animais_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY leituras_consumo
+    ADD CONSTRAINT leituras_consumo_cobranca_id_fkey FOREIGN KEY (cobranca_id) REFERENCES cobrancas(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY leituras_consumo
+    ADD CONSTRAINT leituras_consumo_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY leituras_consumo
+    ADD CONSTRAINT leituras_consumo_registrada_por_id_fkey FOREIGN KEY (registrada_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY leituras_consumo
+    ADD CONSTRAINT leituras_consumo_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY votos
     ADD CONSTRAINT votos_item_id_fkey FOREIGN KEY (item_id) REFERENCES itens_pauta(id) ON DELETE CASCADE;
 
@@ -2052,6 +2108,14 @@ CREATE INDEX ix_animais_cadastrado_por_id ON animais USING btree (cadastrado_por
 CREATE INDEX ix_animais_condominio_id ON animais USING btree (condominio_id);
 
 CREATE INDEX ix_animais_unidade_id ON animais USING btree (unidade_id);
+
+CREATE INDEX ix_leituras_condominio_competencia ON leituras_consumo USING btree (condominio_id, tipo, competencia);
+
+CREATE INDEX ix_leituras_consumo_cobranca_id ON leituras_consumo USING btree (cobranca_id);
+
+CREATE INDEX ix_leituras_consumo_condominio_id ON leituras_consumo USING btree (condominio_id);
+
+CREATE INDEX ix_leituras_consumo_unidade_id ON leituras_consumo USING btree (unidade_id);
 
 CREATE INDEX ix_votos_item_id ON votos USING btree (item_id);
 

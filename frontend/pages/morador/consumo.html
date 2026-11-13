@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Consumo de Água e Gás</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/formato.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-mobile">
+
+  <header class="app-bar">
+    <div class="app-bar-inner">
+      <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel">
+        <img src="../../assets/img/logo.png" alt="" class="logo-sm">
+        <span class="brand-name">Smart<strong>Condo</strong></span>
+      </a>
+      <div class="app-bar-right">
+        <a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/user.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">João Silva</span><span class="profile-role">Morador</span></a>
+        <a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-wrapper">
+    <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Morador</a>
+    <div class="dash-greeting">
+      <p class="greeting-sub">Meu apartamento</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/droplet.svg" width="26" height="26" alt=""> Consumo de Água e Gás</h1>
+      <p class="greeting-condo">As leituras do medidor do apartamento, o consumo de cada mês e o que foi cobrado</p>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/droplet.svg" width="16" height="16" alt=""> Água</h2>
+    <div id="historico-agua">
+      <div class="data-table" id="tabela-agua">
+        <div class="table-head cols-4"><span>Mês</span><span>Leitura</span><span>Consumo</span><span>Cobrado</span></div>
+      </div>
+      <p class="estado-lista" id="estado-agua">Carregando…</p>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/droplet.svg" width="16" height="16" alt=""> Gás</h2>
+    <div id="historico-gas">
+      <div class="data-table" id="tabela-gas">
+        <div class="table-head cols-4"><span>Mês</span><span>Leitura</span><span>Consumo</span><span>Cobrado</span></div>
+      </div>
+      <p class="estado-lista" id="estado-gas">Carregando…</p>
+    </div>
+  </main>
+
+<script src="../../assets/js/consumo.js"></script>
+<script>window.SmartCondo.consumo.montar('morador');</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>

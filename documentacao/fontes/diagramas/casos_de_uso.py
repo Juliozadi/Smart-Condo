@@ -35,6 +35,7 @@ CASOS = [
     ("Agendar mudança",                 ["SIN", "POR", "MOR"],        ESQ),
     ("Notificar infração",              ["SIN"],                      ESQ),
     ("Controlar manutenção preventiva", ["SIN"],                      ESQ),
+    ("Registrar leitura de consumo",    ["SIN", "POR", "MOR"],        ESQ),
     ("Registrar visitante",             ["POR"],                      DIR),
     ("Registrar encomenda",             ["POR"],                      DIR),
     ("Registrar veículo",               ["POR"],                      DIR),

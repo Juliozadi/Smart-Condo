@@ -817,7 +817,7 @@ const dicionario = [
         "tipo": "ENUM",
         "obrigatorio": "Sim",
         "chave": "",
-        "descricao": "De onde vem a cobrança: a taxa do mês (uma por apartamento e mês), uma cota extra aprovada em assembleia, uma multa, o uso de um espaço ou a parcela de um acordo — tipo enumerado origem_cobranca, valores: TAXA, MULTA, USO_ESPACO, ACORDO, EXTRA"
+        "descricao": "De onde vem a cobrança: a taxa do mês (uma por apartamento e mês), uma cota extra aprovada em assembleia, uma multa, o uso de um espaço ou a parcela de um acordo — tipo enumerado origem_cobranca, valores: TAXA, MULTA, USO_ESPACO, ACORDO, EXTRA, CONSUMO"
       },
       {
         "coluna": "acordo_id",
@@ -2096,6 +2096,115 @@ const dicionario = [
     ]
   },
   {
+    "nome": "leituras_consumo",
+    "resumo": "A leitura mensal do medidor de água e do de gás de cada apartamento, lançada pelo síndico ou pelo porteiro a quem ele liberou: o consumo, que é a diferença para a leitura anterior, a troca de medidor, o alerta de consumo acima do normal e a cobrança gerada pela tarifa.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio do apartamento"
+      },
+      {
+        "coluna": "unidade_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Apartamento do medidor"
+      },
+      {
+        "coluna": "tipo",
+        "tipo": "ENUM",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Água ou gás: cada um é um medidor — tipo enumerado tipo_consumo, valores: AGUA, GAS"
+      },
+      {
+        "coluna": "competencia",
+        "tipo": "DATE",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Mês da leitura (sempre o dia 1); uma por apartamento, medidor e mês"
+      },
+      {
+        "coluna": "leitura",
+        "tipo": "NUMERIC(10,3)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "O número lido no medidor, em m³, com até três casas"
+      },
+      {
+        "coluna": "consumo",
+        "tipo": "NUMERIC(10,3)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quanto o apartamento gastou no mês: a leitura menos a anterior, ou a própria leitura quando o medidor foi trocado; vazio na primeira leitura, que é o ponto de partida"
+      },
+      {
+        "coluna": "troca_medidor",
+        "tipo": "BOOLEAN",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Se o medidor foi trocado neste mês; só assim a leitura pode ser menor que a anterior"
+      },
+      {
+        "coluna": "acima_do_normal",
+        "tipo": "BOOLEAN",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Se o consumo passou do dobro da média dos três meses anteriores (e por ao menos 2 m³): o apartamento é avisado, pode ser vazamento"
+      },
+      {
+        "coluna": "observacao",
+        "tipo": "VARCHAR(200)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Observação de quem leu (opcional)"
+      },
+      {
+        "coluna": "registrada_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Síndico ou porteiro que lançou a leitura"
+      },
+      {
+        "coluna": "cobranca_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Cobrança gerada pelo consumo; enquanto ela não for cancelada, a leitura não se corrige"
+      },
+      {
+        "coluna": "criado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que o registro foi criado, preenchido pelo banco"
+      },
+      {
+        "coluna": "atualizado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da última alteração do registro"
+      }
+    ],
+    "regras": [
+      "CHECK (((consumo IS NULL) OR (consumo >= (0)::numeric)))",
+      "CHECK ((leitura >= (0)::numeric))",
+      "UNIQUE (unidade_id, tipo, competencia)"
+    ]
+  },
+  {
     "nome": "log_cobrancas",
     "resumo": "O histórico gravado pelo próprio banco: o gatilho trg_log_cobranca escreve uma linha a cada mudança de situação, valor ou vencimento de uma cobrança. Ninguém escreve nela diretamente; a tela Banco de Dados do síndico a lista.",
     "colunas": [
@@ -2956,6 +3065,13 @@ const dicionario = [
         "obrigatorio": "Sim",
         "chave": "",
         "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "registrar_leituras",
+        "tipo": "BOOLEAN",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Se o porteiro pode lançar as leituras dos medidores de água e gás (cobrar, só o síndico)"
       }
     ],
     "regras": []
@@ -4481,6 +4597,30 @@ const relacoes = [
     "texto": "Usuário que leu"
   },
   {
+    "origem": "leituras_consumo",
+    "coluna": "cobranca_id",
+    "destino": "cobrancas",
+    "texto": "Cobrança gerada pelo consumo; enquanto ela não for cancelada, a leitura não se corrige"
+  },
+  {
+    "origem": "leituras_consumo",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio do apartamento"
+  },
+  {
+    "origem": "leituras_consumo",
+    "coluna": "registrada_por_id",
+    "destino": "usuarios",
+    "texto": "Síndico ou porteiro que lançou a leitura"
+  },
+  {
+    "origem": "leituras_consumo",
+    "coluna": "unidade_id",
+    "destino": "unidades",
+    "texto": "Apartamento do medidor"
+  },
+  {
     "origem": "log_cobrancas",
     "coluna": "cobranca_id",
     "destino": "cobrancas",
@@ -4897,7 +5037,7 @@ const enumerados = [
   },
   {
     "nome": "origem_cobranca",
-    "valores": "TAXA, MULTA, USO_ESPACO, ACORDO, EXTRA"
+    "valores": "TAXA, MULTA, USO_ESPACO, ACORDO, EXTRA, CONSUMO"
   },
   {
     "nome": "papel_usuario",
@@ -4958,6 +5098,10 @@ const enumerados = [
   {
     "nome": "status_visitante",
     "valores": "AGUARDANDO_CONFIRMACAO, CONFIRMADO, RECUSADO, DENTRO, SAIU, SEM_RESPOSTA"
+  },
+  {
+    "nome": "tipo_consumo",
+    "valores": "AGUA, GAS"
   },
   {
     "nome": "tipo_documento_cadastro",

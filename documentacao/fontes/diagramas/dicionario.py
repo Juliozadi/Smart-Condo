@@ -19,6 +19,7 @@ BANCO = os.environ.get("DATABASE_URL_PSQL",
 
 # O que cada tabela é, em uma frase.
 TABELAS = {
+    "leituras_consumo": "A leitura mensal do medidor de água e do de gás de cada apartamento, lançada pelo síndico ou pelo porteiro a quem ele liberou: o consumo, que é a diferença para a leitura anterior, a troca de medidor, o alerta de consumo acima do normal e a cobrança gerada pela tarifa.",
     "animais": "Animais de estimação dos apartamentos, cadastrados pelo morador que mora lá ou pelo síndico: espécie, porte, raça e cor, a validade da vacina antirrábica e o último lembrete do síndico. O cadastro vale enquanto quem o fez mora no apartamento; remover é inativar.",
     "achados": "Achados e perdidos da portaria: o que foi achado, onde e quando; o morador que disse que é dono; a entrega, com o nome de quem retirou; ou, passados 30 dias sem dono, a doação ou o descarte pelo síndico, com o destino.",
     "log_cobrancas": "O histórico gravado pelo próprio banco: o gatilho trg_log_cobranca escreve uma linha a cada mudança de situação, valor ou vencimento de uma cobrança. Ninguém escreve nela diretamente; a tela Banco de Dados do síndico a lista.",
@@ -67,6 +68,13 @@ TABELAS = {
 # O significado de cada coluna que não é identificador, vínculo ou carimbo
 # de tempo automático — essas são descritas pelo próprio script.
 DESCRICOES = {
+    "leituras_consumo.tipo": "Água ou gás: cada um é um medidor",
+    "leituras_consumo.competencia": "Mês da leitura (sempre o dia 1); uma por apartamento, medidor e mês",
+    "leituras_consumo.leitura": "O número lido no medidor, em m³, com até três casas",
+    "leituras_consumo.consumo": "Quanto o apartamento gastou no mês: a leitura menos a anterior, ou a própria leitura quando o medidor foi trocado; vazio na primeira leitura, que é o ponto de partida",
+    "leituras_consumo.troca_medidor": "Se o medidor foi trocado neste mês; só assim a leitura pode ser menor que a anterior",
+    "leituras_consumo.acima_do_normal": "Se o consumo passou do dobro da média dos três meses anteriores (e por ao menos 2 m³): o apartamento é avisado, pode ser vazamento",
+    "leituras_consumo.observacao": "Observação de quem leu (opcional)",
     "animais.nome": "Nome do animal",
     "animais.especie": "Cachorro, gato, ave ou outro",
     "animais.raca": "Raça (opcional)",
@@ -197,6 +205,7 @@ DESCRICOES = {
     "permissoes_porteiro.registrar_encomendas": "Se o porteiro pode registrar encomendas",
     "permissoes_porteiro.registrar_veiculos": "Se o porteiro pode registrar entrada e saída de veículos",
     "permissoes_porteiro.registrar_ocorrencias": "Se o porteiro pode abrir ocorrências",
+    "permissoes_porteiro.registrar_leituras": "Se o porteiro pode lançar as leituras dos medidores de água e gás (cobrar, só o síndico)",
     "permissoes_porteiro.acessar_financeiro": "Sem uso: a permissão saiu do sistema, e o financeiro é sempre recusado ao porteiro",
 
     "espacos_comuns.nome": "Nome do espaço",
@@ -394,6 +403,10 @@ DESCRICOES = {
 
 # O que cada vínculo significa, quando o nome da coluna não basta.
 VINCULOS = {
+    "leituras_consumo.condominio_id": "Condomínio do apartamento",
+    "leituras_consumo.unidade_id": "Apartamento do medidor",
+    "leituras_consumo.registrada_por_id": "Síndico ou porteiro que lançou a leitura",
+    "leituras_consumo.cobranca_id": "Cobrança gerada pelo consumo; enquanto ela não for cancelada, a leitura não se corrige",
     "animais.condominio_id": "Condomínio do apartamento",
     "animais.unidade_id": "Apartamento do animal",
     "animais.cadastrado_por_id": "Morador ou síndico que cadastrou",

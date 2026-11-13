@@ -39,6 +39,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 - **Obras e Reformas** — Comunicação ao síndico antes de começar, com a ART quando mexe em estrutura (NBR 16280)
 - **Achados e Perdidos** — O que a portaria guardou; "é meu" e o aviso de quem retirou
 - **Animais de Estimação** — Cadastro dos animais do apartamento e da vacina antirrábica
+- **Consumo de Água e Gás** — O histórico das leituras do apartamento e o aviso de consumo fora do normal
 - **Visitantes** — Confirmação de quem chegou, entrada liberada com antecedência e quem pode retirar a chave deixada na portaria
 - **Veículos** — Placas do apartamento, que a portaria reconhece
 - **Comunicados** — Acompanhamento de avisos do condomínio com filtros por categoria
@@ -57,6 +58,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 - **Quadro de Chaves** — Quem levou cada chave; a do apartamento só para quem o morador autorizou
 - **Achados e Perdidos** — Registro do que foi achado e entrega a quem é dono
 - **Animais do Condomínio** — De quem é cada animal, com busca
+- **Leituras de Água e Gás** — Lançamento das leituras dos medidores, se o síndico liberar
 - **Ocorrências** — Registro de ocorrências durante o turno
 - **Perfil** — Edição de dados pessoais
 
@@ -78,6 +80,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 - **Quadro de Chaves** — As chaves que a portaria guarda, e com quem estão
 - **Achados e Perdidos** — Objetos guardados; depois de 30 dias sem dono, doação ou descarte
 - **Animais de Estimação** — Todos os animais, a vacina pendente e o lembrete aos apartamentos
+- **Água e Gás** — Leituras dos medidores, alerta de vazamento e a cobrança pelo consumo
 - **Comunicados** — Criação e envio de comunicados
 - **Manutenção** — Abertura e acompanhamento de ordens de serviço
 - **Manutenção Preventiva** — AVCB, extintores, caixa d'água e o que mais vence, com aviso no painel
@@ -191,13 +194,14 @@ frontend/
 │   │   ├── livro.js                   # Livro da portaria
 │   │   ├── achados.js                 # Achados e perdidos da portaria
 │   │   ├── animais.js                 # Animais de estimação
+│   │   ├── consumo.js                 # Medição de água e gás
 │   │   ├── chaves.js                  # Quadro de chaves da portaria
 │   │   ├── preventiva.js              # Manutenção preventiva
 │   │   └── acessibilidade.js          # Acessibilidade, VLibras e tema
 │   └── img/
 │       ├── logo.png
 │       ├── acessibilidade.png
-│       └── icons/                     # 46 ícones SVG
+│       └── icons/                     # 50 ícones SVG
 └── pages/
     ├── legal/                         # Termos de uso e privacidade
     ├── cadastro/                      # Cadastro de usuários (3 páginas)
@@ -216,17 +220,17 @@ backend/
 ├── alembic/                           # Migrações do banco
 ├── app/
 │   ├── core/                          # Configuração, banco e segurança
-│   ├── models/                        # 40 tabelas
+│   ├── models/                        # 43 tabelas
 │   ├── schemas/                       # Entrada e saída da API
 │   ├── services/                      # Regras de negócio
 │   ├── api/routers/                   # Endpoints
 │   ├── seed.py                        # Dados de demonstração
 │   └── main.py
-└── tests/                             # 733 casos de teste
+└── tests/                             # 815 casos de teste
 ```
 
 **Total:** 66 páginas HTML, 2 arquivos CSS, 23 arquivos JS, 46 ícones SVG e
-uma API com 193 endpoints.
+uma API com 197 endpoints.
 
 ---
 
@@ -246,11 +250,11 @@ uvicorn app.main:app --reload
 
 Documentação interativa da API em <http://localhost:8000/docs>.
 
-**193 endpoints**, cobrindo os casos de uso e as histórias de usuário da
+**197 endpoints**, cobrindo os casos de uso e as histórias de usuário da
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e
-comunicados, documentos e chat. **733 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
+comunicados, documentos e chat. **815 casos de teste** rodando contra PostgreSQL, a cada push, pelo GitHub Actions.
 
 ---
 

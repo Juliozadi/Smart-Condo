@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../../assets/img/logo.png" type="image/png">
+  <title>SmartCondo — Consumo de Água e Gás</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/formato.js"></script>
+  <link rel="stylesheet" href="../../assets/css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+<body class="dashboard-body layout-desktop">
+  <header class="app-bar"><div class="app-bar-inner">
+    <a href="dashboard.html" class="app-bar-brand" aria-label="SmartCondo — ir para o painel"><img src="../../assets/img/logo.png" alt="" class="logo-sm"><span class="brand-name">Smart<strong>Condo</strong></span></a>
+    <div class="app-bar-right"><a href="perfil.html" class="profile-link"><span class="profile-avatar"><img src="../../assets/img/icons/star.svg" alt="" style="width:16px;height:16px;display:block;width:16px;height:16px"></span><span class="profile-name" id="hdrName">Roberto Nascimento</span><span class="profile-role">Síndico</span></a><a href="../../index.html" class="logout-btn"><img src="../../assets/img/icons/right-from-bracket.svg" width="16" height="16" alt=""> Sair</a></div>
+  </div></header>
+  <main class="dash-wrapper">
+    <a href="dashboard.html" class="dash-back"><img src="../../assets/img/icons/arrow-left.svg" width="16" height="16" alt=""> Painel do Síndico</a>
+    <div class="dash-greeting">
+      <p class="greeting-sub">Painel Administrativo</p>
+      <h1 class="greeting-name"><img src="../../assets/img/icons/droplet.svg" width="26" height="26" alt=""> Consumo de Água e Gás</h1>
+      <p class="greeting-condo">A leitura de cada medidor, o consumo do mês e a cobrança pela tarifa</p>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/droplet.svg" width="16" height="16" alt=""> Leituras do Mês</h2>
+    <div class="form-card">
+      <form id="formLeituras" novalidate>
+        <div class="filtros-consumo">
+          <div class="form-group">
+            <label for="cTipo">Medidor</label>
+            <select id="cTipo"><option value="agua">Água</option><option value="gas">Gás</option></select>
+          </div>
+          <div class="form-group">
+            <label for="cCompetencia">Mês da leitura</label>
+            <input type="month" id="cCompetencia" required>
+          </div>
+        </div>
+        <p class="captura-dica">Digite o número que aparece no medidor de cada apartamento, em m³. O consumo é a
+        diferença para a leitura anterior; se o medidor foi trocado, marque a troca — o novo começa do zero.
+        Consumo acima do dobro da média avisa o apartamento.</p>
+        <div class="data-table" id="tabelaLeituras">
+          <div class="table-head cols-leitura"><span>Apto</span><span>Leitura anterior</span><span>Leitura do mês</span><span>Troca</span><span>Consumo</span><span>Situação</span></div>
+        </div>
+        <p class="estado-lista" id="estadoLeituras">Carregando…</p>
+        <p class="form-erro" id="erroLeituras" role="alert"></p>
+        <button class="action-btn" type="submit" id="btnSalvarLeituras" style="margin-top:4px;">Salvar leituras</button>
+      </form>
+    </div>
+
+    <h2 class="section-title"><img src="../../assets/img/icons/file-invoice-dollar.svg" width="16" height="16" alt=""> Cobrar o Consumo do Mês</h2>
+    <div class="form-card">
+      <form id="formCobrar" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cTarifa">Tarifa por m³ (R$)</label>
+            <input type="number" id="cTarifa" min="0.0001" max="1000" step="0.0001" required placeholder="Ex: 9.8765">
+          </div>
+          <div class="form-group">
+            <label for="cVencimento">Vencimento (opcional)</label>
+            <input type="date" id="cVencimento">
+          </div>
+        </div>
+        <p class="captura-dica">Gera a cobrança do medidor e do mês escolhidos acima, para cada apartamento com consumo:
+        consumo × tarifa. Sem vencimento, vale o dia que o morador escolheu, no mês seguinte. Quem já foi cobrado
+        por esta leitura não é cobrado de novo.</p>
+        <p class="form-erro" id="erroCobrar" role="alert"></p>
+        <button class="action-btn" type="submit" style="margin-top:4px;">Gerar cobranças</button>
+      </form>
+    </div>
+  </main>
+
+<script src="../../assets/js/consumo.js"></script>
+<script>window.SmartCondo.consumo.montar('sindico');</script>
+<script src="../../assets/js/sessao.js"></script>
+<script src="../../assets/js/acessibilidade.js"></script>
+</body>
+</html>
