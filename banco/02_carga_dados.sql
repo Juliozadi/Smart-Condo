@@ -1,4 +1,5 @@
 TRUNCATE
+    animais,
     achados,
     condominios,
     unidades,
@@ -211,6 +212,10 @@ INSERT INTO achados (id, condominio_id, registrado_por_id, descricao, local, enc
 INSERT INTO achados (id, condominio_id, registrado_por_id, descricao, local, encontrado_em, status, reclamado_por_id, reclamado_em, devolvido_em, devolvido_por_id, entregue_a, descartado_em, descartado_por_id, destino, criado_em, atualizado_em) VALUES (3, 1, 3, 'Toalha de praia listrada', 'Piscina', '2026-08-11', 'GUARDADO', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 INSERT INTO achados (id, condominio_id, registrado_por_id, descricao, local, encontrado_em, status, reclamado_por_id, reclamado_em, devolvido_em, devolvido_por_id, entregue_a, descartado_em, descartado_por_id, destino, criado_em, atualizado_em) VALUES (4, 1, 3, 'Óculos de sol', 'Academia', '2026-09-14', 'DEVOLVIDO', 7, '2026-09-16 01:45:00.611498+00', '2026-09-17 01:45:00.611498+00', 4, 'Bruno Cardoso', NULL, NULL, NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 
+INSERT INTO animais (id, condominio_id, unidade_id, cadastrado_por_id, nome, especie, raca, porte, cor, vacina_antirrabica_ate, observacao, lembrete_vacina_em, criado_em, atualizado_em, inativo_em, inativado_por_id) VALUES (1, 1, 3, 5, 'Thor', 'CAO', 'Labrador', 'GRANDE', 'Caramelo', '2027-04-18', 'Dócil, mas puxa a guia no elevador.', NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00', NULL, NULL);
+INSERT INTO animais (id, condominio_id, unidade_id, cadastrado_por_id, nome, especie, raca, porte, cor, vacina_antirrabica_ate, observacao, lembrete_vacina_em, criado_em, atualizado_em, inativo_em, inativado_por_id) VALUES (2, 1, 4, 6, 'Luna', 'GATO', 'Siamês', 'PEQUENO', 'Creme', '2026-09-08', NULL, NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00', NULL, NULL);
+INSERT INTO animais (id, condominio_id, unidade_id, cadastrado_por_id, nome, especie, raca, porte, cor, vacina_antirrabica_ate, observacao, lembrete_vacina_em, criado_em, atualizado_em, inativo_em, inativado_por_id) VALUES (3, 1, 6, 8, 'Pipoca', 'CAO', 'Shih-tzu', 'PEQUENO', 'Branco e marrom', NULL, 'Late quando fica sozinha.', NULL, '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00', NULL, NULL);
+
 INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo, tipo_conteudo, tamanho_kb, unidade_id, publicado_por_id, publicado_em, criado_em, atualizado_em) VALUES (1, 1, 'Convenção do Condomínio', 'Documento registrado em cartório.', 'CONVENCAO', NULL, NULL, 820, NULL, 2, '2026-09-11 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo, tipo_conteudo, tamanho_kb, unidade_id, publicado_por_id, publicado_em, criado_em, atualizado_em) VALUES (2, 1, 'Regimento Interno', 'Regras de convivência e uso das áreas comuns.', 'REGIMENTO', NULL, NULL, 410, NULL, 2, '2026-09-11 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
 INSERT INTO documentos (id, condominio_id, titulo, descricao, categoria, arquivo, tipo_conteudo, tamanho_kb, unidade_id, publicado_por_id, publicado_em, criado_em, atualizado_em) VALUES (3, 1, 'Ata da Assembleia de Março', 'Prestação de contas e eleição do conselho.', 'ATA', NULL, NULL, 180, NULL, 2, '2026-09-11 01:45:00.304198+00', '2026-09-21 01:45:00.611498+00', '2026-09-21 01:45:00.611498+00');
@@ -322,6 +327,8 @@ SELECT setval('chaves_id_seq', (SELECT COALESCE(MAX(id), 1) FROM chaves));
 SELECT setval('movimentacoes_chave_id_seq', (SELECT COALESCE(MAX(id), 1) FROM movimentacoes_chave));
 
 SELECT setval('achados_id_seq', (SELECT COALESCE(MAX(id), 1) FROM achados));
+
+SELECT setval('animais_id_seq', (SELECT COALESCE(MAX(id), 1) FROM animais));
 
 SELECT setval('ordens_servico_id_seq', (SELECT COALESCE(MAX(id), 1) FROM ordens_servico));
 

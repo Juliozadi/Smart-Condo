@@ -29,11 +29,12 @@ from app.models.enums import (
     EscolhaVoto, MaioriaExigida, OrigemCobranca,
     FormaPagamento, Papel, PrioridadeOcorrencia, PrioridadeOrdemServico, StatusCobranca,
     StatusEncomenda, StatusOcorrencia, StatusOrdemServico, StatusReserva, StatusUsuario,
-    StatusAchado, StatusInfracao, StatusMudanca, StatusReforma, StatusVisitante,
+    EspecieAnimal, PorteAnimal, StatusAchado, StatusInfracao, StatusMudanca, StatusReforma, StatusVisitante,
     TipoInfracao, TipoMovimentacao, TipoMudanca, TipoOcupacao,
 )
 from app.models.espaco import EspacoComum, RegistroOcupacao, Reserva
 from app.models.achado import Achado
+from app.models.animal import Animal
 from app.models.chave import Chave, MovimentacaoChave
 from app.models.declaracao import DeclaracaoQuitacao
 from app.models.infracao import Infracao
@@ -578,6 +579,23 @@ def criar(db) -> dict:
             reclamado_em=AGORA - timedelta(days=dias - 1) if dono else None,
             devolvido_em=AGORA - timedelta(days=dias - 2) if entregue else None,
             devolvido_por_id=renata.id if entregue else None, entregue_a=entregue,
+        ))
+    db.flush()
+
+    # ── Animais de estimação: o Thor do João está com a vacina em dia; a
+    #    da Luna, da Ana, venceu; a Pipoca, da Marina, não tem registro
+    for unidade, nome, especie, porte, raca, cor, vacina, obs in [
+        ("204", "Thor", EspecieAnimal.CAO, PorteAnimal.GRANDE, "Labrador", "Caramelo", 210,
+         "Dócil, mas puxa a guia no elevador."),
+        ("301", "Luna", EspecieAnimal.GATO, PorteAnimal.PEQUENO, "Siamês", "Creme", -12, None),
+        ("410", "Pipoca", EspecieAnimal.CAO, PorteAnimal.PEQUENO, "Shih-tzu", "Branco e marrom",
+         None, "Late quando fica sozinha."),
+    ]:
+        db.add(Animal(
+            condominio_id=condominio.id, unidade_id=unidades[unidade].id,
+            cadastrado_por_id=moradores[unidade].id, nome=nome, especie=especie, porte=porte,
+            raca=raca, cor=cor, observacao=obs,
+            vacina_antirrabica_ate=HOJE + timedelta(days=vacina) if vacina is not None else None,
         ))
     db.flush()
 

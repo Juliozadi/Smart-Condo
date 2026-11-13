@@ -2484,6 +2484,9 @@ label.contato-btn { position: relative; cursor: pointer; }
 .reforma.aguardando { border-left: 3px solid var(--aviso); }
 .reforma.prazo_encerrado { border-left: 3px solid var(--erro); }
 .reforma .assembleia-topo h3 { margin-bottom: 0; }
+/* Animais: a vacina pendente se destaca. */
+.animal.vacina-vencida, .animal.vacina-sem_registro { border-left: 3px solid var(--aviso); }
+.animal .assembleia-topo h3 { margin-bottom: 0; }
 /* Achados e perdidos: o que já tem dono e espera a retirada se destaca. */
 .achado.guardado.reclamado { border-left: 3px solid var(--aviso); }
 .achado .assembleia-topo h3 { margin-bottom: 0; }

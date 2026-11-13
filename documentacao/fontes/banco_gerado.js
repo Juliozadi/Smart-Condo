@@ -257,6 +257,125 @@ const dicionario = [
     ]
   },
   {
+    "nome": "animais",
+    "resumo": "Animais de estimação dos apartamentos, cadastrados pelo morador que mora lá ou pelo síndico: espécie, porte, raça e cor, a validade da vacina antirrábica e o último lembrete do síndico. O cadastro vale enquanto quem o fez mora no apartamento; remover é inativar.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "condominio_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Condomínio do apartamento"
+      },
+      {
+        "coluna": "unidade_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "Apartamento do animal"
+      },
+      {
+        "coluna": "cadastrado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Morador ou síndico que cadastrou"
+      },
+      {
+        "coluna": "nome",
+        "tipo": "VARCHAR(60)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Nome do animal"
+      },
+      {
+        "coluna": "especie",
+        "tipo": "ENUM",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Cachorro, gato, ave ou outro — tipo enumerado especie_animal, valores: CAO, GATO, AVE, OUTRO"
+      },
+      {
+        "coluna": "raca",
+        "tipo": "VARCHAR(60)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Raça (opcional)"
+      },
+      {
+        "coluna": "porte",
+        "tipo": "ENUM",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Pequeno, médio ou grande — o regimento costuma decidir pelo porte o uso de focinheira e do elevador de serviço — tipo enumerado porte_animal, valores: PEQUENO, MEDIO, GRANDE"
+      },
+      {
+        "coluna": "cor",
+        "tipo": "VARCHAR(40)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Cor (opcional), para a portaria reconhecer o animal"
+      },
+      {
+        "coluna": "vacina_antirrabica_ate",
+        "tipo": "DATE",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Validade da vacina antirrábica (até cerca de um ano à frente); vazia é sem registro"
+      },
+      {
+        "coluna": "observacao",
+        "tipo": "VARCHAR(300)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Observação para os vizinhos e a portaria (\"usar focinheira\")"
+      },
+      {
+        "coluna": "lembrete_vacina_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Último lembrete da vacina mandado pelo síndico; outro só depois de uma semana"
+      },
+      {
+        "coluna": "criado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento em que o registro foi criado, preenchido pelo banco"
+      },
+      {
+        "coluna": "atualizado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da última alteração do registro"
+      },
+      {
+        "coluna": "inativo_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Quando o animal saiu da lista do apartamento"
+      },
+      {
+        "coluna": "inativado_por_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Não",
+        "chave": "FK",
+        "descricao": "Quem tirou o animal da lista"
+      }
+    ],
+    "regras": []
+  },
+  {
     "nome": "anotacoes_portaria",
     "resumo": "O livro da portaria: o que o porteiro que sai, ou o síndico, anota para o próximo turno. Não se apaga nem se edita — corrige-se com outra anotação.",
     "colunas": [
@@ -4038,6 +4157,30 @@ const relacoes = [
     "texto": "Apartamento que parcelou a dívida"
   },
   {
+    "origem": "animais",
+    "coluna": "cadastrado_por_id",
+    "destino": "usuarios",
+    "texto": "Morador ou síndico que cadastrou"
+  },
+  {
+    "origem": "animais",
+    "coluna": "condominio_id",
+    "destino": "condominios",
+    "texto": "Condomínio do apartamento"
+  },
+  {
+    "origem": "animais",
+    "coluna": "inativado_por_id",
+    "destino": "usuarios",
+    "texto": "Quem tirou o animal da lista"
+  },
+  {
+    "origem": "animais",
+    "coluna": "unidade_id",
+    "destino": "unidades",
+    "texto": "Apartamento do animal"
+  },
+  {
     "origem": "anotacoes_portaria",
     "coluna": "autor_id",
     "destino": "usuarios",
@@ -4737,6 +4880,10 @@ const enumerados = [
     "valores": "A_FAVOR, CONTRA, ABSTENCAO"
   },
   {
+    "nome": "especie_animal",
+    "valores": "CAO, GATO, AVE, OUTRO"
+  },
+  {
     "nome": "finalidade_codigo",
     "valores": "CONFIRMACAO_CADASTRO, RECUPERACAO_SENHA"
   },
@@ -4755,6 +4902,10 @@ const enumerados = [
   {
     "nome": "papel_usuario",
     "valores": "SINDICO, PORTEIRO, MORADOR, ADMIN"
+  },
+  {
+    "nome": "porte_animal",
+    "valores": "PEQUENO, MEDIO, GRANDE"
   },
   {
     "nome": "prioridade_ocorrencia",

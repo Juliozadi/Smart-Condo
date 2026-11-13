@@ -195,6 +195,21 @@ class StatusMudanca(str, enum.Enum):
     CONCLUIDA = "concluida"
 
 
+class EspecieAnimal(str, enum.Enum):
+    CAO = "cao"
+    GATO = "gato"
+    AVE = "ave"
+    OUTRO = "outro"
+
+
+class PorteAnimal(str, enum.Enum):
+    """O porte decide, em muitos regimentos, o uso de focinheira e do
+    elevador de serviço."""
+    PEQUENO = "pequeno"
+    MEDIO = "medio"
+    GRANDE = "grande"
+
+
 class StatusAchado(str, enum.Enum):
     """O objeto achado fica guardado na portaria até ser devolvido a quem
     é dono ou, passado o prazo de guarda, doado ou descartado pelo síndico."""

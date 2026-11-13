@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS
+    animais,
     achados,
     reformas,
     movimentacoes_chave,
@@ -43,6 +44,8 @@ DROP TABLE IF EXISTS
 CASCADE;
 
 DROP TYPE IF EXISTS
+    especie_animal,
+    porte_animal,
     canal_verificacao,
     categoria_comunicado,
     categoria_despesa,
@@ -86,6 +89,19 @@ CREATE TYPE categoria_comunicado AS ENUM (
     'SEGURANCA',
     'EVENTO',
     'URGENTE'
+);
+
+CREATE TYPE especie_animal AS ENUM (
+    'CAO',
+    'GATO',
+    'AVE',
+    'OUTRO'
+);
+
+CREATE TYPE porte_animal AS ENUM (
+    'PEQUENO',
+    'MEDIO',
+    'GRANDE'
 );
 
 CREATE TYPE escolha_voto AS ENUM (
@@ -1083,6 +1099,39 @@ ALTER TABLE ONLY achados ALTER COLUMN id SET DEFAULT nextval('achados_id_seq'::r
 ALTER TABLE ONLY achados
     ADD CONSTRAINT achados_pkey PRIMARY KEY (id);
 
+-- Animais de estimação dos apartamentos: espécie, porte, raça e cor; a
+-- validade da vacina antirrábica e o último lembrete do síndico. O
+-- cadastro vale enquanto quem o fez mora no apartamento.
+CREATE TABLE animais (
+    id integer NOT NULL,
+    condominio_id integer NOT NULL,
+    unidade_id integer NOT NULL,
+    cadastrado_por_id integer,
+    nome character varying(60) NOT NULL,
+    especie especie_animal NOT NULL,
+    raca character varying(60),
+    porte porte_animal NOT NULL,
+    cor character varying(40),
+    vacina_antirrabica_ate date,
+    observacao character varying(300),
+    lembrete_vacina_em timestamp with time zone,
+    criado_em timestamp with time zone DEFAULT now() NOT NULL,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    inativo_em timestamp with time zone,
+    inativado_por_id integer
+);
+CREATE SEQUENCE animais_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE animais_id_seq OWNED BY animais.id;
+ALTER TABLE ONLY animais ALTER COLUMN id SET DEFAULT nextval('animais_id_seq'::regclass);
+ALTER TABLE ONLY animais
+    ADD CONSTRAINT animais_pkey PRIMARY KEY (id);
+
 -- Advertências e multas do síndico ao apartamento, com a defesa e a
 -- decisão; a multa mantida vira cobrança (Código Civil, art. 1.336, § 2º).
 CREATE TABLE infracoes (
@@ -1724,6 +1773,18 @@ ALTER TABLE ONLY achados
 ALTER TABLE ONLY achados
     ADD CONSTRAINT achados_registrado_por_id_fkey FOREIGN KEY (registrado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
 
+ALTER TABLE ONLY animais
+    ADD CONSTRAINT animais_cadastrado_por_id_fkey FOREIGN KEY (cadastrado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY animais
+    ADD CONSTRAINT animais_condominio_id_fkey FOREIGN KEY (condominio_id) REFERENCES condominios(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY animais
+    ADD CONSTRAINT animais_inativado_por_id_fkey FOREIGN KEY (inativado_por_id) REFERENCES usuarios(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY animais
+    ADD CONSTRAINT animais_unidade_id_fkey FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY votos
     ADD CONSTRAINT votos_item_id_fkey FOREIGN KEY (item_id) REFERENCES itens_pauta(id) ON DELETE CASCADE;
 
@@ -1985,6 +2046,12 @@ CREATE INDEX ix_achados_condominio_id ON achados USING btree (condominio_id);
 CREATE INDEX ix_achados_condominio_status ON achados USING btree (condominio_id, status);
 
 CREATE INDEX ix_achados_reclamado_por_id ON achados USING btree (reclamado_por_id);
+
+CREATE INDEX ix_animais_cadastrado_por_id ON animais USING btree (cadastrado_por_id);
+
+CREATE INDEX ix_animais_condominio_id ON animais USING btree (condominio_id);
+
+CREATE INDEX ix_animais_unidade_id ON animais USING btree (unidade_id);
 
 CREATE INDEX ix_votos_item_id ON votos USING btree (item_id);
 

@@ -41,6 +41,7 @@ CASOS = [
     ("Registrar ocupação de espaço",    ["POR"],                      DIR),
     ("Controlar chaves da portaria",    ["SIN", "POR"],               DIR),
     ("Achados e perdidos",              ["SIN", "POR", "MOR"],        DIR),
+    ("Cadastrar animal de estimação",   ["SIN", "POR", "MOR"],        DIR),
     ("Comunicar reforma",               ["SIN", "POR", "MOR"],        DIR),
     ("Fazer acordo de parcelamento",    ["SIN", "MOR"],               DIR),
     ("Abrir ocorrência",                ["POR", "MOR"],               DIR),

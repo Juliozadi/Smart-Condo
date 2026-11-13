@@ -4,7 +4,7 @@ Scripts SQL do banco, prontos para rodar no **pgAdmin**.
 
 | Arquivo | O que faz |
 |---|---|
-| `01_criar_tabelas.sql` | Cria os tipos, as 41 tabelas, as chaves e os índices |
+| `01_criar_tabelas.sql` | Cria os tipos, as 42 tabelas, as chaves e os índices |
 | `02_carga_dados.sql` | Carrega um condomínio completo de demonstração |
 | `03_consultas.sql` | 14 consultas sobre os dados: junções, agrupamentos, subconsultas, janelas |
 | `04_programacao.sql` | Visões, funções, procedimentos, gatilhos e um índice parcial |
@@ -116,7 +116,7 @@ sistema entra no banco com o usuário dele e controla o acesso na API.
 
 ---
 
-## As 41 tabelas
+## As 42 tabelas
 
 | Tabela | Guarda |
 |---|---|
@@ -154,6 +154,7 @@ sistema entra no banco com o usuário dele e controla o acesso na API.
 | `planos_manutencao` | O que vence de tempos em tempos (AVCB, extintores, caixa d'água), com o próximo vencimento |
 | `realizacoes_manutencao` | Cada vez que uma manutenção preventiva foi feita, com o custo |
 | `chaves` | O quadro de chaves da portaria: áreas comuns e apartamentos |
+| `animais` | Animais de estimação dos apartamentos, com a validade da vacina antirrábica |
 | `achados` | Achados e perdidos: o que a portaria guardou, quem disse que é dono, a quem foi entregue ou para onde foi doado |
 | `movimentacoes_chave` | Quem levou cada chave, quem entregou e quem recebeu de volta |
 | `ordens_servico` | Manutenção aberta e acompanhada pelo síndico |

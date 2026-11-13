@@ -19,6 +19,7 @@ BANCO = os.environ.get("DATABASE_URL_PSQL",
 
 # O que cada tabela é, em uma frase.
 TABELAS = {
+    "animais": "Animais de estimação dos apartamentos, cadastrados pelo morador que mora lá ou pelo síndico: espécie, porte, raça e cor, a validade da vacina antirrábica e o último lembrete do síndico. O cadastro vale enquanto quem o fez mora no apartamento; remover é inativar.",
     "achados": "Achados e perdidos da portaria: o que foi achado, onde e quando; o morador que disse que é dono; a entrega, com o nome de quem retirou; ou, passados 30 dias sem dono, a doação ou o descarte pelo síndico, com o destino.",
     "log_cobrancas": "O histórico gravado pelo próprio banco: o gatilho trg_log_cobranca escreve uma linha a cada mudança de situação, valor ou vencimento de uma cobrança. Ninguém escreve nela diretamente; a tela Banco de Dados do síndico a lista.",
     "condominios": "Os condomínios atendidos pela plataforma. É o cadastro raiz: tudo o mais pertence, direta ou indiretamente, a um condomínio.",
@@ -66,6 +67,15 @@ TABELAS = {
 # O significado de cada coluna que não é identificador, vínculo ou carimbo
 # de tempo automático — essas são descritas pelo próprio script.
 DESCRICOES = {
+    "animais.nome": "Nome do animal",
+    "animais.especie": "Cachorro, gato, ave ou outro",
+    "animais.raca": "Raça (opcional)",
+    "animais.porte": "Pequeno, médio ou grande — o regimento costuma decidir pelo porte o uso de focinheira e do elevador de serviço",
+    "animais.cor": "Cor (opcional), para a portaria reconhecer o animal",
+    "animais.vacina_antirrabica_ate": "Validade da vacina antirrábica (até cerca de um ano à frente); vazia é sem registro",
+    "animais.observacao": "Observação para os vizinhos e a portaria (\"usar focinheira\")",
+    "animais.lembrete_vacina_em": "Último lembrete da vacina mandado pelo síndico; outro só depois de uma semana",
+    "animais.inativo_em": "Quando o animal saiu da lista do apartamento",
     "achados.descricao": "O que foi achado (\"guarda-chuva preto com cabo de madeira\")",
     "achados.local": "Onde foi achado",
     "achados.encontrado_em": "Dia em que foi achado; até 30 dias para trás no registro",
@@ -384,6 +394,10 @@ DESCRICOES = {
 
 # O que cada vínculo significa, quando o nome da coluna não basta.
 VINCULOS = {
+    "animais.condominio_id": "Condomínio do apartamento",
+    "animais.unidade_id": "Apartamento do animal",
+    "animais.cadastrado_por_id": "Morador ou síndico que cadastrou",
+    "animais.inativado_por_id": "Quem tirou o animal da lista",
     "achados.condominio_id": "Condomínio em cuja portaria o objeto está",
     "achados.registrado_por_id": "Porteiro ou síndico que registrou o objeto",
     "achados.reclamado_por_id": "Morador que disse que o objeto é dele (um por vez)",
