@@ -37,7 +37,7 @@ RECORTES = [
         "leituras_comunicado", "documentos", "ocorrencias", "ordens_servico", "mensagens",
     ]),
     ("Financeiro e portaria", [
-        "cobrancas", "pagamentos", "preferencias_cobranca", "acordos",
+        "cobrancas", "pagamentos", "preferencias_cobranca", "acordos", "log_cobrancas",
         "visitantes", "autorizacoes_visita", "encomendas", "movimentacoes_veiculo",
         "movimentacoes_chave", "chaves", "veiculos_unidade", "ciencias_anotacao",
         "anotacoes_portaria",
@@ -183,6 +183,7 @@ def figura_geral(tabelas, ligacoes, arquivo):
         "leituras_comunicado": (0.17, 0.22), "documentos": (0.17, 0.07),
         "ocorrencias": (0.83, 0.86), "ordens_servico": (0.83, 0.70),
         "cobrancas": (0.83, 0.54), "pagamentos": (0.83, 0.38), "acordos": (0.935, 0.46),
+        "log_cobrancas": (0.93, 0.62),
         "preferencias_cobranca": (0.83, 0.22), "visitantes": (0.83, 0.07),
         "encomendas": (0.335, 0.30), "movimentacoes_veiculo": (0.665, 0.30),
         "mensagens": (0.335, 0.56), "documentos_cadastro": (0.665, 0.56),

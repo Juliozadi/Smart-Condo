@@ -14,11 +14,11 @@ de um condomínio. Esta versão segue a 2.8.
 
 | Seção | O que mudou |
 |---|---|
-| 9 Requisitos funcionais | Novo RF059: obras e reformas comunicadas ao síndico antes de começar (NBR 16280). Novo RF060: acordo de parcelamento das cobranças vencidas. Novo RF061: a taxa e a cota extra lançadas para todos, rateadas pela fração ideal |
+| 9 Requisitos funcionais | Novo RF059: obras e reformas comunicadas ao síndico antes de começar (NBR 16280). Novo RF060: acordo de parcelamento das cobranças vencidas. Novo RF061: a taxa e a cota extra lançadas para todos, rateadas pela fração ideal. Novo RF062: o que o próprio banco calcula, na tela Banco de Dados do síndico |
 | 11 Diagrama de caso de uso | Novos casos: comunicar reforma e fazer acordo de parcelamento — agora 43 casos de uso |
-| 14 a 17 | Novas tabelas reformas e acordos; cobrancas ganha acordo_id, o status NEGOCIADA e as origens ACORDO e EXTRA; unidades ganha fracao_ideal — agora 40 entidades, 489 atributos e 115 relacionamentos |
-| 21 API REST | 178 endpoints: reformas (comunicar, listar, avaliar, prorrogar, concluir, cancelar); acordos de parcelamento (fazer, listar, desfazer); a taxa ou a cota extra para todos os apartamentos de uma vez |
-| 23 Testes | 752 casos no servidor e 136 testes de interface |
+| 14 a 17 | Novas tabelas reformas e acordos; cobrancas ganha acordo_id, o status NEGOCIADA e as origens ACORDO e EXTRA; unidades ganha fracao_ideal; nova tabela log_cobrancas, escrita por gatilho — agora 41 entidades, 499 atributos e 116 relacionamentos |
+| 21 API REST | 182 endpoints: reformas (comunicar, listar, avaliar, prorrogar, concluir, cancelar); acordos de parcelamento (fazer, listar, desfazer); a taxa ou a cota extra para todos os apartamentos de uma vez; banco (situação das unidades, balancete, rateio, log das cobranças) |
+| 23 Testes | 767 casos no servidor e 137 testes de interface |
 
 **Situações tratadas.**
 - A quebradeira começava num sábado de manhã, o porteiro não sabia se
@@ -55,6 +55,14 @@ de um condomínio. Esta versão segue a 2.8.
   sem perder centavo. A cota extra entra ao lado da taxa, em até 24
   parcelas, não se lança duas vezes, e cada apartamento recebe o aviso
   da sua parte.
+- As regras mais importantes do financeiro ficavam só no código do
+  sistema: quem gravasse direto no banco podia pagar uma cobrança
+  negociada ou pagar duas vezes. Agora o próprio banco tem visões,
+  funções, procedimentos e gatilhos (a 2ª parte do trabalho de banco de
+  dados), instalados por migração: os gatilhos barram esses pagamentos e
+  guardam o histórico de cada cobrança, e a tela Banco de Dados do
+  síndico mostra a situação dos apartamentos, o balancete, o rateio
+  calculado pelo banco e esse histórico.
 
 ## Versão 2.8 — o que todo condomínio de verdade usa
 

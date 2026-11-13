@@ -19,6 +19,7 @@ BANCO = os.environ.get("DATABASE_URL_PSQL",
 
 # O que cada tabela é, em uma frase.
 TABELAS = {
+    "log_cobrancas": "O histórico gravado pelo próprio banco: o gatilho trg_log_cobranca escreve uma linha a cada mudança de situação, valor ou vencimento de uma cobrança. Ninguém escreve nela diretamente; a tela Banco de Dados do síndico a lista.",
     "condominios": "Os condomínios atendidos pela plataforma. É o cadastro raiz: tudo o mais pertence, direta ou indiretamente, a um condomínio.",
     "unidades": "Os apartamentos ou casas de cada condomínio. A unidade é o que liga o morador às cobranças, encomendas, visitantes e ocorrências.",
     "usuarios": "Todas as pessoas que acessam o sistema, em qualquer papel: administrador, síndico, porteiro e morador. Quem tem mais de um papel ou apartamento (o síndico que também mora, o dono de dois apartamentos) tem um cadastro por perfil, todos ligados ao cadastro com o login.",
@@ -64,6 +65,14 @@ TABELAS = {
 # O significado de cada coluna que não é identificador, vínculo ou carimbo
 # de tempo automático — essas são descritas pelo próprio script.
 DESCRICOES = {
+    "log_cobrancas.status_anterior": "Situação da cobrança antes da mudança",
+    "log_cobrancas.status_novo": "Situação da cobrança depois da mudança",
+    "log_cobrancas.valor_anterior": "Valor antes da mudança",
+    "log_cobrancas.valor_novo": "Valor depois da mudança",
+    "log_cobrancas.vencimento_anterior": "Vencimento antes da mudança",
+    "log_cobrancas.vencimento_novo": "Vencimento depois da mudança",
+    "log_cobrancas.usuario_banco": "Usuário do banco que fez a alteração (current_user), preenchido pelo gatilho",
+    "log_cobrancas.alterado_em": "Momento da mudança, preenchido pelo gatilho",
     "condominios.nome": "Razão social ou nome pelo qual o condomínio é conhecido",
     "condominios.cnpj": "CNPJ do condomínio, conferido pelos dígitos verificadores e único na plataforma",
     "documentos_cadastro.tipo": "RG ou CNH, comprovante de residência ou escritura; um arquivo por tipo",
@@ -365,6 +374,7 @@ DESCRICOES = {
 
 # O que cada vínculo significa, quando o nome da coluna não basta.
 VINCULOS = {
+    "log_cobrancas.cobranca_id": "A cobrança que mudou",
     "assembleias.condominio_id": "Condomínio que realiza a assembleia",
     "assembleias.convocada_por_id": "Síndico que convocou",
     "assembleias.inativado_por_id": "Síndico que cancelou",

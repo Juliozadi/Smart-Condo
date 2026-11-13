@@ -59,6 +59,7 @@ O projeto tem duas partes. O **front-end** é construído com tecnologias web pu
 ### 📊 Síndico
 - **Dashboard** — Painel administrativo com indicadores e pendências do condomínio
 - **Financeiro** — Cobranças, pagamentos, encargos e inadimplência; a taxa e a cota extra para todos, rateadas pela fração ideal
+- **Banco de Dados** — O que o próprio banco calcula: situação das unidades e balancete (visões), rateio (função) e o histórico das cobranças (gatilho)
 - **Acordos de Parcelamento** — As cobranças vencidas de um apartamento em até 24 parcelas
 - **Prestação de Contas** — Lançamento de despesas e balancete do mês
 - **Declarações de Quitação** — Emissão para qualquer apartamento em dia e revogação com motivo
@@ -217,7 +218,7 @@ backend/
 ```
 
 **Total:** 66 páginas HTML, 2 arquivos CSS, 23 arquivos JS, 46 ícones SVG e
-uma API com 178 endpoints.
+uma API com 182 endpoints.
 
 ---
 
@@ -237,7 +238,7 @@ uvicorn app.main:app --reload
 
 Documentação interativa da API em <http://localhost:8000/docs>.
 
-**178 endpoints**, cobrindo os casos de uso e as histórias de usuário da
+**182 endpoints**, cobrindo os casos de uso e as histórias de usuário da
 documentação — cadastro com código de confirmação, login, recuperação de
 senha, cadastro do condomínio, permissões do porteiro, reservas sigilosas,
 ocupação das áreas em tempo real, vídeo porteiro, encomendas, financeiro e

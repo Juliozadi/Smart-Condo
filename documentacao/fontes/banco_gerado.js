@@ -1848,6 +1848,83 @@ const dicionario = [
     ]
   },
   {
+    "nome": "log_cobrancas",
+    "resumo": "O histórico gravado pelo próprio banco: o gatilho trg_log_cobranca escreve uma linha a cada mudança de situação, valor ou vencimento de uma cobrança. Ninguém escreve nela diretamente; a tela Banco de Dados do síndico a lista.",
+    "colunas": [
+      {
+        "coluna": "id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "PK",
+        "descricao": "Identificador da tabela, gerado pelo banco"
+      },
+      {
+        "coluna": "cobranca_id",
+        "tipo": "INTEGER",
+        "obrigatorio": "Sim",
+        "chave": "FK",
+        "descricao": "A cobrança que mudou"
+      },
+      {
+        "coluna": "status_anterior",
+        "tipo": "VARCHAR(20)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Situação da cobrança antes da mudança"
+      },
+      {
+        "coluna": "status_novo",
+        "tipo": "VARCHAR(20)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Situação da cobrança depois da mudança"
+      },
+      {
+        "coluna": "valor_anterior",
+        "tipo": "NUMERIC(10,2)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Valor antes da mudança"
+      },
+      {
+        "coluna": "valor_novo",
+        "tipo": "NUMERIC(10,2)",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Valor depois da mudança"
+      },
+      {
+        "coluna": "vencimento_anterior",
+        "tipo": "DATE",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Vencimento antes da mudança"
+      },
+      {
+        "coluna": "vencimento_novo",
+        "tipo": "DATE",
+        "obrigatorio": "Não",
+        "chave": "",
+        "descricao": "Vencimento depois da mudança"
+      },
+      {
+        "coluna": "usuario_banco",
+        "tipo": "VARCHAR(63)",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Usuário do banco que fez a alteração (current_user), preenchido pelo gatilho"
+      },
+      {
+        "coluna": "alterado_em",
+        "tipo": "TIMESTAMPTZ",
+        "obrigatorio": "Sim",
+        "chave": "",
+        "descricao": "Momento da mudança, preenchido pelo gatilho"
+      }
+    ],
+    "regras": []
+  },
+  {
     "nome": "mensagens",
     "resumo": "As mensagens do chat entre síndico, porteiros e moradores do mesmo condomínio.",
     "colunas": [
@@ -4100,6 +4177,12 @@ const relacoes = [
     "coluna": "usuario_id",
     "destino": "usuarios",
     "texto": "Usuário que leu"
+  },
+  {
+    "origem": "log_cobrancas",
+    "coluna": "cobranca_id",
+    "destino": "cobrancas",
+    "texto": "A cobrança que mudou"
   },
   {
     "origem": "mensagens",
